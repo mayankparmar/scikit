@@ -29,13 +29,13 @@ public class PistonApp extends Job {
 	
 	
 	public PistonApp() {
-		params.add("Piston mass", 100.0);
-		params.add("Piston acceleration", 0.00001);
-		params.add("Initial piston position", 10.0);
-		params.add("Initial piston velocity", 0.0);
-		params.add("dt", 0.05);
-		params.add("# of particles", 1000);
-		params.add("Bin width", 0.0002);
+		params.add("Piston mass", 100.0, false);
+		params.add("Piston acceleration", 0.00001, false);
+		params.add("Initial piston position", 10.0, true);
+		params.add("Initial piston velocity", 0.0, true);
+		params.add("dt", 0.05, false);
+		params.add("# of particles", 1000, true);
+		params.add("Bin width", 0.0002, false);
 	}
 	
 	

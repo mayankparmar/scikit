@@ -23,9 +23,9 @@ public abstract class Job implements Runnable {
 	public void start() {
 		stopRequested = false;
 		if (_thread == null) {
-			// System.out.println("new");
 			_thread = new Thread(this);
 			_thread.start();
+			params.setLocked(true);
 		}
 		else {
 			wakeProcess();
@@ -51,6 +51,7 @@ public abstract class Job implements Runnable {
 				_thread.stop();
 		}
 		_thread = null;
+		params.setLocked(false);
 		
 		clearDisplays();
 	}
