@@ -18,7 +18,6 @@ public class Control extends JPanel {
 	private JButton _newResetButton;
 	private Parameters _defaultParams;
 	private Vector<JTextField> _fields = new Vector<JTextField>();
-	private boolean _ignoreTextChanges = false;
 	
 	
 	public Control(Job job) {
@@ -98,15 +97,16 @@ public class Control extends JPanel {
 	
 	
 	private void setTextFields() {
-		_ignoreTextChanges = true;
 		String[] keys = _job.params.keys();
 		int i = 0;
 		for (JTextField field : _fields) {
-			String v = _job.params.sget(keys[i++]);
-			if (field.getBackground() == Color.WHITE &&  !field.getText().equals(v))
-				field.setText(v);
+			if (!field.hasFocus()) {
+				String v = _job.params.sget(keys[i]);
+				if (field.getBackground() == Color.WHITE &&  !field.getText().equals(v))
+					field.setText(v);
+			}
+			i++;
 		}
-		_ignoreTextChanges = false;
 	}
 	
 	
@@ -137,14 +137,14 @@ public class Control extends JPanel {
 		DocumentListener input = new DocumentListener() {
 			public void changedUpdate(DocumentEvent e)  {}
 			public void insertUpdate(DocumentEvent e)  {
-				if (!_ignoreTextChanges) {
+				if (field.hasFocus()) {
 					field.setBackground(
 						_job.params.isValidValue(k, field.getText()) ? lightGreen : lightRed
 					);
 				}
 			}
 			public void removeUpdate(DocumentEvent e) {
-				if (!_ignoreTextChanges) {
+				if (field.hasFocus()) {
 					field.setBackground(
 						_job.params.isValidValue(k, field.getText()) ? lightGreen : lightRed
 					);
