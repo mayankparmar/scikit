@@ -16,13 +16,14 @@ public class Control extends JPanel {
 	private JButton _startStopButton;
 	private JButton _stepButton;	
 	private JButton _newResetButton;
-	private Parameters _defaultParams;
-	private Vector<JTextField> _fields = new Vector<JTextField>();
+	private String[] _keys;
+	private String[] _defaults;
 	
 	
 	public Control(Job job) {
 		_job = job;
-		_defaultParams = (Parameters)job.params.clone();
+		_keys = job.params.keys();
+		_defaults = job.params.values();
 		
 		JComponent paramPane = createParameterPane();
 		
@@ -45,11 +46,6 @@ public class Control extends JPanel {
 		_startStopButton = b1;
 		_stepButton = b2;
 		_newResetButton = b3;
-		
-		_job.addDisplay(new Display() {
-			public void animate() { setTextFields(); }
-			public void clear() {}
-		});
 	}
 	
 	
@@ -89,79 +85,11 @@ public class Control extends JPanel {
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Reset")) {
-				_job.params = (Parameters)_defaultParams.clone();
-				setTextFields();
+				for (int i = 0; i < _keys.length; i++)
+					_job.params.set(_keys[i], _defaults[i]);
 			}
 		}
 	};
-	
-	
-	private void setTextFields() {
-		String[] keys = _job.params.keys();
-		int i = 0;
-		for (JTextField field : _fields) {
-			if (!field.hasFocus()) {
-				String v = _job.params.sget(keys[i]);
-				if (field.getBackground() == Color.WHITE &&  !field.getText().equals(v))
-					field.setText(v);
-			}
-			i++;
-		}
-	}
-	
-	
-	private JTextField createParameterTextField(final String k) {
-		final Color lightGreen = new Color(0.85f, 1f, 0.7f);
-		final Color lightRed   = new Color(1f, 0.7f, 0.7f);
-		final JTextField field = new JTextField(_job.params.sget(k));
-		
-		ActionListener action = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (_job.params.isValidValue(k, field.getText())) {
-					_job.params.set(k, field.getText());
-					_job.wakeProcess();
-				}
-				else
-					field.setText(_job.params.sget(k));
-				field.setBackground(Color.WHITE);
-			}
-		};
-		FocusListener focus = new FocusListener() {
-			public void focusGained(FocusEvent e)  {}
-			public void focusLost(FocusEvent e) {
-				if (_job.params.isValidValue(k, field.getText())) {
-					_job.params.set(k, field.getText());
-					_job.wakeProcess();
-				}
-				else
-					field.setText(_job.params.sget(k));
-				field.setBackground(Color.WHITE);
-			}
-		};
-		DocumentListener input = new DocumentListener() {
-			public void changedUpdate(DocumentEvent e)  {}
-			public void insertUpdate(DocumentEvent e)  {
-				if (field.hasFocus()) {
-					field.setBackground(
-						_job.params.isValidValue(k, field.getText()) ? lightGreen : lightRed
-					);
-				}
-			}
-			public void removeUpdate(DocumentEvent e) {
-				if (field.hasFocus()) {
-					field.setBackground(
-						_job.params.isValidValue(k, field.getText()) ? lightGreen : lightRed
-					);
-				}
-			}
-		};
-		
-		field.addActionListener(action);
-		field.addFocusListener(focus);
-		field.getDocument().addDocumentListener(input);
-		field.setHorizontalAlignment(JTextField.RIGHT);
-		return field;
-	}
 	
 	
 	private JComponent createParameterPane () {
@@ -180,12 +108,11 @@ public class Control extends JPanel {
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
-			JTextField field = createParameterTextField(k);
+			JComponent field = _job.params.get(k).createEditor();
 			c.weightx = 1;
 			c.gridwidth = GridBagConstraints.REMAINDER;
 			grid.setConstraints(field, c);
 			panel.add(field);
-			_fields.add(field);
 		}
 		
 		return new JScrollPane(panel);
