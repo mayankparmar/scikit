@@ -56,6 +56,11 @@ public abstract class Job implements Runnable {
 	}
 	
 	
+	synchronized public void wakeProcess() {
+		notify();
+	}
+	
+	
 	public void addDisplay(Display disp) {
 		if (!displays.contains(disp))
 			displays.add(disp);
@@ -64,11 +69,6 @@ public abstract class Job implements Runnable {
 	
 	public String toString() {
 		return getClass() + " : " + _thread;
-	}
-	
-	synchronized private void wakeProcess() {
-		// System.out.println("notifying");
-		notify();
 	}
 	
 	

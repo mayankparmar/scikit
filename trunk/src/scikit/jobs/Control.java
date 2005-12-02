@@ -117,8 +117,10 @@ public class Control extends JPanel {
 		
 		ActionListener action = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (_job.params.isValidValue(k, field.getText()))
+				if (_job.params.isValidValue(k, field.getText())) {
 					_job.params.set(k, field.getText());
+					_job.wakeProcess();
+				}
 				else
 					field.setText(_job.params.sget(k));
 				field.setBackground(Color.WHITE);
@@ -127,8 +129,10 @@ public class Control extends JPanel {
 		FocusListener focus = new FocusListener() {
 			public void focusGained(FocusEvent e)  {}
 			public void focusLost(FocusEvent e) {
-				if (_job.params.isValidValue(k, field.getText()))
+				if (_job.params.isValidValue(k, field.getText())) {
 					_job.params.set(k, field.getText());
+					_job.wakeProcess();
+				}
 				else
 					field.setText(_job.params.sget(k));
 				field.setBackground(Color.WHITE);
