@@ -17,7 +17,7 @@ public abstract class Job implements Runnable {
 	volatile private boolean stepRequested = false;
 	volatile private boolean killRequested = false;
 	
-	public Parameters params = new Parameters();
+	public Parameters params = new Parameters(this);
 	
 	
 	public void start() {

@@ -29,16 +29,21 @@ public class PistonApp extends Job {
 	
 	
 	public PistonApp() {
+		params.add("Initial piston position", 10.0, 0, 100, true);
+		params.add("Initial piston velocity", 0.0, -1, 1, true);
+		params.add("# of particles", 1000, 1, 5000, true);
+
 		params.add("Piston mass", 100.0, 0, 200, false);
 		params.enableSlider("Piston mass");
 		params.add("Piston acceleration", 0.00001, 0,  0.00002, false);
-		params.enableSlider("Piston acceleration");
-		
-		params.add("Initial piston position", 10.0, 0, 100, true);
-		params.add("Initial piston velocity", 0.0, -1, 1, true);
+		params.enableSlider("Piston acceleration");		
 		params.add("dt", 0.05, 0, 0.2, false);
-		params.add("# of particles", 1000, 1, 5000, false);
 		params.add("Bin width", 0.0002, 0.00005, 0.01, false);
+
+		addDisplay(particles);
+		addDisplay(enthalpy);
+		addDisplay(idealGas);
+		addDisplay(distrib);
 	}
 	
 	
@@ -84,11 +89,6 @@ public class PistonApp extends Job {
 			x[i] = random() * px;
 			v[i] = 0.001 * (2*random() - 1);
 		}
-		
-		addDisplay(particles);
-		addDisplay(enthalpy);
-		addDisplay(idealGas);
-		addDisplay(distrib);
 		
 		particles.setStyle(0, Plot.Style.MARKS);
 		particles.setDataSet(0, new PointSet(0, 1, x));
