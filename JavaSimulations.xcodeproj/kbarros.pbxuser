@@ -47,10 +47,10 @@
 	};
 	2B424441093FE71300879790 /* Control.java */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {769, 1904}}";
-			sepNavSelRange = "{1388, 0}";
-			sepNavVisRect = "{{0, 98}, {769, 878}}";
-			sepNavWindowFrame = "{{272, 51}, {808, 951}}";
+			sepNavIntBoundsRect = "{{0, 0}, {769, 1890}}";
+			sepNavSelRange = "{3201, 0}";
+			sepNavVisRect = "{{0, 1010}, {769, 878}}";
+			sepNavWindowFrame = "{{194, 47}, {808, 951}}";
 		};
 	};
 	2B424442093FE71300879790 /* Job.java */ = {
@@ -144,31 +144,31 @@
 	2BA26AC2094114AD0046F4DF /* Parameters.java */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {769, 1246}}";
-			sepNavSelRange = "{476, 0}";
-			sepNavVisRect = "{{0, 3}, {769, 878}}";
-			sepNavWindowFrame = "{{352, 51}, {808, 951}}";
+			sepNavSelRange = "{601, 0}";
+			sepNavVisRect = "{{0, 0}, {769, 878}}";
+			sepNavWindowFrame = "{{101, 51}, {808, 951}}";
 		};
 	};
 	2BA26AC3094114C00046F4DF /* Value.java */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {769, 1610}}";
-			sepNavSelRange = "{2074, 0}";
-			sepNavVisRect = "{{0, 732}, {769, 878}}";
+			sepNavSelRange = "{575, 0}";
+			sepNavVisRect = "{{0, 0}, {769, 878}}";
 			sepNavWindowFrame = "{{524, 51}, {808, 951}}";
 		};
 	};
 	2BA26B0E094117B90046F4DF /* DoubleValue.java */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {769, 1106}}";
-			sepNavSelRange = "{600, 0}";
-			sepNavVisRect = "{{0, 95}, {769, 878}}";
+			sepNavIntBoundsRect = "{{0, 0}, {769, 1162}}";
+			sepNavSelRange = "{362, 0}";
+			sepNavVisRect = "{{0, 0}, {769, 878}}";
 			sepNavWindowFrame = "{{386, 50}, {808, 951}}";
 		};
 	};
 	2BA26B11094117E20046F4DF /* IntValue.java */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {769, 878}}";
-			sepNavSelRange = "{477, 0}";
+			sepNavSelRange = "{297, 0}";
 			sepNavVisRect = "{{0, 0}, {769, 878}}";
 			sepNavWindowFrame = "{{183, 51}, {808, 951}}";
 		};
@@ -253,7 +253,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1300;
 		vrLoc = 314;
@@ -267,7 +267,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -287,7 +287,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 35";
 		rLen = 0;
-		rLoc = 1590;
+		rLoc = 1563;
 		rType = 0;
 		vrLen = 671;
 		vrLoc = 0;
@@ -297,7 +297,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -317,7 +317,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 35";
 		rLen = 0;
-		rLoc = 1590;
+		rLoc = 1563;
 		rType = 0;
 		vrLen = 700;
 		vrLoc = 0;
@@ -327,7 +327,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -347,7 +347,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 37";
 		rLen = 0;
-		rLoc = 1590;
+		rLoc = 1563;
 		rType = 0;
 		vrLen = 782;
 		vrLoc = 0;
@@ -357,7 +357,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -377,7 +377,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 45";
 		rLen = 0;
-		rLoc = 1590;
+		rLoc = 1563;
 		rType = 0;
 		vrLen = 1020;
 		vrLoc = 0;
@@ -387,7 +387,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -407,7 +407,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 46";
 		rLen = 0;
-		rLoc = 1364;
+		rLoc = 1337;
 		rType = 0;
 		vrLen = 1405;
 		vrLoc = 21;
@@ -417,7 +417,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -437,7 +437,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 41";
 		rLen = 0;
-		rLoc = 1333;
+		rLoc = 1306;
 		rType = 0;
 		vrLen = 1416;
 		vrLoc = 21;
@@ -455,7 +455,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -475,7 +475,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 45";
 		rLen = 0;
-		rLoc = 1312;
+		rLoc = 1285;
 		rType = 0;
 		vrLen = 1437;
 		vrLoc = 0;
@@ -493,7 +493,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 57";
 		rLen = 0;
-		rLoc = 1589;
+		rLoc = 1562;
 		rType = 0;
 		vrLen = 1424;
 		vrLoc = 44;
@@ -513,7 +513,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 56";
 		rLen = 0;
-		rLoc = 1502;
+		rLoc = 1438;
 		rType = 0;
 		vrLen = 1303;
 		vrLoc = 311;
@@ -563,7 +563,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -583,7 +583,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -617,7 +617,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -647,7 +647,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -677,7 +677,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -707,7 +707,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -737,7 +737,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -767,7 +767,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -797,7 +797,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -811,7 +811,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 29";
 		rLen = 0;
-		rLoc = 876;
+		rLoc = 849;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -841,7 +841,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -861,7 +861,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -881,7 +881,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -901,7 +901,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -921,7 +921,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -941,7 +941,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -961,7 +961,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -991,7 +991,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -1001,7 +1001,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1031,7 +1031,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -1041,7 +1041,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1071,7 +1071,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -1081,7 +1081,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1111,7 +1111,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -1121,7 +1121,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1151,7 +1151,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 44";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1381;
 		vrLoc = 91;
@@ -1161,7 +1161,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1175,7 +1175,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 45";
 		rLen = 0;
-		rLoc = 1302;
+		rLoc = 1275;
 		rType = 0;
 		vrLen = 1423;
 		vrLoc = 91;
@@ -1195,7 +1195,7 @@
 		fRef = 2BA26AC2094114AD0046F4DF /* Parameters.java */;
 		name = "Parameters.java: 35";
 		rLen = 0;
-		rLoc = 1110;
+		rLoc = 1046;
 		rType = 0;
 		vrLen = 1354;
 		vrLoc = 314;
@@ -1215,7 +1215,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 23";
 		rLen = 0;
-		rLoc = 705;
+		rLoc = 678;
 		rType = 0;
 		vrLen = 1351;
 		vrLoc = 0;
@@ -1252,7 +1252,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 15";
 		rLen = 0;
-		rLoc = 390;
+		rLoc = 404;
 		rType = 0;
 		vrLen = 1516;
 		vrLoc = 0;
@@ -1296,7 +1296,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 28";
 		rLen = 0;
-		rLoc = 676;
+		rLoc = 666;
 		rType = 0;
 		vrLen = 1506;
 		vrLoc = 87;
@@ -1316,7 +1316,7 @@
 		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
 		name = "DoubleValue.java: 26";
 		rLen = 0;
-		rLoc = 600;
+		rLoc = 630;
 		rType = 0;
 		vrLen = 1506;
 		vrLoc = 87;
@@ -1367,6 +1367,58 @@
 		rLoc = 476;
 		rType = 0;
 		vrLen = 1472;
+		vrLoc = 0;
+	};
+	2BA26D2C094133420046F4DF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 2B42444A093FE71300879790 /* EmptyPlot.java */;
+		name = NumberFormat;
+		rLen = 12;
+		rLoc = 133;
+		rType = 0;
+		vrLen = 274;
+		vrLoc = 0;
+	};
+	2BA26D2D094133460046F4DF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 2B42444A093FE71300879790 /* EmptyPlot.java */;
+		name = NumberFormat;
+		rLen = 12;
+		rLoc = 133;
+		rType = 0;
+		vrLen = 274;
+		vrLoc = 0;
+	};
+	2BA26D45094134E10046F4DF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "non-static variable df1 cannot be referenced from a static context";
+		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
+		rLen = 1;
+		rLoc = 79;
+		rType = 1;
+	};
+	2BA26D4C094134FA0046F4DF /* PBXBookmark */ = {
+		isa = PBXBookmark;
+		fRef = 2BA26B11094117E20046F4DF /* IntValue.java */;
+	};
+	2BA26D52094135130046F4DF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 2BA26B11094117E20046F4DF /* IntValue.java */;
+		name = "IntValue.java: 11";
+		rLen = 0;
+		rLoc = 297;
+		rType = 0;
+		vrLen = 575;
+		vrLoc = 0;
+	};
+	2BA26D55094135130046F4DF /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 2BA26B0E094117B90046F4DF /* DoubleValue.java */;
+		name = "DoubleValue.java: 15";
+		rLen = 0;
+		rLoc = 362;
+		rType = 0;
+		vrLen = 1499;
 		vrLoc = 0;
 	};
 	88230FFE05D9926E00FE8D22 /* Project object */ = {
@@ -1609,6 +1661,12 @@
 			2BA26D21094132B10046F4DF /* PBXBookmark */ = 2BA26D21094132B10046F4DF /* PBXBookmark */;
 			2BA26D27094132BE0046F4DF /* PBXTextBookmark */ = 2BA26D27094132BE0046F4DF /* PBXTextBookmark */;
 			2BA26D28094132BE0046F4DF /* PBXTextBookmark */ = 2BA26D28094132BE0046F4DF /* PBXTextBookmark */;
+			2BA26D2C094133420046F4DF /* PBXTextBookmark */ = 2BA26D2C094133420046F4DF /* PBXTextBookmark */;
+			2BA26D2D094133460046F4DF /* PBXTextBookmark */ = 2BA26D2D094133460046F4DF /* PBXTextBookmark */;
+			2BA26D45094134E10046F4DF /* PBXTextBookmark */ = 2BA26D45094134E10046F4DF /* PBXTextBookmark */;
+			2BA26D4C094134FA0046F4DF /* PBXBookmark */ = 2BA26D4C094134FA0046F4DF /* PBXBookmark */;
+			2BA26D52094135130046F4DF /* PBXTextBookmark */ = 2BA26D52094135130046F4DF /* PBXTextBookmark */;
+			2BA26D55094135130046F4DF /* PBXTextBookmark */ = 2BA26D55094135130046F4DF /* PBXTextBookmark */;
 		};
 		sourceControlManager = 2B424420093FE6CA00879790 /* Source Control */;
 		userBuildSettings = {

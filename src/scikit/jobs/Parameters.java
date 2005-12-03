@@ -25,22 +25,22 @@ public class Parameters implements Cloneable {
 	
 	public void add(String key, int value, boolean lockable) {
 		keys.add(key);
-		put(key, new IntValue(String.valueOf(value), lockable));
+		put(key, new IntValue(value, lockable));
 	}
 	
 	public void add(String key, double value, boolean lockable) {
 		keys.add(key);
-		put(key, new DoubleValue(String.valueOf(value), lockable));		
+		put(key, new DoubleValue(value, lockable));		
 	}
 	
 	public void add(String key, int value, int lo, int hi, boolean lockable) {
 		keys.add(key);
-		put(key, new IntValue(String.valueOf(value), lo, hi, lockable));
+		put(key, new IntValue(value, lo, hi, lockable));
 	}
 	
 	public void add(String key, double value, double lo, double hi, boolean lockable) {
 		keys.add(key);
-		put(key, new DoubleValue(String.valueOf(value), lo, hi, lockable));		
+		put(key, new DoubleValue(value, lo, hi, lockable));		
 	}
 	
 	public void add(String key, String value, boolean lockable) {

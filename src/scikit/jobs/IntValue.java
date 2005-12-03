@@ -3,12 +3,12 @@ package scikit.jobs;
 public class IntValue extends Value {
 	private int _lo = Integer.MIN_VALUE, _hi = Integer.MAX_VALUE;
 	
-	public IntValue(String v, boolean lockable) {
-		super(v, lockable);
+	public IntValue(int v, boolean lockable) {
+		super(String.valueOf(v), lockable);
 	}
 	
-	public IntValue(String v, int lo, int hi, boolean lockable) {
-		super(v, lockable);
+	public IntValue(int v, int lo, int hi, boolean lockable) {
+		super(String.valueOf(v), lockable);
 		_lo = lo;
 		_hi = hi;		
 	}
