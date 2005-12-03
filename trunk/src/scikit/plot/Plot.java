@@ -22,7 +22,7 @@ public class Plot extends EmptyPlot implements Display {
 	private static final double AUTOSCALE_SLOP = 0.1;
 	
 	private boolean _autoScale = true;
-	private boolean _invalidView = true;
+	private boolean _invalidView = true; // view will be completely auto-scaled in next animation() call
 	
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
 	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
@@ -151,8 +151,10 @@ public class Plot extends EmptyPlot implements Display {
 				resetViewWindow();
 			}
 		}
-		else {
-			_invalidView = _autoScale;
+		else if (_autoScale) {
+			setXRange(DEFAULT_MIN, DEFAULT_MAX);
+			setYRange(DEFAULT_MIN, DEFAULT_MAX);
+			_invalidView = true;
 		}
 	}
 	
