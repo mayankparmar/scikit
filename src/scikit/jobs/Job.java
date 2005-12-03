@@ -116,10 +116,8 @@ public abstract class Job implements Runnable {
 		
 		while (stopRequested && !killRequested) {
 			try {
-				// System.out.println("sleep");
 				animateDisplays();
 				wait();
-				// System.out.println("wake");
 			} catch (InterruptedException e) {
 				System.out.println("interrupted");
 			}

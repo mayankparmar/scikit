@@ -15,7 +15,7 @@ public class Control extends JPanel {
 	private Job _job;
 	private JButton _startStopButton;
 	private JButton _stepButton;	
-	private JButton _newResetButton;
+	private JButton _resetButton;
 	private String[] _keys;
 	private String[] _defaults;
 	
@@ -31,7 +31,7 @@ public class Control extends JPanel {
 		JButton b1, b2, b3, b4;
 		b1 = new JButton("Start");
 		b2 = new JButton("Step");
-		b3 = new JButton("New");
+		b3 = new JButton("Reset");
 		b1.addActionListener(_actionListener);
 		b2.addActionListener(_actionListener);
 		b3.addActionListener(_actionListener);
@@ -45,7 +45,7 @@ public class Control extends JPanel {
 		
 		_startStopButton = b1;
 		_stepButton = b2;
-		_newResetButton = b3;
+		_resetButton = b3;
 	}
 	
 	
@@ -53,9 +53,9 @@ public class Control extends JPanel {
 		this(job);
 		_frame = new JFrame();
 		_frame.getContentPane().add(this);
-		_frame.setSize(300, 300);
 		_frame.setTitle(title);
 		_frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		_frame.pack();
 		_frame.setVisible(true);
 	}
 	
@@ -66,7 +66,7 @@ public class Control extends JPanel {
 			if (str.equals("Start")) {
 				_job.start();
 				_startStopButton.setLabel("Stop");
-				_newResetButton.setLabel("New");
+				_resetButton.setLabel("Reset");
 				_stepButton.setEnabled(false);
 			}
 			if (str.equals("Stop")) {
@@ -75,16 +75,16 @@ public class Control extends JPanel {
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Step")) {
-				_newResetButton.setLabel("New");
+				_resetButton.setLabel("Reset");
 				_job.step();
 			}
-			if (str.equals("New")) {
+			if (str.equals("Reset")) {
 				_job.kill();
 				_startStopButton.setLabel("Start");
-				_newResetButton.setLabel("Reset");
+				_resetButton.setLabel("Defaults");
 				_stepButton.setEnabled(true);
 			}
-			if (str.equals("Reset")) {
+			if (str.equals("Defaults")) {
 				for (int i = 0; i < _keys.length; i++)
 					_job.params.set(_keys[i], _defaults[i]);
 			}
@@ -98,26 +98,37 @@ public class Control extends JPanel {
 		JPanel panel = new JPanel(grid);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipadx = 0;
-		c.insets = new Insets(2, 2, 2, 2);
   		c.anchor = GridBagConstraints.NORTH;
+		c.gridy = 0;
+		c.insets = new Insets(2, 2, 2, 2);
 		
 		for (final String k : _job.params.keys()) {
 			JLabel label = new JLabel(k + ":", SwingConstants.RIGHT);
+			c.gridx = 0;
 			c.weightx = 0;
 			c.gridwidth = 1;
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
-			JComponent field = _job.params.get(k).createEditor();
+			Value v = _job.params.get(k);
+			JComponent field = v.createEditor();
+			c.gridx = 1;
 			c.weightx = 1;
 			c.gridwidth = GridBagConstraints.REMAINDER;
 			grid.setConstraints(field, c);
 			panel.add(field);
+			
+			JComponent slider = v.createAuxiliaryEditor();
+			if (slider != null) {
+				c.gridy++;
+				grid.setConstraints(slider, c);
+				panel.add(slider);
+			}
+			
+			c.gridy++;
 		}
 		
 		return new JScrollPane(panel);
 	}
 }
-
-
 

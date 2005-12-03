@@ -48,7 +48,6 @@
 		2B424441093FE71300879790 /* Control.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Control.java; sourceTree = "<group>"; };
 		2B424442093FE71300879790 /* Job.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Job.java; sourceTree = "<group>"; };
 		2B424443093FE71300879790 /* JobManager.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = JobManager.java; sourceTree = "<group>"; };
-		2B424444093FE71300879790 /* Parameters.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Parameters.java; sourceTree = "<group>"; };
 		2B424446093FE71300879790 /* Accumulator.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Accumulator.java; sourceTree = "<group>"; };
 		2B424447093FE71300879790 /* DataSet.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = DataSet.java; sourceTree = "<group>"; };
 		2B424448093FE71300879790 /* Display.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Display.java; sourceTree = "<group>"; };
@@ -58,6 +57,10 @@
 		2B42444C093FE71300879790 /* Plot.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Plot.java; sourceTree = "<group>"; };
 		2B42444D093FE71300879790 /* PointSet.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PointSet.java; sourceTree = "<group>"; };
 		2B42444F093FE71A00879790 /* build.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
+		2BA26AC2094114AD0046F4DF /* Parameters.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Parameters.java; sourceTree = "<group>"; };
+		2BA26AC3094114C00046F4DF /* Value.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Value.java; sourceTree = "<group>"; };
+		2BA26B0E094117B90046F4DF /* DoubleValue.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = DoubleValue.java; sourceTree = "<group>"; };
+		2BA26B11094117E20046F4DF /* IntValue.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = IntValue.java; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -162,7 +165,10 @@
 				2B424441093FE71300879790 /* Control.java */,
 				2B424442093FE71300879790 /* Job.java */,
 				2B424443093FE71300879790 /* JobManager.java */,
-				2B424444093FE71300879790 /* Parameters.java */,
+				2BA26AC2094114AD0046F4DF /* Parameters.java */,
+				2BA26AC3094114C00046F4DF /* Value.java */,
+				2BA26B0E094117B90046F4DF /* DoubleValue.java */,
+				2BA26B11094117E20046F4DF /* IntValue.java */,
 			);
 			path = jobs;
 			sourceTree = "<group>";
