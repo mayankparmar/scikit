@@ -3,13 +3,18 @@ package scikit.jobs;
 
 import java.util.Vector;
 import java.util.HashMap;
-
+import javax.swing.event.*;
 
 
 public class Parameters implements Cloneable {
-	Vector<String> keys = new Vector<String>();
-	HashMap<String, Value> map = new HashMap<String, Value>();
+	private Job _job;
+	private Vector<String> keys = new Vector<String>();
+	private HashMap<String, Value> map = new HashMap<String, Value>();
 	
+	
+	public Parameters(Job job) {
+		_job = job;
+	}
 	
 	synchronized public String[] keys() {
 		return keys.toArray(new String[]{});
@@ -76,6 +81,14 @@ public class Parameters implements Cloneable {
 	
 	
 	synchronized private void put(String key, Value value) {
+		if (!map.containsKey(key)) {
+			value.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					if (_job != null)
+						_job.wakeProcess();
+				}
+			});
+		}
 		map.put(key, value);
 	}
 	
