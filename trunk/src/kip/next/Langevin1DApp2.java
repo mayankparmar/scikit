@@ -3,12 +3,8 @@ package kip.next;
 
 import static java.lang.Math.*;
 
-import scikit.plot.Plot;
-import scikit.plot.PointSet;
-import scikit.plot.Accumulator;
-import scikit.jobs.Job;
-import scikit.jobs.Control;
-import scikit.jobs.Parameters;
+import scikit.plot.*;
+import scikit.jobs.*;
 
 
 
@@ -34,24 +30,24 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public Langevin1DApp2() {
-		params.add("Intervention overshoot", 10);
-		params.add("Droplet low bound", 10000);
-		params.add("Droplet high bound", 10000);
-		params.add("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles");
+		params.add("Intervention overshoot", 10, false);
+		params.add("Droplet low bound", 10000, false);
+		params.add("Droplet high bound", 10000, false);
+		params.add("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles", false);
 		
-		params.add("Random seed", 0);
-		params.add("Crude cutoff", 0.0);
-		params.add("Bin width", 0.5);
+		params.add("Random seed", 0, false);
+		params.add("Crude cutoff", 0.0, false);
+		params.add("Bin width", 0.5, false);
 		
-		params.add("h", 0.223);
-		params.add("Length", 50.0);
-		params.add("dx", 0.5);
-		params.add("dt", 0.1);
-		params.add("R\u00b2", 0.1); // R2
-		params.add("\u03b5", -5./9.); // ε
-		params.add("\u0393", 0.005); // Γ
-		params.add("\u03bb", 0.0); // λ
-		params.add("\u03b1", 1.0); // α
+		params.add("h", 0.223, false);
+		params.add("Length", 50.0, false);
+		params.add("dx", 0.5, false);
+		params.add("dt", 0.1, false);
+		params.add("R\u00b2", 0.1, false); // R2
+		params.add("\u03b5", -5./9., false); // ε
+		params.add("\u0393", 0.005, false); // Γ
+		params.add("\u03bb", 0.0, false); // λ
+		params.add("\u03b1", 1.0, false); // α
 /*
 		params.put("\u03bb", 0); // λ
 		params.put("h", 0.223);
@@ -143,7 +139,7 @@ public class Langevin1DApp2 extends Job {
 		while (true) {
 			sim.initialize(params);
 			simulateUntilNucleation();
-			params.set("Random seed", ++sim.randomSeed);			
+			params.set("Random seed", ++sim.randomSeed + "");			
 		}
 	}
 	
