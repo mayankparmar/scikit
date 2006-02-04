@@ -12,6 +12,9 @@ in the range, R, of x.  Each spin-block index is actually a pair of numbers: a s
 and a block index at that scale.  The finest scale, 0, is at the level of spins
 themselves.  The coarsest scale is given by maxScale, and is roughly the size of the
 range itself.
+
+This class uses state internally, and is therefore not thread safe.  Nonetheless, the
+semantics of it's methods should not depend on previous state.
 */
 
 class SpinBlockIndexer {
