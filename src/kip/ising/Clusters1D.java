@@ -141,7 +141,7 @@ public class Clusters1D {
 				if (Math.random() < p) n++;
 			return n;
 		}
-		else if (N*p < 1.0) {
+		else { /* if(N*p < 1.0) { */
 			double g = Math.exp(-N*p);
 			int n = -1;
 			double t = 1;
@@ -152,10 +152,11 @@ public class Clusters1D {
 
 			return n;
 		}
-		else {
+/*		else {
 			assert false : "Can't accept parameters " + p + ", " + N;
 			return -1;
 		}
+*/
 	}
 	
 	

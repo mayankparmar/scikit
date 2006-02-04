@@ -1,11 +1,27 @@
 package kip.ising;
 
 
-public class SpinBlocks1D {
+public class SpinBlocks1D implements Cloneable {
 	SpinBlockIndexer indexer;
 	int[] indices;
 	int[][] blocks;
 	int L, R;
+	
+	
+    public Object clone() {
+        try {
+            SpinBlocks1D c = (SpinBlocks1D)super.clone();
+            c.indices = (int[])indices.clone(); // not necessary?
+            c.blocks = (int[][])blocks.clone();
+			for (int i = 0; i < c.blocks.length; i++) {
+				c.blocks[i] = (int[])blocks[i].clone();
+			}
+            return c;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+	
 	
 	public SpinBlocks1D(int L, int R) {
 		this.L = L;
@@ -61,5 +77,9 @@ public class SpinBlocks1D {
 	
 	public int get(int x) {
 		return blocks[0][x];
-	}	
+	}
+	
+	public int[] getAll() {
+		return blocks[0];
+	}
 }
