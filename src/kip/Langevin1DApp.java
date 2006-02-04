@@ -99,7 +99,7 @@ public class Langevin1DApp extends AbstractSimulation {
       control.setAdjustableValue("Steps per display", 2000);
       control.setValue("Intervention overshoot", 10);
 //      control.setValue("Intervention dt", 0.1);
-      control.setValue("Droplet low bound", 0);
+      control.setValue("Droplet low bound", 10000);
       control.setValue("Droplet high bound", 10000);
       control.setValue("Data path", "" /*"/Users/kbarros/dev/nucleation/droplet_profiles4"*/);
       
@@ -107,6 +107,20 @@ public class Langevin1DApp extends AbstractSimulation {
       control.setValue("Random seed", 0);
       control.setValue("Crude cutoff", 0);
 
+// Parameters to match Aaron
+	  control.setAdjustableValue("\u03bb", 0); // λ
+	  control.setAdjustableValue("h", 0.075);
+      control.setValue("Length", 100);
+      control.setValue("dx", 2);
+      control.setAdjustableValue("dt", 0.1);
+	  control.setAdjustableValue("R\u00b2", 10); // R2
+	  control.setAdjustableValue("\u03b5", "-0.27775"); // ε
+      control.setAdjustableValue("\u03b1", 1); // α
+      control.setAdjustableValue("\u0393", 0.6); // Γ
+
+
+//Old Parameters before Aaron matching
+/*
 	  control.setAdjustableValue("\u03bb", 0); // λ
 	  control.setAdjustableValue("h", 0.223);
       control.setValue("Length", 50);
@@ -116,7 +130,7 @@ public class Langevin1DApp extends AbstractSimulation {
 	  control.setAdjustableValue("\u03b5", "-5/9"); // ε
       control.setAdjustableValue("\u03b1", 1); // α
       control.setAdjustableValue("\u0393", 0.005); // Γ
-
+*/
 /*
 	  control.setAdjustableValue("\u03bb", 0); // λ
 	  control.setAdjustableValue("h", 0.223);
