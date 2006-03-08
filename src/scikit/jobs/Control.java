@@ -13,6 +13,7 @@ import java.awt.event.*;
 public class Control extends JPanel {
 	private JFrame _frame;
 	private Job _job;
+	private JPanel _buttonPanel;
 	private JButton _startStopButton;
 	private JButton _stepButton;	
 	private JButton _resetButton;
@@ -27,7 +28,7 @@ public class Control extends JPanel {
 		
 		JComponent paramPane = createParameterPane();
 		
-		JPanel buttonPanel = new JPanel();
+		_buttonPanel = new JPanel();
 		JButton b1, b2, b3, b4;
 		b1 = new JButton("Start");
 		b2 = new JButton("Step");
@@ -35,13 +36,13 @@ public class Control extends JPanel {
 		b1.addActionListener(_actionListener);
 		b2.addActionListener(_actionListener);
 		b3.addActionListener(_actionListener);
-		buttonPanel.add(b1);
-		buttonPanel.add(b2);
-		buttonPanel.add(b3);
+		_buttonPanel.add(b1);
+		_buttonPanel.add(b2);
+		_buttonPanel.add(b3);
 		
 		setLayout(new BorderLayout());
 		add(paramPane, BorderLayout.CENTER);
-		add(buttonPanel, BorderLayout.SOUTH);
+		add(_buttonPanel, BorderLayout.SOUTH);
 		
 		_startStopButton = b1;
 		_stepButton = b2;
@@ -57,6 +58,32 @@ public class Control extends JPanel {
 		_frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		_frame.pack();
 		_frame.setVisible(true);
+	}
+	
+	
+	public void addButton(String name, final String flag) {
+		try {		
+			final java.lang.reflect.Field field = _job.getClass().getField(flag);
+			JButton b = new JButton(name);
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					try {
+						field.setBoolean(_job, true);
+					} catch (IllegalArgumentException e) {
+						System.err.println("Flag '" + flag + "' is not of boolean type");
+					} catch (IllegalAccessException e) {
+						System.err.println("Insufficient privileges to write to flag '" + flag + "'");
+					}
+				}
+			});
+			_buttonPanel.add(b);
+			if (_frame != null)
+				_frame.pack();
+		} catch (NoSuchFieldException e) {
+			System.err.println("Unable to access flag '" + flag + "' in object " + _job);
+		} catch (SecurityException e) {
+			System.err.println("Insufficient privileges to access flag '" + flag + "'");
+		}
 	}
 	
 	
