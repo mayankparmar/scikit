@@ -105,6 +105,10 @@ public class Value {
 		};
 		addChangeListener(change);
 		
+		Dimension d = field.getPreferredSize();
+		d.width = Math.max(d.width, 150);
+		field.setPreferredSize(d);
+		
 		return field;
 	}
 	
