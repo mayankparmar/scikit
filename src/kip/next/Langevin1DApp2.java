@@ -2,7 +2,6 @@ package kip.next;
 
 
 import static java.lang.Math.*;
-
 import scikit.plot.*;
 import scikit.jobs.*;
 
@@ -10,8 +9,7 @@ import scikit.jobs.*;
 
 public class Langevin1DApp2 extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
-	Plot nuclnPlot = new Plot("Nucleation Times", true);
-	Accumulator nucTimes;
+	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);
 	
 //	LangevinDroplet2 droplet = new LangevinDroplet2();
 	Langevin1D2 sim = new Langevin1D2(), oldsim, oldoldsim;
@@ -23,17 +21,17 @@ public class Langevin1DApp2 extends Job {
 	public double overshootEstimate;
 	
 	
-	
 	public static void main(String[] args) {
 		new Control(new Langevin1DApp2(), "Langevin Simulation");
 	}
 	
 	
 	public Langevin1DApp2() {
-		params.add("Intervention overshoot", 10, false);
-		params.add("Droplet low bound", 10000, false);
-		params.add("Droplet high bound", 10000, false);
-		params.add("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles", false);
+		params.add("Intervention overshoot", 10.0, false);
+		params.add("Droplet low bound", 10000.0, false);
+		params.add("Droplet high bound", 10000.0, false);
+//		params.add("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles", false);
+		params.add("Data path", "", false);
 		
 		params.add("Random seed", 0, false);
 		params.add("Crude cutoff", 0.0, false);
@@ -68,7 +66,7 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public void animate() {
-		nucTimes.setBinWidth(params.fget("Bin width"));
+		nucTimes.setBinWidth(2, params.fget("Bin width"));
 		sim.getParameters(params);
 	}
 	
@@ -112,7 +110,7 @@ public class Langevin1DApp2 extends Job {
 					droplet.findDroplet(oldoldsim, sim.t-overshootEstimate, sim.dropletLocation());
 				}
 				*/
-				nucTimes.accum(sim.t);
+				nucTimes.accum(2, sim.t);
 			}
 		}
 	}
@@ -130,11 +128,7 @@ public class Langevin1DApp2 extends Job {
 		fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.ψ));
 		fieldPlot.setDataSet(1, new PointSet(0, sim.dx, sim.φ));
 		addDisplay(fieldPlot);
-		
-		nucTimes = new Accumulator(params.fget("Bin width"));
-		nuclnPlot.setDataSet(2, nucTimes);
-		nuclnPlot.setStyle(2, Plot.Style.BARS);
-		addDisplay(nuclnPlot);
+		addDisplay(nucTimes);
 		
 		while (true) {
 			sim.initialize(params);
