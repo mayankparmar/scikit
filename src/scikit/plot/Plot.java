@@ -2,8 +2,13 @@ package scikit.plot;
 
 
 import static java.lang.Math.*;
+
 import java.util.Vector;
+
 import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
+import javax.swing.JMenuItem;
+
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.Color;
@@ -14,6 +19,10 @@ import java.awt.Stroke;
 import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.FileDialog;
 
 
 public class Plot extends EmptyPlot implements Display {
@@ -38,10 +47,14 @@ public class Plot extends EmptyPlot implements Display {
 	
 	public enum Style {LINES, MARKS, BARS};
 	
+	protected JPopupMenu _popup;
+	protected FileDialog _dialog;
 	
 	
 	public Plot(String title, boolean frame) {
 		super(title, frame);
+		_popup = new JPopupMenu();
+		_dialog = new FileDialog(_frame, "Save", FileDialog.SAVE);
 	}
 	
 	
@@ -279,4 +292,57 @@ public class Plot extends EmptyPlot implements Display {
 		}
 		return ret;
 	}	
+	
+	
+	private int countDataSets() {
+		int cnt = 0;
+		for (DataSet dataSet : _dataSets)
+			if (dataSet != null)
+				cnt++;
+		return cnt;
+	}
+	
+	
+	private void saveDataset(DataSet data, String str) {
+		double[] buf = data.copyData();
+		_dialog.setFile(str);
+		_dialog.show();
+		String file  = _dialog.getDirectory() + _dialog.getFile();
+		scikit.util.Dump.doubleArray(file, buf, 2);
+	}
+	
+	
+	private void fillPopup() {
+		_popup.removeAll();
+		int cnt = 1;
+		for (int i = 0; i < _dataSets.length; i++) {
+			final DataSet dataSet = _dataSets[i];
+			if (dataSet != null) {
+				final String str = "Dataset" + cnt;
+				JMenuItem menuItem = new JMenuItem("Save " + str + "...");
+				menuItem.setForeground(_colors[i]);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						saveDataset(dataSet, str);
+					}
+				});
+				_popup.add(menuItem);
+				cnt++;
+			}
+		}
+	}
+	
+	
+	protected boolean maybeShowPopup(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			if (countDataSets() > 0) {
+				fillPopup();
+				_popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+			return true;
+		}
+		return false;
+	}
 }
+
+
