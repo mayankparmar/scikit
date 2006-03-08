@@ -34,7 +34,7 @@ public class EmptyPlot extends JComponent {
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
 	private static Color PANEL_COLOR = new Color(0.96f, 0.95f, 0.99f);
 	
-	private JFrame _frame;
+	protected JFrame _frame;
 	private static int _frameStagger = 100;
 	
 	protected double DEFAULT_MIN = Double.POSITIVE_INFINITY;
@@ -304,12 +304,17 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
+	protected boolean maybeShowPopup(MouseEvent e) {
+		return false;
+	}
+	
+	
 	private MouseListener _mouseListener = new MouseAdapter() {
 		private boolean withinBounds(MouseEvent event) {
 			return _bound.contains(event.getX()-1, event.getY()-1);
 		}
 		
-		public void mouseClicked(MouseEvent event) {
+		public void mouseClicked(MouseEvent event) {			
 			if (withinBounds(event) && event.getClickCount() > 1) {
 				resetViewWindow();
 				_selectionActive = false;
@@ -317,6 +322,8 @@ public class EmptyPlot extends JComponent {
 			}
 		}
 		public void mousePressed(MouseEvent event) {
+			if (maybeShowPopup(event))
+				return;
 			if (withinBounds(event)) {
 				_selection.x = event.getX()-1;
 				_selection.y = event.getY()-1;
@@ -326,6 +333,8 @@ public class EmptyPlot extends JComponent {
 			}
 		}
 		public void mouseReleased(MouseEvent event) {
+			if (maybeShowPopup(event))
+				return;
 			if (_selectionActive) {
 				changeViewWindow(fixRectangle(_selection));
 				_selectionActive = false;
