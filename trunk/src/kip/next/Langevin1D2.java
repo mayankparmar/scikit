@@ -17,7 +17,7 @@ public class Langevin1D2 implements Cloneable {
     double[] ψnew;
     
     
-    public Object clone() {
+    public Langevin1D2 clone() {
         try {
             Langevin1D2 c = (Langevin1D2)super.clone();
             c.ψ = (double[])ψ.clone();
@@ -64,7 +64,14 @@ public class Langevin1D2 implements Cloneable {
         dt = params.fget("dt");
     }
 
-
+	
+	public int incrementRandomSeed() {
+		randomSeed++;
+		random.setSeed(randomSeed);
+		return randomSeed;
+	}
+	
+	
     //                                            ⌠t' -α(t-t')
     // ∂ψ/∂t = -M(-R²∇²ψ + 2εψ + 4ψ³ - h) + η + λ⎮ e         ψ(t') dt'
     //                                            ⌡t=0

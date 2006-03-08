@@ -12,7 +12,7 @@ public class Langevin1DApp2 extends Job {
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);
 	
 //	LangevinDroplet2 droplet = new LangevinDroplet2();
-	Langevin1D2 sim = new Langevin1D2(), oldsim, oldoldsim;
+	Langevin1D2 sim, origsim;
 	
 	double equilibrationTime = 5;
 	// range of time for which to collect nucleating droplets
@@ -20,9 +20,12 @@ public class Langevin1DApp2 extends Job {
 	// average difference between crude nucleation time, and real nucleation time
 	public double overshootEstimate;
 	
+	public volatile boolean flagSave = false;
+	
 	
 	public static void main(String[] args) {
-		new Control(new Langevin1DApp2(), "Langevin Simulation");
+		Control c = new Control(new Langevin1DApp2(), "Langevin Simulation");
+		c.addButton("Save Sim", "flagSave");
 	}
 	
 	
@@ -86,22 +89,21 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	void simulateUntilNucleation() {
-		while (sim.t < equilibrationTime) {
-			sim.h = -abs(sim.h);
-			sim.step();
-			yield();
-		}
-		
-		sim.h = abs(sim.h);
-		oldoldsim = oldsim = (Langevin1D2)sim.clone();
+		Langevin1D2 oldsim = sim.clone();
+		Langevin1D2 oldoldsim = oldsim;
 		
 		while (!sim.nucleated() && sim.t < highBound) {
 			sim.step();
 			yield();
 			
+			if (flagSave) {
+				System.out.println("flagged!");
+				flagSave = false;
+			}
+			
 			if (sim.t - oldsim.t > 4*overshootEstimate) {
 				oldoldsim = oldsim;
-				oldsim = (Langevin1D2)sim.clone();
+				oldsim = sim.clone();
 			}
 			
 			if (sim.nucleated()) {
@@ -112,7 +114,7 @@ public class Langevin1DApp2 extends Job {
 				*/
 				nucTimes.accum(2, sim.t);
 			}
-		}
+		}		
 	}
 	
 	
@@ -120,8 +122,9 @@ public class Langevin1DApp2 extends Job {
 		overshootEstimate	= params.fget("Intervention overshoot");
 		lowBound			= params.fget("Droplet low bound");
 		highBound			= params.fget("Droplet high bound");		
-		sim.initialize(params);
 		// droplet.initialize(params);
+		sim = new Langevin1D2();
+		sim.initialize(params);
 		
 		fieldPlot.setXRange(0, sim.L);
 		fieldPlot.setYRange(-0.7, 0.1);
@@ -130,10 +133,23 @@ public class Langevin1DApp2 extends Job {
 		addDisplay(fieldPlot);
 		addDisplay(nucTimes);
 		
+		while (sim.t < equilibrationTime) {
+			sim.h = -abs(sim.h);
+			sim.step();
+			yield();
+		}
+		sim.h = abs(sim.h);
+		origsim = sim;
+		
 		while (true) {
-			sim.initialize(params);
+			sim = origsim.clone();
+			
+			fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.ψ));
+			fieldPlot.setDataSet(1, new PointSet(0, sim.dx, sim.φ));
+			
 			simulateUntilNucleation();
-			params.set("Random seed", ++sim.randomSeed + "");			
+			
+			params.set("Random seed", ""+origsim.incrementRandomSeed());			
 		}
 	}
 	
