@@ -51,8 +51,8 @@ public class Accumulator implements DataSet {
 		accumAux(_hash, _binWidth, x, v);
 	}
 	
-	private static void accumAux(HashMap<Double, Double> h, double bw, double x, double v) {
-		bw = bw * (1 - 1e-12); // perturb bin width slightly to get consistent rounding
+	private static void accumAux(HashMap<Double,Double> h, double bw, double x, double v) {
+//		bw = bw * (1 - 1e-12); // perturb bin width slightly to get consistent rounding
 		double k = bw * floor(x/bw + 0.5); // why doesn't rint(x/bw) work??
 		Double obj = h.get(k);
 		double vp = (obj == null) ? 0 : obj;
