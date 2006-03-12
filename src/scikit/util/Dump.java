@@ -5,9 +5,23 @@ import java.io.IOException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+import java.awt.FileDialog;
 
 public class Dump {
-
+	
+	public static void saveDialog(java.awt.Component comp, String str, double[] data, int cols) {
+		for (; comp != null; comp = comp.getParent()) {
+			if (comp instanceof java.awt.Frame) {
+				FileDialog d = new FileDialog((java.awt.Frame)comp, "Save", FileDialog.SAVE);
+				d.setFile(str);
+				d.show();
+				String file  = d.getDirectory() + d.getFile();
+				doubleArray(file, data, cols);
+			}
+		}
+	}
+	
+	
     public static void doubleArray(String filename, double[] data, int cols) {
         try {
             File file = new File(filename);

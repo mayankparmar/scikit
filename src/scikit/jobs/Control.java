@@ -11,7 +11,6 @@ import java.awt.event.*;
 
 
 public class Control extends JPanel {
-	private JFrame _frame;
 	private Job _job;
 	private JPanel _buttonPanel;
 	private JButton _startStopButton;
@@ -50,17 +49,6 @@ public class Control extends JPanel {
 	}
 	
 	
-	public Control(Job job, String title) {
-		this(job);
-		_frame = new JFrame();
-		_frame.getContentPane().add(this);
-		_frame.setTitle(title);
-		_frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		_frame.pack();
-		_frame.setVisible(true);
-	}
-	
-	
 	public void addButton(String name, final String flag) {
 		try {		
 			final java.lang.reflect.Field field = _job.getClass().getField(flag);
@@ -77,8 +65,6 @@ public class Control extends JPanel {
 				}
 			});
 			_buttonPanel.add(b);
-			if (_frame != null)
-				_frame.pack();
 		} catch (NoSuchFieldException e) {
 			System.err.println("Unable to access flag '" + flag + "' in object " + _job);
 		} catch (SecurityException e) {

@@ -8,7 +8,7 @@ import scikit.jobs.*;
 
 public class PistonApp extends Job {
 	public static void main(String[] args) {
-		new Control(new PistonApp(), "Ideal Gas Simulation");
+		frame(new Control(new PistonApp()), "Ideal Gas Simulation");
 	}
 	
 	double[] pistonLine = new double[2];
