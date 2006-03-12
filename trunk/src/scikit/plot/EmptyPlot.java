@@ -16,6 +16,7 @@ import java.awt.Stroke;
 import java.awt.BasicStroke;
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -34,9 +35,6 @@ public class EmptyPlot extends JComponent {
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
 	private static Color PANEL_COLOR = new Color(0.96f, 0.95f, 0.99f);
 	
-	protected JFrame _frame;
-	private static int _frameStagger = 100;
-	
 	protected double DEFAULT_MIN = Double.POSITIVE_INFINITY;
 	protected double DEFAULT_MAX = Double.NEGATIVE_INFINITY;
 	
@@ -51,31 +49,23 @@ public class EmptyPlot extends JComponent {
 	private boolean _logscaleX = false, _logscaleY = false;
 	
 	
-	public EmptyPlot() {
+	public EmptyPlot(String title, boolean inFrame) {
 		addMouseListener(_mouseListener);
 		addMouseMotionListener(_mouseMotionListener);
 		setOpaque(true);
 		
 		_minX = _topMinX; _maxX = _topMaxX;
 		_minY = _topMinY; _maxY = _topMaxY;
-	}
-	
-	
-	public EmptyPlot(String title, boolean inFrame) {
-		this();
 		
 		if (inFrame) {
-			_frame = new JFrame();
-			_frame.getContentPane().add(this);
-			_frame.setSize(300, 300);
-			_frame.setLocation(_frameStagger, _frameStagger);
-			_frame.setTitle(title);
-			_frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			_frame.setVisible(true);
-			_frameStagger += 60;
+			scikit.jobs.Job.frame(this, title);
 		}
 	}
 	
+	
+	public Dimension getPreferredSize() {
+		return new Dimension(300, 300);
+	}
 	
 	synchronized public void setXRange(double minX, double maxX) {
 		_topMinX = _minX = minX;

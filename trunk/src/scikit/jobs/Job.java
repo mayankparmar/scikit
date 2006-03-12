@@ -3,7 +3,6 @@ package scikit.jobs;
 
 import scikit.plot.Display;
 import java.util.Vector;
-import javax.swing.JFrame;
 
 
 public abstract class Job implements Runnable {
@@ -127,6 +126,21 @@ public abstract class Job implements Runnable {
 			killRequested = false;
 			throw new ThreadDeath();
 		}
+	}
+	
+	
+	static int _frameStagger = 100;
+	
+	public static javax.swing.JFrame frame(javax.swing.JComponent comp, String title) {
+		javax.swing.JFrame frame = new javax.swing.JFrame();
+		frame.getContentPane().add(comp);
+		frame.setTitle(title);
+		frame.setLocation(_frameStagger, _frameStagger);		
+		frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		frame.pack();
+		frame.setVisible(true);
+		_frameStagger += 60;		
+		return frame;
 	}
 	
 	

@@ -8,8 +8,8 @@ import scikit.jobs.*;
 
 
 public class Langevin1DApp2 extends Job {
-	Plot fieldPlot = new Plot("Fields", true);
-	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);
+	Plot fieldPlot = new Plot("Fields", false);
+	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, false);
 	
 //	LangevinDroplet2 droplet = new LangevinDroplet2();
 	Langevin1D2 sim, origsim;
@@ -24,8 +24,13 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public static void main(String[] args) {
-		Control c = new Control(new Langevin1DApp2(), "Langevin Simulation");
+		Langevin1DApp2 app = new Langevin1DApp2();
+		frame(app.fieldPlot, "Fields");
+		frame(app.nucTimes, "Nucleation Times");
+		
+		Control c = new Control(app);
 		c.addButton("Save Sim", "flagSave");
+		frame(c, "Langevin Simulation");
 	}
 	
 	
@@ -62,11 +67,11 @@ public class Langevin1DApp2 extends Job {
 */		
 	}
 	
-	
+/*	
 	public Langevin1DApp2(Parameters params) {
 		this.params = params;
 	}
-	
+*/	
 	
 	public void animate() {
 		nucTimes.setBinWidth(2, params.fget("Bin width"));
@@ -97,7 +102,8 @@ public class Langevin1DApp2 extends Job {
 			yield();
 			
 			if (flagSave) {
-				System.out.println("flagged!");
+				origsim = sim.clone();
+				nucTimes.clear();
 				flagSave = false;
 			}
 			
@@ -143,7 +149,6 @@ public class Langevin1DApp2 extends Job {
 		
 		while (true) {
 			sim = origsim.clone();
-			
 			fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.ψ));
 			fieldPlot.setDataSet(1, new PointSet(0, sim.dx, sim.φ));
 			

@@ -48,13 +48,13 @@ public class Plot extends EmptyPlot implements Display {
 	public enum Style {LINES, MARKS, BARS};
 	
 	protected JPopupMenu _popup;
-	protected FileDialog _dialog;
+//	protected FileDialog _dialog;
 	
 	
 	public Plot(String title, boolean frame) {
 		super(title, frame);
 		_popup = new JPopupMenu();
-		_dialog = new FileDialog(_frame, "Save", FileDialog.SAVE);
+//		_dialog = new FileDialog(frame, "Save", FileDialog.SAVE);
 	}
 	
 	
@@ -302,15 +302,16 @@ public class Plot extends EmptyPlot implements Display {
 		return cnt;
 	}
 	
-	
 	private void saveDataset(DataSet data, String str) {
+		scikit.util.Dump.saveDialog(this, str, data.copyData(), 2);
+/*
 		double[] buf = data.copyData();
 		_dialog.setFile(str);
 		_dialog.show();
 		String file  = _dialog.getDirectory() + _dialog.getFile();
 		scikit.util.Dump.doubleArray(file, buf, 2);
+*/
 	}
-	
 	
 	private void fillPopup() {
 		_popup.removeAll();
@@ -321,9 +322,11 @@ public class Plot extends EmptyPlot implements Display {
 				final String str = "Dataset" + cnt;
 				JMenuItem menuItem = new JMenuItem("Save " + str + "...");
 				menuItem.setForeground(_colors[i]);
+				final Plot p = this;
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						saveDataset(dataSet, str);
+//						scikit.util.Dump.saveDialog(super, str, dataSet.copyData(), 2);
 					}
 				});
 				_popup.add(menuItem);
