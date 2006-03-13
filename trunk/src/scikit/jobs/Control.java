@@ -5,6 +5,7 @@ import scikit.plot.Display;
 import static java.lang.Math.*;
 import java.util.Vector;
 import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -26,26 +27,11 @@ public class Control extends JPanel {
 		_defaults = job.params.values();
 		
 		JComponent paramPane = createParameterPane();
-		
-		_buttonPanel = new JPanel();
-		JButton b1, b2, b3, b4;
-		b1 = new JButton("Start");
-		b2 = new JButton("Step");
-		b3 = new JButton("Reset");
-		b1.addActionListener(_actionListener);
-		b2.addActionListener(_actionListener);
-		b3.addActionListener(_actionListener);
-		_buttonPanel.add(b1);
-		_buttonPanel.add(b2);
-		_buttonPanel.add(b3);
+		createButtonPanel();
 		
 		setLayout(new BorderLayout());
 		add(paramPane, BorderLayout.CENTER);
 		add(_buttonPanel, BorderLayout.SOUTH);
-		
-		_startStopButton = b1;
-		_stepButton = b2;
-		_resetButton = b3;
 	}
 	
 	
@@ -105,6 +91,26 @@ public class Control extends JPanel {
 	};
 	
 	
+	private void createButtonPanel() {
+		_buttonPanel = new JPanel();
+		JButton b1, b2, b3, b4;
+		b1 = new JButton("Start");
+		b2 = new JButton("Step");
+		b3 = new JButton("Reset");
+		b1.addActionListener(_actionListener);
+		b2.addActionListener(_actionListener);
+		b3.addActionListener(_actionListener);
+		_buttonPanel.add(b1);
+		_buttonPanel.add(b2);
+		_buttonPanel.add(b3);
+		_buttonPanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		
+		_startStopButton = b1;
+		_stepButton = b2;
+		_resetButton = b3;		
+	}
+	
+	
 	private JComponent createParameterPane () {
 		GridBagLayout grid = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
@@ -140,8 +146,21 @@ public class Control extends JPanel {
 			
 			c.gridy++;
 		}
+
 		
-		return new JScrollPane(panel);
+		panel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));	
+		panel.setBackground(new Color(0.9f, 0.9f, 0.9f));
+		JScrollPane scrollPane = new JScrollPane(panel);
+		scrollPane.setBackground(Color.GRAY);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+/*
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
+             BorderFactory.createEmptyBorder(10,10,10,10),
+             BorderFactory.createBevelBorder(BevelBorder.RAISED)
+		));
+*/
+
+		return scrollPane;		
 	}
 }
 

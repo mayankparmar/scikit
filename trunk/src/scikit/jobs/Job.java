@@ -146,7 +146,11 @@ public abstract class Job implements Runnable {
 	
 	//
 	// To be implemented by subclass
-	//	
+	//
+	
+	public static Job initApplet(javax.swing.JApplet applet) {
+		return null;
+	}
 	
 	public void animate() {
 	}
