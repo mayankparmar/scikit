@@ -5,6 +5,7 @@ import static java.lang.Math.*;
 import scikit.plot.*;
 import scikit.jobs.*;
 
+import java.awt.*;
 
 
 public class Langevin1DApp2 extends Job {
@@ -24,13 +25,32 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public static void main(String[] args) {
-		Langevin1DApp2 app = new Langevin1DApp2();
-		frame(app.fieldPlot, "Fields");
-		frame(app.nucTimes, "Nucleation Times");
+		Langevin1DApp2 job = new Langevin1DApp2();
+		frame(job.fieldPlot, "Fields");
+		frame(job.nucTimes, "Nucleation Times");
 		
-		Control c = new Control(app);
+		Control c = new Control(job);
 		c.addButton("Save Sim", "flagSave");
 		frame(c, "Langevin Simulation");
+	}
+	
+	
+	public static Job initApplet(javax.swing.JApplet applet) {
+		Langevin1DApp2 job = new Langevin1DApp2();
+		
+		applet.setLayout(new BorderLayout());
+		applet.add(new Control(job), BorderLayout.EAST);
+		
+		job.fieldPlot.setBorder(javax.swing.BorderFactory.createLineBorder(Color.GRAY));
+		job.nucTimes.setBorder(javax.swing.BorderFactory.createLineBorder(Color.GRAY));
+		
+		Panel p = new Panel();
+		p.setLayout(new GridLayout(2, 1));
+		p.add(job.fieldPlot);
+		p.add(job.nucTimes);
+		applet.add(p, BorderLayout.CENTER);
+		
+		return job;
 	}
 	
 	
