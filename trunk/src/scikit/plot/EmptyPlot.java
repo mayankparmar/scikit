@@ -31,7 +31,7 @@ import java.awt.font.TextAttribute;
 
 public class EmptyPlot extends JComponent {	
 	private static int FONT_SIZE = 12;
-	private static int MARGIN = 25;
+	private static int MARGIN = 6;
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
 	private static Color PANEL_COLOR = new Color(0.96f, 0.95f, 0.99f);
 	
@@ -197,8 +197,8 @@ public class EmptyPlot extends JComponent {
 		g.setColor(Color.BLACK);
 		
 		for (double tick : getTicks(_minX, _maxX, _bound.width*TICKS_PER_PIXEL)) {
-			// if ((tick - _minX) / (_maxX - _minX) < 0.02)
-			//	continue;
+			if ((tick - _minX) / (_maxX - _minX) < 0.05)
+				continue;
 			int x = (int)round(xToPix(tick));
 			int y = (int)round(yToPix(_minY));
 			g.rotate(-PI/2);
@@ -207,6 +207,8 @@ public class EmptyPlot extends JComponent {
 			g.rotate(PI/2);
 		}
 		for (double tick : getTicks(_minY, _maxY, _bound.height*TICKS_PER_PIXEL)) {
+			if ((tick - _minY) / (_maxY - _minY) < 0.05)
+				continue;
 			int x = (int)round(xToPix(_minX));
 			int y = (int)round(yToPix(tick));
 			as = tickToAttributedString(tick, _maxY-_minY);
@@ -253,9 +255,8 @@ public class EmptyPlot extends JComponent {
 		paintTicks(g);
 		paintData(g);
 		paintSelection(g);
-		g.setClip(0, 0, w, h);
-		
 		paintLabels(g);
+		g.setClip(0, 0, w, h);
 	}
 	
 	
