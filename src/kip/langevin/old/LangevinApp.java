@@ -1,4 +1,4 @@
-package kip;
+package kip.langevin.old;
 
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.frames.*;

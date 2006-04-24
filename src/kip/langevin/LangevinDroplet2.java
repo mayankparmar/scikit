@@ -1,4 +1,4 @@
-package kip.next;
+package kip.langevin;
 /*
 import org.opensourcephysics.controls.SimControl;
 import org.opensourcephysics.frames.*;
