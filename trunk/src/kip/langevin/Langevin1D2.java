@@ -1,4 +1,4 @@
-package kip.next;
+package kip.langevin;
 
 import static java.lang.Math.*;
 
