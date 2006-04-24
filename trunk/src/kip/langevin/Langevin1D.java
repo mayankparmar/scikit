@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 import scikit.jobs.Parameters;
 import kip.util.Random;
 
-public class Langevin1D2 implements Cloneable {
+public class Langevin1D implements Cloneable {
     public int N;
     public double[] ψ, φ;
     public double L, dx, R2, h, ε, λ, alpha, Γ, t, dt;
@@ -17,9 +17,9 @@ public class Langevin1D2 implements Cloneable {
     double[] ψnew;
     
     
-    public Langevin1D2 clone() {
+    public Langevin1D clone() {
         try {
-            Langevin1D2 c = (Langevin1D2)super.clone();
+            Langevin1D c = (Langevin1D)super.clone();
             c.ψ = (double[])ψ.clone();
             c.φ = (double[])φ.clone();
             c.ψnew = new double[N];

@@ -8,12 +8,12 @@ import scikit.jobs.*;
 import java.awt.*;
 
 
-public class Langevin1DApp2 extends Job {
+public class Langevin1DApp extends Job {
 	Plot fieldPlot = new Plot("Fields", false);
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, false);
 	
 //	LangevinDroplet2 droplet = new LangevinDroplet2();
-	Langevin1D2 sim, origsim;
+	Langevin1D sim, origsim;
 	
 	double equilibrationTime = 5;
 	// range of time for which to collect nucleating droplets
@@ -25,7 +25,7 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public static void main(String[] args) {
-		Langevin1DApp2 job = new Langevin1DApp2();
+		Langevin1DApp job = new Langevin1DApp();
 		frame(job.fieldPlot, "Fields");
 		frame(job.nucTimes, "Nucleation Times");
 		
@@ -36,7 +36,7 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	public static Job initApplet(javax.swing.JApplet applet) {
-		Langevin1DApp2 job = new Langevin1DApp2();
+		Langevin1DApp job = new Langevin1DApp();
 		
 		applet.setLayout(new BorderLayout());
 		applet.add(new Control(job), BorderLayout.EAST);
@@ -54,7 +54,7 @@ public class Langevin1DApp2 extends Job {
 	}
 	
 	
-	public Langevin1DApp2() {
+	public Langevin1DApp() {
 		params.add("Intervention overshoot", 10.0, false);
 		params.add("Droplet low bound", 10000.0, false);
 		params.add("Droplet high bound", 10000.0, false);
@@ -88,7 +88,7 @@ public class Langevin1DApp2 extends Job {
 	}
 	
 /*	
-	public Langevin1DApp2(Parameters params) {
+	public Langevin1DApp(Parameters params) {
 		this.params = params;
 	}
 */	
@@ -114,8 +114,8 @@ public class Langevin1DApp2 extends Job {
 	
 	
 	void simulateUntilNucleation() {
-		Langevin1D2 oldsim = sim.clone();
-		Langevin1D2 oldoldsim = oldsim;
+		Langevin1D oldsim = sim.clone();
+		Langevin1D oldoldsim = oldsim;
 		
 		while (!sim.nucleated() && sim.t < highBound) {
 			sim.step();
@@ -149,7 +149,7 @@ public class Langevin1DApp2 extends Job {
 		lowBound			= params.fget("Droplet low bound");
 		highBound			= params.fget("Droplet high bound");		
 		// droplet.initialize(params);
-		sim = new Langevin1D2();
+		sim = new Langevin1D();
 		sim.initialize(params);
 		
 		fieldPlot.setXRange(0, sim.L);

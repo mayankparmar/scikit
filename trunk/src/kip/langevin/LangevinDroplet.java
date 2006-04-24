@@ -5,7 +5,7 @@ import org.opensourcephysics.frames.*;
 import static java.lang.Math.*;
 
 */
-public class LangevinDroplet2 {
+public class LangevinDroplet {
 /*
     PlotFrame dropletPlot = new PlotFrame("x", "droplet fields", "Critical Droplet");
 
