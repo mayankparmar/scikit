@@ -30,8 +30,8 @@ public class Plot extends EmptyPlot implements Display {
 	private static final int MAX_DATA_POINTS = 100;
 	private static final double AUTOSCALE_SLOP = 0.1;
 	
-	private boolean _autoScale = true;
-	private boolean _invalidView = true; // view will be completely auto-scaled in next animation() call
+	private boolean _autoScale = true;		// automatically expand view bounds to fit data
+	private boolean _invalidView = false;	// flags reset of view bounds before next display
 	
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
 	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
@@ -48,13 +48,11 @@ public class Plot extends EmptyPlot implements Display {
 	public enum Style {LINES, MARKS, BARS};
 	
 	protected JPopupMenu _popup;
-//	protected FileDialog _dialog;
 	
 	
 	public Plot(String title, boolean frame) {
 		super(title, frame);
 		_popup = new JPopupMenu();
-//		_dialog = new FileDialog(frame, "Save", FileDialog.SAVE);
 	}
 	
 	
@@ -87,7 +85,7 @@ public class Plot extends EmptyPlot implements Display {
 		int i = 0;
 		for (DataSet dataSet : _dataSets)
 			_dataBuffer[i++] = (dataSet == null ? null : dataSet.copyData());
-		if (_autoScale || _invalidView) {
+		if (_autoScale) {
 			autoScaleBounds();
 		}
 		repaint();
@@ -126,6 +124,7 @@ public class Plot extends EmptyPlot implements Display {
 		double maxX = Double.NEGATIVE_INFINITY;
 		double minY = hasBars() ? 0 : Double.POSITIVE_INFINITY;
 		double maxY = hasBars() ? 0 : Double.NEGATIVE_INFINITY;
+		boolean hasData = false;
 		
 		for (DataSet dataSet : _dataSets) {
 			if (dataSet == null) continue;
@@ -135,18 +134,21 @@ public class Plot extends EmptyPlot implements Display {
 				maxX = max(maxX, data[i+0]);
 				minY = min(minY, data[i+1]);
 				maxY = max(maxY, data[i+1]);
+				hasData = true;
 			}
 		}
-		
 		double w = maxX - minX;
 		double h = maxY - minY;
-		boolean hasData = w > 0 && h > 0;
+		
+		if (!hasData || _invalidView) {
+			// create impossible (infinite) ranges, which are guaranteed to be
+			// overridden later
+			setXRange(DEFAULT_MIN, DEFAULT_MAX);
+			setYRange(DEFAULT_MIN, DEFAULT_MAX);
+			_invalidView = false;
+		}
+		
 		if (hasData) {
-			if (_invalidView) {
-				setXRange(DEFAULT_MIN, DEFAULT_MAX);
-				setYRange(DEFAULT_MIN, DEFAULT_MAX);
-				_invalidView = false;
-			}
 			if (minX < _topMinX && minX < _minX) {
 				_topMinX = minX - AUTOSCALE_SLOP*w;
 				resetViewWindow();
@@ -163,11 +165,6 @@ public class Plot extends EmptyPlot implements Display {
 				_topMaxY = maxY + AUTOSCALE_SLOP*h;
 				resetViewWindow();
 			}
-		}
-		else if (_autoScale) {
-			setXRange(DEFAULT_MIN, DEFAULT_MAX);
-			setYRange(DEFAULT_MIN, DEFAULT_MAX);
-			_invalidView = true;
 		}
 	}
 	
@@ -304,13 +301,6 @@ public class Plot extends EmptyPlot implements Display {
 	
 	private void saveDataset(DataSet data, String str) {
 		scikit.util.Dump.saveDialog(this, str, data.copyData(), 2);
-/*
-		double[] buf = data.copyData();
-		_dialog.setFile(str);
-		_dialog.show();
-		String file  = _dialog.getDirectory() + _dialog.getFile();
-		scikit.util.Dump.doubleArray(file, buf, 2);
-*/
 	}
 	
 	private void fillPopup() {
@@ -326,7 +316,6 @@ public class Plot extends EmptyPlot implements Display {
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						saveDataset(dataSet, str);
-//						scikit.util.Dump.saveDialog(super, str, dataSet.copyData(), 2);
 					}
 				});
 				_popup.add(menuItem);
