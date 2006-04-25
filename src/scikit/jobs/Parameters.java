@@ -57,6 +57,14 @@ public class Parameters implements Cloneable {
 		get(key).set(value);
 	}
 	
+	public void set(String key, double value) {
+		set(key, ""+value);
+	}
+	
+	public void set(String key, int value) {
+		set(key, ""+value);
+	}
+	
 	public double fget(String key) {
 		return get(key).fget();
 	}
