@@ -23,7 +23,10 @@ public class SpinBlocks1D implements Cloneable {
     }
 	
 	
-	public SpinBlocks1D(int L, int R) {
+	// L is the system size
+	// 2*R+1 is the number of spin in the interaction range.
+	// initialize all spins up in direction dir = ±1
+	public SpinBlocks1D(int L, int R, int dir) {
 		this.L = L;
 		this.R = R;
 		indexer = new SpinBlockIndexer(L, R);
@@ -35,7 +38,7 @@ public class SpinBlocks1D implements Cloneable {
 			int blockLen = 1 << scale;
 			blocks[scale] = new int[L/blockLen];
 			for (int x = 0; x < L/blockLen; x++) {
-				blocks[scale][x] = blockLen;
+				blocks[scale][x] = dir*blockLen; // every block is completely filled in direction dir
 			}
 		}
 	}

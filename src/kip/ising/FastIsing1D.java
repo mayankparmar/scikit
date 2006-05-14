@@ -46,7 +46,7 @@ public class FastIsing1D implements Cloneable {
 		tL = 0;
 		int spinsInRange = 2*R;
 		J = 2.0 / spinsInRange;
-		spins = new SpinBlocks1D(L, R);
+		spins = new SpinBlocks1D(L, R, 1);
 	}
 	
 	
