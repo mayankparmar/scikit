@@ -16,11 +16,16 @@ public class Value {
 	protected boolean _locked = false;
 	protected boolean _auxiliaryEditor = false;
 	protected String _v;
+	protected String _default;
 	
 	
 	public Value(String v, boolean lockable) {
-		_v = v;
+		_v = _default = v;
 		_lockable = lockable;
+	}
+	
+	public String getDefault() {
+		return _default;
 	}
 	
 	public String sget() {
@@ -62,6 +67,18 @@ public class Value {
 		_auxiliaryEditor = true;
 	}
 	
+	public JComponent createView() {
+		final JLabel label = new JLabel(sget(), SwingConstants.RIGHT);
+		addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				label.setText(sget());
+			}
+		});
+		Dimension d = label.getPreferredSize();
+		d.width = Math.max(d.width, 80);
+		label.setPreferredSize(d);
+		return label;
+	}
 	
 	public JComponent createEditor() {
 		final JTextField field = new JTextField(sget());

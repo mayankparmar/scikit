@@ -16,15 +16,10 @@ public class Control extends JPanel {
 	private JPanel _buttonPanel;
 	private JButton _startStopButton;
 	private JButton _stepButton;	
-	private JButton _resetButton;
-	private String[] _keys;
-	private String[] _defaults;
-	
+	private JButton _resetButton;	
 	
 	public Control(Job job) {
 		_job = job;
-		_keys = job.params.keys();
-		_defaults = job.params.values();
 		
 		JComponent paramPane = createParameterPane();
 		createButtonPanel();
@@ -82,10 +77,10 @@ public class Control extends JPanel {
 				_startStopButton.setLabel("Start");
 				_resetButton.setLabel("Defaults");
 				_stepButton.setEnabled(true);
+				_job.outputs.setDefaults();
 			}
 			if (str.equals("Defaults")) {
-				for (int i = 0; i < _keys.length; i++)
-					_job.params.set(_keys[i], _defaults[i]);
+				_job.params.setDefaults();
 			}
 		}
 	};
@@ -121,6 +116,7 @@ public class Control extends JPanel {
 		c.gridy = 0;
 		c.insets = new Insets(2, 2, 2, 2);
 		
+		// add parameters
 		for (final String k : _job.params.keys()) {
 			JLabel label = new JLabel(k + ":", SwingConstants.RIGHT);
 			c.gridx = 0;
@@ -129,7 +125,7 @@ public class Control extends JPanel {
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
-			Value v = _job.params.get(k);
+			Value v = _job.params.getValue(k);
 			JComponent field = v.createEditor();
 			c.gridx = 1;
 			c.weightx = 1;
@@ -143,6 +139,26 @@ public class Control extends JPanel {
 				grid.setConstraints(slider, c);
 				panel.add(slider);
 			}
+			
+			c.gridy++;
+		}
+		
+		// add outputs
+		for (final String k : _job.outputs.keys()) {
+			JLabel label = new JLabel(k + ":", SwingConstants.RIGHT);
+			c.gridx = 0;
+			c.weightx = 0;
+			c.gridwidth = 1;
+			grid.setConstraints(label, c);
+			panel.add(label);
+			
+			Value v = _job.outputs.getValue(k);
+			JComponent field = v.createView();
+			c.gridx = 1;
+			c.weightx = 1;
+			c.gridwidth = GridBagConstraints.REMAINDER;
+			grid.setConstraints(field, c);
+			panel.add(field);
 			
 			c.gridy++;
 		}
