@@ -66,11 +66,21 @@ public class Parameters implements Cloneable {
 	}
 	
 	public double fget(String key) {
-		return get(key).fget();
+		Value v = get(key);
+		try {
+			return v.fget();
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'float'");
+		}
 	}
 	
 	public int iget(String key) {
-		return get(key).iget();
+		Value v = get(key);
+		try {
+			return v.iget();
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'int'");
+		}
 	}
 	
 	public String sget(String key) {
