@@ -16,45 +16,38 @@ public class Parameters implements Cloneable {
 		_job = job;
 	}
 	
-	synchronized public String[] keys() {
-		return keys.toArray(new String[]{});
+	public void setDefaults() {
+		for (String k : keys) {
+			set(k, getValue(k).getDefault());
+		}
 	}
 	
-	public String[] values() {
-		String[] ret = new String[keys.size()];
-		for (int i = 0; i < ret.length; i++)
-			ret[i] = sget(keys.get(i));
-		return ret;
+	public void add(String key) {
+		_addValue(key, new Value("-", true));
 	}
-	
 	
 	public void add(String key, int value, boolean lockable) {
-		keys.add(key);
-		put(key, new IntValue(value, lockable));
+		_addValue(key, new IntValue(value, lockable));
 	}
 	
 	public void add(String key, double value, boolean lockable) {
-		keys.add(key);
-		put(key, new DoubleValue(value, lockable));		
+		_addValue(key, new DoubleValue(value, lockable));		
 	}
 	
 	public void add(String key, int value, int lo, int hi, boolean lockable) {
-		keys.add(key);
-		put(key, new IntValue(value, lo, hi, lockable));
+		_addValue(key, new IntValue(value, lo, hi, lockable));
 	}
 	
 	public void add(String key, double value, double lo, double hi, boolean lockable) {
-		keys.add(key);
-		put(key, new DoubleValue(value, lo, hi, lockable));		
+		_addValue(key, new DoubleValue(value, lo, hi, lockable));		
 	}
 	
 	public void add(String key, String value, boolean lockable) {
-		keys.add(key);
-		put(key, new Value(value, lockable));		
+		_addValue(key, new Value(value, lockable));		
 	}
 	
 	public void set(String key, String value) {
-		get(key).set(value);
+		getValue(key).set(value);
 	}
 	
 	public void set(String key, double value) {
@@ -66,7 +59,7 @@ public class Parameters implements Cloneable {
 	}
 	
 	public double fget(String key) {
-		Value v = get(key);
+		Value v = getValue(key);
 		try {
 			return v.fget();
 		} catch (IllegalArgumentException e) {
@@ -75,7 +68,7 @@ public class Parameters implements Cloneable {
 	}
 	
 	public int iget(String key) {
-		Value v = get(key);
+		Value v = getValue(key);
 		try {
 			return v.iget();
 		} catch (IllegalArgumentException e) {
@@ -84,36 +77,39 @@ public class Parameters implements Cloneable {
 	}
 	
 	public String sget(String key) {
-		return get(key).sget();
+		return getValue(key).sget();
 	}
 	
 	public void enableSlider(String key) {
-		get(key).enableAuxiliaryEditor();
+		getValue(key).enableAuxiliaryEditor();
 	}
 	
 	public void setLocked(boolean locked) {
 		for (String k : keys) {
-			get(k).setLocked(locked);
+			getValue(k).setLocked(locked);
 		}
 	}
 	
 	
-	synchronized private void put(String key, Value value) {
-		if (!map.containsKey(key)) {
-			value.addChangeListener(new ChangeListener() {
-				public void stateChanged(ChangeEvent e) {
-					if (_job != null)
-						_job.wakeProcess();
-				}
-			});
-		}
-		map.put(key, value);
+	synchronized public String[] keys() {
+		return keys.toArray(new String[]{});
 	}
 	
-	synchronized public Value get(String key) {
+	synchronized public Value getValue(String key) {
 		if (!map.containsKey(key))
 			throw new IllegalArgumentException("Parameter '"+key+"' does not exist.");
 		return map.get(key);
+	}
+	
+	synchronized private void _addValue(String key, Value value) {
+		value.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (_job != null)
+					_job.wakeProcess();
+			}
+		});
+		keys.add(key);	
+		map.put(key, value);
 	}
 }
 
