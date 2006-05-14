@@ -100,9 +100,15 @@ public class Control extends JPanel {
 		_buttonPanel.add(b3);
 		_buttonPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 		
+		// Extend size of "Reset" a little bit so that when it switches
+		// to "Default", it won't have to expand
+		Dimension d = b3.getPreferredSize();
+		d.width = 110 * d.width / 100;
+		b3.setPreferredSize(d);
+		
 		_startStopButton = b1;
 		_stepButton = b2;
-		_resetButton = b3;		
+		_resetButton = b3;
 	}
 	
 	
