@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 
-<project name="osp" default="all" basedir="./">
+<project name="osp" default="compile" basedir="./">
 	<property name="retroweaver.home" value="../retroweaver"/>
     <property name="build.dir" value="./build/"/>
     <property name="classes.dir" value="${build.dir}/classes/"/>
@@ -37,15 +37,21 @@
 				excludes="**/excludes/**"
 				source="1.5" classpath="./osp.jar:./bsh-2.0b4.jar"> 
 			<!-- <compilerarg value="-warnunchecked"/> -->
-			<compilerarg value="-version"/>
+			<!-- <compilerarg value="-version"/> -->
+			<!-- <compilerarg value="-Xlint"/> -->
 		</javac>
     </target>
 	
-	<!-- scikit jar file -->
-	<target name="scikit" depends="compile">
+	<!-- build jar files -->
+	<target name="jars" depends="compile">
 		<jar jarfile="${jar.dir}scikit.jar"
 			basedir="${classes.dir}"
 			includes="scikit/**">
+		</jar>
+		
+		<jar jarfile="${jar.dir}kip.jar"
+			basedir="${classes.dir}"
+			includes="scikit/** kip/**">
 		</jar>
 	</target>
 	
