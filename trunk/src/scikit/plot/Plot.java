@@ -28,7 +28,8 @@ import java.awt.FileDialog;
 public class Plot extends EmptyPlot implements Display {
 	private static final int NUM_DATA_SETS = 8;
 	private static final int MAX_DATA_POINTS = 100;
-	private static final double AUTOSCALE_SLOP = 0.1;
+	private static final double AUTOSCALE_SLOP = 0.10;		// extend view 10% on rescale
+	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bounds
 	
 	private boolean _autoScale = true;		// automatically expand view bounds to fit data
 	private boolean _invalidView = false;	// flags reset of view bounds before next display
@@ -148,20 +149,23 @@ public class Plot extends EmptyPlot implements Display {
 			_invalidView = false;
 		}
 		
+		double dx = AUTOSCALE_NEARNESS*w;
+		double dy = AUTOSCALE_NEARNESS*h;
+		
 		if (hasData) {
-			if (minX < _topMinX && minX < _minX) {
+			if (minX-dx < _topMinX && minX-dx < _minX) {
 				_topMinX = minX - AUTOSCALE_SLOP*w;
 				resetViewWindow();
 			}
-			if (maxX > _topMaxX && maxX > _maxX) {
+			if (maxX+dx > _topMaxX && maxX+dx > _maxX) {
 				_topMaxX = maxX + AUTOSCALE_SLOP*w;
 				resetViewWindow();
 			}
-			if (minY < _topMinY && minY < _minY) {
+			if (minY-dy < _topMinY && minY-dy < _minY) {
 				_topMinY = minY - AUTOSCALE_SLOP*h;
 				resetViewWindow();
 			}
-			if (maxY > _topMaxY && maxY > _maxY) {
+			if (maxY+dy > _topMaxY && maxY+dy > _maxY) {
 				_topMaxY = maxY + AUTOSCALE_SLOP*h;
 				resetViewWindow();
 			}
