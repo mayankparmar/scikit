@@ -7,8 +7,8 @@ import kip.util.Random;
 
 abstract class Dynamics1D implements Cloneable {
 	public double[]			ψ;
-	public Random			random = new Random();
 	private int[]			_ψnet; // helper array for spin systems
+	public Random			random = new Random();
 	private Dynamics1D		old;
 	protected double		memoryTime = 1;
  		
@@ -16,7 +16,9 @@ abstract class Dynamics1D implements Cloneable {
 	public Dynamics1D clone() {
         try {
             Dynamics1D c = (Dynamics1D)super.clone();
-            c.ψ = (double[])ψ.clone();
+            c.ψ = ψ.clone();
+			if (_ψnet != null)
+				c._ψnet = _ψnet.clone();
             c.random = (Random)random.clone();
             return c;
         } catch (Exception e) {
@@ -26,16 +28,16 @@ abstract class Dynamics1D implements Cloneable {
 	
 	
 	public Dynamics1D simulationAtTime(double t) {
-		if (time() > t) {
+		if (t < time()) {
 			if (old == null)
 				throw new IllegalArgumentException();
 			else
 				return old.simulationAtTime(t);
 		}
 		else {
-			assert(time() < t);
+			assert(time() <= t);
 			Dynamics1D c = clone();
-			_runUntil(t);
+			c._runUntil(t);
 			return c;
 		}
 	}
@@ -99,32 +101,57 @@ abstract class Dynamics1D implements Cloneable {
 	}
 	
 	
-	private double regionMagnetization(int x, int testLen) {
-		double acc = 0;
-		int L = ψ.length;
-		for (int i = x-testLen; i <= x+testLen; i++)
-			acc += ψ[(i+L)%L];
-		return acc / (2*testLen+1);
+	private int findGrowthRadius(int x) {
+		// possibilities for improvement:
+		// a) dynamically find width
+		// b) feed in information about known solution
+		return ψ.length / 32;
 	}
 	
 	
-	private double testNucleationAtTime(double t, double testDt, int x, int testLen) {
+	private double magnetization() {
+		double acc = 0;
+		for (int i = 0; i < ψ.length; i++)
+			acc += ψ[i];
+		return acc / ψ.length;
+	}
+	
+	
+	private double regionMagnetization(int x, int testRadius) {
+		double acc = 0;
+		int L = ψ.length;
+		for (int i = x-testRadius; i <= x+testRadius; i++)
+			acc += ψ[(i+L)%L];
+		return acc / (2*testRadius+1);
+	}
+	
+	
+	// negative number means growth; nucleation occurred earlier
+	// positive number means loss; nucleation occurred later
+	private double testNucleationAtTime(double t, double testDt, int x, int testRadius) {
 		Dynamics1D sim = simulationAtTime(t);
+		
+		System.out.println("plotting");
+		Job.plot(0, sim.ψ);
+		
+		double magReference = sim.regionMagnetization(x, testRadius);
+		if (magReference < magnetization())
+			return +1;  // region is not even enhanced!
 		
 		final int TRIALS = 100;
 		double acc = 0;
 		for (int i = 0; i < TRIALS; i++) {
 			Dynamics1D c = sim.clone();
-			c.random.setSeed(random.nextLong() + System.currentTimeMillis());			
+			c.random.setSeed((long)(Math.random()*(1<<48)));
 			c._runUntil(sim.time()+testDt);
-			acc += c.regionMagnetization(x, testLen);
+			acc += c.regionMagnetization(x, testRadius);
 		}
 		
-		return sim.regionMagnetization(x, testLen) - acc/TRIALS;
+		return magReference - acc/TRIALS;
 	}
 	
 	
-	public double intervention(double testDt, int testLen) {
+	public double intervention(double testDt) {
 		if (!inGrowthMode())
 			throw new IllegalArgumentException();
 		
@@ -132,10 +159,14 @@ abstract class Dynamics1D implements Cloneable {
 		double hi = time();
 		 
 		int x = findGrowthCenter();
+		int testRadius = findGrowthRadius(x);
 		
 		while (hi - lo > testDt) {
 			double t = (lo + hi) / 2;
-			if (testNucleationAtTime(t, testDt, x, testLen) < 0)
+			System.out.println("t " + t);
+			double delta = testNucleationAtTime(t, testDt, x, testRadius);
+			System.out.println("delta " + delta);
+			if (delta < 0)
 				hi = t;
 			else
 				lo = t;
