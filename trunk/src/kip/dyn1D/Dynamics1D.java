@@ -44,6 +44,14 @@ abstract class Dynamics1D implements Cloneable {
 	
 	
 	public void step() {
+		if (old != null) {
+			assert (time() >= old.time());
+			if (old.old != null) {
+				assert (old.time() >= old.old.time());
+				assert (old.old.old == null);
+			}
+		}
+		
 		if (old == null)
 			old = clone();
 		_step();
@@ -54,10 +62,14 @@ abstract class Dynamics1D implements Cloneable {
 	}
 	
 	
-	abstract public void initialize(Parameters params);
+	public void initialize(Parameters params) {
+		old = null;
+	}
+	
+	
 	abstract public void setParameters(Parameters params);	
 	abstract public double time();
-	abstract protected void _step(); // step without saving state
+	abstract protected void _step(); // step without saving "old" sim copies
 	
 	// run without saving state
 	private void _runUntil(double t) {
