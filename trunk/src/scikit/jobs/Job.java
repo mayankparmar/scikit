@@ -6,6 +6,11 @@ import java.util.Vector;
 
 
 public abstract class Job implements Runnable {
+	class JobThread extends Thread {
+		public Job job;
+		public JobThread(Job _job) { super(_job); job = _job; }
+	}
+
 	private Thread _thread = null;
 	private long timerDelay = 50, updateThrottle = 0;
 	private long lastTimer, lastUpdate;
@@ -23,7 +28,7 @@ public abstract class Job implements Runnable {
 	public void start() {
 		stopRequested = false;
 		if (_thread == null) {
-			_thread = new Thread(this);
+			_thread = new JobThread(this);
 			_thread.start();
 			params.setLocked(true);
 		}
@@ -93,7 +98,7 @@ public abstract class Job implements Runnable {
 	// Called by subclass
 	//
 	
-	synchronized protected void yield() {
+	synchronized private void _yield() {
 		long time = System.currentTimeMillis();
 		
 		if (time - lastUpdate < updateThrottle) {
@@ -130,8 +135,36 @@ public abstract class Job implements Runnable {
 	}
 	
 	
-	static int _frameStagger = 100;
+	public static void yield() {
+		current()._yield();
+	}
 	
+	
+	// utility method for quickly viewing data.
+	private scikit.plot.Plot debugPlot;
+	public static void plot(int i, double[] data) {
+		Job j = current();
+		if (j.debugPlot == null) {
+			j.debugPlot = new scikit.plot.Plot("Debug : " + j.toString(), true);
+			j.addDisplay(j.debugPlot);
+		}
+		j.debugPlot.setDataSet(i, new scikit.plot.PointSet(0, 1, data));
+		// try to force an immediate repaint
+		j.debugPlot.animate();
+		Thread.yield();
+	}
+	
+	
+	public static Job current() {
+		Thread t = Thread.currentThread();
+		if (t instanceof JobThread)
+			return ((JobThread)t).job;
+		else
+			return null;
+	}
+	
+	
+	static int _frameStagger = 100;	
 	public static javax.swing.JFrame frame(javax.swing.JComponent comp, String title) {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		frame.getContentPane().add(comp);
