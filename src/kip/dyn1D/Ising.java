@@ -49,6 +49,8 @@ public class Ising extends Dynamics1D {
 	
 	// reset time, set random number seed, initialize fields to down
 	public void initialize(Parameters params) {
+		super.initialize(params);
+		
 		random.setSeed(params.iget("Random seed"));
 		setParameters(params);
 		
