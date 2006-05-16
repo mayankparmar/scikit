@@ -17,7 +17,7 @@ public class IsingApp extends Job {
 	}
 	
 	public IsingApp() {
-		params.add("Memory time", 1.0, true);
+		params.add("Memory time", 20.0, true);
 		params.add("N", 1 << 13, true);
 		params.add("R", 1 << 9, true);
 		params.add("Random seed", 0, false);
@@ -29,7 +29,6 @@ public class IsingApp extends Job {
 		outputs.add("time");
 		outputs.add("h_sp");
 		outputs.add("h_sp - h");
-		outputs.add("psi_sp");
 		outputs.add("psi_bg");
 	}
 	
@@ -51,28 +50,26 @@ public class IsingApp extends Job {
 		
 		outputs.set("h_sp", sim.T*h_sp);
 		outputs.set("h_sp - h", sim.T*dh);
-		outputs.set("psi_sp", psi_sp);
 		outputs.set("psi_bg", psi_bg);
 	}
 	
 	void simulateUntilNucleation() {
-		while (true) {
-			sim.step();
-			yield();
-		}
-/*		
 		while (!sim.inGrowthMode()) {
 			sim.step();
 			yield();
 		}
 		nucTimes.accum(2, sim.time());
-*/
+		
+		double t = sim.intervention(1.0);
+		System.out.println("found " + t + "\n");
+		Dynamics1D c = sim.simulationAtTime(t);
+		fieldPlot.setDataSet(1, new PointSet(0, sim.N/sim.ψ.length, c.ψ));
 	}
 	
 	public void run() {
 		sim = new Ising(params);
 		
-		fieldPlot.setDataSet(0, new PointSet(0, sim.N, sim.ψ));
+		fieldPlot.setDataSet(0, new PointSet(0, sim.N/sim.ψ.length, sim.ψ));
 		// fieldPlot.setXRange(0, sim.N);
 		fieldPlot.setYRange(-1.1, 0.1);
 		

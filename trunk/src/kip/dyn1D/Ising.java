@@ -76,21 +76,5 @@ public class Ising extends Dynamics1D {
 		}
 	
 	}
-
-
-/*	
-	public int length() {
-		return L;
-	}
-	
-	public int[] spins() {
-		return spins.getAll();
-	}
-	
-    // choose a new random number seed
-    public void perturb() {
-        random = new Random();
-    }
-*/
 	
 }
