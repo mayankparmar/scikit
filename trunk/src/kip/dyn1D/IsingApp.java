@@ -9,7 +9,7 @@ import static kip.util.MathPlus.*;
 public class IsingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
-	Ising sim;
+	BlockIsing sim;
 	
 	
 	public static void main(String[] args) {
@@ -60,14 +60,14 @@ public class IsingApp extends Job {
 		}
 		nucTimes.accum(2, sim.time());
 		
-		double t = sim.intervention(1.0);
-		System.out.println("found " + t + "\n");
-		Dynamics1D c = sim.simulationAtTime(t);
-		fieldPlot.setDataSet(1, new PointSet(0, sim.N/sim.ψ.length, c.ψ));
+//		double t = sim.intervention(1.0);
+//		System.out.println("found " + t + "\n");
+//		Dynamics1D c = sim.simulationAtTime(t);
+//		fieldPlot.setDataSet(1, new PointSet(0, sim.N/sim.ψ.length, c.ψ));
 	}
 	
 	public void run() {
-		sim = new Ising(params);
+		sim = new BlockIsing(params);
 		
 		fieldPlot.setDataSet(0, new PointSet(0, sim.N/sim.ψ.length, sim.ψ));
 		// fieldPlot.setXRange(0, sim.N);

@@ -11,7 +11,7 @@ abstract class Dynamics1D implements Cloneable {
 	public Random			random = new Random();
 	private Dynamics1D		old;
 	protected double		memoryTime = 1;
- 		
+	
 	
 	public Dynamics1D clone() {
         try {
@@ -167,7 +167,7 @@ abstract class Dynamics1D implements Cloneable {
 		if (!inGrowthMode())
 			throw new IllegalArgumentException();
 		
-		double lo = time()-memoryTime;
+		double lo = Math.max(time()-memoryTime, 0);
 		double hi = time();
 		 
 		int x = findGrowthCenter();
