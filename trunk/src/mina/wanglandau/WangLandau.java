@@ -12,6 +12,7 @@ public class WangLandau extends AbstractAnimation {
    
    int mcs;
    int L, N;
+   double density;	 // percentage of (spin 0) magnetic impurities
    double[] g;       // logarithm of the density of states (energy argument translated by 2N)
    int[] H;          // histogram (reduce f when it is "flat")
    int E;            // energy of current spin configuration (translated by 2N)
@@ -43,8 +44,10 @@ public class WangLandau extends AbstractAnimation {
       spin = new int[N];
       for (int i = 0; i < N; i++) {
          spin[i] = Math.random() < 0.5 ? 1 : -1;
+		 if (Math.random() < density)
+			spin[i] = 0;
       }
-      
+	  
       g = new double[4*N + 1];
       H = new int   [4*N + 1];
       for (int e = 0; e <= 4*N; e++) {
@@ -137,6 +140,7 @@ public class WangLandau extends AbstractAnimation {
    
    public void initializeAnimation() {
       L = control.getInt("L");
+	  density = control.getDouble("Impurity density");
       initialize();
       
       densityData.clear();
@@ -152,6 +156,7 @@ public class WangLandau extends AbstractAnimation {
    
    public void resetAnimation() {
       control.setValue("L", 16);
+	  control.setValue("Impurity density", 0.2);
       initializeAnimation();
    }
    
