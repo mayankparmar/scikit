@@ -55,11 +55,21 @@ public class Parameters implements Cloneable {
 	}
 	
 	public void set(String key, double value) {
-		set(key, ""+value);
+		Value v = getValue(key);
+		try {
+			v.set(value);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' can't store a 'float'");
+		}
 	}
 	
 	public void set(String key, int value) {
-		set(key, ""+value);
+		Value v = getValue(key);
+		try {
+			v.set(value);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' can't store a 'int'");
+		}
 	}
 	
 	public double fget(String key) {
