@@ -26,6 +26,10 @@ public class Parameters implements Cloneable {
 		_addValue(key, new Value("-", true));
 	}
 	
+	public void add(String key, boolean lockable, String... choices) {
+		_addValue(key, new ChoiceValue(choices, lockable));
+	}
+	
 	public void add(String key, int value, boolean lockable) {
 		_addValue(key, new IntValue(value, lockable));
 	}
