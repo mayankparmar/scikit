@@ -26,8 +26,8 @@ public class IsingApp extends Job {
 		params.add("T", (4.0/9.0)*4.0, false);
 		params.add("h", 1.26, false);
 		params.add("dt", 0.1, false);
+		params.add("time", 0.0, false);
 		
-		outputs.add("time");
 		outputs.add("h_sp");
 		outputs.add("h_sp - h");
 		outputs.add("psi_bg");
@@ -36,7 +36,7 @@ public class IsingApp extends Job {
 	public void animate() {
 		nucTimes.setBinWidth(2, params.fget("Bin width"));
 		sim.setParameters(params);
-		outputs.set("time", sim.time());
+		params.set("time", sim.time());
 		
 		double T = sim.temperature();
 		double J = 4/T;

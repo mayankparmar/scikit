@@ -1,8 +1,5 @@
 package scikit.jobs;
 
-import static java.lang.Math.*;
-import java.text.DecimalFormat;
-
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
@@ -11,8 +8,6 @@ import java.awt.event.*;
 
 class DoubleValue extends Value {
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
-	static DecimalFormat df1 = new DecimalFormat("0.####");
-	static DecimalFormat df2 = new DecimalFormat("0.####E0");
 	
 	public DoubleValue(double v, boolean lockable) {
 		super(format(v), lockable);
@@ -23,10 +18,7 @@ class DoubleValue extends Value {
 		_lo = lo;
 		_hi = hi;
 	}
-	
-	public void set(double x) {
-		set(format(x));
-	}
+		
 	
 	public double fget() {
 		return Double.valueOf(_v);
@@ -74,9 +66,5 @@ class DoubleValue extends Value {
 	
 	private int toRangedInt(double x) {
 		return (int) (1000 * (x - _lo) / (_hi-_lo));	
-	}
-	
-	private static String format(double x) {
-		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
 	}
 }

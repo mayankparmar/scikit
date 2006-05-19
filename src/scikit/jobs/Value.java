@@ -1,5 +1,7 @@
 package scikit.jobs;
 
+import static java.lang.Math.*;
+import java.text.DecimalFormat;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -17,6 +19,12 @@ public class Value {
 	protected boolean _auxiliaryEditor = false;
 	protected String _v;
 	protected String _default;
+	
+	static DecimalFormat df1 = new DecimalFormat("0.######");
+	static DecimalFormat df2 = new DecimalFormat("0.######E0");
+	static String format(double x) {
+		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
+	}
 	
 	
 	public Value(String v, boolean lockable) {
@@ -41,12 +49,24 @@ public class Value {
 	}
 	
 	public void set(String v) {
-		if (testValidity(v) && !_v.equals(v)) {
+		if (!testValidity(v))
+			throw new IllegalArgumentException();
+		
+		if (!_v.equals(v)) {
 			_v = v;
 			for (ChangeListener l : _listeners)
 				l.stateChanged(null);
 		}
 	}
+	
+	public void set(int v) {
+		set(""+v);
+	}
+	
+	public void set(double v) {
+		set(format(v));
+	}
+	
 	
 	public void setLocked(boolean locked) {
 		_locked = _lockable && locked;
