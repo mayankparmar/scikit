@@ -9,7 +9,7 @@ import static kip.util.MathPlus.*;
 public class IsingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
-	BlockIsing sim;
+	Dynamics1D sim;
 	
 	
 	public static void main(String[] args) {
@@ -17,6 +17,7 @@ public class IsingApp extends Job {
 	}
 	
 	public IsingApp() {
+		params.add("Dynamics", true, "Standard Ising", "Block Ising", "Field Ising");
 		params.add("Memory time", 20.0, true);
 		params.add("N", 1 << 13, true);
 		params.add("R", 1 << 9, true);
@@ -37,21 +38,21 @@ public class IsingApp extends Job {
 		sim.setParameters(params);
 		outputs.set("time", sim.time());
 		
-		double J = 4/sim.T;
-		double h = sim.h/sim.T;
-		
+		double T = sim.temperature();
+		double J = 4/T;
+		double h = sim.externalField()/T;
 		double s = -abs(h)/h;
-		
 		double psi_sp = s*sqrt(1 - 1/J);
 		double h_sp = (atanh(psi_sp) - J*psi_sp);		
 		double dh = h_sp - h;
 		double u_bg = sqrt(-dh / (J*J*psi_sp));
 		double psi_bg = psi_sp + s*u_bg;
 		
-		outputs.set("h_sp", sim.T*h_sp);
-		outputs.set("h_sp - h", sim.T*dh);
+		outputs.set("h_sp", T*h_sp);
+		outputs.set("h_sp - h", T*dh);
 		outputs.set("psi_bg", psi_bg);
 	}
+	
 	
 	void simulateUntilNucleation() {
 		while (!sim.inGrowthMode()) {
@@ -67,9 +68,15 @@ public class IsingApp extends Job {
 	}
 	
 	public void run() {
-		sim = new BlockIsing(params);
+		String dyn = params.sget("Dynamics");
+		if (dyn.equals("Standard Ising"))
+			sim = new Ising(params);
+		else if (dyn.equals("Block Ising"))
+			sim = new BlockIsing(params);
+		else if (dyn.equals("Field Ising"))
+			sim = null;
 		
-		fieldPlot.setDataSet(0, new PointSet(0, sim.N/sim.ψ.length, sim.ψ));
+		fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
 		// fieldPlot.setXRange(0, sim.N);
 		fieldPlot.setYRange(-1.1, 0.1);
 		
