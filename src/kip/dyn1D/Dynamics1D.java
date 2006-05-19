@@ -68,7 +68,11 @@ abstract class Dynamics1D implements Cloneable {
 	
 	
 	abstract public void setParameters(Parameters params);	
+	abstract public int systemSize();
 	abstract public double time();
+	abstract public double temperature();
+	abstract public double externalField();
+	
 	abstract protected void _step(); // step without saving "old" sim copies
 	
 	// run without saving state

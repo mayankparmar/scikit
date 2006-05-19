@@ -70,10 +70,10 @@ public class BlockIsing extends Dynamics1D {
 		initializeField(256, spins);
 	}
 	
-	
-	public double time() {
-		return (double)tN / N;
-	}
+	public int systemSize() { return N; }
+	public double time() { return (double)tN / N; }
+	public double temperature() { return T; }
+	public double externalField() { return h; }
 	
 /*
 	int dist(int i, int j) {

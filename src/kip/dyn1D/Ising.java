@@ -60,10 +60,10 @@ public class Ising extends Dynamics1D {
 	}
 	
 	
-	public double time() {
-		return (double)tN / N;
-	}
-	
+	public int systemSize() { return N; }
+	public double time() { return (double)tN / N; }
+	public double temperature() { return T; }
+	public double externalField() { return h; }
 	
 	protected void _step() {
 		for (int cnt = 0; cnt < N*dt; cnt++) {
