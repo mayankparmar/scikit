@@ -105,7 +105,8 @@ public class Value {
 		
 		ActionListener action = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				set(field.getText());
+				if (testValidity(field.getText()))
+					set(field.getText());
 				field.setText(_v);
 				field.setBackground(Color.WHITE);				
 			}
@@ -113,7 +114,8 @@ public class Value {
 		FocusListener focus = new FocusListener() {
 			public void focusGained(FocusEvent e)  {}
 			public void focusLost(FocusEvent e) {
-				set(field.getText());
+				if (testValidity(field.getText()))
+					set(field.getText());
 				field.setText(_v);
 				field.setBackground(Color.WHITE);
 			}
