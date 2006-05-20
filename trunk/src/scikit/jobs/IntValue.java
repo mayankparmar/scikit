@@ -13,7 +13,7 @@ public class IntValue extends Value {
 		_hi = hi;		
 	}
 	
-	public int iget() {
+	synchronized public int iget() {
 		return Integer.valueOf(_v);
 	}
 	

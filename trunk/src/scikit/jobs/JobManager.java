@@ -28,7 +28,6 @@ public class JobManager {
 	
 	public static void terminate(int i) {
 		get(i).kill();
-		get(i).dispose();
 		jobs.removeElementAt(i);
 	}
 	
