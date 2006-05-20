@@ -7,21 +7,43 @@ import java.awt.event.*;
 
 
 class DoubleValue extends Value {
+	private double _x;	// the precise value approximated by string v
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
-	public DoubleValue(double v, boolean lockable) {
-		super(format(v), lockable);
+	public DoubleValue(double x, boolean lockable) {
+		super(format(x), lockable);
+		_x = x;
 	}
 	
-	public DoubleValue(double v, double lo, double hi, boolean lockable) {
-		super(format(v), lockable);
+	public DoubleValue(double x, double lo, double hi, boolean lockable) {
+		super(format(x), lockable);
+		_x = x;
 		_lo = lo;
 		_hi = hi;
 	}
-		
 	
-	public double fget() {
-		return Double.valueOf(_v);
+	synchronized public double fget() {
+		return _x;
+	}
+	
+	synchronized public void set(String v) {
+		if (!_v.equals(v)) {
+			// _x needs to be set first, because super.set() will go call into
+			// it's ChangeListeners which may ask about _x
+			_x = Double.valueOf(v);
+			super.set(v);
+		}
+	}
+	
+	synchronized public void set(double x) {
+		if (_x != x) {
+			// as before, _x needs to be set first
+			_x = x;
+			// it would be a bug to call super.set(x), because it would call this.set(v),
+			// and the value of _x would be overwritten with a less accurate string
+			// conversion number
+			super.set(format(x));
+		}
 	}
 	
 	public boolean testValidity(String v) {

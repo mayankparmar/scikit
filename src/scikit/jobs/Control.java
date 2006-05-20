@@ -1,7 +1,5 @@
 package scikit.jobs;
 
-import scikit.plot.Display;
-
 import static java.lang.Math.*;
 import java.util.Vector;
 import javax.swing.*;

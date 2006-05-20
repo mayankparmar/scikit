@@ -29,21 +29,19 @@ abstract class Dynamics1D implements Cloneable {
 	
 	public Dynamics1D simulationAtTime(double t) {
 		if (t < time()) {
-			if (old == null)
-				throw new IllegalArgumentException();
-			else
-				return old.simulationAtTime(t);
+			return (old == null) ? null : old.simulationAtTime(t);
 		}
 		else {
 			assert(time() <= t);
 			Dynamics1D c = clone();
-			c._runUntil(t);
+			c.runUntil(t);
 			return c;
 		}
 	}
 	
 	
 	public void step() {
+		/*
 		if (old != null) {
 			assert (time() >= old.time());
 			if (old.old != null) {
@@ -51,7 +49,7 @@ abstract class Dynamics1D implements Cloneable {
 				assert (old.old.old == null);
 			}
 		}
-		
+		*/
 		if (old == null)
 			old = clone();
 		_step();
@@ -62,10 +60,15 @@ abstract class Dynamics1D implements Cloneable {
 	}
 	
 	
+	public void runUntil(double t) {
+		while (time() < t)
+			step();
+	}
+	
+	
 	public void initialize(Parameters params) {
 		old = null;
 	}
-	
 	
 	abstract public void setParameters(Parameters params);	
 	abstract public int systemSize();
@@ -75,11 +78,6 @@ abstract class Dynamics1D implements Cloneable {
 	
 	abstract protected void _step(); // step without saving "old" sim copies
 	
-	// run without saving state
-	private void _runUntil(double t) {
-		while (time() < t)
-			_step();
-	}
 	
 	
 	// ***********************************************************************************
@@ -159,7 +157,8 @@ abstract class Dynamics1D implements Cloneable {
 		for (int i = 0; i < TRIALS; i++) {
 			Dynamics1D c = sim.clone();
 			c.random.setSeed((long)(Math.random()*(1<<48)));
-			c._runUntil(sim.time()+testDt);
+			while (c.time() < sim.time()+testDt)
+				c.step();
 			acc += c.regionMagnetization(x, testRadius);
 		}
 		

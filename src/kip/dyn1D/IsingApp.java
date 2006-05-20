@@ -10,6 +10,7 @@ public class IsingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
 	Dynamics1D sim;
+	double lastTime;
 	
 	
 	public static void main(String[] args) {
@@ -33,10 +34,26 @@ public class IsingApp extends Job {
 		outputs.add("psi_bg");
 	}
 	
+	public void dispose() {
+		params.set("time", 0);
+		lastTime = 0;
+	}
+	
 	public void animate() {
 		nucTimes.setBinWidth(2, params.fget("Bin width"));
 		sim.setParameters(params);
+		
+		double t = params.fget("time");
+		if (lastTime != t) {
+			Dynamics1D sim2 = sim.simulationAtTime(t);
+			if (sim2 != null) {
+				sim = sim2;
+				fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
+				System.out.println("time changed");
+			}
+		}
 		params.set("time", sim.time());
+		lastTime = sim.time();
 		
 		double T = sim.temperature();
 		double J = 4/T;
@@ -73,8 +90,8 @@ public class IsingApp extends Job {
 			sim = new Ising(params);
 		else if (dyn.equals("Block Ising"))
 			sim = new BlockIsing(params);
-		else if (dyn.equals("Field Ising"))
-			sim = null;
+//		else if (dyn.equals("Field Ising"))
+//			sim = null;
 		
 		fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
 		// fieldPlot.setXRange(0, sim.N);

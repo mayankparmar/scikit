@@ -59,6 +59,7 @@ public abstract class Job implements Runnable {
 		params.setLocked(false);
 		
 		clearDisplays();
+		dispose();
 	}
 	
 	
