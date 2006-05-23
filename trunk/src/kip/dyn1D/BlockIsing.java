@@ -67,7 +67,7 @@ public class BlockIsing extends Dynamics1D {
 		for (int i = 0; i < blocks.length; i++)
 			blocks[i] = -R;
 		
-		initializeField(256, spins);
+		initializeField(64, spins);
 	}
 	
 	public int systemSize() { return N; }
@@ -111,6 +111,11 @@ public class BlockIsing extends Dynamics1D {
 			}
 			tN++;
 		}
+	}
+	
+	
+	public double[] langerDroplet(int center) {
+		return new double[ψ.length];
 	}
 	
 }
