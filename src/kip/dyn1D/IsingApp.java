@@ -8,6 +8,8 @@ import static kip.util.MathPlus.*;
 
 public class IsingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
+	PointSet pset;
+	
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
 	Dynamics1D sim;
 	double lastTime;
@@ -20,12 +22,12 @@ public class IsingApp extends Job {
 	public IsingApp() {
 		params.add("Dynamics", true, "Standard Ising", "Block Ising", "Field Ising");
 		params.add("Memory time", 20.0, true);
-		params.add("N", 1 << 13, true);
-		params.add("R", 1 << 9, true);
+		params.add("N", 8192, true);
+		params.add("R", 512, true);
 		params.add("Random seed", 0, false);
 		params.add("Bin width", 0.5, false);
 		params.add("T", (4.0/9.0)*4.0, false);
-		params.add("h", 1.26, false);
+		params.add("h", 1.23, false);
 		params.add("dt", 0.1, false);
 		params.add("time", 0.0, false);
 		
@@ -48,8 +50,9 @@ public class IsingApp extends Job {
 			Dynamics1D sim2 = sim.simulationAtTime(t);
 			if (sim2 != null) {
 				sim = sim2;
-				fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
-				System.out.println("time changed");
+				pset.setY(sim.ψ);
+				
+				sim2.testNucleationAtTime(t, 134, sim2.ψ.length / 32);
 			}
 		}
 		params.set("time", sim.time());
@@ -77,11 +80,14 @@ public class IsingApp extends Job {
 			yield();
 		}
 		nucTimes.accum(2, sim.time());
-		
-//		double t = sim.intervention(1.0);
-//		System.out.println("found " + t + "\n");
-//		Dynamics1D c = sim.simulationAtTime(t);
-//		fieldPlot.setDataSet(1, new PointSet(0, sim.N/sim.ψ.length, c.ψ));
+		double t = sim.intervention();
+		// System.out.println("t " + t);
+/*
+		while (true) {
+			sim.step();
+			yield();
+		}
+*/
 	}
 	
 	public void run() {
@@ -90,11 +96,9 @@ public class IsingApp extends Job {
 			sim = new Ising(params);
 		else if (dyn.equals("Block Ising"))
 			sim = new BlockIsing(params);
-//		else if (dyn.equals("Field Ising"))
-//			sim = null;
 		
-		fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
-		// fieldPlot.setXRange(0, sim.N);
+		pset = new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ);
+		fieldPlot.setDataSet(0, pset);
 		fieldPlot.setYRange(-1.1, 0.1);
 		
 		addDisplay(fieldPlot);

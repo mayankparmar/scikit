@@ -27,7 +27,7 @@ import java.awt.FileDialog;
 
 public class Plot extends EmptyPlot implements Display {
 	private static final int NUM_DATA_SETS = 8;
-	private static final int MAX_DATA_POINTS = 100;
+	private static final int MAX_DATA_POINTS = 300;
 	private static final double AUTOSCALE_SLOP = 0.10;		// extend view 10% on rescale
 	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bounds
 	

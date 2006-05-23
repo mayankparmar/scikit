@@ -15,6 +15,19 @@ public class PointSet implements DataSet {
 	
 	
 	public PointSet(double[] x, double[] y) {
+		setXY(x, y);
+	}
+	
+	
+	public void setX(double[] x) {
+		setXY(x, _y);
+	}
+	
+	public void setY(double[] y) {
+		setXY(_x, y);
+	}
+	
+	public void setXY(double[] x, double[] y) {
 		if (x.length != y.length)
 			throw new IllegalArgumentException("Array sizes are not equal.");
 		_x = x;

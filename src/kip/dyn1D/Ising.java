@@ -4,6 +4,7 @@ import scikit.jobs.*;
 import kip.ising.SpinBlocks1D;
 import kip.util.Random;
 import static java.lang.Math.*;
+import static kip.util.MathPlus.*;
 
 
 public class Ising extends Dynamics1D {
@@ -56,7 +57,7 @@ public class Ising extends Dynamics1D {
 		
 		tN = 0;
 		spins = new SpinBlocks1D(N, R, -1);
-		initializeField(256, spins.getAll());
+		initializeField(64, spins.getAll());
 	}
 	
 	
@@ -79,4 +80,25 @@ public class Ising extends Dynamics1D {
 	
 	}
 	
+	
+	public double[] langerDroplet(int center) {
+		double[] saddle = new double[ψ.length];
+		double dx = systemSize() / ψ.length;
+		
+		double K = 4/T;
+		double H = h/T;
+		double s = -abs(H)/H;
+		double psi_sp = s*sqrt(1 - 1/K);
+		double H_sp = (atanh(psi_sp) - K*psi_sp);		
+		double dH = H_sp - H;
+		double u_bg = sqrt(-dH / (K*K*psi_sp));
+		
+		for (int i = 0; i < saddle.length; i++) {			
+			double d = dx * displacement(i, center);
+			double c = cosh(sqrt(dH / (2*u_bg)) * d / R);
+			saddle[i] = psi_sp + s * u_bg * (1 - 3 / (c*c));
+		}
+		
+		return saddle;
+	}
 }

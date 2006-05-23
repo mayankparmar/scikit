@@ -110,7 +110,7 @@ public final class MathPlus extends Object {
      *
      * @throws ArithmeticException
      */
-
+/*
     static public double cosh(double x) throws ArithmeticException {
         double a;
         a = x;
@@ -120,6 +120,7 @@ public final class MathPlus extends Object {
         a = Math.exp(a);
         return 0.5 * (a + 1 / a);
     }
+*/
 
     /**
      * @param x a double value
@@ -127,6 +128,7 @@ public final class MathPlus extends Object {
      *
      * @throws ArithmeticException
      */
+/*
     static public double sinh(double x) throws ArithmeticException {
         double a;
         if (x == 0.0) {
@@ -143,6 +145,7 @@ public final class MathPlus extends Object {
             return 0.5 * (a - 1 / a);
         }
     }
+*/
 
     /**
      * @param x a double value
@@ -150,6 +153,7 @@ public final class MathPlus extends Object {
      *
      * @throws ArithmeticException
      */
+/*
     static public double tanh(double x) throws ArithmeticException {
         double a;
         if (x == 0.0) {
@@ -166,6 +170,7 @@ public final class MathPlus extends Object {
             return (1.0 - 2.0 / (a + 1.0));
         }
     }
+*/
 
     /**
      * @param x a double value
