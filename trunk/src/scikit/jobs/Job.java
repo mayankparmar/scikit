@@ -2,7 +2,7 @@ package scikit.jobs;
 
 
 import scikit.plot.Display;
-import java.util.Vector;
+import java.util.*;
 
 
 public abstract class Job implements Runnable {
@@ -10,12 +10,13 @@ public abstract class Job implements Runnable {
 		public Job job;
 		public JobThread(Job _job) { super(_job); job = _job; }
 	}
-
+	
 	private Thread _thread = null;
 	private long timerDelay = 50, updateThrottle = 0;
 	private long lastTimer, lastUpdate;
 	
 	private Vector<Display> displays = new Vector<Display>();
+	private static Hashtable<Object,Vector<Job>> providers = new Hashtable<Object,Vector<Job>>();
 	
 	volatile private boolean stopRequested = false;
 	volatile private boolean stepRequested = false;
@@ -24,6 +25,11 @@ public abstract class Job implements Runnable {
 	public Parameters params = new Parameters(this);
 	public Parameters outputs = new Parameters(this);
 	
+	
+	
+	public String toString() {
+		return getClass() + " : " + _thread;
+	}
 	
 	public void start() {
 		stopRequested = false;
@@ -69,13 +75,10 @@ public abstract class Job implements Runnable {
 	
 	
 	public void addDisplay(Display disp) {
-		if (!displays.contains(disp))
+		if (!displays.contains(disp)) {
 			displays.add(disp);
-	}
-	
-	
-	public String toString() {
-		return getClass() + " : " + _thread;
+			makeProviderFor(disp);
+		}
 	}
 	
 	
@@ -95,49 +98,20 @@ public abstract class Job implements Runnable {
 	}
 	
 	
-	//
-	// Called by subclass
-	//
-	
-	synchronized private void _yield() {
-		long time = System.currentTimeMillis();
-		
-		if (time - lastUpdate < updateThrottle) {
-			long delay = updateThrottle - (time - lastUpdate);
-			try {Thread.sleep(delay); } catch (InterruptedException e) {}
-			time += delay;
+	private void makeProviderFor(Object o) {
+//		System.out.println("adding " + o);
+		if (!providers.containsKey(o)) {
+			providers.put(o, new Vector<Job>());
 		}
-		lastUpdate = time;
-		
-		if (time - lastTimer > timerDelay) {
-			animateDisplays();
-			Thread.yield();
-			lastTimer = time;
-		}
-		
-		if (stepRequested) {
-			stepRequested = false;
-			stopRequested = true;
-		}
-		
-		while (stopRequested && !killRequested) {
-			try {
-				animateDisplays();
-				wait();
-			} catch (InterruptedException e) {
-				System.out.println("interrupted");
-			}
-		}
-		
-		if (killRequested) {
-			killRequested = false;
-			throw new ThreadDeath();
-		}
+		providers.get(o).add(this);
 	}
 	
 	
-	public static void yield() {
-		current()._yield();
+	public static void wakeProvidersFor(Object o) {
+//		System.out.println("checking " + o);
+		if (providers.containsKey(o))
+			for (Job j : providers.get(o))
+				j.wakeProcess();
 	}
 	
 	
@@ -178,6 +152,49 @@ public abstract class Job implements Runnable {
 		return frame;
 	}
 	
+	
+	
+	public static void yield() {
+		current()._yield();
+	}
+	
+	synchronized private void _yield() {
+		long time = System.currentTimeMillis();
+		
+		if (time - lastUpdate < updateThrottle) {
+			long delay = updateThrottle - (time - lastUpdate);
+			try {Thread.sleep(delay); } catch (InterruptedException e) {}
+			time += delay;
+		}
+		lastUpdate = time;
+		
+		if (time - lastTimer > timerDelay) {
+			animateDisplays();
+			Thread.yield();
+			lastTimer = time;
+		}
+		
+		if (stepRequested) {
+			stepRequested = false;
+			stopRequested = true;
+		}
+		
+		while (stopRequested && !killRequested) {
+			try {
+				animateDisplays();
+				wait();
+			} catch (InterruptedException e) {
+				System.out.println("interrupted");
+			}
+		}
+		
+		if (killRequested) {
+			killRequested = false;
+			throw new ThreadDeath();
+		}
+	}
+	
+		
 	
 	//
 	// To be implemented by subclass
