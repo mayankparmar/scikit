@@ -434,4 +434,25 @@ public int nextInt(int n)
     haveNextNextGaussian = true;
     return v1 * norm;
   }
+  
+  /*
+  public int nextPoisson(double mu) {
+	if (mu > 10)
+		throw new IllegalArgumentException();
+		
+    double r = nextDouble();
+	double g = Math.exp(-mu);
+	r -= g;
+	if (r < 0) return 0;
+	
+	for (double i = 1; i < 40; i++) {
+		g = g * mu / i;
+		r -= g;
+		if (r < 0) return i;
+	}
+	
+	assert (false);
+	return -1;
+  }
+  */
 }

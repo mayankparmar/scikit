@@ -1,7 +1,7 @@
 package scikit.plot;
 
 
-public class DynamicArray implements DataSet {
+public class DynamicArray extends DataSet {
 	private int _length;
 	private double[] _data;
 	

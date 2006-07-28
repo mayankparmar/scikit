@@ -71,6 +71,7 @@ abstract class Dynamics1D implements Cloneable {
 	}
 	
 	abstract public void setParameters(Parameters params);	
+	abstract public void randomizeSpins();
 	abstract public int systemSize();
 	abstract public double time();
 	abstract public double temperature();
@@ -249,6 +250,7 @@ abstract class Dynamics1D implements Cloneable {
 		}
 	}
 	
+	// FIX prototype
 	public void spinFlippedInField(int i, int[] spins) {
 		int spinsPerBlock = spins.length / ψ.length;
 		int j = i / spinsPerBlock;

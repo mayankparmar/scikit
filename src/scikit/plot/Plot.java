@@ -31,8 +31,8 @@ public class Plot extends EmptyPlot implements Display {
 	private static final double AUTOSCALE_SLOP = 0.10;		// extend view 10% on rescale
 	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bounds
 	
-	private boolean _autoScale = true;		// automatically expand view bounds to fit data
-	private boolean _invalidView = false;	// flags reset of view bounds before next display
+//	private boolean _autoScale = true;		// automatically expand view bounds to fit data
+//	private boolean _invalidView = false;	// flags reset of view bounds before next display
 	
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
 	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
@@ -84,11 +84,13 @@ public class Plot extends EmptyPlot implements Display {
 	
 	synchronized public void animate() {
 		int i = 0;
-		for (DataSet dataSet : _dataSets)
-			_dataBuffer[i++] = (dataSet == null ? null : dataSet.copyData());
-		if (_autoScale) {
+		if (!_zoomed)
 			autoScaleBounds();
-		}
+		for (DataSet dataSet : _dataSets)
+			_dataBuffer[i++] = dataSet == null ? null : dataSet.copyPartial(256, _minX, _maxX, _minY, _maxY);
+//		if (_autoScale) {
+//			autoScaleBounds();
+//		}
 		repaint();
 	}
 	
@@ -109,17 +111,55 @@ public class Plot extends EmptyPlot implements Display {
 		_colors[i] = color;
 	}
 	
-	
+/*	
 	public void setAutoScale(boolean autoScale) {
 		_autoScale = autoScale;
 	}
+*/
 	
-	
+/*	
 	public void invalidateView() {
 		_invalidView = true;
 	}
+*/	
 	
+	private void mergeBounds(double[] b1, double[] b2) {
+		b1[0] = min(b1[0], b2[0]);
+		b1[1] = max(b1[1], b2[1]);
+		b1[2] = min(b1[2], b2[2]);
+		b1[3] = max(b1[3], b2[3]);
+	}
 	
+	private void extendBounds(double[] b, double slop) {
+		double w = b[1]-b[0];
+		double h = b[3]-b[2];
+		b[0] -= w*AUTOSCALE_SLOP;
+		b[1] += w*AUTOSCALE_SLOP;
+		b[2] -= h*AUTOSCALE_SLOP;
+		b[3] += h*AUTOSCALE_SLOP;
+	}
+	
+	private void autoScaleBounds() {
+		double[] bounds = null;
+		
+		for (DataSet dataSet : _dataSets) {
+			if (dataSet == null) continue;
+			double[] test = dataSet.getBounds();
+			if (bounds == null)
+				bounds = test;
+			else
+				mergeBounds(bounds, test);
+		}
+		if (bounds == null)
+			return;
+			
+		extendBounds(bounds, AUTOSCALE_SLOP);
+		_minX = min(bounds[0], _minX);
+		_maxX = max(bounds[1], _maxX);
+		_minY = min(bounds[2], _minY);
+		_maxY = max(bounds[3], _maxY);
+	}
+/*	
 	private void autoScaleBounds() {
 		double minX = Double.POSITIVE_INFINITY;
 		double maxX = Double.NEGATIVE_INFINITY;
@@ -171,7 +211,7 @@ public class Plot extends EmptyPlot implements Display {
 			}
 		}
 	}
-	
+*/	
 	
 	private boolean hasBars() {
 		for (boolean b : _drawBars)

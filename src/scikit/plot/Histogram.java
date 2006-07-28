@@ -22,7 +22,8 @@ public class Histogram extends Plot {
 			_defaultBinWidth = binWidth;	
 			Accumulator acc = getAccumulator(i);
 			acc.setBinWidth(binWidth);
-			invalidateView();
+			// invalidateView();
+			resetViewWindow();
 		}
 	}
 	
