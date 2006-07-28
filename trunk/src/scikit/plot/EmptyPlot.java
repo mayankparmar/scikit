@@ -38,11 +38,21 @@ public class EmptyPlot extends JComponent {
 	protected double DEFAULT_MIN = Double.POSITIVE_INFINITY;
 	protected double DEFAULT_MAX = Double.NEGATIVE_INFINITY;
 	
+	// the "top" bounds provide a minimum size of the view.
+	// when the user double clicks to "resetViewWindow()", the view size
+	// will be guaranteed to include the "top" bounds as well as any data
+	// which extends further.
+	// the infinite defaults guarantee this condition is initially satisfied
 	protected double _topMinX = DEFAULT_MIN, _topMaxX = DEFAULT_MAX;
 	protected double _topMinY = DEFAULT_MIN, _topMaxY = DEFAULT_MAX;
+	// the current view bounds
 	protected double _minX, _maxX, _minY, _maxY;
+	// is the view zoomed in?  this will disable autoscale
+	protected boolean _zoomed = false;
 	
+	// the pixel bounds of the view rectangle
 	private Rectangle _bound = new Rectangle();
+	// the pixel bounds of the selection rectangle
 	private Rectangle _selection = new Rectangle();
 	private boolean _selectionActive = false;
 	
@@ -70,18 +80,22 @@ public class EmptyPlot extends JComponent {
 	synchronized public void setXRange(double minX, double maxX) {
 		_topMinX = _minX = minX;
 		_topMaxX = _maxX = maxX;
+		_zoomed = false;
 	}
 	
 	synchronized public void setYRange(double minY, double maxY) {
 		_topMinY = _minY = minY;
 		_topMaxY = _maxY = maxY;
+		_zoomed = false;
 	}
 	
-	protected void resetViewWindow() {
-		_minX = _topMinX;
+	synchronized public void resetViewWindow() {
+/*		_minX = _topMinX;
 		_maxX = _topMaxX;
 		_minY = _topMinY;
 		_maxY = _topMaxY;
+*/
+		_zoomed = false;
 	}
 	
 		
@@ -290,6 +304,7 @@ public class EmptyPlot extends JComponent {
 			if (rangeIsReasonable(minX, maxX) && rangeIsReasonable(minY, maxY)) {
 				_minX = minX; _maxX = maxX;
 				_minY = minY; _maxY = maxY;
+				_zoomed = true;
 			}
 		}
 	}

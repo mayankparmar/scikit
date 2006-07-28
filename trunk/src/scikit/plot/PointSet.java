@@ -1,7 +1,7 @@
 package scikit.plot;
 
 
-public class PointSet implements DataSet {
+public class PointSet extends DataSet {
 	private double[] _x, _y;
 	
 	

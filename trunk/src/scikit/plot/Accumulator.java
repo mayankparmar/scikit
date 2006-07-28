@@ -5,7 +5,7 @@ import java.util.HashMap;
 import static java.lang.Math.*;
 
 
-public class Accumulator implements DataSet {
+public class Accumulator extends DataSet {
 	private double _origBinWidth, _binWidth;
 	private HashMap<Double, Double> _origHash, _hash;
 	

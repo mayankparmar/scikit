@@ -8,10 +8,13 @@ import static kip.util.MathPlus.*;
 
 
 public class Ising extends Dynamics1D {
+	public enum Dynamics {METROPOLIS, GLAUBER};
+	public Dynamics dynamics = Dynamics.GLAUBER;
+	
     public int N, R;
 	public double h, dt, T, J;
 	public int tN;
-	SpinBlocks1D spins;
+	public SpinBlocks1D spins;
 	
 	
 	public Ising(Parameters params) {
@@ -57,7 +60,17 @@ public class Ising extends Dynamics1D {
 		
 		tN = 0;
 		spins = new SpinBlocks1D(N, R, -1);
-		initializeField(64, spins.getAll());
+		initializeField(512, spins.getAll());
+	}
+	
+	
+	public void randomizeSpins() {
+		for (int i = 0; i < N; i++) {
+			if (random.nextDouble() < 0.5) {
+				spins.flip(i);
+				spinFlippedInField(i, spins.getAll());
+			}
+		}
 	}
 	
 	
@@ -66,20 +79,56 @@ public class Ising extends Dynamics1D {
 	public double temperature() { return T; }
 	public double externalField() { return h; }
 	
+	
+	private boolean shouldFlip(double dE) {
+		switch (dynamics) {
+			case METROPOLIS:
+				return dE <= 0 || random.nextDouble() < Math.exp(-dE/T);
+			case GLAUBER:
+				return random.nextDouble() < exp(-dE)/(1+exp(-dE));
+			default:
+				assert false;
+		}
+		return false;
+	}
+	
 	protected void _step() {
 		for (int cnt = 0; cnt < N*dt; cnt++) {
 			int i = random.nextInt(N);
 			int spin = spins.get(i);
+			
 			double dE = 2*spin*(h + J*(spins.sumInRange(i)-spin));
-			if (dE <= 0 || random.nextDouble() < Math.exp(-dE/T)) {
+			if (shouldFlip(dE)) {
 				spins.flip(i);
 				spinFlippedInField(i, spins.getAll());
 			}
 			tN++;
 		}
-	
 	}
 	
+/*	
+	public int[] langerDropletSpins(int height) {
+		int[] s = new double[N];
+		
+		double K = 4/T;
+		double H = h/T;
+		double s = -abs(H)/H;
+		double psi_sp = s*sqrt(1 - 1/K);
+		double H_sp = (atanh(psi_sp) - K*psi_sp);		
+		double dH = H_sp - H;
+		double u_bg = sqrt(-dH / (K*K*psi_sp));
+
+		for (int i = 0; i < saddle.length; i++) {			
+			double d = center - i;
+			double c = cosh(sqrt(dH / (2*u_bg)) * d / R);
+			double m = psi_sp + s * u_bg * (1 - 3 / (c*c));
+			s[i] = (random.nextDouble() < (m+1)/2) ? 1 : -1;
+		}
+		
+		return s;
+	}
+	
+*/
 	
 	public double[] langerDroplet(int center) {
 		double[] saddle = new double[ψ.length];
