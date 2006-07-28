@@ -32,7 +32,6 @@ public class Plot extends EmptyPlot implements Display {
 	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bounds
 	
 //	private boolean _autoScale = true;		// automatically expand view bounds to fit data
-//	private boolean _invalidView = false;	// flags reset of view bounds before next display
 	
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
 	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
@@ -58,7 +57,8 @@ public class Plot extends EmptyPlot implements Display {
 	
 	
 	public void clear() {
-		_dataSets   = new DataSet[NUM_DATA_SETS];
+		_dataSets = new DataSet[NUM_DATA_SETS];
+		resetViewWindow();
 	}
 	
 	
@@ -88,9 +88,6 @@ public class Plot extends EmptyPlot implements Display {
 			autoScaleBounds();
 		for (DataSet dataSet : _dataSets)
 			_dataBuffer[i++] = dataSet == null ? null : dataSet.copyPartial(256, _minX, _maxX, _minY, _maxY);
-//		if (_autoScale) {
-//			autoScaleBounds();
-//		}
 		repaint();
 	}
 	
@@ -110,18 +107,6 @@ public class Plot extends EmptyPlot implements Display {
 	public void setColor(int i, Color color) {
 		_colors[i] = color;
 	}
-	
-/*	
-	public void setAutoScale(boolean autoScale) {
-		_autoScale = autoScale;
-	}
-*/
-	
-/*	
-	public void invalidateView() {
-		_invalidView = true;
-	}
-*/	
 	
 	private void mergeBounds(double[] b1, double[] b2) {
 		b1[0] = min(b1[0], b2[0]);
@@ -159,59 +144,7 @@ public class Plot extends EmptyPlot implements Display {
 		_minY = min(bounds[2], _minY);
 		_maxY = max(bounds[3], _maxY);
 	}
-/*	
-	private void autoScaleBounds() {
-		double minX = Double.POSITIVE_INFINITY;
-		double maxX = Double.NEGATIVE_INFINITY;
-		double minY = hasBars() ? 0 : Double.POSITIVE_INFINITY;
-		double maxY = hasBars() ? 0 : Double.NEGATIVE_INFINITY;
-		boolean hasData = false;
-		
-		for (DataSet dataSet : _dataSets) {
-			if (dataSet == null) continue;
-			double[] data = dataSet.copyData();
-			for (int i = 0; i < data.length; i += 2) {
-				minX = min(minX, data[i+0]);
-				maxX = max(maxX, data[i+0]);
-				minY = min(minY, data[i+1]);
-				maxY = max(maxY, data[i+1]);
-				hasData = true;
-			}
-		}
-		double w = maxX - minX;
-		double h = maxY - minY;
-		
-		if (!hasData || _invalidView) {
-			// create impossible (infinite) ranges, which are guaranteed to be
-			// overridden later
-			setXRange(DEFAULT_MIN, DEFAULT_MAX);
-			setYRange(DEFAULT_MIN, DEFAULT_MAX);
-			_invalidView = false;
-		}
-		
-		double dx = AUTOSCALE_NEARNESS*w;
-		double dy = AUTOSCALE_NEARNESS*h;
-		
-		if (hasData) {
-			if (minX-dx < _topMinX && minX-dx < _minX) {
-				_topMinX = minX - AUTOSCALE_SLOP*w;
-				resetViewWindow();
-			}
-			if (maxX+dx > _topMaxX && maxX+dx > _maxX) {
-				_topMaxX = maxX + AUTOSCALE_SLOP*w;
-				resetViewWindow();
-			}
-			if (minY-dy < _topMinY && minY-dy < _minY) {
-				_topMinY = minY - AUTOSCALE_SLOP*h;
-				resetViewWindow();
-			}
-			if (maxY+dy > _topMaxY && maxY+dy > _maxY) {
-				_topMaxY = maxY + AUTOSCALE_SLOP*h;
-				resetViewWindow();
-			}
-		}
-	}
-*/	
+	
 	
 	private boolean hasBars() {
 		for (boolean b : _drawBars)
@@ -231,7 +164,7 @@ public class Plot extends EmptyPlot implements Display {
 	}
 	
 	
-	synchronized protected void paintData(Graphics2D g) {
+	protected void paintData(Graphics2D g) {
 		RenderingHints oldhints = g.getRenderingHints();
 		RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING,
 												  RenderingHints.VALUE_ANTIALIAS_ON);

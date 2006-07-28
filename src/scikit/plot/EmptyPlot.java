@@ -90,11 +90,10 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	synchronized public void resetViewWindow() {
-/*		_minX = _topMinX;
+		_minX = _topMinX;
 		_maxX = _topMaxX;
 		_minY = _topMinY;
 		_maxY = _topMaxY;
-*/
 		_zoomed = false;
 	}
 	
@@ -324,7 +323,7 @@ public class EmptyPlot extends JComponent {
 			if (withinBounds(event) && event.getClickCount() > 1) {
 				resetViewWindow();
 				_selectionActive = false;
-				repaint();				
+				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);				
 			}
 		}
 		public void mousePressed(MouseEvent event) {
@@ -344,7 +343,7 @@ public class EmptyPlot extends JComponent {
 			if (_selectionActive) {
 				changeViewWindow(fixRectangle(_selection));
 				_selectionActive = false;
-				repaint();
+				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);
 			}
 		}
 	};
