@@ -323,7 +323,8 @@ public class EmptyPlot extends JComponent {
 			if (withinBounds(event) && event.getClickCount() > 1) {
 				resetViewWindow();
 				_selectionActive = false;
-				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);				
+				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);
+				repaint();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
@@ -344,6 +345,7 @@ public class EmptyPlot extends JComponent {
 				changeViewWindow(fixRectangle(_selection));
 				_selectionActive = false;
 				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);
+				repaint();
 			}
 		}
 	};

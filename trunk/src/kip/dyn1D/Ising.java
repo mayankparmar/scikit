@@ -30,7 +30,7 @@ public class Ising extends Dynamics1D {
 		params.set("R", R);
 		
 		memoryTime = params.fget("Memory time");
-		J = 4.0 / (2*R);
+		J = 1.0 / (2*R);
 		
 		initialize(params);
 	}
@@ -85,7 +85,7 @@ public class Ising extends Dynamics1D {
 			case METROPOLIS:
 				return dE <= 0 || random.nextDouble() < Math.exp(-dE/T);
 			case GLAUBER:
-				return random.nextDouble() < exp(-dE)/(1+exp(-dE));
+				return random.nextDouble() < exp(-dE/T)/(1+exp(-dE/T));
 			default:
 				assert false;
 		}

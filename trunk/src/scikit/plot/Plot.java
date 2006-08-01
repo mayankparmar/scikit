@@ -127,6 +127,18 @@ public class Plot extends EmptyPlot implements Display {
 	private void autoScaleBounds() {
 		double[] bounds = null;
 		
+		// if bounds got corrupted, completely reset them to "top"
+		double dx = _maxX - _minX;
+		double dy = _maxY - _minY;
+		if (Double.isInfinite(dx) || Double.isNaN(dx) ||
+			Double.isInfinite(dy) || Double.isNaN(dy)) {
+			_minX = _topMinX;
+			_maxX = _topMaxX;
+			_minY = _topMinY;
+			_maxY = _topMaxY;
+		}
+		
+		// grow bounds to include all data
 		for (DataSet dataSet : _dataSets) {
 			if (dataSet == null) continue;
 			double[] test = dataSet.getBounds();
@@ -137,8 +149,10 @@ public class Plot extends EmptyPlot implements Display {
 		}
 		if (bounds == null)
 			return;
-			
+		
+		// add a little extra "slop" for viewing (fixme)
 		extendBounds(bounds, AUTOSCALE_SLOP);
+		
 		_minX = min(bounds[0], _minX);
 		_maxX = max(bounds[1], _maxX);
 		_minY = min(bounds[2], _minY);
