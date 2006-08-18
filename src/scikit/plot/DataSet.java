@@ -4,9 +4,6 @@ import static java.lang.Math.*;
 
 
 abstract public class DataSet {
-	/** Returns the size of this dataset */
-	abstract public int size();
-	
 	/** Returns data width: xmin, xmax, ymin, ymax */
 	public double[] getBounds() {
 		double minX = Double.POSITIVE_INFINITY;

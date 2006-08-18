@@ -4,49 +4,44 @@ import static java.lang.Math.*;
 
 public class Coarsened extends DataSet {
 	private double[] _y, _cgy;
-	private double _xlo, _xstep, _cgstep;
+	private double _xlo, _xstep;
+	private int _ilo, _ihi, _istep;
 	
-	public Coarsened(double[] y, double xlo, double xhi) {
-		_y = _cgy = y;
+	public Coarsened(double[] y, double xlo, double xhi, double cglo, double cghi, double cgstep) {
+		_y = y;
 		_xlo = xlo;
-		_xstep = _cgstep = (xhi-xlo)/(y.length-1);
-	}
-	
-	public Coarsened(double[] y) {
-		this(y, 0, y.length-1);
-	}
-	
-	public int size() {
-		return 2*_cgy.length;
+		_xstep = (xhi-xlo)/(y.length-1);
+		
+		_ilo = (int) ((cglo - xlo) / _xstep);
+		_ihi = (int) ((cghi - xlo) / _xstep) + 1;
+		_ilo = max(_ilo, 0);
+		_ihi = max(min(_ihi, y.length), _ilo);
+		
+		setBinWidth(cgstep);
 	}
 	
 	public void setBinWidth(double cgstep) {
-		double xlen = (_y.length-1)*_xstep;
-		int n = (int)min(_y.length, round(xlen / cgstep) + 1);
-		if (n != _cgy.length) {
-			_cgstep = xlen / (n-1);
+		_istep = (int) max(cgstep/_xstep, 1);
+		int n = (_ihi - _ilo) / _istep;
+		if (_cgy == null || _cgy.length != n) {
 			_cgy = new double[n];
 			updateAll();
 		}
 	}
 	
 	public void updateAll() {
-		long N = _y.length; // long type prevents overflow of intermediate operations
-		int n = _cgy.length;
-		for (int j = 0; j < n; j++) {
-			int i1 = (int)(j*N/n);
-			int i2 = (int)((j+1)*N/n);
-			double acc = 0;
-			for (int i = i1; i < i2; i++)
-				acc += _y[i];
-			_cgy[j] = acc / (i2-i1);
+		for (int j = 0; j < _cgy.length; j++) {
+			_cgy[j] = 0;
+			for (int i = _ilo + j*_istep; i < _ilo + (j+1)*_istep; i++)
+				_cgy[j] += _y[i];
+			_cgy[j] /= _istep;
 		}
 	}
 
 	public double[] copyData() {
 		double[] ret = new double[2*_cgy.length];
 		for (int j = 0; j < _cgy.length; j++) {
-			ret[2*j+0] = _xlo + (j+0.5)*_cgstep;
+			ret[2*j+0] = _xlo + _xstep*(_istep*(j+0.5) - 0.5);
 			ret[2*j+1] = _cgy[j];
 		}
 		return ret;

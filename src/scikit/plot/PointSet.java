@@ -35,11 +35,6 @@ public class PointSet extends DataSet {
 	}
 	
 	
-	public int size() {
-		return 2*_x.length;
-	}
-	
-	
 	public double[] copyData() {
 		double[] ret = new double[2*_x.length];
 		for (int i = 0; i < _x.length; i++) {

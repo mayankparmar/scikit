@@ -17,11 +17,6 @@ public class Accumulator extends DataSet {
 	}
 	
 	
-	public int size() {
-		return _hash.size();
-	}
-	
-	
 	public double[] copyData() {
 		return copyDataAux(_hash);
 	}
