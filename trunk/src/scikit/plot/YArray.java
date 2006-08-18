@@ -16,10 +16,6 @@ public class YArray extends DataSet {
 		this(y, 0, y.length-1);
 	}
 	
-	public int size() {
-		return 2*_y.length;
-	}
-	
 	public double[] copyData() {
 		double[] ret = new double[2*_y.length];
 		for (int j = 0; j < _y.length; j++) {
