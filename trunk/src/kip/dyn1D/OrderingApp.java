@@ -23,7 +23,7 @@ class Structure {
 		kRmax = 2 * PI * R * (SN-1) / N;
 		
 		avg = new double[SN];
-		coarse = new Coarsened(avg, 0, kRmax, 0, kRmax, 0.1);
+		coarse = new Coarsened(avg, 0, kRmax, 0.1);
 		
 		accum = new double[numSteps][SN];
 		cnt = new int[numSteps];
@@ -31,9 +31,9 @@ class Structure {
 		fft = new jnt.FFT.RealDoubleFFT_Radix2(N);
 	}
 	
-	public double[] fn(int[] spins, int timeIndex) {
+	public double[] fn(double[] field, int timeIndex) {
 		for (int i = 0; i < N; i++)
-			data[i] = spins[i];
+			data[i] = field[i];
 		fft.transform(data);
 		
 		cnt[timeIndex]++;
@@ -44,8 +44,7 @@ class Structure {
 			accum[timeIndex][i] += (data[i]*data[i] + data[N-i]*data[N-i]) / N;
 			avg[i] = accum[timeIndex][i] / cnt[timeIndex];
 		}
-
-		coarse.updateAll();
+		
 		return avg;
 	}
 }
@@ -54,8 +53,9 @@ class Structure {
 public class OrderingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	Plot structurePlot = new Plot("Structure", true);
-	Ising sim;
+	Dynamics1D sim;
 	Structure structure;
+	double[] field;
 	int numSteps = 10;
 	
 	public static void main(String[] args) {
@@ -63,13 +63,14 @@ public class OrderingApp extends Job {
 	}
 
 	public OrderingApp() {
-		params.add("kR maximum", 10.0, true);
+		params.add("kR maximum", 20.0, true);
 		params.add("Coarse graining size", 0.1, false);
 		params.add("Memory time", 20.0, true);
 		params.add("Random seed", 0, true);
 		params.add("N", 1<<20, true);
 		params.add("R", 256, true);
 		params.add("T", 4.0/9.0, false);
+		params.add("J", 1.0, false);
 		params.add("h", 0.0, false);
 		params.add("dt", 0.2, false);
 		outputs.add("time");
@@ -86,11 +87,13 @@ public class OrderingApp extends Job {
 		double kRmax = params.fget("kR maximum");
 		
 		sim = new Ising(params);
+		
+		field = sim.copyField(null);
+		fieldPlot.setDataSet(0, new Coarsened(field, 0, sim.N, sim.N/100.0));
+		fieldPlot.setYRange(-1, 1);
+		
 		structure = new Structure(sim.N, sim.R, kRmax, numSteps);
 		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
-		
-		fieldPlot.setDataSet(0, new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ));
-		fieldPlot.setYRange(-1, 1);
 		structurePlot.setDataSet(0, structure.coarse);
 		structurePlot.setDataSet(1, new Function(0, kRmax) {
 			public double eval(double kR) {
@@ -109,7 +112,8 @@ public class OrderingApp extends Job {
 			sim.randomizeSpins();
 			
 			for (int i = 0; i < numSteps; i++) {
-				structure.fn(sim.spins.getAll(), i);
+				sim.copyField(field);
+				structure.fn(field, i);
 				yield();
 				sim.step();
 			}
@@ -117,5 +121,4 @@ public class OrderingApp extends Job {
 			params.set("Random seed", params.iget("Random seed")+1);			
 		}
 	}
-
-}	
+}

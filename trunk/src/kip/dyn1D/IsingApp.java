@@ -50,17 +50,17 @@ public class IsingApp extends Job {
 			Dynamics1D sim2 = sim.simulationAtTime(t);
 			if (sim2 != null) {
 				sim = sim2;
-				pset.setY(sim.ψ);
+// BUG				pset.setY(sim.ψ);
 				
-				sim2.testNucleationAtTime(t, 134, sim2.ψ.length / 32);
+//				sim2.testNucleationAtTime(t, 134, sim2.ψ.length / 32);
 			}
 		}
 		params.set("time", sim.time());
 		lastTime = sim.time();
 		
-		double T = sim.temperature();
+		double T = sim.T;
 		double J = 4/T;
-		double h = sim.externalField()/T;
+		double h = sim.h/T;
 		double s = -abs(h)/h;
 		double psi_sp = s*sqrt(1 - 1/J);
 		double h_sp = (atanh(psi_sp) - J*psi_sp);		
@@ -75,12 +75,13 @@ public class IsingApp extends Job {
 	
 	
 	void simulateUntilNucleation() {
-		while (!sim.inGrowthMode()) {
+//BUG		while (!sim.inGrowthMode()) {
 			sim.step();
 			yield();
-		}
+//		}
+
 		nucTimes.accum(2, sim.time());
-		double t = sim.intervention();
+		// double t = sim.intervention();
 		// System.out.println("t " + t);
 /*
 		while (true) {
@@ -97,7 +98,7 @@ public class IsingApp extends Job {
 		else if (dyn.equals("Block Ising"))
 			sim = new BlockIsing(params);
 		
-		pset = new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ);
+// BUG		pset = new PointSet(0, sim.systemSize()/sim.ψ.length, sim.ψ);
 		fieldPlot.setDataSet(0, pset);
 		fieldPlot.setYRange(-1.1, 0.1);
 		
