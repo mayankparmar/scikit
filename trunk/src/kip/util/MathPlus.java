@@ -102,7 +102,11 @@ public final class MathPlus extends Object {
         }
         return Math.log(x) / 2.30258509299404568401;
     }
-
+	
+	
+	static public double sqr(double x) {
+		return x*x;
+	}
 
     /**
      * @param x a double value

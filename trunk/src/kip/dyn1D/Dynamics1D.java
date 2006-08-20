@@ -8,8 +8,9 @@ import kip.util.Random;
 abstract class Dynamics1D implements Cloneable {
 	public Random			random = new Random();
 	private Dynamics1D		old;
-	protected double		memoryTime = 0;
+	protected double		memoryTime = Double.POSITIVE_INFINITY;
 	
+	public int blocklen;
 	public int N, R;
 	public double T, J, h;
 	public double time, dt;
@@ -51,7 +52,7 @@ abstract class Dynamics1D implements Cloneable {
 		if (old == null)
 			old = clone();
 		_step();
-		time += dt;
+		time += dt; // BUG: some error here
 		if (time() - old.time() > memoryTime) {
 			old = clone();
 			old.old.old = null; // cut off history to avoid memory leaks
@@ -80,7 +81,7 @@ abstract class Dynamics1D implements Cloneable {
 			R = N/2 - 1;
 		params.set("R", R);
 		
-		memoryTime = params.fget("Memory time");
+		try { memoryTime = params.fget("Memory time"); } catch(Exception e) {}
 		random.setSeed(params.iget("Random seed"));
 		setParameters(params);
 		
@@ -90,8 +91,8 @@ abstract class Dynamics1D implements Cloneable {
 	
 	public void setParameters(Parameters params) {
 		T  = params.fget("T");
-		J  = params.fget("J") / (2*R);
-		h  = params.fget("h");
+		J  = params.fget("J");
+		try { h  = params.fget("h"); } catch(Exception e) {}
 		dt = params.fget("dt");	
 	}
 	

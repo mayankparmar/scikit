@@ -26,8 +26,9 @@ public class Ising extends Dynamics1D {
 	
 	// reset time, set random number seed, initialize fields to down
 	public void initialize(Parameters params) {
-		super.initialize(params);		
+		super.initialize(params);
 		spins = new SpinBlocks1D(N, R, -1);
+		blocklen = 1;
 	}
 	
 	
@@ -68,10 +69,9 @@ public class Ising extends Dynamics1D {
 			int i = random.nextInt(N);
 			int spin = spins.get(i);
 			
-			double dE = 2*spin*(h + J*(spins.sumInRange(i)-spin));
+			double dE = 2*spin*(h + J*(spins.sumInRange(i)-spin)/(2*R));
 			if (shouldFlip(dE)) {
 				spins.flip(i);
-				// spinFlippedInField(i, spins.getAll());
 			}
 		}
 	}
