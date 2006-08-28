@@ -5,6 +5,7 @@ public class SpinBlocks1D implements Cloneable {
 	SpinBlockIndexer indexer;
 	int[] indices;
 	int[][] blocks;
+	int netSum;
 	int L, R;
 	
 	
@@ -29,6 +30,8 @@ public class SpinBlocks1D implements Cloneable {
 	public SpinBlocks1D(int L, int R, int dir) {
 		this.L = L;
 		this.R = R;
+		netSum = L*dir;
+		
 		indexer = new SpinBlockIndexer(L, R);
 		int maxScale = indexer.maxScale();
 		indices = indexer.newArray();
@@ -43,6 +46,10 @@ public class SpinBlocks1D implements Cloneable {
 		}
 	}
 	
+	
+	public int sumAll() {
+		return netSum;
+	}
 	
 	public int sumInRange(int x) {
 		return sumInRange(x-R, x+R);
@@ -76,6 +83,7 @@ public class SpinBlocks1D implements Cloneable {
 			int b = x >> scale;
 			blocks[scale][b] += dm;
 		}
+		netSum += dm;
 	}
 	
 	public int get(int x) {

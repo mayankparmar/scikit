@@ -12,8 +12,10 @@ public class Ising extends Dynamics1D {
 	public Dynamics dynamics = Dynamics.GLAUBER;
 	public SpinBlocks1D spins;
 	
-	public Ising(Parameters params) {
+	
+	public Ising(Parameters params, Dynamics dynamics) {
 		initialize(params);
+		this.dynamics = dynamics;
 	}
 	
 	
@@ -32,11 +34,21 @@ public class Ising extends Dynamics1D {
 	}
 	
 	
-	public void randomizeSpins() {
-		for (int i = 0; i < N; i++) {
-			if (random.nextDouble() < 0.5) {
-				spins.flip(i);
-			}
+	public double magnetization() {
+		return (double)spins.sumAll() / N;
+	}
+	
+	
+	public void randomizeField(double m) {
+		if (m == 1 || m == -1) {
+			for (int i = 0; i < N; i++)
+				if (spins.get(i) != m)
+					spins.flip(i);
+		}
+		else {
+			for (int i = 0; i < N; i++)
+				if (random.nextDouble() < (1 - spins.get(i)*m)/2)
+					spins.flip(i);
 		}
 	}
 	
