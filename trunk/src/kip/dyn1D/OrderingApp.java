@@ -64,12 +64,12 @@ public class OrderingApp extends Job {
 	}
 
 	public OrderingApp() {
-		params.add("Dynamics", true, "Field", "Ising Glauber");
+		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis", "Field");
 		params.add("kR maximum", 20.0, true);
 		params.add("Coarse graining size", 0.1, false);
 		params.add("Random seed", 0, true);
 		params.add("N", 1<<20, true);
-		params.add("R", 2048, true);
+		params.add("R", 512, true);
 		params.add("T", 4.0/9.0, false);
 		params.add("J", 1.0, false);
 		params.add("dt", 0.2, false);
@@ -88,7 +88,9 @@ public class OrderingApp extends Job {
 		
 		String dyn = params.sget("Dynamics");
 		if (dyn.equals("Ising Glauber"))
-			sim = new Ising(params);
+			sim = new Ising(params, Ising.Dynamics.GLAUBER);
+		else if (dyn.equals("Ising Metropolis"))
+			sim = new Ising(params, Ising.Dynamics.METROPOLIS);
 		else if (dyn.equals("Field"))
 			sim = new FieldIsing(params);
 		
@@ -104,7 +106,7 @@ public class OrderingApp extends Job {
 				if (sim.time() == 0) return 1;
 				double Q = kR == 0 ? 1 : sin(kR)/kR;
 				double D = Q*sim.J/sim.T - 1;
-				return exp(2*D*sim.time())*(1 + 1/D) - 1/D;
+				return exp(4*D*sim.time())*(1 + 1/D) - 1/D;
 			}
 		});
 		

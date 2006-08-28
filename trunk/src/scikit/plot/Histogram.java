@@ -27,6 +27,11 @@ public class Histogram extends Plot {
 		}
 	}
 	
+	public void setAveraging(int i, boolean avg) {
+		getAccumulator(i).setAveraging(avg);
+		setStyle(i, avg ? Style.MARKS : Style.BARS);
+	}
+	
 	private double getBinWidth(int i) {
 		if (_dataSets[i] != null && _dataSets[i] instanceof Accumulator)
 			return ((Accumulator)_dataSets[i]).getBinWidth();

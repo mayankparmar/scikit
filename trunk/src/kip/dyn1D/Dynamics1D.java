@@ -12,7 +12,7 @@ abstract class Dynamics1D implements Cloneable {
 	
 	public int blocklen;
 	public int N, R;
-	public double T, J, h;
+	public double T, J=1, h=0;
 	public double time, dt;
 	
 	public Dynamics1D clone() {
@@ -91,12 +91,13 @@ abstract class Dynamics1D implements Cloneable {
 	
 	public void setParameters(Parameters params) {
 		T  = params.fget("T");
-		J  = params.fget("J");
+		try { J  = params.fget("J"); } catch(Exception e) {}
 		try { h  = params.fget("h"); } catch(Exception e) {}
 		dt = params.fget("dt");	
 	}
 	
-	abstract public void randomizeSpins();
+	abstract public double magnetization();
+	abstract public void randomizeField(double m);
 	abstract public double[] copyField(double[] field);	
 	abstract protected void _step(); // step without saving "old" sim copies
 }

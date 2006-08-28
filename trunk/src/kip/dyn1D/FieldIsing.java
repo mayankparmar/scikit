@@ -23,17 +23,27 @@ public class FieldIsing extends Dynamics1D {
 	// reset time, set random number seed, initialize fields to down
 	public void initialize(Parameters params) {
 		super.initialize(params);
-		blocklen = 128;
+		blocklen = 16;
 		field = new double[N/blocklen];
 		scratch1 = new double[N/blocklen];
 		scratch2 = new double[N/blocklen];		
 	}
 	
 	
-	public void randomizeSpins() {
+	public void randomizeField(double m) {
+		assert (m == 0);
+		
 		for (int i = 0; i < N/blocklen; i++) {
 			field[i] = random.nextGaussian() / sqrt(blocklen);
 		}
+	}
+	
+	
+	public double magnetization() {
+		double sum = 0;
+		for (int i = 0; i < N/blocklen; i++)
+			sum += field[i];
+		return sum / (N/blocklen);
 	}
 	
 	
@@ -70,7 +80,7 @@ public class FieldIsing extends Dynamics1D {
 		double H = h / T;
 		
 		/*
-		// linear theory
+		// ----------------------------------------- linear theory
 		for (int cnt = 0; cnt < steps; cnt++) {
 			for (int i = 0; i < N/blocklen; i++) {
 				double f = field[i];
@@ -85,7 +95,42 @@ public class FieldIsing extends Dynamics1D {
 			}
 		}
 		*/
-
+		
+		// ----------------------------------------- heun scheme for perturbation in phi^2
+		for (int cnt = 0; cnt < steps; cnt++) {
+			// get euler predictor
+			for (int i = 0; i < N/blocklen; i++) {
+				double f = field[i];
+				double g = K*bar(field, i) + H;
+				double U = g - (g*g*g/3) - f;
+				double V = sqrt(2) * (1 /* - sqr(g)/4 - sqr(f)/4 */);
+				double eta = random.nextGaussian();
+				scratch1[i] = f + dt_*U + sqrt(dt_/dx_)*eta*V;
+			}
+			
+			// take step based on predictor
+			for (int i = 0; i < N/blocklen; i++) {
+				double f1 = field[i];
+				double f2 = scratch1[i];
+				double g1 = K*bar(field, i) + H;
+				double g2 = K*bar(scratch1, i) + H;
+				double U1 = g1 - (g1*g1*g1/3) - f1;
+				double U2 = g2 - (g2*g2*g2/3) - f2;
+				double V1 = sqrt(2) * (1 /* - sqr(g1)/4 - sqr(f1)/4 */);
+				double V2 = sqrt(2) * (1 /* - sqr(g2)/4 - sqr(f2)/4 */);
+				
+				double eta = random.nextGaussian();
+				scratch2[i] = f1 + dt_*(U1+U2)/2 + sqrt(dt_/dx_)*eta*(V1+V2)/2;
+			}
+			
+			// copy back to field
+			for (int i = 0; i < N/blocklen; i++) {
+				field[i] = scratch2[i];
+			}
+		}
+		
+		/*
+		// ----------------------------------------- full heun scheme
 		for (int cnt = 0; cnt < steps; cnt++) {
 			// get euler predictor
 			for (int i = 0; i < N/blocklen; i++) {
@@ -117,5 +162,6 @@ public class FieldIsing extends Dynamics1D {
 				field[i] = scratch2[i];
 			}
 		}
+		*/
 	}
 }
