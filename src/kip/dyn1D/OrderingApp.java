@@ -115,7 +115,7 @@ public class OrderingApp extends Job {
 		
 		while (true) {
 			sim.initialize(params);
-			sim.randomizeSpins();
+			sim.randomizeField(0);
 			
 			for (int i = 0; i < numSteps; i++) {
 				sim.copyField(field);
