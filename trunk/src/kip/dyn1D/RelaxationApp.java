@@ -7,12 +7,10 @@ import static kip.util.MathPlus.*;
 
 
 public class RelaxationApp extends Job {
-	Plot fieldPlot = new Plot("Fields", true);
 	Histogram magnetHist = new Histogram("Magnetization", 0, true);
 	
 	Dynamics1D sim;
 	Structure structure;
-	double[] field;
 	int numSteps = 100;
 	
 	public static void main(String[] args) {
@@ -22,9 +20,14 @@ public class RelaxationApp extends Job {
 	public RelaxationApp() {
 		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis");
 		params.add("Random seed", 0, true);
-		params.add("N", 1<<16, true);
-		params.add("R", 512, true);
-		params.add("T", 5.0, false);
+		
+//		params.add("N", 1<<9, true);
+//		params.add("R", 1<<3, true);
+		params.add("N", 1<<15, true);
+		params.add("R", 1<<9, true);
+//		params.add("N", 1<<21, true);
+//		params.add("R", 1<<15, true);
+		params.add("T", 1000.0, false);
 		params.add("dt", 0.02, true);
 		outputs.add("time");
 	}
@@ -42,14 +45,8 @@ public class RelaxationApp extends Job {
 		else if (dyn.equals("Ising Metropolis"))
 			sim = new Ising(params, Ising.Dynamics.METROPOLIS);
 		
-		field = sim.copyField(null);
-		fieldPlot.setDataSet(0, new Coarsened(field, 0, sim.N, sim.N/100.0));
-		fieldPlot.setYRange(-1, 1);
-		
 		magnetHist.setBinWidth(0, sim.dt);
 		magnetHist.setAveraging(0, true);
-		
-		addDisplay(fieldPlot);
 		addDisplay(magnetHist);
 		
 		while (true) {
@@ -58,7 +55,6 @@ public class RelaxationApp extends Job {
 			
 			for (int i = 0; i < numSteps; i++) {
 				magnetHist.accum(0, sim.time(), sim.magnetization());
-				sim.copyField(field);
 				yield();
 				sim.step();
 			}
