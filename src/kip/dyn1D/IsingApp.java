@@ -6,7 +6,7 @@ import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 
 
-public class IsingApp extends Job {
+public class IsingApp { /* extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	PointSet pset;
 	
@@ -83,12 +83,11 @@ public class IsingApp extends Job {
 		nucTimes.accum(2, sim.time());
 		// double t = sim.intervention();
 		// System.out.println("t " + t);
-/*
-		while (true) {
-			sim.step();
-			yield();
-		}
-*/
+
+//		while (true) {
+//			sim.step();
+//			yield();
+//		}
 	}
 	
 	public void run() {
@@ -113,4 +112,5 @@ public class IsingApp extends Job {
 			params.set("Random seed", params.iget("Random seed")+1);			
 		}
 	}
+*/
 }
