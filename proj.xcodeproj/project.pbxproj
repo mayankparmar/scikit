@@ -1,0 +1,146 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildStyle section */
+		88230FFC05D9926E00FE8D22 /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		88230FFD05D9926E00FE8D22 /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXFileReference section */
+		2BDCE1710B13C71D00356598 /* build.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		88230FFA05D9926E00FE8D22 = {
+			isa = PBXGroup;
+			children = (
+				2BDCE1710B13C71D00356598 /* build.xml */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		8823100505D9929B00FE8D22 /* proj */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "-emacs $(ACTION)";
+			buildConfigurationList = 2B0308E00B127BD4004E8040 /* Build configuration list for PBXLegacyTarget "proj" */;
+			buildPhases = (
+			);
+			buildSettings = {
+				PRODUCT_NAME = proj;
+			};
+			buildToolPath = /Developer/Java/Ant/bin/ant;
+			dependencies = (
+			);
+			name = proj;
+			passBuildSettingsInEnvironment = 1;
+			productName = proj;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		88230FFE05D9926E00FE8D22 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 2B0308E40B127BD4004E8040 /* Build configuration list for PBXProject "proj" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				88230FFC05D9926E00FE8D22 /* Debug */,
+				88230FFD05D9926E00FE8D22 /* Release */,
+			);
+			hasScannedForEncodings = 1;
+			mainGroup = 88230FFA05D9926E00FE8D22;
+			projectDirPath = "";
+			targets = (
+				8823100505D9929B00FE8D22 /* proj */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		2B0308E10B127BD4004E8040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				PRODUCT_NAME = proj;
+			};
+			name = Debug;
+		};
+		2B0308E20B127BD4004E8040 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				PRODUCT_NAME = proj;
+			};
+			name = Release;
+		};
+		2B0308E30B127BD4004E8040 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = proj;
+			};
+			name = Default;
+		};
+		2B0308E50B127BD4004E8040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		2B0308E60B127BD4004E8040 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		2B0308E70B127BD4004E8040 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Default;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B0308E00B127BD4004E8040 /* Build configuration list for PBXLegacyTarget "proj" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B0308E10B127BD4004E8040 /* Debug */,
+				2B0308E20B127BD4004E8040 /* Release */,
+				2B0308E30B127BD4004E8040 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+		2B0308E40B127BD4004E8040 /* Build configuration list for PBXProject "proj" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B0308E50B127BD4004E8040 /* Debug */,
+				2B0308E60B127BD4004E8040 /* Release */,
+				2B0308E70B127BD4004E8040 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 88230FFE05D9926E00FE8D22 /* Project object */;
+}
