@@ -40,7 +40,7 @@ public class PistonApp extends Job {
 		params.add("dt", 0.05, 0, 0.2, false);
 		params.add("Bin width", 0.0002, 0.00005, 0.01, false);
 		
-		addDisplay(new ShapePlot("blah", true));
+//		addDisplay(new ShapePlot("blah", true));
 		
 		addDisplay(particles);
 		addDisplay(enthalpy);
