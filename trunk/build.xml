@@ -2,19 +2,10 @@
 
 
 <project name="osp" default="compile" basedir="./">
-	<property name="retroweaver.home" value="../retroweaver"/>
     <property name="build.dir" value="./build/"/>
     <property name="classes.dir" value="${build.dir}/classes/"/>
     <property name="jar.dir" value="${build.dir}/jar/"/>
     <property name="src.dir" value="./src/"/>
-	
-	<!-- retroweaver task; make class files compatible with previous JVM's -->
-	<taskdef name="retroweaver" classname="com.rc.retroweaver.ant.RetroWeaverTask"> 
-		<classpath> 
-			<fileset dir="${retroweaver.home}/lib" includes="**/*"/> 
-			<pathelement location="${retroweaver.home}/release/retroweaver.jar"/> 
-		</classpath> 
-	</taskdef>
 	
 	
     <!-- init: create the directories -->
@@ -35,7 +26,7 @@
         <javac 
 				srcdir="${src.dir}" destdir="${classes.dir}" debug="true"
 				excludes="**/excludes/**"
-				source="1.5" classpath="./osp.jar:./bsh-2.0b4.jar"> 
+				source="1.5" classpath="./lib/*"> 
 			<!-- <compilerarg value="-warnunchecked"/> -->
 			<!-- <compilerarg value="-version"/> -->
 			<!-- <compilerarg value="-Xlint"/> -->
@@ -61,15 +52,14 @@
 		<!-- weave: convert classes to older jvm format
 		  <mkdir dir="${build.dir}/classes-13"/> 
 			destdir="${build.dir}/classes-13/"  -->
-		<retroweaver srcdir="${classes.dir}" version="1.4"/>
 
 		<jar jarfile="${jar.dir}piston.jar">
 			<fileset dir="${classes.dir}" includes="scikit/** mina/**"/>
-			<zipfileset src="retroweaver-rt.jar"/>
+			<!-- <zipfileset src="retroweaver-rt.jar"/> -->
 			<manifest>
 			  <attribute name="Built-By" value="Mina Khanlarzadeh"/>
 			  <attribute name="Main-Class" value="mina.PistonApp"/>
-			  <attribute name="Class-Path" value="retroweaver-rt.jar"/>
+			  <!-- <attribute name="Class-Path" value="retroweaver-rt.jar"/> -->
 			</manifest>
 		</jar>	
 	</target>
