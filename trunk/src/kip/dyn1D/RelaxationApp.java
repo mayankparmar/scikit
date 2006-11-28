@@ -39,11 +39,7 @@ public class RelaxationApp extends Job {
 	
 	
 	public void run() {
-		String dyn = params.sget("Dynamics");
-		if (dyn.equals("Ising Glauber"))
-			sim = new Ising(params, Ising.Dynamics.GLAUBER);
-		else if (dyn.equals("Ising Metropolis"))
-			sim = new Ising(params, Ising.Dynamics.METROPOLIS);
+		sim = new Ising(params);
 		
 		magnetHist.setBinWidth(0, sim.dt);
 		magnetHist.setAveraging(0, true);

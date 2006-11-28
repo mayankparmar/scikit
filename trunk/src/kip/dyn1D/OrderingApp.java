@@ -64,7 +64,8 @@ public class OrderingApp extends Job {
 	}
 
 	public OrderingApp() {
-		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis", "Field");
+		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis");
+		params.add("Simulation type", true, "Ising", "Langevin");
 		params.add("kR maximum", 20.0, true);
 		params.add("Coarse graining size", 0.1, false);
 		params.add("Random seed", 0, true);
@@ -72,7 +73,7 @@ public class OrderingApp extends Job {
 		params.add("R", 512, true);
 		params.add("T", 4.0/9.0, false);
 		params.add("J", 1.0, false);
-		params.add("dt", 0.2, false);
+		params.add("dt", 0.1, false);
 		outputs.add("time");
 	}
 	
@@ -86,13 +87,8 @@ public class OrderingApp extends Job {
 	public void run() {
 		double kRmax = params.fget("kR maximum");
 		
-		String dyn = params.sget("Dynamics");
-		if (dyn.equals("Ising Glauber"))
-			sim = new Ising(params, Ising.Dynamics.GLAUBER);
-		else if (dyn.equals("Ising Metropolis"))
-			sim = new Ising(params, Ising.Dynamics.METROPOLIS);
-		else if (dyn.equals("Field"))
-			sim = new FieldIsing(params);
+		String type = params.sget("Simulation type");
+		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
 		field = sim.copyField(null);
 		fieldPlot.setDataSet(0, new Coarsened(field, 0, sim.N, sim.N/100.0));
@@ -105,8 +101,27 @@ public class OrderingApp extends Job {
 			public double eval(double kR) {
 				if (sim.time() == 0) return 1;
 				double Q = kR == 0 ? 1 : sin(kR)/kR;
-				double D = Q*sim.J/sim.T - 1;
-				return exp(4*D*sim.time())*(1 + 1/D) - 1/D;
+				double K = sim.J/sim.T;
+				double t = sim.time();
+				double M = 2;
+				double D;
+				
+				switch (sim.dynamics) {
+				case METROPOLIS:
+					M = 4; // fall through
+				case GLAUBER:
+					D = -1 + Q*K;
+					return exp(M*D*t)*(1 + 1/D) - 1/D;
+					
+				case KAWA_METROPOLIS:
+					M = 4; // fall through
+				case KAWA_GLAUBER:
+					D = -1 + Q*(1 + K) - Q*Q*K;
+					return kR == 0 ? 1 : exp(M*D*t)*(1+(1-Q)/D) - (1-Q)/D;
+					
+				default:
+					return Double.NaN;
+				}
 			}
 		});
 		
