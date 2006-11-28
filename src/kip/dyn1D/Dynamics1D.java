@@ -6,6 +6,8 @@ import kip.util.Random;
 
 
 abstract class Dynamics1D implements Cloneable {
+	public DynType dynamics = DynType.GLAUBER;
+
 	public Random			random = new Random();
 	private Dynamics1D		old;
 	protected double		memoryTime = Double.POSITIVE_INFINITY;
@@ -71,6 +73,16 @@ abstract class Dynamics1D implements Cloneable {
 	}
 	
 	public void initialize(Parameters params) {
+		String dyn = params.sget("Dynamics");
+		if (dyn.equals("Ising Glauber"))
+			dynamics = DynType.GLAUBER;
+		else if (dyn.equals("Ising Metropolis"))
+			dynamics = DynType.METROPOLIS;
+		else if (dyn.equals("Kawasaki Glauber"))
+			dynamics = DynType.KAWA_GLAUBER;
+		else if (dyn.equals("Kawasaki Metropolis"))
+			dynamics = DynType.KAWA_METROPOLIS;
+		
 		N = params.iget("N");
 		if (N > Integer.highestOneBit(N))
 			N = Integer.highestOneBit(N);
