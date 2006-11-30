@@ -1,18 +1,18 @@
 package scikit.plot;
 
 
-import java.util.HashMap;
+import java.util.*;
 import static java.lang.Math.*;
 
 
 public class Accumulator extends DataSet {
 	private double _origBinWidth, _binWidth;
-	private HashMap<Double, double[]> _origHash, _hash;
+	private AbstractMap<Double, double[]> _origHash, _hash;
 	private boolean _avg = false;
 	
 	public Accumulator(double binWidth) {
 		_origHash = new HashMap<Double, double[]>();
-		_hash = new HashMap<Double, double[]>();
+		_hash = new TreeMap<Double, double[]>();
 		_origBinWidth = _binWidth = binWidth;
 	}
 	
@@ -53,7 +53,7 @@ public class Accumulator extends DataSet {
 		accumAux(_hash, _binWidth, x, v, 1);
 	}
 	
-	private static void accumAux(HashMap<Double,double[]> h, double bw, double x, double v, double cnt) {
+	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {
 //		bw = bw * (1 - 1e-12); // perturb bin width slightly to get consistent rounding
 		double k = bw * floor(x/bw + 0.5); // why doesn't rint(x/bw) work??
 		double[] val = h.get(k);
