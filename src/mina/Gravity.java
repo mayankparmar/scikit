@@ -19,9 +19,10 @@ public class Gravity extends Job {
 	double[] x, y, vx, vy;	// gas phase coordinates
 	
 	public Gravity() {
-		params.add("# of particles", 1000, 1, 100000, true);
-		params.add("Gravity", 0.00001, 0,  0.00002, false);
-		params.add("dt", 0.05, 0, 0.2, false);
+		params.add("# of particles", new IntValue(1000, 1, 100000));
+		params.add("Gravity", new DoubleValue(0.00001, 0,  0.00002));
+		params.addm("dt", new DoubleValue(0.05, 0, 0.2));
+
 		addDisplay(particles);
 	}
 

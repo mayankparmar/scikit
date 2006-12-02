@@ -29,18 +29,13 @@ public class PistonApp extends Job {
 	
 	
 	public PistonApp() {
-		params.add("Initial piston position", 10.0, 0, 100, true);
-		params.add("Initial piston velocity", 0.0, -1, 1, true);
-		params.add("# of particles", 1000, 1, 5000, true);
-
-		params.add("Piston mass", 100.0, 0, 200, false);
-		params.enableSlider("Piston mass");
-		params.add("Piston acceleration", 0.00001, 0,  0.00002, false);
-		params.enableSlider("Piston acceleration");		
-		params.add("dt", 0.05, 0, 0.2, false);
-		params.add("Bin width", 0.0002, 0.00005, 0.01, false);
-		
-//		addDisplay(new ShapePlot("blah", true));
+		params.add("Initial piston position", new DoubleValue(10.0, 0, 100));
+		params.add("Initial piston velocity", new DoubleValue(0.0, -1, 1));
+		params.add("# of particles", new IntValue(1000, 1, 5000));
+		params.addm("Piston mass", new DoubleValue(100.0, 0, 200)).enableAuxiliaryEditor();
+		params.addm("Piston acceleration", new DoubleValue(0.00001, 0,  0.00002)).enableAuxiliaryEditor();
+		params.addm("dt", new DoubleValue(0.05, 0, 0.2));
+		params.addm("Bin width", new DoubleValue(0.0002, 0.00005, 0.01));
 		
 		addDisplay(particles);
 		addDisplay(enthalpy);

@@ -10,8 +10,8 @@ import java.awt.event.*;
 public class ChoiceValue extends Value {
 	private String[] _choices;
 	
-	public ChoiceValue(String[] choices, boolean lockable) {
-		super(choices[0], lockable);
+	public ChoiceValue(String... choices) {
+		super(choices[0]);
 		_choices = choices;
 	}
 	
