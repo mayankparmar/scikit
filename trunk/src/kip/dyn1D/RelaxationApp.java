@@ -18,17 +18,12 @@ public class RelaxationApp extends Job {
 	}
 
 	public RelaxationApp() {
-		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis");
-		params.add("Random seed", 0, true);
-		
-//		params.add("N", 1<<9, true);
-//		params.add("R", 1<<3, true);
-		params.add("N", 1<<15, true);
-		params.add("R", 1<<9, true);
-//		params.add("N", 1<<21, true);
-//		params.add("R", 1<<15, true);
-		params.add("T", 1000.0, false);
-		params.add("dt", 0.02, true);
+		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis"));
+		params.add("Random seed", 0);
+		params.add("N", 1<<15);
+		params.add("R", 1<<9);
+		params.add("T", 1000.0);
+		params.add("dt", 0.02);
 		outputs.add("time");
 	}
 	

@@ -3,6 +3,8 @@ package scikit.jobs;
 
 import scikit.plot.Display;
 import java.util.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 
 public abstract class Job implements Runnable {
@@ -22,9 +24,17 @@ public abstract class Job implements Runnable {
 	volatile private boolean stepRequested = false;
 	volatile private boolean killRequested = false;
 	
-	public Parameters params = new Parameters(this);
-	public Parameters outputs = new Parameters(this);
+	public Parameters params = new Parameters();
+	public Parameters outputs = new Parameters();
 	
+	
+	public Job() {
+		ChangeListener listener = new ChangeListener() {
+			public void stateChanged(ChangeEvent e) { wakeProcess(); }
+		};
+		params.setChangeListener(listener);
+		outputs.setChangeListener(listener);
+	}
 	
 	
 	public String toString() {
@@ -91,7 +101,7 @@ public abstract class Job implements Runnable {
 	
 	
 	private void animateDisplays() {
-		animate();
+		animate(); // job animates first so its displays get most recent data
 		for (Display disp : displays) {
 			disp.animate();
 		}

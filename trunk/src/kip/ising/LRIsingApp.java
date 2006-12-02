@@ -130,15 +130,13 @@ public class LRIsingApp extends Job {
 	}
 	
 	public LRIsingApp() {
-		params.add("Random seed", 0, false);
-		params.add("Bin width", 0.5, false);
-		params.add("N", 1 << 18, true);
-		params.add("L", 1 << 10, true);
-///		params.add("N", 1 << 6, true);
-//		params.add("L", 1 << 2, true);
-		params.add("J", 0.5, false);
-		params.add("h", 0.5, false);
-		params.add("dt", 0.1, false);
+		params.addm("Random seed", 0);
+		params.addm("Bin width", 0.5);
+		params.add("N", 1 << 18);
+		params.add("L", 1 << 10);
+		params.addm("J", 0.5);
+		params.addm("h", 0.5);
+		params.addm("dt", 0.1);
 	}
 	
 	

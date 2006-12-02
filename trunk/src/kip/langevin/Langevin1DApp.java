@@ -55,36 +55,25 @@ public class Langevin1DApp extends Job {
 	
 	
 	public Langevin1DApp() {
-		params.add("Intervention overshoot", 10.0, false);
-		params.add("Droplet low bound", 10000.0, false);
-		params.add("Droplet high bound", 10000.0, false);
-//		params.add("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles", false);
-		params.add("Data path", "", false);
+		params.addm("Intervention overshoot", 10.0);
+		params.addm("Droplet low bound", 10000.0);
+		params.addm("Droplet high bound", 10000.0);
+//		params.addm("Data path", "/Users/kbarros/dev/nucleation/droplet_profiles");
+		params.addm("Data path", "");
 		
-		params.add("Random seed", 0, false);
-		params.add("Crude cutoff", 0.0, false);
-		params.add("Bin width", 0.5, false);
+		params.addm("Random seed", 0);
+		params.addm("Crude cutoff", 0.0);
+		params.addm("Bin width", 0.5);
 		
-		params.add("h", 0.223, false);
-		params.add("Length", 50.0, false);
-		params.add("dx", 0.5, false);
-		params.add("dt", 0.1, false);
-		params.add("R\u00b2", 0.1, false); // R2
-		params.add("\u03b5", -5./9., false); // ε
-		params.add("\u0393", 0.005, false); // Γ
-		params.add("\u03bb", 0.0, false); // λ
-		params.add("\u03b1", 1.0, false); // α
-/*
-		params.put("\u03bb", 0); // λ
-		params.put("h", 0.223);
-		params.put("Length", 1000);
-		params.put("dx", 10);
-		params.put("dt", 0.1);
-		params.put("R\u00b2", 100); // R2
-		params.put("\u03b5", "-5/9"); // ε
-		params.put("\u03b1", 1); // α
-		params.put("\u0393", 0.5); // Γ
-*/		
+		params.addm("h", 0.223);
+		params.addm("Length", 50.0);
+		params.addm("dx", 0.5);
+		params.addm("dt", 0.1);
+		params.addm("R\u00b2", 0.1); // R2
+		params.addm("\u03b5", -5./9.); // ε
+		params.addm("\u0393", 0.005); // Γ
+		params.addm("\u03bb", 0.0); // λ
+		params.addm("\u03b1", 1.0); // α
 	}
 	
 /*	

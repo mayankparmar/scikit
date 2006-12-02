@@ -64,16 +64,16 @@ public class OrderingApp extends Job {
 	}
 
 	public OrderingApp() {
-		params.add("Dynamics", true, "Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis");
-		params.add("Simulation type", true, "Ising", "Langevin");
-		params.add("kR maximum", 20.0, true);
-		params.add("Coarse graining size", 0.1, false);
-		params.add("Random seed", 0, true);
-		params.add("N", 1<<20, true);
-		params.add("R", 512, true);
-		params.add("T", 4.0/9.0, false);
-		params.add("J", 1.0, false);
-		params.add("dt", 0.1, false);
+		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
+		params.add("Simulation type", new ChoiceValue("Ising", "Langevin"));
+		params.add("kR maximum", 20.0);
+		params.addm("Coarse graining size", 0.1);
+		params.add("Random seed", 0);
+		params.add("N", 1<<20);
+		params.add("R", 512);
+		params.addm("T", 4.0/9.0);
+		params.addm("J", 1.0);
+		params.addm("dt", 0.1);
 		outputs.add("time");
 	}
 	

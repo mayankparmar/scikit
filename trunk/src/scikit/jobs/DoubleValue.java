@@ -6,17 +6,17 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-class DoubleValue extends Value {
+public class DoubleValue extends Value {
 	private double _x;	// the precise value approximated by string v
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
-	public DoubleValue(double x, boolean lockable) {
-		super(format(x), lockable);
+	public DoubleValue(double x) {
+		super(format(x));
 		_x = x;
 	}
 	
-	public DoubleValue(double x, double lo, double hi, boolean lockable) {
-		super(format(x), lockable);
+	public DoubleValue(double x, double lo, double hi) {
+		super(format(x));
 		_x = x;
 		_lo = lo;
 		_hi = hi;

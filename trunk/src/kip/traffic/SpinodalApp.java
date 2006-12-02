@@ -17,9 +17,9 @@ public class SpinodalApp extends Job {
 	}
     
     public SpinodalApp() {
-        params.add("Size", 128, true);
-        params.add("Temperature", 2.0, false);
-        params.add("Interaction", 0.5, false);
+        params.add("Size", 128);
+        params.addm("Temperature", 2.0);
+        params.addm("Interaction", 0.5);
     }
     
     public void animate() {

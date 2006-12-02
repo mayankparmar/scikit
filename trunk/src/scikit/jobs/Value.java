@@ -17,7 +17,7 @@ public class Value {
 	private Color lightGreen = new Color(0.85f, 1f, 0.7f);
 	private Color lightRed   = new Color(1f, 0.7f, 0.7f);
 	private Vector<ChangeListener> _listeners = new Vector<ChangeListener>();
-	private boolean _lockable = false;
+	private boolean _lockable = true;
 	
 	protected boolean _locked = false;
 	protected boolean _auxiliaryEditor = false;
@@ -31,8 +31,11 @@ public class Value {
 	}
 	
 	
-	public Value(String v, boolean lockable) {
+	public Value(String v) {
 		_v = _default = v;
+	}
+
+	public void setLockable(boolean lockable) {
 		_lockable = lockable;
 	}
 	
