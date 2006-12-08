@@ -18,7 +18,7 @@ public class LangevinDroplet {
     int dropletCount;
     
     // distance at which two nucleating droplets are considered to be from the same place
-    // (as multiples of sqrt(R2))
+    // (scaled by R)
     double dropletRange = 10;
     
     // time duration to wait for nucleation
@@ -40,8 +40,8 @@ public class LangevinDroplet {
         
         this.control = control;
         double overshoot = control.getDouble("Intervention overshoot");
-        double L = control.getDouble("Length");
-        dx = control.getDouble("dx");
+        double L = control.getDouble("Length/R");
+        dx = control.getDouble("dx/R");
         N = (int) (L / dx);
         t_wait = 2*overshoot;
         ψdroplet = new double[N];

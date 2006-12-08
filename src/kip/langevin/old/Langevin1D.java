@@ -7,7 +7,7 @@ import kip.util.Random;
 public class Langevin1D implements Cloneable {
     public int N;
     public double[] ψ, φ;
-    public double L, dx, R2, h, ε, λ, alpha, Γ, t, dt;
+    public double L, dx, R, h, ε, t, dt, λ, alpha;
     public double ψcutoff;
     public double M = 1;
     public int randomSeed;
@@ -34,8 +34,8 @@ public class Langevin1D implements Cloneable {
         randomSeed = control.getInt("Random seed");
         random.setSeed(randomSeed);        
         ψcutoff = control.getDouble("Crude cutoff");
-        L = control.getDouble("Length");
-        dx = control.getDouble("dx");
+        L = control.getDouble("Length/R");
+        dx = control.getDouble("dx/R");
         getParameters(control);
         
         t = 0;
@@ -54,12 +54,11 @@ public class Langevin1D implements Cloneable {
     
     
     public void getParameters(SimControl control) {
-        R2 = control.getDouble("R\u00b2");
+        R = control.getDouble("R");
         h = control.getDouble("h");
         ε = control.getDouble("\u03b5");
         λ = control.getDouble("\u03bb");
         alpha = control.getDouble("\u03b1");
-        Γ = control.getDouble("\u0393");
         dt = control.getDouble("dt");
     }
 
@@ -71,7 +70,7 @@ public class Langevin1D implements Cloneable {
     // where the final term is identified with the field φ(t), and
 	//
     //	      ⌠ t+dt
-    //        |      η dt = Γ sqrt(dt / dx R) guassian_noise()
+    //        |      η dt = sqrt(dt / dx R) guassian_noise()
     //        ⌡ t
     //
     public void step() {
@@ -80,8 +79,8 @@ public class Langevin1D implements Cloneable {
             int im = (i-1+N) % N;
             double ψ3 = ψ[i] * ψ[i] * ψ[i];
             double laplace = (ψ[ip]-2*ψ[i]+ψ[im])/(dx*dx);
-            double dψ_dt = -M * (-R2*laplace + 2*ε*ψ[i] + 4*ψ3 - h);
-            double dt_eta = sqrt(dt/dx) * Γ * noise() / sqrt(R2);
+            double dψ_dt = -M * (-laplace + 2*ε*ψ[i] + 4*ψ3 - h);
+            double dt_eta = sqrt(dt/(dx*R)) * noise();
             φ[i] += -alpha*φ[i]*dt + λ*ψ[i]*dt;
             ψnew[i] = ψ[i] + dt*dψ_dt + dt_eta + dt*φ[i];
         }
@@ -150,8 +149,8 @@ public class Langevin1D implements Cloneable {
     
     // has the system nucleated within 'range' of position 'x'
     public boolean nucleatedInRegion(double x, double range) {
-        int ilo = x2i(x-range*sqrt(R2)/2);
-        int ihi = x2i(x+range*sqrt(R2)/2);
+        int ilo = x2i(x-range/2);
+        int ihi = x2i(x+range/2);
         for (int i = ilo; i != ihi; i = (i+1)%N) {
             if (ψ[i] > ψcutoff)
                 return true;
@@ -177,8 +176,8 @@ public class Langevin1D implements Cloneable {
     // points where the psi field crosses the nucleating threshhold.
     public double dropletDelta(double x, double range) {
         double acc = 0, cnt = 0;
-        int ilo = x2i(x-range*sqrt(R2)/2);
-        int ihi = x2i(x+range*sqrt(R2)/2);
+        int ilo = x2i(x-range/2);
+        int ihi = x2i(x+range/2);
         
         for (int i = ilo; i != ihi; i = (i+1)%N) {
             if (ψ[i] > ψcutoff) {
@@ -226,7 +225,7 @@ public class Langevin1D implements Cloneable {
     }
     
     public void dump(String path, double[] _ψ) {
-        String filename = path + "/_h" + h + "_r" + randomSeed + "_t" + (int)t + "_dt" + dt + "_R" + R2;
+        String filename = path + "/_h" + h + "_r" + randomSeed + "_t" + (int)t + "_dt" + dt + "_R" + R;
         if (_ψ == null)
             _ψ = ψ;
         scikit.util.Dump.doubleArray(filename, _ψ, 1);
