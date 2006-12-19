@@ -3,8 +3,9 @@
 
 <project name="osp" default="compile" basedir="./">
     <property name="build.dir" value="./build/"/>
-    <property name="classes.dir" value="${build.dir}/classes/"/>
-    <property name="jar.dir" value="${build.dir}/jar/"/>
+    <property name="classes.dir" value="./build/classes/"/>
+    <property name="jar.dir" value="./build/jar/"/>
+	<property name="ext.dir" value="./lib/"/>
     <property name="src.dir" value="./src/"/>
 	
 	
@@ -24,9 +25,8 @@
     <!-- compile: compile all java source files -->
     <target name="compile" depends="init">
         <javac 
-				srcdir="${src.dir}" destdir="${classes.dir}" debug="true"
-				excludes="**/excludes/**"
-				source="1.5" classpath="./lib/*"> 
+				srcdir="${src.dir}" destdir="${classes.dir}" extdirs="${ext.dir}"
+				debug="true" excludes="**/excludes/**" source="1.5" >
 			<!-- <compilerarg value="-warnunchecked"/> -->
 			<!-- <compilerarg value="-version"/> -->
 			<!-- <compilerarg value="-Xlint"/> -->
@@ -46,7 +46,7 @@
 		</jar>
 	</target>
 	
-	
+	 
 	<!-- mina's jar file  -->
 	<target name="mina" depends="compile">		
 		<!-- weave: convert classes to older jvm format
