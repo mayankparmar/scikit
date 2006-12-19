@@ -11,7 +11,7 @@ public class Accumulator extends DataSet {
 	private boolean _avg = false;
 	
 	public Accumulator(double binWidth) {
-		_origHash = new HashMap<Double, double[]>();
+		_origHash = new TreeMap<Double, double[]>();
 		_hash = new TreeMap<Double, double[]>();
 		_origBinWidth = _binWidth = binWidth;
 	}
@@ -30,7 +30,7 @@ public class Accumulator extends DataSet {
 	
 	public void setBinWidth(double binWidth) {
 		_binWidth = max(binWidth, _origBinWidth);
-		_hash = new HashMap<Double, double[]>();
+		_hash = new TreeMap<Double, double[]>();
 		for (Double k : _origHash.keySet()) {
 			accumAux(_hash, _binWidth, k, _origHash.get(k)[0], _origHash.get(k)[1]);
 		}
