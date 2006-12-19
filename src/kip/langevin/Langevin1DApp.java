@@ -166,9 +166,5 @@ public class Langevin1DApp extends Job {
 			params.set("Random seed", ""+origsim.incrementRandomSeed());			
 		}
 	}
-	
-	
-	public void dispose() {
-	}
 
 }
