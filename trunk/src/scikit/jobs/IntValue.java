@@ -1,20 +1,20 @@
 package scikit.jobs;
 
-public class IntValue extends Value {
+public class IntValue extends GuiValue {
 	private int _lo = Integer.MIN_VALUE, _hi = Integer.MAX_VALUE;
 	
-	public IntValue(int v) {
-		super(String.valueOf(v));
+	public IntValue(int x) {
+		super(x);
 	}
 	
-	public IntValue(int v, int lo, int hi) {
-		super(String.valueOf(v));
+	public IntValue(int x, int lo, int hi) {
+		super(x);
 		_lo = lo;
 		_hi = hi;		
 	}
 	
-	synchronized public int iget() {
-		return Integer.valueOf(_v);
+	public Integer valueForString(String v) {
+		return Integer.valueOf(v);
 	}
 	
 	public boolean testValidity(String v) {

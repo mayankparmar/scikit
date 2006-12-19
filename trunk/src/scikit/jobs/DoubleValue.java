@@ -1,49 +1,34 @@
 package scikit.jobs;
 
+import java.text.DecimalFormat;
+import static java.lang.Math.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 
 
-public class DoubleValue extends Value {
-	private double _x;	// the precise value approximated by string v
+public class DoubleValue extends GuiValue {
+	static DecimalFormat df1 = new DecimalFormat("0.####");
+	static DecimalFormat df2 = new DecimalFormat("0.####E0");
+	static public String format(double x) {
+		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
+	}
+	
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
 	public DoubleValue(double x) {
-		super(format(x));
-		_x = x;
+		super(x);
 	}
 	
 	public DoubleValue(double x, double lo, double hi) {
-		super(format(x));
-		_x = x;
+		super(x);
 		_lo = lo;
 		_hi = hi;
 	}
 	
-	synchronized public double fget() {
-		return _x;
-	}
-	
-	synchronized public void set(String v) {
-		if (!_v.equals(v)) {
-			// _x needs to be set first, because super.set() will go call into
-			// it's ChangeListeners which may ask about _x
-			_x = Double.valueOf(v);
-			super.set(v);
-		}
-	}
-	
-	synchronized public void set(double x) {
-		if (_x != x) {
-			// as before, _x needs to be set first
-			_x = x;
-			// it would be a bug to call super.set(x), because it would call this.set(v),
-			// and the value of _x would be overwritten with a less accurate string
-			// conversion number
-			super.set(format(x));
-		}
+	public Double valueForString(String v) {
+		return Double.valueOf(v);
 	}
 	
 	public boolean testValidity(String v) {
@@ -62,7 +47,7 @@ public class DoubleValue extends Value {
 		if (!_auxiliaryEditor || range == Double.POSITIVE_INFINITY)
 			return null;
 		
-		final JSlider slider = new JSlider(0, 1000, toRangedInt(fget()));
+		final JSlider slider = new JSlider(0, 1000, toRangedInt((Double)get()));
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (slider.hasFocus()) {
@@ -74,7 +59,7 @@ public class DoubleValue extends Value {
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (!slider.hasFocus())
-					slider.setValue(toRangedInt(fget()));
+					slider.setValue(toRangedInt((Double)get()));
 				slider.setEnabled(!_locked);
 			}
 		});
@@ -82,8 +67,8 @@ public class DoubleValue extends Value {
 		return slider;
 	}
 	
-	private double fromRangedInt(int i) {
-		return _lo + (_hi - _lo) * i / 1000;
+	private String fromRangedInt(int i) {
+		return format(_lo + (_hi - _lo) * i / 1000);
 	}
 	
 	private int toRangedInt(double x) {

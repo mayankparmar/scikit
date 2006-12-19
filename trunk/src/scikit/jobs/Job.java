@@ -25,7 +25,6 @@ public abstract class Job implements Runnable {
 	volatile private boolean killRequested = false;
 	
 	public Parameters params = new Parameters();
-	public Parameters outputs = new Parameters();
 	
 	
 	public Job() {
@@ -33,7 +32,6 @@ public abstract class Job implements Runnable {
 			public void stateChanged(ChangeEvent e) { wakeProcess(); }
 		};
 		params.setChangeListener(listener);
-		outputs.setChangeListener(listener);
 	}
 	
 	

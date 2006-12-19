@@ -7,7 +7,7 @@ import java.awt.event.*;
 
 
 
-public class ChoiceValue extends Value {
+public class ChoiceValue extends GuiValue {
 	private String[] _choices;
 	
 	public ChoiceValue(String... choices) {
@@ -19,6 +19,9 @@ public class ChoiceValue extends Value {
 		return itemIndex(v) >= 0;
 	}
 	
+	public String valueForString(String v) {
+		return v;
+	}
 	
 	public JComponent createEditor() {
 		final JComboBox choice = new JComboBox(_choices);
@@ -32,7 +35,7 @@ public class ChoiceValue extends Value {
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (!choice.hasFocus())
-					choice.setSelectedIndex(itemIndex(sget()));
+					choice.setSelectedIndex(itemIndex(getStringRep()));
 				choice.setEnabled(!_locked);
 			}
 		});

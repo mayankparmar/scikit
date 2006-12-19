@@ -75,7 +75,6 @@ public class Control extends JPanel {
 				_startStopButton.setLabel("Start");
 				_resetButton.setLabel("Defaults");
 				_stepButton.setEnabled(true);
-				_job.outputs.setDefaults();
 			}
 			if (str.equals("Defaults")) {
 				_job.params.setDefaults();
@@ -129,7 +128,7 @@ public class Control extends JPanel {
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
-			Value v = _job.params.getValue(k);
+			GuiValue v = _job.params.getValue(k);
 			JComponent field = v.createEditor();
 			c.gridx = 1;
 			c.weightx = 1;
@@ -146,27 +145,6 @@ public class Control extends JPanel {
 			
 			c.gridy++;
 		}
-		
-		// add outputs
-		for (final String k : _job.outputs.keys()) {
-			JLabel label = new JLabel(k + ":", SwingConstants.RIGHT);
-			c.gridx = 0;
-			c.weightx = 0;
-			c.gridwidth = 1;
-			grid.setConstraints(label, c);
-			panel.add(label);
-			
-			Value v = _job.outputs.getValue(k);
-			JComponent field = v.createView();
-			c.gridx = 1;
-			c.weightx = 1;
-			c.gridwidth = GridBagConstraints.REMAINDER;
-			grid.setConstraints(field, c);
-			panel.add(field);
-			
-			c.gridy++;
-		}
-
 		
 		panel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));	
 		panel.setBackground(new Color(0.9f, 0.9f, 0.9f));
