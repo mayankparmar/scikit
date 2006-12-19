@@ -24,12 +24,12 @@ public class RelaxationApp extends Job {
 		params.add("R", 1<<9);
 		params.add("T", 1000.0);
 		params.add("dt", 0.02);
-		outputs.add("time");
+		params.add("time");
 	}
 	
 	public void animate() {
 		sim.setParameters(params);
-		outputs.set("time", sim.time());
+		params.set("time", sim.time());
 	}
 	
 	

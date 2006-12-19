@@ -2,7 +2,7 @@ package kip.dyn1D;
 
 import scikit.jobs.*;
 import kip.util.Random;
-
+import static java.lang.Math.*;
 
 
 abstract class Dynamics1D implements Cloneable {
@@ -83,14 +83,10 @@ abstract class Dynamics1D implements Cloneable {
 		else if (dyn.equals("Kawasaki Metropolis"))
 			dynamics = DynType.KAWA_METROPOLIS;
 		
-		N = params.iget("N");
-		if (N > Integer.highestOneBit(N))
-			N = Integer.highestOneBit(N);
+		N = Integer.highestOneBit(params.iget("N"));
 		params.set("N", N);
 		
-		R = params.iget("R");
-		if (2*R+1 >= N)
-			R = N/2 - 1;
+		R = min(params.iget("R"), N/2-1);
 		params.set("R", R);
 		
 		try { memoryTime = params.fget("Memory time"); } catch(Exception e) {}

@@ -74,12 +74,12 @@ public class OrderingApp extends Job {
 		params.addm("T", 4.0/9.0);
 		params.addm("J", 1.0);
 		params.addm("dt", 0.1);
-		outputs.add("time");
+		params.add("time");
 	}
 	
 	public void animate() {
 		sim.setParameters(params);
-		outputs.set("time", sim.time());
+		params.set("time", DoubleValue.format(sim.time()));
 		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
 	}
 	
