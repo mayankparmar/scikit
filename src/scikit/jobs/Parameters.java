@@ -70,6 +70,13 @@ public class Parameters implements Cloneable {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'float'");
 		}
 	}
+	public double fget(String key, double def) {
+		try {
+			return (Double)(getValue(key).get());
+		} catch (Exception e) {
+			return def;
+		}
+	}
 	
 	public int iget(String key) {
 		try {
@@ -78,12 +85,26 @@ public class Parameters implements Cloneable {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'int'");
 		}
 	}
+	public int iget(String key, int def) {
+		try {
+			return (Integer)(getValue(key).get());
+		} catch (Exception e) {
+			return def;
+		}
+	}
 	
 	public String sget(String key) {
 		try {
 			return (String)(getValue(key).get());
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'string'");
+		}
+	}
+	public String sget(String key, String def) {
+		try {
+			return (String)(getValue(key).get());
+		} catch (Exception e) {
+			return def;
 		}
 	}
 	

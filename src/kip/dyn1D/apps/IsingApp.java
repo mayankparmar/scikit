@@ -1,4 +1,4 @@
-package kip.dyn1D;
+package kip.dyn1D.apps;
 
 import scikit.plot.*;
 import scikit.jobs.*;

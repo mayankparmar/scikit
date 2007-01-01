@@ -90,6 +90,10 @@ public class SpinBlocks1D implements Cloneable {
 		return blocks[0][x];
 	}
 	
+	public int getBlock(int scale, int x) {
+		return blocks[scale][x];
+	}
+	
 	public int[] getAll() {
 		return blocks[0];
 	}

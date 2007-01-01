@@ -5,17 +5,14 @@ import kip.util.Random;
 import static java.lang.Math.*;
 
 
-abstract class Dynamics1D implements Cloneable {
-	public DynType dynamics = DynType.GLAUBER;
-
-	public Random			random = new Random();
+abstract public class Dynamics1D implements Cloneable {
 	private Dynamics1D		old;
-	protected double		memoryTime = Double.POSITIVE_INFINITY;
+	private double			memoryTime;
 	
-	public int blocklen;
-	public int N, R;
-	public double T, J=1, h=0;
+	public Random			random = new Random();
+	public int N, R, dx;
 	public double time, dt;
+	
 	
 	public Dynamics1D clone() {
         try {
@@ -42,7 +39,6 @@ abstract class Dynamics1D implements Cloneable {
 	
 	
 	public void step() {
-		/*
 		if (old != null) {
 			assert (time() >= old.time());
 			if (old.old != null) {
@@ -50,7 +46,6 @@ abstract class Dynamics1D implements Cloneable {
 				assert (old.old.old == null);
 			}
 		}
-		*/
 		if (old == null)
 			old = clone();
 		_step();
@@ -72,37 +67,22 @@ abstract class Dynamics1D implements Cloneable {
 		return time;
 	}
 	
+	
 	public void initialize(Parameters params) {
-		String dyn = params.sget("Dynamics");
-		if (dyn.equals("Ising Glauber"))
-			dynamics = DynType.GLAUBER;
-		else if (dyn.equals("Ising Metropolis"))
-			dynamics = DynType.METROPOLIS;
-		else if (dyn.equals("Kawasaki Glauber"))
-			dynamics = DynType.KAWA_GLAUBER;
-		else if (dyn.equals("Kawasaki Metropolis"))
-			dynamics = DynType.KAWA_METROPOLIS;
-		
-		N = Integer.highestOneBit(params.iget("N"));
-		params.set("N", N);
-		
-		R = min(params.iget("R"), N/2-1);
-		params.set("R", R);
-		
-		try { memoryTime = params.fget("Memory time"); } catch(Exception e) {}
-		random.setSeed(params.iget("Random seed"));
-		setParameters(params);
-		
 		time = 0;
 		old = null;
+		
+		memoryTime = params.fget("Memory time", Double.POSITIVE_INFINITY);
+		random.setSeed(params.iget("Random seed", 0));
+		
+		setParameters(params);
 	}
 	
+	
 	public void setParameters(Parameters params) {
-		T  = params.fget("T");
-		try { J  = params.fget("J"); } catch(Exception e) {}
-		try { h  = params.fget("h"); } catch(Exception e) {}
-		dt = params.fget("dt");	
+		dt = params.fget("dt");
 	}
+	
 	
 	abstract public double magnetization();
 	abstract public void randomizeField(double m);

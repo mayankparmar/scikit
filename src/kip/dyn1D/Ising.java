@@ -7,7 +7,7 @@ import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 
 
-public class Ising extends Dynamics1D {
+public class Ising extends AbstractIsing {
 	public SpinBlocks1D spins;
 	
 	
@@ -23,11 +23,9 @@ public class Ising extends Dynamics1D {
     }
 	
 	
-	// reset time, set random number seed, initialize fields to down
 	public void initialize(Parameters params) {
 		super.initialize(params);
 		spins = new SpinBlocks1D(N, R, -1);
-		blocklen = 1;
 	}
 	
 	
@@ -51,12 +49,11 @@ public class Ising extends Dynamics1D {
 	
 	
 	public double[] copyField(double[] field) {
+		int scale = Integer.numberOfTrailingZeros(dx);
 		if (field == null)
-			field = new double[N];
-		if (field.length != N)
-			throw new IllegalArgumentException();
-		for (int i = 0; i < N; i++)
-			field[i] = spins.get(i);
+			field = new double[N/dx];
+		for (int i = 0; i < N/dx; i++)
+			field[i] = spins.getBlock(scale,i)/(double)dx;
 		return field;
 	}
 	
@@ -104,27 +101,4 @@ public class Ising extends Dynamics1D {
 			}
 		}
 	}
-	
-	/*
-	public double[] langerDroplet(int center) {
-		double[] saddle = new double[ψ.length];
-		double dx = systemSize() / ψ.length;
-		
-		double K = 4/T;
-		double H = h/T;
-		double s = -abs(H)/H;
-		double psi_sp = s*sqrt(1 - 1/K);
-		double H_sp = (atanh(psi_sp) - K*psi_sp);		
-		double dH = H_sp - H;
-		double u_bg = sqrt(-dH / (K*K*psi_sp));
-		
-		for (int i = 0; i < saddle.length; i++) {			
-			double d = dx * displacement(i, center);
-			double c = cosh(sqrt(dH / (2*u_bg)) * d / R);
-			saddle[i] = psi_sp + s * u_bg * (1 - 3 / (c*c));
-		}
-		
-		return saddle;
-	}
-	*/
 }

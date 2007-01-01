@@ -1,13 +1,17 @@
-package kip.dyn1D;
+package kip.dyn1D.apps;
 
 import scikit.plot.*;
 import scikit.jobs.*;
+import kip.dyn1D.*;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 
+// purpose of this program: to determine breakdown time of linear theory as 
+// a function of R.
+
 public class Ordering2App extends Job {
 	Plot structurePlot = new Plot("Magnetization", true);
-	Dynamics1D sim;
+	AbstractIsing sim;
 	double[] field;
 	Accumulator[] structures;
 	double tmax;
@@ -19,6 +23,7 @@ public class Ordering2App extends Job {
 	public Ordering2App() {
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis"));
 		params.add("N/R", 1<<5);
+		params.add("dx/R", 0.2);
 		params.add("R low", 1<<8);
 		params.add("R high", 1<<10);
 		params.add("R count", 4);
@@ -34,7 +39,8 @@ public class Ordering2App extends Job {
 	}
 	
 	public void run() {
-		
+		int N_R = params.iget("N/R");
+		double dx_R = params.fget("dx/R");
 		double dt = params.fget("dt");
 		tmax = params.fget("t high");
 		
@@ -46,13 +52,14 @@ public class Ordering2App extends Job {
 			"Dynamics", params.sget("Dynamics"),
 			"N", 0,
 			"R", 0,
+			"dx", 0,
 			"Random seed", 0,
 			"T", params.fget("T"),
 			"dt", dt
 		);
 		
 		sim = new Ising(params2);
-		final int mobility = sim.dynamics == DynType.GLAUBER ? 2 : 4;
+		final int mobility = sim.dynamics == AbstractIsing.DynType.GLAUBER ? 2 : 4;
 		
 		structures = new Accumulator[rcnt];
 		for (int i = 0; i < rcnt; i++) {
@@ -78,7 +85,8 @@ public class Ordering2App extends Job {
 				int R = (rhi-rlo)*i/rcnt + rlo;
 				params2.set("Random seed", iterations*rcnt+i);
 				params2.set("R", R);
-				params2.set("N", 128*R);
+				params2.set("N", N_R*R);
+				params2.set("dx", (int)(dx_R*R));
 				sim.initialize(params2);
 				sim.randomizeField(0);
 				

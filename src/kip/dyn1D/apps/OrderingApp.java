@@ -1,7 +1,8 @@
-package kip.dyn1D;
+package kip.dyn1D.apps;
 
 import scikit.plot.*;
 import scikit.jobs.*;
+import kip.dyn1D.*;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 
@@ -21,6 +22,7 @@ class Structure {
 		this.N = N;
 		this.dx = dx;
 		n = (int) ((kRmax * N) / (2 * PI * R)) + 1;
+		n = min(n, N/dx);
 		kRmax = 2 * PI * R * (n-1) / N;
 		
 		avg = new double[n];
@@ -54,7 +56,7 @@ class Structure {
 public class OrderingApp extends Job {
 	Plot fieldPlot = new Plot("Fields", true);
 	Plot structurePlot = new Plot("Structure", true);
-	Dynamics1D sim;
+	AbstractIsing sim;
 	Structure structure;
 	double[] field;
 	int numSteps = 10;
@@ -71,6 +73,7 @@ public class OrderingApp extends Job {
 		params.add("Random seed", 0);
 		params.add("N", 1<<20);
 		params.add("R", 512);
+		params.add("dx", 1);
 		params.addm("T", 4.0/9.0);
 		params.addm("J", 1.0);
 		params.addm("dt", 0.1);
@@ -94,7 +97,7 @@ public class OrderingApp extends Job {
 		fieldPlot.setDataSet(0, new Coarsened(field, 0, sim.N, sim.N/100.0));
 		fieldPlot.setYRange(-1, 1);
 		
-		structure = new Structure(sim.N, sim.blocklen, sim.R, kRmax, numSteps);
+		structure = new Structure(sim.N, sim.dx, sim.R, kRmax, numSteps);
 		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
 		structurePlot.setDataSet(0, structure.coarse);
 		structurePlot.setDataSet(1, new Function(0, kRmax) {
