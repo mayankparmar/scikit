@@ -5,7 +5,7 @@ import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 
 
-public class FieldIsing extends Dynamics1D {
+public class FieldIsing extends AbstractIsing {
 	public double[] field, scratch1, scratch2;
 	
 	public FieldIsing(Parameters params) {
@@ -23,48 +23,47 @@ public class FieldIsing extends Dynamics1D {
 	// reset time, set random number seed, initialize fields to down
 	public void initialize(Parameters params) {
 		super.initialize(params);
-		blocklen = 16;
-		field = new double[N/blocklen];
-		scratch1 = new double[N/blocklen];
-		scratch2 = new double[N/blocklen];		
+		field = new double[N/dx];
+		scratch1 = new double[N/dx];
+		scratch2 = new double[N/dx];		
 	}
 	
 	
 	public void randomizeField(double m) {
 		assert (m == 0);
 		
-		for (int i = 0; i < N/blocklen; i++) {
-			field[i] = random.nextGaussian() / sqrt(blocklen);
+		for (int i = 0; i < N/dx; i++) {
+			field[i] = random.nextGaussian() / sqrt(dx);
 		}
 	}
 	
 	
 	public double magnetization() {
 		double sum = 0;
-		for (int i = 0; i < N/blocklen; i++)
+		for (int i = 0; i < N/dx; i++)
 			sum += field[i];
-		return sum / (N/blocklen);
+		return sum / (N/dx);
 	}
 	
 	
 	public double[] copyField(double[] field) {
 		if (field == null)
-			field = new double[N/blocklen];
-		if (field.length != N/blocklen)
+			field = new double[N/dx];
+		if (field.length != N/dx)
 			throw new IllegalArgumentException();
-		for (int i = 0; i < N/blocklen; i++)
+		for (int i = 0; i < N/dx; i++)
 			field[i] = this.field[i];
 		return field;
 	}
 	
 	
 	private double bar(double[] field, int i) {
-		int nblocks = (int)round(2.0*R/blocklen);
+		int nblocks = (int)round(2.0*R/dx);
 		
 		double acc = field[i];
 		for (int j = 1; j <= nblocks/2; j++) {
-			acc += field[(i+j)%(N/blocklen)];
-			acc += field[(i-j+N/blocklen)%(N/blocklen)];
+			acc += field[(i+j)%(N/dx)];
+			acc += field[(i-j+N/dx)%(N/dx)];
 		}
 		return acc / (1 + 2*(nblocks/2));
 	}
@@ -72,7 +71,7 @@ public class FieldIsing extends Dynamics1D {
 	
 	protected void _step() {
 		// break update into "steps" number of substeps. each one with time interval dt_
-		double dx_ = blocklen;
+		double dx_ = dx;
 		int steps = (int) max(sqrt(dt) * 100 / sqrt(dx_), 1);
 		double dt_ = dt / steps;
 		
@@ -82,7 +81,7 @@ public class FieldIsing extends Dynamics1D {
 		/*
 		// ----------------------------------------- linear theory
 		for (int cnt = 0; cnt < steps; cnt++) {
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				double f = field[i];
 				double g = K*bar(field, i) + H;
 				double U = g - f;
@@ -90,7 +89,7 @@ public class FieldIsing extends Dynamics1D {
 				double eta = random.nextGaussian();
 				scratch1[i] = f + dt_*U + sqrt(dt_/dx_)*eta*V;
 			}
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				field[i] = scratch1[i];
 			}
 		}
@@ -99,7 +98,7 @@ public class FieldIsing extends Dynamics1D {
 		// ----------------------------------------- heun scheme for perturbation in phi^2
 		for (int cnt = 0; cnt < steps; cnt++) {
 			// get euler predictor
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				double f = field[i];
 				double g = K*bar(field, i) + H;
 				double U = g - (g*g*g/3) - f;
@@ -109,7 +108,7 @@ public class FieldIsing extends Dynamics1D {
 			}
 			
 			// take step based on predictor
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				double f1 = field[i];
 				double f2 = scratch1[i];
 				double g1 = K*bar(field, i) + H;
@@ -124,7 +123,7 @@ public class FieldIsing extends Dynamics1D {
 			}
 			
 			// copy back to field
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				field[i] = scratch2[i];
 			}
 		}
@@ -133,7 +132,7 @@ public class FieldIsing extends Dynamics1D {
 		// ----------------------------------------- full heun scheme
 		for (int cnt = 0; cnt < steps; cnt++) {
 			// get euler predictor
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				double f = field[i];
 				double g = K*bar(field, i) + H;
 				double U = tanh(g) - f;
@@ -143,7 +142,7 @@ public class FieldIsing extends Dynamics1D {
 			}
 			
 			// take step based on predictor
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				double f1 = field[i];
 				double f2 = scratch1[i];
 				double g1 = K*bar(field, i) + H;
@@ -158,7 +157,7 @@ public class FieldIsing extends Dynamics1D {
 			}
 			
 			// copy back to field
-			for (int i = 0; i < N/blocklen; i++) {
+			for (int i = 0; i < N/dx; i++) {
 				field[i] = scratch2[i];
 			}
 		}
