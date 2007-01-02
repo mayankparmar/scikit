@@ -7,8 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		2B0B59EE0B1C9B6500903E9A /* Ordering2App.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Ordering2App.java; sourceTree = "<group>"; };
-		2B0B5A6A0B1D3FC700903E9A /* DynType.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DynType.java; sourceTree = "<group>"; };
+		2B4171DB0B3887E50004B7A3 /* IsingApp.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = IsingApp.java; sourceTree = "<group>"; };
+		2B4171DC0B3887E50004B7A3 /* Ordering2App.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Ordering2App.java; sourceTree = "<group>"; };
+		2B4171DD0B3887E50004B7A3 /* OrderingApp.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = OrderingApp.java; sourceTree = "<group>"; };
+		2B4171DE0B3887E50004B7A3 /* RelaxationApp.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = RelaxationApp.java; sourceTree = "<group>"; };
+		2B4172620B388EF40004B7A3 /* PhiFourth.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PhiFourth.java; sourceTree = "<group>"; };
+		2B4172E40B38A3440004B7A3 /* AbstractIsing.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = AbstractIsing.java; sourceTree = "<group>"; };
+		2B4174A40B4998C80004B7A3 /* NucleationApp.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = NucleationApp.java; sourceTree = "<group>"; };
 		2B766B7F0B14CC3C00701CE0 /* allclasses-frame.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html.documentation; path = "allclasses-frame.html"; sourceTree = "<group>"; };
 		2B766B800B14CC3C00701CE0 /* allclasses-noframe.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html.documentation; path = "allclasses-noframe.html"; sourceTree = "<group>"; };
 		2B766B810B14CC3C00701CE0 /* ComplexDouble2DFFT.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ComplexDouble2DFFT.java; sourceTree = "<group>"; };
@@ -57,11 +62,7 @@
 		2B766BB00B14CC3C00701CE0 /* Console.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Console.java; sourceTree = "<group>"; };
 		2B766BB20B14CC3C00701CE0 /* Dynamics1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Dynamics1D.java; sourceTree = "<group>"; };
 		2B766BB30B14CC3C00701CE0 /* FieldIsing.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = FieldIsing.java; sourceTree = "<group>"; };
-		2B766BB40B14CC3C00701CE0 /* Intervention.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Intervention.java; sourceTree = "<group>"; };
 		2B766BB50B14CC3C00701CE0 /* Ising.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Ising.java; sourceTree = "<group>"; };
-		2B766BB60B14CC3C00701CE0 /* IsingApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = IsingApp.java; sourceTree = "<group>"; };
-		2B766BB70B14CC3C00701CE0 /* OrderingApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = OrderingApp.java; sourceTree = "<group>"; };
-		2B766BB80B14CC3C00701CE0 /* RelaxationApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = RelaxationApp.java; sourceTree = "<group>"; };
 		2B766BBA0B14CC3C00701CE0 /* Clusters1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Clusters1D.java; sourceTree = "<group>"; };
 		2B766BBC0B14CC3C00701CE0 /* FastIsing1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = FastIsing1D.java; sourceTree = "<group>"; };
 		2B766BBD0B14CC3C00701CE0 /* FastIsing1DApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = FastIsing1DApp.java; sourceTree = "<group>"; };
@@ -70,10 +71,10 @@
 		2B766BC00B14CC3C00701CE0 /* SpinBlockIndexer.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SpinBlockIndexer.java; sourceTree = "<group>"; };
 		2B766BC10B14CC3C00701CE0 /* SpinBlocks1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SpinBlocks1D.java; sourceTree = "<group>"; };
 		2B766BC20B14CC3C00701CE0 /* SpinBlocks2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SpinBlocks2D.java; sourceTree = "<group>"; };
-		2B766BC40B14CC3C00701CE0 /* Langevin1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Langevin1D.java; sourceTree = "<group>"; };
-		2B766BC50B14CC3C00701CE0 /* Langevin1DApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Langevin1DApp.java; sourceTree = "<group>"; };
+		2B766BC40B14CC3C00701CE0 /* Langevin1D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Langevin1D.java; sourceTree = "<group>"; };
+		2B766BC50B14CC3C00701CE0 /* Langevin1DApp.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Langevin1DApp.java; sourceTree = "<group>"; };
 		2B766BC60B14CC3C00701CE0 /* LangevinDroplet.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = LangevinDroplet.java; sourceTree = "<group>"; };
-		2B766BC80B14CC3C00701CE0 /* Langevin1D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Langevin1D.java; sourceTree = "<group>"; };
+		2B766BC80B14CC3C00701CE0 /* Langevin1D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Langevin1D.java; sourceTree = "<group>"; };
 		2B766BC90B14CC3C00701CE0 /* Langevin1DApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Langevin1DApp.java; sourceTree = "<group>"; };
 		2B766BCA0B14CC3C00701CE0 /* LangevinApp.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = LangevinApp.java; sourceTree = "<group>"; };
 		2B766BCB0B14CC3C00701CE0 /* LangevinDroplet.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = LangevinDroplet.java; sourceTree = "<group>"; };
@@ -119,6 +120,18 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		2B4171D70B3887BB0004B7A3 /* apps */ = {
+			isa = PBXGroup;
+			children = (
+				2B4171DB0B3887E50004B7A3 /* IsingApp.java */,
+				2B4171DC0B3887E50004B7A3 /* Ordering2App.java */,
+				2B4171DD0B3887E50004B7A3 /* OrderingApp.java */,
+				2B4171DE0B3887E50004B7A3 /* RelaxationApp.java */,
+				2B4174A40B4998C80004B7A3 /* NucleationApp.java */,
+			);
+			path = apps;
+			sourceTree = "<group>";
+		};
 		2B766B7C0B14CC3C00701CE0 /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -231,14 +244,11 @@
 			isa = PBXGroup;
 			children = (
 				2B766BB20B14CC3C00701CE0 /* Dynamics1D.java */,
-				2B0B5A6A0B1D3FC700903E9A /* DynType.java */,
-				2B766BB30B14CC3C00701CE0 /* FieldIsing.java */,
-				2B766BB40B14CC3C00701CE0 /* Intervention.java */,
+				2B4172E40B38A3440004B7A3 /* AbstractIsing.java */,
 				2B766BB50B14CC3C00701CE0 /* Ising.java */,
-				2B766BB60B14CC3C00701CE0 /* IsingApp.java */,
-				2B766BB70B14CC3C00701CE0 /* OrderingApp.java */,
-				2B0B59EE0B1C9B6500903E9A /* Ordering2App.java */,
-				2B766BB80B14CC3C00701CE0 /* RelaxationApp.java */,
+				2B766BB30B14CC3C00701CE0 /* FieldIsing.java */,
+				2B4172620B388EF40004B7A3 /* PhiFourth.java */,
+				2B4171D70B3887BB0004B7A3 /* apps */,
 			);
 			path = dyn1D;
 			sourceTree = "<group>";
