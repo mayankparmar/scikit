@@ -76,7 +76,6 @@ public class Langevin1DApp extends AbstractSimulation {
          case equilibrating:
             if (sim.t > equilibrationTime) {
                sim.t = 0;
-               sim.h = -sim.h;
                state = State.metastable;
                oldoldsim = oldsim = (Langevin1D)sim.clone();
             }

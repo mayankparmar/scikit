@@ -33,8 +33,8 @@ public class NucleationApp extends Job {
 		params.addm("Bin width", 0.5);
 		
 		if (phifour) {
-			params.add("N/R", 50.0);
-			params.add("dx/R", 0.5);
+			params.add("N/R", 150.0);
+			params.add("dx/R", 1.0);
 			params.addm("R", 1000);
 			params.addm("dt", 0.1);
 			params.addm("h", 0.223);
