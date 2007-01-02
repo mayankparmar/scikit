@@ -46,14 +46,8 @@ public class FieldIsing extends AbstractIsing {
 	}
 	
 	
-	public double[] copyField(double[] field) {
-		if (field == null)
-			field = new double[N/dx];
-		if (field.length != N/dx)
-			throw new IllegalArgumentException();
-		for (int i = 0; i < N/dx; i++)
-			field[i] = this.field[i];
-		return field;
+	public double fieldElement(int i) {
+		return field[i];
 	}
 	
 	

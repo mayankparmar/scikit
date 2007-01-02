@@ -84,9 +84,25 @@ abstract public class Dynamics1D implements Cloneable {
 	}
 	
 	
+	public double[] copyField() {
+		double ret[] = new double[N/dx];
+		for (int i = 0; i < N/dx; i++)
+			ret[i] = fieldElement(i);
+		return ret;
+	}
+	
+	
+	public boolean nucleated() {
+		for (int i = 0; i < N/dx; i++)
+			if (fieldElement(i) > 0)
+				return true;
+		return false;
+	}
+	
+	
 	abstract public double magnetization();
 	abstract public void randomizeField(double m);
-	abstract public double[] copyField(double[] field);	
+	abstract public double fieldElement(int i);
 	abstract protected void _step(); // step without saving "old" sim copies
 }
 

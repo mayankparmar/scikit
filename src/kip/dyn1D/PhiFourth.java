@@ -8,7 +8,7 @@ import static kip.util.MathPlus.*;
 public class PhiFourth extends Dynamics1D {
 	public double[] field, scratch;
 	int N_dx;
-	double h;
+	double h, eps;
 	
 	public PhiFourth(Parameters params) {
 		initialize(params);
@@ -31,11 +31,15 @@ public class PhiFourth extends Dynamics1D {
 		
 		field = new double[N_dx];
 		scratch = new double[N_dx];
+		
+		for (int i = 0; i < N_dx; i++)
+			field[i] = -1;
 	}
 	
 	public void setParameters(Parameters params) {
 		super.setParameters(params);
-		h  = params.fget("h", 0);
+		h = params.fget("h", 0);
+		eps = params.fget("\u03b5", 1); // ε
 	}
 	
 	public void randomizeField(double m) {
@@ -51,11 +55,8 @@ public class PhiFourth extends Dynamics1D {
 		return sum / N_dx;
 	}
 	
-	public double[] copyField(double[] field_) {
-		if (field_ == null)
-			field_ = new double[N_dx];
-		System.arraycopy(field, 0, field_, 0, field.length);
-		return field;
+	public double fieldElement(int i) {
+		return field[i];
 	}
 
 	protected void _step() {
@@ -64,7 +65,7 @@ public class PhiFourth extends Dynamics1D {
             double laplace = (field[(i+1)%N_dx]-2*phi+field[(i-1+N_dx)%N_dx])/(dx*dx);
             double phi3 = phi*phi*phi;
             double eta = random.nextGaussian() * sqrt(dt/(dx*R));
-			scratch[i] += -dt*(-laplace + 2*phi + 4*phi3 - h) + eta;
+			scratch[i] = field[i] + -dt*(-laplace + 2*eps*phi + 4*phi3 - h) + eta;
         }
 		System.arraycopy(scratch, 0, field, 0, N_dx);
 	}
