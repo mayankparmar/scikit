@@ -48,13 +48,9 @@ public class Ising extends AbstractIsing {
 	}
 	
 	
-	public double[] copyField(double[] field) {
+	public double fieldElement(int i) {
 		int scale = Integer.numberOfTrailingZeros(dx);
-		if (field == null)
-			field = new double[N/dx];
-		for (int i = 0; i < N/dx; i++)
-			field[i] = spins.getBlock(scale,i)/(double)dx;
-		return field;
+		return spins.getBlock(scale,i)/(double)dx;
 	}
 	
 	

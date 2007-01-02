@@ -73,7 +73,7 @@ public class OrderingApp extends Job {
 		params.add("Random seed", 0);
 		params.add("N", 1<<20);
 		params.add("R", 512);
-		params.add("dx", 1);
+		params.add("dx", 32);
 		params.addm("T", 4.0/9.0);
 		params.addm("J", 1.0);
 		params.addm("dt", 0.1);
@@ -84,6 +84,7 @@ public class OrderingApp extends Job {
 		sim.setParameters(params);
 		params.set("time", DoubleValue.format(sim.time()));
 		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
+		fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.copyField()));
 	}
 	
 	
@@ -93,9 +94,8 @@ public class OrderingApp extends Job {
 		String type = params.sget("Simulation type");
 		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
-		field = sim.copyField(null);
-		fieldPlot.setDataSet(0, new Coarsened(field, 0, sim.N, sim.N/100.0));
 		fieldPlot.setYRange(-1, 1);
+		addDisplay(fieldPlot);
 		
 		structure = new Structure(sim.N, sim.dx, sim.R, kRmax, numSteps);
 		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
@@ -127,8 +127,6 @@ public class OrderingApp extends Job {
 				}
 			}
 		});
-		
-		addDisplay(fieldPlot);
 		addDisplay(structurePlot);
 		
 		while (true) {
@@ -136,8 +134,7 @@ public class OrderingApp extends Job {
 			sim.randomizeField(0);
 			
 			for (int i = 0; i < numSteps; i++) {
-				sim.copyField(field);
-				structure.fn(field, i);
+				structure.fn(sim.copyField(), i);
 				yield();
 				sim.step();
 			}
