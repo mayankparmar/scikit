@@ -16,6 +16,13 @@ public class Accumulator extends DataSet {
 		_origBinWidth = _binWidth = binWidth;
 	}
 	
+    
+    public double[] getBounds() {
+        double[] ret = super.getBounds();
+        ret[2] = min(ret[2], 0); // minY
+        ret[3] = max(ret[3], 0); // maxY
+        return ret;
+    }
 	
 	public double[] copyData() {
 		int i = 0;
