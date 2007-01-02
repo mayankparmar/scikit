@@ -62,9 +62,12 @@ public class PhiFourth extends Dynamics1D {
 	protected void _step() {
         for (int i = 0; i < N_dx; i++) {
 			double phi = field[i];
-            double laplace = (field[(i+1)%N_dx]-2*phi+field[(i-1+N_dx)%N_dx])/(dx*dx);
+            double phip = field[(i+1)%N_dx];
+            double phim = field[(i-1+N_dx)%N_dx];
+            double R_dx = R / (double)dx;
+            double laplace = R_dx*R_dx*(phim-2*phi+phip);
             double phi3 = phi*phi*phi;
-            double eta = random.nextGaussian() * sqrt(dt/(dx*R));
+            double eta = random.nextGaussian() * sqrt(dt/dx);
 			scratch[i] = field[i] + -dt*(-laplace + 2*eps*phi + 4*phi3 - h) + eta;
         }
 		System.arraycopy(scratch, 0, field, 0, N_dx);
