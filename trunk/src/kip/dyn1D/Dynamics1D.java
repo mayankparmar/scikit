@@ -99,11 +99,22 @@ abstract public class Dynamics1D implements Cloneable {
 		return false;
 	}
 	
-	
+	public double[] findNucleatingDroplet(double overshootEstimate) {
+        return new double[] {time(), dx*maxIndex(copyField())};
+    }
+    
 	abstract public double magnetization();
 	abstract public void randomizeField(double m);
 	abstract public double fieldElement(int i);
 	abstract protected void _step(); // step without saving "old" sim copies
+    
+    
+    public static int maxIndex(double[] a) {
+        int imax = 0;
+        for (int i = 0; i < a.length; i++)
+			imax = a[i] > a[imax] ? i : imax;
+        return imax;
+    }
 }
 
 
