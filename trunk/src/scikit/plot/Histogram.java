@@ -32,6 +32,10 @@ public class Histogram extends Plot {
 		setStyle(i, avg ? Style.MARKS : Style.BARS);
 	}
 	
+    public void setNormalizing(int i, boolean norm) {
+		getAccumulator(i).setNormalizing(norm);
+    }
+    
 	private double getBinWidth(int i) {
 		if (_dataSets[i] != null && _dataSets[i] instanceof Accumulator)
 			return ((Accumulator)_dataSets[i]).getBinWidth();

@@ -81,6 +81,8 @@ public class NucleationApp extends Job {
 		}
 		sim.initialize(params);
 		
+        nucTimes.setNormalizing(2, true);
+        
 		fieldPlot.setXRange(0, (double)sim.N/sim.R);
 		fieldPlot.setYRange(-0.7, 0.1);
         fieldPlot.setDataSet(1, new Function(0, (double)sim.N/sim.R) {
