@@ -24,10 +24,10 @@ public class NucleationApp extends Job {
 	}
 	
 	public NucleationApp() {
-		params.addm("Memory time", 20.0);
-		params.addm("Droplet low bound", 10000.0);
-		params.addm("Droplet high bound", 10000.0);
-		params.addm("Data path", "");
+		params.add("Memory time", 20.0);
+		params.add("Droplet low bound", 0.0);
+		params.add("Droplet high bound", 10000.0);
+		params.add("Data path", "");
 		
 		params.addm("Random seed", 0);
 		params.addm("Bin width", 0.5);
@@ -63,7 +63,7 @@ public class NucleationApp extends Job {
 		}
 		if (sim.nucleated()) {
 			if (lowBound < sim.time() && sim.time() < highBound) {
-				double[] drop = sim.findNucleatingDroplet(overshootEstimate);
+				double[] drop = sim.nucleationTimeAndLocation(overshootEstimate);
                 accumulateDroplet(sim.simulationAtTime(drop[0]).copyField(), drop[1]);
             }
 			nucTimes.accum(2, sim.time());
@@ -72,7 +72,7 @@ public class NucleationApp extends Job {
 	
 	
 	public void run() {
-		overshootEstimate	= params.fget("Memory time");
+		overshootEstimate	= params.fget("Memory time")/2;
 		lowBound			= params.fget("Droplet low bound");
 		highBound			= params.fget("Droplet high bound");		
 
