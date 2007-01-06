@@ -19,13 +19,6 @@ public class Accumulator extends DataSet {
 	}
 	
     
-    public double[] getBounds() {
-        double[] ret = super.getBounds();
-        ret[2] = min(ret[2], 0); // minY
-        ret[3] = max(ret[3], 0); // maxY
-        return ret;
-    }
-	
 	public double[] copyData() {
 		int i = 0;
 		double[] ret = new double[2*_hash.size()];

@@ -29,12 +29,10 @@ public class Plot extends EmptyPlot implements Display {
 	private static final int NUM_DATA_SETS = 8;
 	private static final int MAX_DATA_POINTS = 300;
 	private static final double AUTOSCALE_SLOP = 0.10;		// extend view 10% on rescale
-	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bounds
-	
-//	private boolean _autoScale = true;		// automatically expand view bounds to fit data
-	
+	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bound
+
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
-	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
+	private DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
 	
 	private Color[] _colors =
 		{Color.BLACK, Color.BLUE, Color.RED, Color.GREEN,
@@ -61,7 +59,7 @@ public class Plot extends EmptyPlot implements Display {
 		resetViewWindow();
 	}
 	
-	
+
 	public void append(int i, double x, double y) {
 		if (_dataSets[i] == null) {
 			_dataSets[i] = new DynamicArray();
@@ -81,7 +79,7 @@ public class Plot extends EmptyPlot implements Display {
 		_dataSets[i]   = dataSet;
 	}
 	
-	
+    
 	synchronized public void animate() {
 		int i = 0;
 		if (!_zoomed)
@@ -150,7 +148,11 @@ public class Plot extends EmptyPlot implements Display {
 		if (bounds == null)
 			return;
 		
-		// add a little extra "slop" for viewing (fixme)
+        // grow bounds vertically to include databars, if necessary
+        if (haveBars())
+            mergeBounds(bounds, new double[]{bounds[0],bounds[1],0,0});
+        
+		// add a little extra "slop" for viewing (fixme -- this slop should depend on the window size?)
 		extendBounds(bounds, AUTOSCALE_SLOP);
 		
 		_minX = min(bounds[0], _minX);
@@ -190,14 +192,9 @@ public class Plot extends EmptyPlot implements Display {
 		int j = 0;
 		for (double[] xy : _dataBuffer) {
 			if (xy != null) {
-				Rectangle2D.Double rect = new  Rectangle2D.Double
-					(_minX, _minY, _maxX-_minX, _maxY-_minY);
-				if (_drawBars[j]) {
-					rect.y		= min(0, _minY);
-					rect.height = max(0, _maxY) - rect.y;
-				}
+                Rectangle2D.Double rect = 
+                    new Rectangle2D.Double(_minX, _minY, _maxX-_minX, _maxY-_minY);
 				xy = reducedData(xy, rect, MAX_DATA_POINTS);
-				
 				g.setColor(_colors[j]);
 				
 				for (int i = 0; i+1 < xy.length; i += 2) {
@@ -281,6 +278,11 @@ public class Plot extends EmptyPlot implements Display {
 		return ret;
 	}	
 	
+    private boolean haveBars() {
+        for (boolean b : _drawBars)
+            if (b) return true;
+        return false;
+    }
 	
 	private int countDataSets() {
 		int cnt = 0;
