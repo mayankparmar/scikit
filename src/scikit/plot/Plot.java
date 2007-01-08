@@ -32,7 +32,7 @@ public class Plot extends EmptyPlot implements Display {
 	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bound
 
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
-	private DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
+	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
 	
 	private Color[] _colors =
 		{Color.BLACK, Color.BLUE, Color.RED, Color.GREEN,
