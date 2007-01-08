@@ -123,7 +123,8 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
-	private static AttributedString tickToAttributedString(double tick, double length) {
+	
+	private static String tickToString(double tick, double length) {
 		StringBuffer str;
 		if (length > 0.00001 && length < 100000) {
 			NumberFormat nf = new DecimalFormat("0.######");
@@ -142,10 +143,8 @@ public class EmptyPlot extends JComponent {
 		
 		if (tick >= 0)
 			str.insert(0, ' ');
-		AttributedString astr = new AttributedString(str.toString());
-		// astr.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUPER, ...);
-		astr.addAttribute(TextAttribute.FONT, new Font("Monospaced", Font.PLAIN, FONT_SIZE));
-		return astr;
+			
+		return str.toString();
 	}
 	
 	
@@ -205,9 +204,15 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
+	// BUG: there is a very weird bug where if this font object is constructed within the
+	// paintLabels method, and if the simulation is being updated fast enough, JVM memory
+	// leaks can occur.  This might be a threading bug, because I haven't been careful enough
+	// above using SwingUtils.invokeLater() in the simulation thread... :-(
+	Font f = new Font("Monospaced", Font.PLAIN, FONT_SIZE);
+	
 	private void paintLabels(Graphics2D g) {
-		AttributedString as;
 		g.setColor(Color.BLACK);
+		g.setFont(f);
 		
 		for (double tick : getTicks(_minX, _maxX, _bound.width*TICKS_PER_PIXEL)) {
 			if ((tick - _minX) / (_maxX - _minX) < 0.05)
@@ -215,8 +220,7 @@ public class EmptyPlot extends JComponent {
 			int x = (int)round(xToPix(tick));
 			int y = (int)round(yToPix(_minY));
 			g.rotate(-PI/2);
-			as = tickToAttributedString(tick, _maxX-_minX);
-			g.drawString(as.getIterator(), -y-(MARGIN-FONT_SIZE/2-1), x+4);
+			g.drawString(tickToString(tick, _maxX-_minX), -y-(MARGIN-FONT_SIZE/2-1), x+4);
 			g.rotate(PI/2);
 		}
 		for (double tick : getTicks(_minY, _maxY, _bound.height*TICKS_PER_PIXEL)) {
@@ -224,8 +228,7 @@ public class EmptyPlot extends JComponent {
 				continue;
 			int x = (int)round(xToPix(_minX));
 			int y = (int)round(yToPix(tick));
-			as = tickToAttributedString(tick, _maxY-_minY);
-			g.drawString(as.getIterator(), x-(MARGIN-FONT_SIZE/2-1), y+4);
+			g.drawString(tickToString(tick, _maxY-_minY), x-(MARGIN-FONT_SIZE/2-1), y+4);
 		}
 	}
 	
