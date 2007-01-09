@@ -204,10 +204,9 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
-	// BUG: there is a very weird bug where if this font object is constructed within the
-	// paintLabels method, and if the simulation is being updated fast enough, JVM memory
-	// leaks can occur.  This might be a threading bug, because I haven't been careful enough
-	// above using SwingUtils.invokeLater() in the simulation thread... :-(
+	// BUG: there is a very weird bug where if this font object is allocated,
+    // and g.drawString() is called, then memory is leaked.  See example
+    // MemoryApp, test1.
 	Font f = new Font("Monospaced", Font.PLAIN, FONT_SIZE);
 	
 	private void paintLabels(Graphics2D g) {
