@@ -55,9 +55,13 @@ abstract public class GuiValue {
 	}
 	
 	protected void notifyListeners() {
-		for (ChangeListener l : _listeners) {
-			l.stateChanged(null);
-		}	
+        SwingUtilities.invokeLater(new Runnable() {
+           public void run() {
+                for (ChangeListener l : _listeners) {
+                    l.stateChanged(null);
+                }	           
+            } 
+        });
 	}
 	
 	
