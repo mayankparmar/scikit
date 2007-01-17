@@ -11,7 +11,7 @@ abstract public class Dynamics1D implements Cloneable {
 	
 	public Random			random = new Random();
 	public int N, R, dx;
-	public double time, dt;
+	public double time, dt, h;
 	
 	static final double NUCLEATION_CUTOFF = 0;
     static final double NUCLEATION_TIME_ACCURACY = 0.05;
@@ -72,6 +72,12 @@ abstract public class Dynamics1D implements Cloneable {
 	}
 	
 	
+	public void resetTime() {
+		time = 0;
+		old = null;
+	}
+	
+	
 	public void initialize(Parameters params) {
 		time = 0;
 		old = null;
@@ -85,6 +91,7 @@ abstract public class Dynamics1D implements Cloneable {
 	
 	public void setParameters(Parameters params) {
 		dt = params.fget("dt");
+		h  = params.fget("h", 0);		
 	}
 	
 	

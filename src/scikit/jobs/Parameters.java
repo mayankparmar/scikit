@@ -65,17 +65,18 @@ public class Parameters implements Cloneable {
 	
 	public double fget(String key) {
 		try {
-			return (Double)(getValue(key).get());
+			return (Double)getValue(key).get();
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'float'");
 		}
 	}
 	public double fget(String key, double def) {
 		try {
-			return (Double)(getValue(key).get());
+			getValue(key);
 		} catch (Exception e) {
 			return def;
 		}
+		return fget(key);
 	}
 	
 	public int iget(String key) {
@@ -87,10 +88,11 @@ public class Parameters implements Cloneable {
 	}
 	public int iget(String key, int def) {
 		try {
-			return (Integer)(getValue(key).get());
+			getValue(key);
 		} catch (Exception e) {
 			return def;
 		}
+		return iget(key);
 	}
 	
 	public String sget(String key) {
@@ -102,10 +104,11 @@ public class Parameters implements Cloneable {
 	}
 	public String sget(String key, String def) {
 		try {
-			return (String)(getValue(key).get());
+			getValue(key);
 		} catch (Exception e) {
 			return def;
 		}
+		return sget(key);
 	}
 	
 	public void setLocked(boolean locked) {

@@ -7,7 +7,7 @@ import static java.lang.Math.*;
 public abstract class AbstractIsing extends Dynamics1D {
 	public enum DynType {METROPOLIS, GLAUBER, KAWA_GLAUBER, KAWA_METROPOLIS};
 	public DynType dynamics = DynType.GLAUBER;
-	public double T, J, h;
+	public double T, J;
 
 	public void initialize(Parameters params) {
 		super.initialize(params);
@@ -34,10 +34,8 @@ public abstract class AbstractIsing extends Dynamics1D {
 	
 	public void setParameters(Parameters params) {
 		super.setParameters(params);
-		
 		T  = params.fget("T");
 		J  = params.fget("J", 1);
-		h  = params.fget("h", 0);
 	}
 
 }

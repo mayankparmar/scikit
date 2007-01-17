@@ -25,7 +25,7 @@ public class NucleationApp extends Job {
 	
 	public NucleationApp() {
 		params.add("Memory time", 20.0);
-		params.add("Droplet low bound", 0.0);
+		params.add("Droplet low bound", 10000.0);
 		params.add("Droplet high bound", 10000.0);
 		params.add("Data path", "");
 		
@@ -33,12 +33,12 @@ public class NucleationApp extends Job {
 		params.addm("Bin width", 0.5);
 		
 		if (phifour) {
-			params.add("N/R", 150.0);
+			params.add("N/R", 300.0);
 			params.add("dx/R", 1.0);
 			params.addm("R", 1000);
 			params.addm("dt", 0.1);
-			params.addm("h", 0.223);
-			params.addm("\u03b5", -5./9.);
+			params.addm("h", 0.538);
+			params.addm("\u03b5", -1.0);
 		}
 	}
 	
@@ -56,6 +56,13 @@ public class NucleationApp extends Job {
         }
     }
     
+	void equilibrate() {
+		sim.h = -sim.h;
+		sim.runUntil(10);
+		sim.h = -sim.h;
+		sim.resetTime();
+	}
+	
 	void simulateUntilNucleation() {
 		while (!sim.nucleated() && sim.time() < highBound) {
 			sim.step();
@@ -98,6 +105,7 @@ public class NucleationApp extends Job {
         
 		while (true) {
 			sim.initialize(params);
+			equilibrate();
 			simulateUntilNucleation();
 			params.set("Random seed", params.iget("Random seed")+1);			
 		}
