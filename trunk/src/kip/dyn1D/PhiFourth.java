@@ -8,8 +8,7 @@ import static kip.util.MathPlus.*;
 public class PhiFourth extends Dynamics1D {
 	public double[] field, scratch;
 	int N_dx;
-	double h, eps;
-	double gamma = 1;
+	double eps, gamma;
     
 	public PhiFourth(Parameters params) {
 		initialize(params);
@@ -39,8 +38,8 @@ public class PhiFourth extends Dynamics1D {
 	
 	public void setParameters(Parameters params) {
 		super.setParameters(params);
-		h = params.fget("h", 0);
 		eps = params.fget("\u03b5", 1); // ε
+		gamma = params.fget("gamma", 1);
 	}
 	
 	public void randomizeField(double m) {
