@@ -8,7 +8,7 @@ import static kip.util.MathPlus.*;
 public class PhiFourth extends Dynamics1D {
 	public double[] field, scratch;
 	int N_dx;
-	double eps, gamma;
+	double eps, beta;
     
 	public PhiFourth(Parameters params) {
 		initialize(params);
@@ -39,7 +39,7 @@ public class PhiFourth extends Dynamics1D {
 	public void setParameters(Parameters params) {
 		super.setParameters(params);
 		eps = params.fget("\u03b5", 1); // ε
-		gamma = params.fget("gamma", 1);
+		beta = params.fget("beta", 1);
 	}
 	
 	public void randomizeField(double m) {
@@ -67,7 +67,7 @@ public class PhiFourth extends Dynamics1D {
             double R_dx = R / (double)dx;
             double R2laplace = R_dx*R_dx*(phim-2*phi+phip);
             double phi3 = phi*phi*phi;
-            double eta = gamma * random.nextGaussian() * sqrt(dt/dx);
+            double eta = random.nextGaussian() * sqrt(2*beta*dt/dx);
 			scratch[i] = field[i] + -dt*(-R2laplace + 2*eps*phi + 4*phi3 - h) + eta;
         }
 		System.arraycopy(scratch, 0, field, 0, N_dx);
@@ -78,7 +78,7 @@ public class PhiFourth extends Dynamics1D {
     //
 
     public double[] nucleationProbabilityAndLocation(double loc) {
-        gamma = 0; // disable noise
+        beta = 0; // disable noise
         double t_max = time()+NUCLEATION_WAIT_TIME;
         
         while (!nucleated() && time() < t_max) {
@@ -86,7 +86,7 @@ public class PhiFourth extends Dynamics1D {
             step();
         }
         
-        gamma = 1; // re-enable noise
+        beta = 1; // re-enable noise
         if (nucleated())
             return new double[] {1, dx*maxIndex(field)};
         else
