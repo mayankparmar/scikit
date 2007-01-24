@@ -147,7 +147,7 @@ abstract public class Dynamics1D implements Cloneable {
             }
             t_md = (t_hi + t_lo) / 2;
         }
-        System.out.println(time() - t_md);
+        // System.out.println(time() - t_md);
         return new double[] {t_md, loc};
     }
     
