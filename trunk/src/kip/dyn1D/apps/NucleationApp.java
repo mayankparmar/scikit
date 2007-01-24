@@ -30,14 +30,14 @@ public class NucleationApp extends Job {
 		params.add("Data path", "");
 		
 		params.addm("Random seed", 0);
-		params.add("Max seed", 50000);		
+		params.addm("Max seed", 50000);		
 		params.addm("Bin width", 0.5);
 		
 		if (phifour) {
 			double eps = -1;
 			params.add("N/R", 300.0);
 			params.add("dx/R", 1.0);
-			params.addm("R", 1000);
+			params.addm("R", 2000);
 			params.addm("dt", 0.1);
 			params.addm("h", sqrt(-8*eps/27) - 0.005);
 			params.addm("\u03b5", eps);
@@ -107,12 +107,11 @@ public class NucleationApp extends Job {
 		addDisplay(profilePlot);
         
 		while (params.iget("Random seed") < params.iget("Max seed")) {
-			sim.initialize(params);
-			equilibrate();
-			simulateUntilNucleation();
-			params.set("Random seed", params.iget("Random seed")+1);			
+            sim.initialize(params);
+            equilibrate();
+            simulateUntilNucleation();
+            params.set("Random seed", params.iget("Random seed")+1);
+            yield();
 		}
-		while (true)
-			yield();
 	}
 }

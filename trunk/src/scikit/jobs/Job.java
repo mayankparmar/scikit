@@ -10,7 +10,15 @@ import javax.swing.event.ChangeEvent;
 public abstract class Job implements Runnable {
 	class JobThread extends Thread {
 		public Job job;
-		public JobThread(Job _job) { super(_job); job = _job; }
+		public JobThread(final Job _job) {
+            super(new Runnable() {
+                public void run() {
+                    _job.run();
+                    _job._hang();
+                }
+            });
+            job = _job;
+        }
 	}
 	
 	private Thread _thread = null;
@@ -202,7 +210,16 @@ public abstract class Job implements Runnable {
 		}
 	}
 	
-		
+    synchronized private void _hang() {
+        while (!killRequested) {
+            try {
+                animateDisplays();
+                wait();
+            } catch (Exception e) {}
+        }
+        killRequested = false;
+    }
+    
 	
 	//
 	// To be implemented by subclass
