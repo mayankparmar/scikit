@@ -76,7 +76,26 @@ public class PhiFourth extends Dynamics1D {
     
     // -- NUCLEATION ----------------------------------------------------------------
     //
-
+    
+    
+    public scikit.plot.Function saddleProfile() {
+        double N_R = (double)N/R;
+        return new scikit.plot.Function(-N_R/2, N_R/2) {
+            public double eval(double x) {
+                double eps3 = eps*eps*eps;
+                double u = 1;
+                double h_s = sqrt(-8*eps3/(27*u));
+                double phi_s = -sqrt(-eps/(6*u));
+                double dh = h_s - h;
+                double phi_min = phi_s*(1+sqrt(2*dh/(3*h_s)));
+                double a = - sqrt(6*h_s*dh)/(2*phi_s);
+                double b = a*a/(3*dh);
+                double sch = 1/cosh(x*sqrt(a/2));
+                return phi_min + (a/b)*sch*sch;
+            }
+        };
+    }
+    
     public double[] nucleationProbabilityAndLocation(double loc) {
         beta = 0; // disable noise
         double t_max = time()+NUCLEATION_WAIT_TIME;
