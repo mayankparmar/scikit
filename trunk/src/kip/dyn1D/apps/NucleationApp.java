@@ -15,9 +15,8 @@ public class NucleationApp extends Job {
 	Dynamics1D sim;
 	
 	// range of time for which to collect nucleating droplets
-	double lowBound, highBound;
-	// average difference between crude nucleation time, and real nucleation time
-	public double overshootEstimate;
+	double EARLY_END = 15;
+    double LATE_BEGIN = 30;
 	
 	public static void main(String[] args) {
 		frame(new Control(new NucleationApp()), "Nucleation");
@@ -25,12 +24,13 @@ public class NucleationApp extends Job {
 	
 	public NucleationApp() {
 		params.add("Memory time", 20.0);
-		params.add("Droplet low bound", 10000.0);
-		params.add("Droplet high bound", 10000.0);
+        params.add("Profile type", new ChoiceValue("None", "Early", "Late"));
 		params.add("Data path", "");
 		
+        params.add("Profile count", 0);
+		params.addm("Max count", 50000);
+        
 		params.addm("Random seed", 0);
-		params.addm("Max seed", 50000);		
 		params.addm("Bin width", 0.5);
 		
 		if (phifour) {
@@ -67,46 +67,60 @@ public class NucleationApp extends Job {
 	}
 	
 	void simulateUntilNucleation() {
+        double lowBound = 0;
+        double highBound = Double.MAX_VALUE;
+        boolean findProfile = false;
+        if (params.sget("Profile type").equals("Early")) {
+            highBound = EARLY_END;
+            findProfile = true;
+        }
+        else if (params.sget("Profile type").equals("Late")) {
+            lowBound = LATE_BEGIN;
+            findProfile = true;
+        }
+        
 		while (!sim.nucleated() && sim.time() < highBound) {
 			sim.step();
 			yield();
 		}
-		if (sim.nucleated()) {
-			if (lowBound < sim.time() && sim.time() < highBound) {
-				double[] drop = sim.nucleationTimeAndLocation(overshootEstimate);
+        
+        if (lowBound < sim.time() && sim.time() < highBound) {
+            if (findProfile) {
+                // average difference between crude nucleation time, and real nucleation time
+                double overshootEstimate = params.fget("Memory time")/2;
+                double[] drop = sim.nucleationTimeAndLocation(overshootEstimate);
                 accumulateDroplet(sim.simulationAtTime(drop[0]).copyField(), drop[1]);
             }
-			nucTimes.accum(2, sim.time());
-		}
+            nucTimes.accum(2, sim.time());
+            params.set("Profile count", params.iget("Profile count")+1);            
+        }
 	}
 	
 	
 	public void run() {
-		overshootEstimate	= params.fget("Memory time")/2;
-		lowBound			= params.fget("Droplet low bound");
-		highBound			= params.fget("Droplet high bound");		
-
 		if (phifour) {
 			sim = new PhiFourth(params);
 		}
 		sim.initialize(params);
-		
+        
         nucTimes.setNormalizing(2, true);
         
-		fieldPlot.setXRange(0, (double)sim.N/sim.R);
+		double N_R = (double)sim.N/sim.R;
+		fieldPlot.setXRange(0, N_R);
 		fieldPlot.setYRange(-0.7, 0.1);
-        fieldPlot.setDataSet(1, new Function(0, (double)sim.N/sim.R) {
-            public double eval(double kR) { return 0; }
+        fieldPlot.setDataSet(1, new Function(0, N_R) {
+            public double eval(double x) { return 0; }
         });
         
-        profilePlot.setBinWidth(1, (double)sim.dx/sim.R);
+        profilePlot.setBinWidth(0, (double)sim.dx/sim.R);
         profilePlot.setAveraging(0, true);
+        profilePlot.setDataSet(1, sim.saddleProfile());
         
 		addDisplay(fieldPlot);
 		addDisplay(nucTimes);
 		addDisplay(profilePlot);
         
-		while (params.iget("Random seed") < params.iget("Max seed")) {
+		while (params.iget("Profile count") < params.iget("Max count")) {
             sim.initialize(params);
             equilibrate();
             simulateUntilNucleation();
