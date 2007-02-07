@@ -1,4 +1,4 @@
-package scikit.util;
+package kip.util;
 
 import scikit.jobs.Job;
 
