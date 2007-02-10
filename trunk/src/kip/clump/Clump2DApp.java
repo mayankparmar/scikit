@@ -42,7 +42,7 @@ class CoarseGrained {
 public class Clump2DApp extends Job {
     GridDisplay grid = new GridDisplay("Grid", true);
     CoarseGrained cg;
-	int L, R;
+    int L, R;
 	double T;
 	
 	int numPts;
@@ -118,7 +118,7 @@ public class Clump2DApp extends Job {
  
         int cgL = L*params.iget("R/dx")/R;		// # coarse grained cells per side
 		cg = new CoarseGrained(L, cgL);
-        grid.setData(cgL, cgL, cg.gridData, 0, 2*sqr(L/cgL));
+        grid.setData(cgL, cgL, cg.gridData);
         addDisplay(grid);
         
         randomizePts();

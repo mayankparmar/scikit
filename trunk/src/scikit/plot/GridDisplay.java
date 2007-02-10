@@ -10,6 +10,7 @@ import javax.swing.*;
 public class GridDisplay extends JComponent implements Display {
     private BufferedImage _image;
     private int _w, _h;
+    private boolean _autoAdjust;
     private double _min, _max;
     private double[] _data;
     private int[] _idata;
@@ -55,28 +56,37 @@ public class GridDisplay extends JComponent implements Display {
     }
     
     
-    private void setDataHelper(int w, int h, int length, double min, double max, double[] data, int[] idata) {
-        if (w*h != length)
+    private void setDataHelper(int w, int h, double[] data, int[] idata) {
+    	int len = data != null ? data.length : idata.length;
+        if (w*h != len)
             throw new IllegalArgumentException("Width and height don't match array size");
         _w = w;
         _h = h;
-        _min = min;
-        _max = max;
         _data = data;
-        _idata = idata;        
+        _idata = idata;
+        _autoAdjust = true;
         _pixelArray = new int[w*h*3];
         _image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);    
     }
     
-    public void setData(int w, int h, double[] data, double min, double max) {
-        setDataHelper(w, h, data.length, min, max, data, null);
+    
+    public void setData(int w, int h, double[] data) {
+        setDataHelper(w, h, data, null);
     }
     
-    public void setData(int w, int h, int[] data, double min, double max) {
-        setDataHelper(w, h, data.length, min, max, null, data);
+    
+    public void setData(int w, int h, int[] data) {
+        setDataHelper(w, h, null, data);
     }
-        
-        
+    
+    
+    public void setBounds(double min, double max) {
+    	_autoAdjust = false;
+    	_min = min;
+    	_max = max;
+    }
+    
+    
     private void initColorWheel() {
         for (int i = 0; i < WHEEL_SIZE; i++) {
             double a = (double)i / WHEEL_SIZE;
@@ -95,20 +105,37 @@ public class GridDisplay extends JComponent implements Display {
     }
     
     
-    private int getColor(int x, int y) {
-        double v = (_data != null) ? _data[y*_w+x] : _idata[y*_w+x];
+    private double getValue(int i) {
+    	return (_data != null) ? _data[i] : _idata[i];
+    }
+    
+    
+    private void findBounds() {
+    	_min = _max = getValue(0);
+    	for (int i = 1; i < _w*_h; i++) {
+    		double v = getValue(i);
+    		_min = min(_min, v);
+    		_max = max(_max, v);
+    	}
+    }
+    
+    
+    private int getColor(int i) {
+        double v = getValue(i);
         double scaled = (v - _min) / (_max - _min);
-        int i = (int) (WHEEL_SIZE*scaled);
-        return wheel[min(max(i, 0), WHEEL_SIZE-1)];
+        int c = (int) (WHEEL_SIZE*scaled);
+        return wheel[min(max(c, 0), WHEEL_SIZE-1)];
     }
     
     
     public void animate() {
         if (_image != null) {
+        	if (_autoAdjust)
+        		findBounds();
             int pixelArrayOffset = 0;
             for (int y = 0; y < _h; y++) {
                 for (int x = 0; x < _w; x++) {
-                    int rgb = getColor(x, y);
+                    int rgb = getColor(_w*y+x);
                     int r = (rgb & 0xff0000) >> 16;
                     int g = (rgb & 0x00ff00) >> 8;
                     int b = (rgb & 0x0000ff);
@@ -123,11 +150,11 @@ public class GridDisplay extends JComponent implements Display {
 		repaint();        
     }
     
+    
     public void clear() {
         _image = null;
         _data = null;
         _pixelArray = null;
     }
-    
 }
 
