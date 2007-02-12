@@ -4,13 +4,18 @@ import kip.util.Random;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.plot.GridDisplay;
+import scikit.plot.Plot;
 import static java.lang.Math.*;
 import static java.lang.Integer.*;
 
 
 public class Clump2DApp extends Job {
     GridDisplay grid = new GridDisplay("Grid", true);
+    Plot plot = new Plot("Structure factor", true);
+    
     QuadTree qt;
+    StructureFactor sf;
+    
     int L, R;
 	double T, dx;
 	
@@ -27,7 +32,7 @@ public class Clump2DApp extends Job {
 		params.add("R", 16);
 		params.add("L/R", 16);
 		params.add("R/dx", 8);
-		params.addm("T", 1.0);
+		params.addm("T", 0.14);
 		params.add("Random seed", 0);
 	}
 
@@ -91,12 +96,16 @@ public class Clump2DApp extends Job {
 		ptsY = new int[numPts];
 		randomizePts();
         
+		sf = new StructureFactor(L, 0.25);
+        plot.setDataSet(0, sf.calculate(qt.rawElements));
+        addDisplay(plot);
+        
         while (true) {
-			yield();
-			
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < numPts/100; i++) {
 				simStep();
+				yield();
 			}
+			sf.calculate(qt.rawElements);
 		}
         // params.set("Random seed", params.iget("Random seed")+1);
 	}
