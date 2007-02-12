@@ -8,6 +8,10 @@ import static java.lang.Math.*;
 public class Accumulator extends DataSet {
 	private double _origBinWidth, _binWidth;
     private double _fullSum = 0;
+    // each bin holds an array of two numbers.  the first is
+    // total accumulated value for this bin.  the second is a
+    // count of the accumulation operations performed, in case
+    // averaging is desired.
 	private AbstractMap<Double, double[]> _origHash, _hash;
 	private boolean _avg = false;
 	private boolean _norm = false;
@@ -23,9 +27,7 @@ public class Accumulator extends DataSet {
 		int i = 0;
 		double[] ret = new double[2*_hash.size()];
         
-        double divider = 1;
-        
-		for (Double k : _hash.keySet()) {
+        for (Double k : _hash.keySet()) {
 			ret[i] = k;
             ret[i+1] = _hash.get(k)[0];
             if (_norm)
