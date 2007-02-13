@@ -5,6 +5,7 @@ import static java.lang.Integer.*;
 
 public class QuadTree {
 	int[] elements, rawElements;
+	int[] descentIndices;
 	int L, R;
 	
 	// - system length = L, interaction range = R, lattice spacing = 1
@@ -50,10 +51,12 @@ public class QuadTree {
 		// n: the number of levels of the quadtree. n=1 is just the root.
 		int n = 1+numberOfTrailingZeros(L);  			// L = 2^(n-1)
 		assert (L == 1 << (n-1));
+		assert (n > 1);
 		int nelems = ((1<<2*n)-1)/3; 					// (4^n-1)/(4-1)
 		elements = new int[nelems*NITEMS];
 		rawElements = new int[L*L];
 		fillElements(0, L/2, L/2, L);
+		descentIndices = new int[4*n];
 	}
 	
 	private void fillElements(int i, int x, int y, int len) {
@@ -115,52 +118,61 @@ public class QuadTree {
 		int xr = (x > L*1/4) ? x : x+L;
 		int yb = (y < L*3/4) ? y : y-L;
 		int yt = (y > L*1/4) ? y : y+L;
-		int c1 = countOverlapsAux(BL, xl, yb) + countOverlapsAux(TL, xl, yt)
-			+ countOverlapsAux(BR, xr, yb) + countOverlapsAux(TR, xr, yt);
-//		int c2 = countOverlapsAux2(x,y);
-//		assert(c1 == c2);
-		return c1;
+		int cnt = countOverlapsAux1(BL, xl, yb) + countOverlapsAux1(TL, xl, yt)
+			+ countOverlapsAux1(BR, xr, yb) + countOverlapsAux1(TR, xr, yt);
+//		assert(cnt == countOverlapsAux2(x,y));
+		return cnt;
 	}
 	
-	public int countOverlapsAux(int i, int x, int y) {
-		int len = elements[i*NITEMS+LEN];
-		int cnt = elements[i*NITEMS+CNT];
-		int xp = elements[i*NITEMS+X];
-		int yp = elements[i*NITEMS+Y];
+	
+	int countOverlapsAux1(int i, int x, int y) {
+		int acc = 0;
+		int descentPtr = 0;
+		descentIndices[descentPtr++] = i;
 		
-		if (len == 1) {
-			int dx = x - xp;
-			int dy = y - yp;
-			return (dx*dx + dy*dy <= R*R) ? cnt : 0;
-		}
-		else {
-			double dx = x - (xp-0.5);
-			double dy = y - (yp-0.5);
+		while(descentPtr > 0) {
+			i = descentIndices[--descentPtr];
+			int len = elements[i*NITEMS+LEN];
+			double dx = x - (elements[i*NITEMS+X]-0.5);
+			double dy = y - (elements[i*NITEMS+Y]-0.5);
 			double d2 = dx*dx + dy*dy;
-			
+
 			// - this quad has "len" points on a side, so the distance from the
 			//   center to the side is (len-1)/2
 			// - "a" is the length from the center of the quad to the corner
 			// - it is extended slightly to make complete inclusion or exclusion stricter
 			double a = ((len-1)/2.0)*(sqrt2+1e-8); // 
-			
-//			int slow = countOverlapsAux(4*i+BL, x, y) + countOverlapsAux(4*i+TL, x, y)
-//				+ countOverlapsAux(4*i+BR, x, y) + countOverlapsAux(4*i+TR, x, y);
-			
+
 			if (a < R && d2 < (R-a)*(R-a)) { // d+a < R, entire region within interaction range
-//				assert (slow == cnt);
-				return cnt;
+				acc += elements[i*NITEMS+CNT];
 			}
-			else if (d2 > (R+a)*(R+a)) { // d-a > R, none of region in range
-//				assert (slow == 0);
-				return 0;
-			}
-			else {
-				return countOverlapsAux(4*i+BL, x, y) + countOverlapsAux(4*i+TL, x, y)
-					+ countOverlapsAux(4*i+BR, x, y) + countOverlapsAux(4*i+TR, x, y);
+			else if (d2 <= (R+a)*(R+a)) { // d-a <= R, region partially within range
+				// manually unroll the last recursion step for performance
+				if (len == 2) {
+					int j = 4*i;
+					int dx0 = x-elements[(j+BL)*NITEMS+X];
+					int dy0 = y-elements[(j+BL)*NITEMS+Y];
+					int dx1 = dx0-1;
+					int dy1 = dy0-1;
+					if (dx0*dx0 + dy0*dy0 <= R*R)
+						acc += elements[(j+BL)*NITEMS+CNT];
+					if (dx0*dx0 + dy1*dy1 <= R*R)
+						acc += elements[(j+TL)*NITEMS+CNT];
+					if (dx1*dx1 + dy0*dy0 <= R*R)
+						acc += elements[(j+BR)*NITEMS+CNT];
+					if (dx1*dx1 + dy1*dy1 <= R*R)
+						acc += elements[(j+TR)*NITEMS+CNT];
+				}
+				else {
+					descentIndices[descentPtr++] = 4*i+BL;
+					descentIndices[descentPtr++] = 4*i+TL;
+					descentIndices[descentPtr++] = 4*i+BR;
+					descentIndices[descentPtr++] = 4*i+TR;
+				}
 			}
 		}
-	}
+		return acc;
+	}	
 	
 	public int countOverlapsAux2(int x, int y) {
 		int acc = 0;
