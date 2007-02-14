@@ -4,8 +4,6 @@ import java.text.DecimalFormat;
 import static java.lang.Math.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
 
 
 public class DoubleValue extends GuiValue {
@@ -27,10 +25,6 @@ public class DoubleValue extends GuiValue {
 		_hi = hi;
 	}
 	
-	public Double valueForString(String v) {
-		return Double.valueOf(v);
-	}
-	
 	public boolean testValidity(String v) {
 		try {
 			double f = Double.valueOf(v);
@@ -47,7 +41,7 @@ public class DoubleValue extends GuiValue {
 		if (!_auxiliaryEditor || range == Double.POSITIVE_INFINITY)
 			return null;
 		
-		final JSlider slider = new JSlider(0, 1000, toRangedInt((Double)get()));
+		final JSlider slider = new JSlider(0, 1000, toRangedInt(Double.valueOf(get())));
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (slider.hasFocus()) {
@@ -59,7 +53,7 @@ public class DoubleValue extends GuiValue {
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (!slider.hasFocus())
-					slider.setValue(toRangedInt((Double)get()));
+					slider.setValue(toRangedInt(Double.valueOf(get())));
 				slider.setEnabled(!_locked);
 			}
 		});

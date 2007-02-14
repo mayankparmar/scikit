@@ -13,10 +13,6 @@ public class IntValue extends GuiValue {
 		_hi = hi;		
 	}
 	
-	public Integer valueForString(String v) {
-		return Integer.valueOf(v);
-	}
-	
 	public boolean testValidity(String v) {
 		try {
 			int i = Integer.valueOf(v);

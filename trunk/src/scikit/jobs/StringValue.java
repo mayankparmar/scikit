@@ -8,8 +8,4 @@ public class StringValue extends GuiValue {
 	public boolean testValidity(String v) {
 		return true;
 	}
-	
-	public Object valueForString(String v) {
-		return v;
-	}
 }
