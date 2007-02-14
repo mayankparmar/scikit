@@ -60,14 +60,14 @@ public class Parameters implements Cloneable {
 	public void set(String key, Object value) {
 		if (!getValue(key).testValidity(value.toString()))
 			throw new IllegalArgumentException("Parameter '"+key+"' is incompatible with " + value);
-		getValue(key).set(value);
+		getValue(key).set(value.toString());
 	}
 	
 	public double fget(String key) {
 		try {
-			return (Double)getValue(key).get();
-		} catch (ClassCastException e) {
-			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'float'");
+			return Double.valueOf(getValue(key).get());
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' is not a number.");
 		}
 	}
 	public double fget(String key, double def) {
@@ -81,9 +81,9 @@ public class Parameters implements Cloneable {
 	
 	public int iget(String key) {
 		try {
-			return (Integer)(getValue(key).get());
-		} catch (ClassCastException e) {
-			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'int'");
+			return Integer.valueOf(getValue(key).get());
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Parameter '"+key+"' is not an integer.");
 		}
 	}
 	public int iget(String key, int def) {

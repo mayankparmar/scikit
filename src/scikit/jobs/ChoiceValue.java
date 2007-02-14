@@ -2,7 +2,6 @@ package scikit.jobs;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import java.awt.*;
 import java.awt.event.*;
 
 
@@ -19,10 +18,6 @@ public class ChoiceValue extends GuiValue {
 		return itemIndex(v) >= 0;
 	}
 	
-	public String valueForString(String v) {
-		return v;
-	}
-	
 	public JComponent createEditor() {
 		final JComboBox choice = new JComboBox(_choices);
 		
@@ -35,14 +30,13 @@ public class ChoiceValue extends GuiValue {
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (!choice.hasFocus())
-					choice.setSelectedIndex(itemIndex(getStringRep()));
+					choice.setSelectedIndex(itemIndex(get()));
 				choice.setEnabled(!_locked);
 			}
 		});
 		
 		return choice;
 	}
-
 	
 	private int itemIndex(String v) {
 		for (int i = 0; i < _choices.length; i++)
