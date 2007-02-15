@@ -44,7 +44,7 @@ public class ClumpCollectionApp extends Job {
         params.set("T", params.fget("T min"));
         
         for (int i = 0; i < iters; i++) {
-    		final Clump2D clump = new Clump2D(params);
+    		final Clump2DLattice clump = new Clump2DLattice(params);
             grid.setData(clump.Lp, clump.Lp, clump.qt.rawElements);
             
     		sf = new StructureFactor(clump.Lp, clump.L, clump.R, params.fget("kR bin-width"));
