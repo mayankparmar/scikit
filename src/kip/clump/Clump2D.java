@@ -1,83 +1,85 @@
 package kip.clump;
 
-import static java.lang.Integer.highestOneBit;
-import static java.lang.Math.PI;
-import static java.lang.Math.exp;
+import static java.lang.Math.*;
 import kip.util.Random;
 import scikit.jobs.Parameters;
 
+
 public class Clump2D {
-    QuadTree qt;
-    
-    // unscaled parameters
-    int L, R, dx;
-    double T;
-	// parameters with dx scaled out, for implementation purposes
-	int Lp, Rp;
-	double Tp;
-	
+    double L, R, T;	
+	PtsGrid pts;
 	int t_cnt, numPts;
-	int[] ptsX, ptsY;
 	Random random = new Random();
 	
 	
 	public Clump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 
-		R = params.iget("R");
-		L = R*params.iget("L/R");
-		dx = R/params.iget("R/dx");
+		R = params.fget("R");
+		L = R*params.fget("L/R");
 		T = params.fget("T");
-        numPts = L*L;
-        if (highestOneBit(R)!=R || highestOneBit(L)!=L || highestOneBit(dx)!=dx)
-			throw new IllegalArgumentException("All parameters must be powers of 2.");
-        
-		// rescale L,R,T so that dx->1 for simplicity
-		Lp = L/dx;
-		Rp = R/dx;
-		Tp = T*dx*dx;
-		qt = new QuadTree(Lp, Rp);
-		ptsX = new int[numPts];
-		ptsY = new int[numPts];
+
+		numPts = (int)(L*L);
+		pts = new PtsGrid(L, R, numPts);
 		randomizePts();
 		t_cnt = 0;
+
+		pts.remove(pts.xs[2], pts.ys[2]);
+//		for (int i = 0; i < numPts; i++) {
+//			pts.countOverlaps(pts.xs[i], pts.ys[i]);
+//		}
+		pts.add(1, 1);
+//		for (int i = 0; i < numPts; i++) {
+		int i = 0;
+			pts.countOverlaps(pts.xs[i], pts.ys[i]);
+//		}
 	}
 	
-	
-	public void getParams(Parameters params) {
-		T = params.fget("T");
-		Tp = T*dx*dx;
-	}
-	
-	public void randomizePts() {
-		for (int i = 0; i < numPts; i++) {
-			ptsX[i] = (int) (random.nextDouble()*Lp);
-			ptsY[i] = (int) (random.nextDouble()*Lp);
-			qt.add(ptsX[i], ptsY[i]);
+	private void randomizePts() {
+		for (int i = 0; i < pts.maxPoints; i++) {
+			double x = random.nextDouble()*L;
+			double y = random.nextDouble()*L;			
+			pts.add(x, y);
 		}
 	}
 	
+	public void getParams(Parameters params) {
+		T = params.fget("T");
+	}
+	
 	public void mcsTrial() {
-		int i = (int) (numPts*random.nextDouble());
-		int x = ptsX[i];
-		int y = ptsY[i];
+		int i = random.nextInt(pts.maxPoints);
+		double x = pts.xs[i];
+		double y = pts.ys[i];
 		
-		int xp = x + (int)(Rp*2*(random.nextDouble()-0.5));
-		int yp = y + (int)(Rp*2*(random.nextDouble()-0.5));
-		xp = (xp+Lp)%Lp;
-		yp = (yp+Lp)%Lp;
+		double xp = x + R*(2*random.nextDouble()-1);
+		double yp = y + R*(2*random.nextDouble()-1);
+		xp = (xp+L)%L;
+		yp = (yp+L)%L;
 		
-		double dE = (qt.countOverlaps(xp,yp)-qt.countOverlaps(x,y))/(PI*Rp*Rp);
-		if (dE < 0 || random.nextDouble() < exp(-dE/Tp)) {
-			ptsX[i] = xp;
-			ptsY[i] = yp;
-			qt.remove(x, y);
-			qt.add(xp, yp);
+		double dE = (pts.countOverlaps(xp,yp)-pts.countOverlaps(x,y))/(PI*R*R);
+		if (dE < 0 || random.nextDouble() < exp(-dE/T)) {
+			pts.remove(x, y);
+			for (i = 0; i < numPts; i++) {
+				pts.countOverlaps(pts.xs[i], pts.ys[i]);
+			}
+			pts.add(xp, yp);
+			for (i = 0; i < numPts; i++) {
+				pts.countOverlaps(pts.xs[i], pts.ys[i]);
+			}
 		}
 		t_cnt++;
 	}
 	
+	public int[] coarseGrained() {
+		return pts.gridCnt;
+	}
+	
+	public int numColumns() {
+		return pts.gridCols;
+	}
+	
 	public double time() {
-		return (double)t_cnt/numPts;
+		return (double)t_cnt/pts.ptsCnt;
 	}
 }

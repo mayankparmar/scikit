@@ -20,8 +20,8 @@ public class Clump2DApp extends Job {
 	}
 
 	public Clump2DApp() {
-		params.add("R", 16);
-		params.add("L/R", 16);
+		params.add("R", 2);
+		params.add("L/R", 2);
 		params.add("R/dx", 8);
 		params.addm("T", 1.0);
 		params.addm("kR bin-width", 0.025);
@@ -36,10 +36,10 @@ public class Clump2DApp extends Job {
 	
 	public void run() {
 		clump = new Clump2D(params);
-        grid.setData(clump.Lp, clump.Lp, clump.qt.rawElements);
+        grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
         addDisplay(grid);
         
-		sf = new StructureFactor(clump.Lp, clump.L, clump.R, params.fget("kR bin-width"));
+		sf = new StructureFactor(clump.numColumns(), clump.L, clump.R, params.fget("kR bin-width"));
 		sf.setBounds(2, 10);
         plot.setDataSet(0, sf.getAccumulator());
         plot.setDataSet(1, new Function(sf.kRmin, sf.kRmax) {
@@ -56,7 +56,7 @@ public class Clump2DApp extends Job {
 				clump.mcsTrial();
 				yield();
 			}
-			sf.accumulate(clump.qt.rawElements);
+			sf.accumulate(clump.coarseGrained());
 		}
         // params.set("Random seed", params.iget("Random seed")+1);
 	}
