@@ -20,7 +20,7 @@ public class Clump2D {
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-		double dx = R / params.fget("R/dx");
+		double dx = params.fget("dx");
 		
 		numPts = (int)(L*L);
 		pts = new PtsGrid(L, R, dx);
