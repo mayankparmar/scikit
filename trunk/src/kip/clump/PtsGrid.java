@@ -1,6 +1,6 @@
 package kip.clump;
 
-import kip.util.NeighborList;
+import kip.util.LatticeNeighbors;
 import static java.lang.Math.*; 
 
 
@@ -63,7 +63,7 @@ class PtsList {
 	public int countOverlaps(double x, double y) {
 		int acc = 0;
 		for (int i = 0; i < cnt; i++)
-			if (dist2(x-xs[i], y-ys[i]) <= R*R)
+			if (dist2(x-xs[i], y-ys[i]) < R*R)
 				acc++;
 		return acc;
 	}
@@ -79,8 +79,8 @@ public class PtsGrid {
 	PtsList[] grid;  // list of indices into x[], y[].
 	int[] rawElements;
 	
-	NeighborList nlist;
-	int[][] neighbors;
+	LatticeNeighbors neigh1, neigh2;
+	int[][] nlist1, nlist2;
 	
 	
 	public PtsGrid(double L, double R, double dx) {
@@ -104,9 +104,12 @@ public class PtsGrid {
 		// the fact that the distance between cells should be counted as the distance
 		// of the two closest corners.  the extra epsilon is to deal with floating point
 		// rounding.
-		double effectiveR = R/dx+sqrt(2)+1e-8;
-		nlist = new NeighborList(gridCols, gridCols, effectiveR, NeighborList.PERIODIC);
-		neighbors = new int[gridCols*gridCols][];
+		double r_lo = R/dx-sqrt(2)-1e-8;
+		double r_hi = R/dx+sqrt(2)+1e-8;
+		neigh1 = new LatticeNeighbors(gridCols, gridCols, 0, r_lo);
+		neigh2 = new LatticeNeighbors(gridCols, gridCols, r_lo, r_hi);
+		nlist1 = new int[gridCols*gridCols][];
+		nlist2 = new int[gridCols*gridCols][];		
 	}
 	
 	// rounding errors here are ok, as long as they occur in just this
@@ -120,12 +123,15 @@ public class PtsGrid {
 	
 	public int countOverlaps(double x, double y) {
 		int j1 = gridIndex(x,y);
-		if (neighbors[j1] == null)
-			neighbors[j1] = nlist.get(j1);
-		int acc = 0;
-		for (int j2 : neighbors[j1]) {
-			acc += grid[j2].countOverlaps(x, y);
+		if (nlist1[j1] == null) {
+			nlist1[j1] = neigh1.get(j1);
+			nlist2[j1] = neigh2.get(j1);
 		}
+		int acc = 0;
+		for (int j2 : nlist1[j1])
+			acc += grid[j2].cnt;
+		for (int j2 : nlist2[j1])
+			acc += grid[j2].countOverlaps(x, y);
 		return acc;
 	}
 	

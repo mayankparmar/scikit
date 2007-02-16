@@ -8,40 +8,27 @@ import static kip.util.MathPlus.*;
  * Utility class to calculate lattice neighbor lists.
  */
 
-public class NeighborList {
+public class LatticeNeighbors {
 	/**
 	 * PERIODIC -- Indices on the edges have fewer neighbors.
 	 * BORDERED -- Indices on the edges wrap around.
 	 */
 	public static final int BORDERED = 0, PERIODIC = 1;
 
-	public NeighborList(int Nx, int Ny) {
-		this(Nx, Ny, 1, PERIODIC);
-	}
-
-	public NeighborList(int Nx, int Ny, double r, int type) {
+	public LatticeNeighbors(int Nx, int Ny, double r_lo, double r_hi) {
 		this.Nx = Nx;
 		this.Ny = Ny;
-		this.r = r;
-		this.type = type;
-		int d = (int)r*2 + 1;
+		this.r_lo = r_lo;
+		this.r_hi = r_hi;
+		int d = (int)r_hi*2 + 1;
 		list = new int[d*d];
-
-		if (type != BORDERED && type != PERIODIC)
-			throw new IllegalArgumentException();
 	}
-
-	/**
-	 * Sets the range of the neighbor-list.
-	 */
-	public void setRange(double r) {
-		this.r = r;
-	}
-
+	
 	/**
 	 * Returns a neighbor list array.
 	 * For each lattice index i, neighbor[i] is an array containing all of i's neighbor
-	 * indices.
+	 * indices. Neighbor indices are defined to be those whose distance d from i is
+	 * in the interval [r_lo, r_hi).
 	 */
 	public int[] get(int i) {
 		calculateNeighborList(i);
@@ -67,15 +54,15 @@ public class NeighborList {
 	// 
 
 	int Nx, Ny;    // lattice size
-	double r;      // neighbor list range
-	int type;      // type -- BORDERED | PERIODIC
+	double r_lo, r_hi; // neighbor list range
+	int type = PERIODIC; // type -- BORDERED | PERIODIC
 
 	// These variables are set be calculateNeighborList()
 	int[] list;    // most recently computed neighbor list
 	int num;       // number of elements
 
 	void calculateNeighborList(int i) {
-		int _r = (int)ceil(r);
+		int _r = (int)ceil(r_hi);
 		int ix = i % Ny;
 		int iy = i / Nx;
 		num = 0;
@@ -84,7 +71,8 @@ public class NeighborList {
 		case BORDERED:
 			for (int jy = Math.max(0, iy-_r); jy <= Math.min(Ny-1, iy+_r); jy++) {
 				for (int jx = Math.max(0, ix-_r); jx <= Math.min(Nx-1, ix+_r); jx++) {
-					if (sqr(jx-ix) + sqr(jy-iy) <= sqr(r))
+					double d2 = sqr(jx-ix) + sqr(jy-iy);
+					if (sqr(r_lo) <= d2 && d2 < sqr(r_hi))
 						list[num++] = jy*Nx + jx;
 				}
 			}
@@ -102,7 +90,8 @@ public class NeighborList {
 			
 			for (int jy = ylo; jy <= yhi; jy++) {
 				for (int jx = xlo; jx <= xhi; jx++) {
-					if (sqr(jx-ix) + sqr(jy-iy) <= sqr(r)) {
+					double d2 = sqr(jx-ix) + sqr(jy-iy);
+					if (sqr(r_lo) <= d2 && d2 < sqr(r_hi)) {
 						int _jy = (jy + Ny) % Ny;
 						int _jx = (jx + Nx) % Nx;
 						list[num++] = _jy*Nx + _jx;

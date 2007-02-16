@@ -53,7 +53,7 @@ public class Clump2D {
 	int slowCount(double x, double y) {
 		int acc = 0;
 		for (int i = 0; i < numPts; i++) {
-			if (dist2(ptsX[i]-x, ptsY[i]-y) <= R*R) {
+			if (dist2(ptsX[i]-x, ptsY[i]-y) < R*R) {
 				acc++;
 			}
 		}

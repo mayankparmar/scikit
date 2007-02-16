@@ -1,4 +1,4 @@
-package kip.util;
+package scikit.util;
 
 import java.util.HashMap;
 import java.lang.Double;
@@ -21,8 +21,8 @@ public class MathEvaluator
 {
    	protected static 	Operator[] 	operators 	= null;
 	private 			Node 		node       	= null;
-	private 			String  	expression 	= null;
-    private 			HashMap	 	variables  	= new HashMap();
+	private 			String  	expression  = null;
+    private	HashMap<String, Double>	variables   = new HashMap<String, Double>();
 
     /***
      * Main. To run the program in command line.
@@ -101,7 +101,7 @@ public class MathEvaluator
     {
     	node 		= null;
         expression 	= null;
-        variables 	= new HashMap();
+        variables 	= new HashMap<String, Double>();
     }
 
     /***
@@ -223,7 +223,7 @@ public class MathEvaluator
      */
     public Double getVariable(String s)
     {
-    	return (Double) variables.get(s);
+    	return variables.get(s);
     }
 
     private Double getDouble(String s)
