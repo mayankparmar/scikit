@@ -20,8 +20,8 @@ public class Clump2DApp extends Job {
 	}
 
 	public Clump2DApp() {
-		params.add("R", 2);
-		params.add("L/R", 2);
+		params.add("R", 8);
+		params.add("L/R", 8);
 		params.add("R/dx", 8);
 		params.addm("T", 1.0);
 		params.addm("kR bin-width", 0.025);

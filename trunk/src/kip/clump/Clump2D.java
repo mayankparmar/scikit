@@ -6,9 +6,11 @@ import scikit.jobs.Parameters;
 
 
 public class Clump2D {
-    double L, R, T;	
 	PtsGrid pts;
+	
+	double L, R, T;	
 	int t_cnt, numPts;
+	double[] ptsX, ptsY;
 	Random random = new Random();
 	
 	
@@ -18,28 +20,21 @@ public class Clump2D {
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-
+		double dx = R / params.fget("R/dx");
+		
 		numPts = (int)(L*L);
-		pts = new PtsGrid(L, R, numPts);
+		pts = new PtsGrid(L, R, dx);
+		ptsX = new double[numPts];
+		ptsY = new double[numPts];
 		randomizePts();
 		t_cnt = 0;
-
-		pts.remove(pts.xs[2], pts.ys[2]);
-//		for (int i = 0; i < numPts; i++) {
-//			pts.countOverlaps(pts.xs[i], pts.ys[i]);
-//		}
-		pts.add(1, 1);
-//		for (int i = 0; i < numPts; i++) {
-		int i = 0;
-			pts.countOverlaps(pts.xs[i], pts.ys[i]);
-//		}
 	}
 	
 	private void randomizePts() {
-		for (int i = 0; i < pts.maxPoints; i++) {
-			double x = random.nextDouble()*L;
-			double y = random.nextDouble()*L;			
-			pts.add(x, y);
+		for (int i = 0; i < numPts; i++) {
+			ptsX[i] = random.nextDouble()*L;
+			ptsY[i] = random.nextDouble()*L;			
+			pts.add(ptsX[i], ptsY[i]);
 		}
 	}
 	
@@ -47,32 +42,48 @@ public class Clump2D {
 		T = params.fget("T");
 	}
 	
+	double dist2(double dx, double dy) {
+		dx = abs(dx);
+		dx = min(dx, L-dx);
+		dy = abs(dy);
+		dy = min(dy, L-dy);
+		return dx*dx + dy*dy;
+	}
+	
+	int slowCount(double x, double y) {
+		int acc = 0;
+		for (int i = 0; i < numPts; i++) {
+			if (dist2(ptsX[i]-x, ptsY[i]-y) <= R*R) {
+				acc++;
+			}
+		}
+		return acc;
+	}
+	
 	public void mcsTrial() {
-		int i = random.nextInt(pts.maxPoints);
-		double x = pts.xs[i];
-		double y = pts.ys[i];
+		int i = random.nextInt(numPts);
+		double x = ptsX[i];
+		double y = ptsY[i];
 		
 		double xp = x + R*(2*random.nextDouble()-1);
 		double yp = y + R*(2*random.nextDouble()-1);
 		xp = (xp+L)%L;
 		yp = (yp+L)%L;
+//		assert(pts.countOverlaps(xp,yp) == slowCount(xp,yp));
+//		assert(pts.countOverlaps(x,y) == slowCount(x,y));
 		
 		double dE = (pts.countOverlaps(xp,yp)-pts.countOverlaps(x,y))/(PI*R*R);
 		if (dE < 0 || random.nextDouble() < exp(-dE/T)) {
+			ptsX[i] = xp;
+			ptsY[i] = yp;			
 			pts.remove(x, y);
-			for (i = 0; i < numPts; i++) {
-				pts.countOverlaps(pts.xs[i], pts.ys[i]);
-			}
 			pts.add(xp, yp);
-			for (i = 0; i < numPts; i++) {
-				pts.countOverlaps(pts.xs[i], pts.ys[i]);
-			}
 		}
 		t_cnt++;
 	}
 	
 	public int[] coarseGrained() {
-		return pts.gridCnt;
+		return pts.rawElements;
 	}
 	
 	public int numColumns() {
@@ -80,6 +91,6 @@ public class Clump2D {
 	}
 	
 	public double time() {
-		return (double)t_cnt/pts.ptsCnt;
+		return (double)t_cnt/numPts;
 	}
 }

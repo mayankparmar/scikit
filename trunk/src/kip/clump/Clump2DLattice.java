@@ -14,7 +14,6 @@ public class Clump2DLattice {
     double T;
 	// parameters with dx scaled out, for implementation purposes
 	int Lp, Rp;
-	double Tp;
 	
 	int t_cnt, numPts;
 	int[] ptsX, ptsY;
@@ -32,10 +31,10 @@ public class Clump2DLattice {
         if (highestOneBit(R)!=R || highestOneBit(L)!=L || highestOneBit(dx)!=dx)
 			throw new IllegalArgumentException("All parameters must be powers of 2.");
         
-		// rescale L,R,T so that dx->1 for simplicity
+		// rescale L,R so that dx->1 for simplicity
 		Lp = L/dx;
 		Rp = R/dx;
-		Tp = T*dx*dx;
+		
 		qt = new QuadTree(Lp, Rp);
 		ptsX = new int[numPts];
 		ptsY = new int[numPts];
@@ -54,21 +53,20 @@ public class Clump2DLattice {
 	
 	public void getParams(Parameters params) {
 		T = params.fget("T");
-		Tp = T*dx*dx;
 	}
 	
 	public void mcsTrial() {
-		int i = (int) (numPts*random.nextDouble());
+		int i = random.nextInt(numPts);
 		int x = ptsX[i];
 		int y = ptsY[i];
 		
-		int xp = x + (int)(Rp*2*(random.nextDouble()-0.5));
-		int yp = y + (int)(Rp*2*(random.nextDouble()-0.5));
+		int xp = x + random.nextInt(2*Rp+1) - Rp;
+		int yp = y + random.nextInt(2*Rp+1) - Rp;
 		xp = (xp+Lp)%Lp;
 		yp = (yp+Lp)%Lp;
 		
-		double dE = (qt.countOverlaps(xp,yp)-qt.countOverlaps(x,y))/(PI*Rp*Rp);
-		if (dE < 0 || random.nextDouble() < exp(-dE/Tp)) {
+		double dE = (qt.countOverlaps(xp,yp)-qt.countOverlaps(x,y))/(PI*R*R);
+		if (dE < 0 || random.nextDouble() < exp(-dE/T)) {
 			ptsX[i] = xp;
 			ptsY[i] = yp;
 			qt.remove(x, y);
