@@ -41,10 +41,12 @@ public class Accumulator extends DataSet {
 	
 	
 	public void setBinWidth(double binWidth) {
-		_binWidth = max(binWidth, _origBinWidth);
-		_hash = new TreeMap<Double, double[]>();
-		for (Double k : _origHash.keySet()) {
-			accumAux(_hash, _binWidth, k, _origHash.get(k)[0], _origHash.get(k)[1]);
+		if (binWidth != _binWidth) {
+			_binWidth = max(binWidth, _origBinWidth);
+			_hash = new TreeMap<Double, double[]>();
+			for (Double k : _origHash.keySet()) {
+				accumAux(_hash, _binWidth, k, _origHash.get(k)[0], _origHash.get(k)[1]);
+			}
 		}
 	}
 	
