@@ -20,8 +20,8 @@ public class Clump2DApp extends Job {
 	}
 
 	public Clump2DApp() {
-		params.add("R", 8);
-		params.add("L/R", 8);
+		params.add("R", 16);
+		params.add("L/R", 16);
 		params.add("R/dx", 8);
 		params.addm("T", 1.0);
 		params.addm("kR bin-width", 0.025);
@@ -52,7 +52,7 @@ public class Clump2DApp extends Job {
         
         while (true) {
 			params.set("Time", clump.time());
-			for (int i = 0; i < clump.numPts/4.; i++) {
+			for (int i = 0; i < clump.numPts; i++) {
 				clump.mcsTrial();
 				yield();
 			}
