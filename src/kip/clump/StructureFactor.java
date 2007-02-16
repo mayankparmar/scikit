@@ -23,7 +23,7 @@ public class StructureFactor {
 		
 		kRmin = (2*PI*2/L)*R; // explicitly exclude constant (k=0) mode
 		kRmax = (2*PI*(Lp/2)/L)*R;
-		acc = new Accumulator(kRbinWidth*(L/R)/(2*PI));
+		acc = new Accumulator(kRbinWidth);
 		acc.setAveraging(true);
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		fftData = new double[2*Lp*Lp];
@@ -38,12 +38,33 @@ public class StructureFactor {
 		this.kRmax = kRmax;
 	}
 	
-	void accumulate(int[] data) {
-		// compute fourier transform
+	public void clear(double kRbinWidth) {
+		acc = new Accumulator(kRbinWidth);
+		acc.setAveraging(true);
+	}
+	
+	public void accumulate(double[] xs, double[] ys) {
+		for (int i = 0; i < Lp*Lp; i++)
+			fftData[2*i] = fftData[2*i+1] = 0;
+		for (int k = 0; k < xs.length; k++) {
+			int i = (int)(Lp*xs[k]/L);
+			int j = (int)(Lp*ys[k]/L);
+			assert(i < Lp && j < Lp);
+			fftData[2*(Lp*j+i)]++;
+		}
+		accumulateAux();
+	}
+	
+	public void accumulate(int[] data) {
 		for (int i = 0; i < Lp*Lp; i++) {
 			fftData[2*i] = data[i];
 			fftData[2*i+1] = 0;
 		}
+		accumulateAux();
+	}
+	
+	public void accumulateAux() {
+		// compute fourier transform
 		fft.transform(fftData);
 		fftData = fft.toWraparoundOrder(fftData);
 		
