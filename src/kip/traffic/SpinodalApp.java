@@ -3,7 +3,6 @@ package kip.traffic;
 import scikit.plot.*;
 import scikit.jobs.*;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 
 
 public class SpinodalApp extends Job {
