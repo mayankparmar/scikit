@@ -23,12 +23,12 @@ public class ClumpCollectionApp extends Job {
 		params.add("Output directory", "/Users/kbarros/Desktop/output/");
 		params.add("R", 16);
 		params.add("L/R", 16);
-		params.add("R/dx", 8);
+		params.add("R/dx", 16);
 		params.add("T min", 0.15);
 		params.add("T max", 0.25);
-		params.add("T iterations", 10);
-		params.add("Equilibration time", 10.);
-		params.add("Stop time", 50.);
+		params.add("T iterations", 5);
+		params.add("Equilibration time", 50.);
+		params.add("Stop time", 1000.);
 		params.add("kR bin-width", 0.025);
 		params.add("Random seed", 0);
 		params.add("T");
@@ -44,6 +44,7 @@ public class ClumpCollectionApp extends Job {
         params.set("T", params.fget("T min"));
         
         for (int i = 0; i < iters; i++) {
+            params.set("Random seed", params.iget("Random seed")+1);
     		final Clump2DLattice clump = new Clump2DLattice(params);
             grid.setData(clump.Lp, clump.Lp, clump.qt.rawElements);
             
