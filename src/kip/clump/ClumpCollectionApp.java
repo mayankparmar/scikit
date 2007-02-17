@@ -16,20 +16,20 @@ public class ClumpCollectionApp extends Job {
 	
 	
 	public static void main(String[] args) {
-		frame(new Control(new ClumpCollectionApp()), "Nucleation");
+		frame(new Control(new ClumpCollectionApp()), "Clump Model -- S(k) Collection");
 	}
 
 	public ClumpCollectionApp() {
 		params.add("Output directory", "/Users/kbarros/Desktop/output/");
-		params.add("R", 16);
+		params.add("R", 12);
 		params.add("L/R", 16);
-		params.add("R/dx", 16);
+		params.add("dx", 3);
 		params.add("T min", 0.15);
 		params.add("T max", 0.25);
 		params.add("T iterations", 5);
 		params.add("Equilibration time", 50.);
 		params.add("Stop time", 1000.);
-		params.add("kR bin-width", 0.025);
+		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("T");
 		params.add("Time");
@@ -45,11 +45,12 @@ public class ClumpCollectionApp extends Job {
         
         for (int i = 0; i < iters; i++) {
             params.set("Random seed", params.iget("Random seed")+1);
-    		final Clump2DLattice clump = new Clump2DLattice(params);
-            grid.setData(clump.Lp, clump.Lp, clump.qt.rawElements);
+    		final Clump2D clump = new Clump2D(params);
+            grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
             
-    		sf = new StructureFactor(clump.Lp, clump.L, clump.R, params.fget("kR bin-width"));
-    		sf.setBounds(0.1, 12);
+            double binWidth = clump.shiftBinWidth(params.fget("kR bin-width"));
+    		sf = new StructureFactor((int)(2*clump.L), clump.L, clump.R, binWidth);
+    		sf.setBounds(0.1, 14);
             plot.setDataSet(0, sf.getAccumulator());
             plot.setDataSet(1, new Function(sf.kRmin, sf.kRmax) {
             	public double eval(double kR) {
@@ -60,20 +61,20 @@ public class ClumpCollectionApp extends Job {
             
             double eqTime = params.fget("Equilibration time");
             while (clump.time() < eqTime) {
+            	sf.accumulate(clump.ptsX, clump.ptsY);
             	params.set("Time", clump.time());
-            	for (int j = 0; j < clump.numPts/4.; j++) {
+            	for (int j = 0; j < clump.numPts/2; j++)
             		clump.mcsTrial();
-            		yield();
-            	}
+        		yield();
             }
+            sf.getAccumulator().clear();
             double stopTime = params.fget("Stop time");
             while (clump.time() < stopTime) {
-            	sf.accumulate(clump.qt.rawElements);
+            	sf.accumulate(clump.ptsX, clump.ptsY);
             	params.set("Time", clump.time());
-            	for (int j = 0; j < clump.numPts/4.; j++) {
+            	for (int j = 0; j < clump.numPts/2; j++)
             		clump.mcsTrial();
-            		yield();
-            	}
+        		yield();
             }
             
             String filename = params.sget("Output directory")+
