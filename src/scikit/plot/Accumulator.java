@@ -73,8 +73,7 @@ public class Accumulator extends DataSet {
 	}
 	
 	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {
-//		bw = bw * (1 - 1e-12); // perturb bin width slightly to get consistent rounding
-		double k = bw * floor(x/bw + 0.5); // why doesn't rint(x/bw) work??
+		double k = bw * rint(x/bw); // each binning cell is labeled by its center coordinate, k.
 		double[] val = h.get(k);
 		if (val == null)
 			val = new double[] {0, 0};
