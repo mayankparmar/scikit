@@ -23,6 +23,12 @@ public class Accumulator extends DataSet {
 	}
 	
     
+	public void clear() {
+		_origHash = new TreeMap<Double, double[]>();
+		_hash = new TreeMap<Double, double[]>();
+	}
+	
+	
 	public double[] copyData() {
 		int i = 0;
 		double[] ret = new double[2*_hash.size()];
