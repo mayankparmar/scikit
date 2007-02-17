@@ -38,11 +38,6 @@ public class StructureFactor {
 		this.kRmax = kRmax;
 	}
 	
-	public void clear(double kRbinWidth) {
-		acc = new Accumulator(kRbinWidth);
-		acc.setAveraging(true);
-	}
-	
 	public void accumulate(double[] xs, double[] ys) {
 		for (int i = 0; i < Lp*Lp; i++)
 			fftData[2*i] = fftData[2*i+1] = 0;
@@ -69,6 +64,7 @@ public class StructureFactor {
 		fftData = fft.toWraparoundOrder(fftData);
 		
 		// verify imaginary component of structure factor is zero
+		/*
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
@@ -76,6 +72,7 @@ public class StructureFactor {
 				assert(abs(fftData[2*i+1] + fftData[2*j+1]) < 1e-11);
 			}
 		}
+		*/
 		
 		// We calculate the structure factor s(k) by summing the fourier transform information
 		// over all frequencies with equal magnitude (k).
