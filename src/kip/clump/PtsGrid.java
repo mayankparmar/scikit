@@ -29,13 +29,6 @@ class PtsList {
 		ys = nys;
 	}
 	
-	private double dist2(double dx, double dy) {
-		if (dx < -L/2) dx = L + dx;
-		if (dx >  L/2) dx = L - dx;
-		if (dy < -L/2) dy = L + dy;
-		if (dy >  L/2) dy = L - dy;
-		return dx*dx + dy*dy;
-	}
 
 	
 	public void add(double x, double y) {
@@ -59,12 +52,39 @@ class PtsList {
 		}
 		throw new IllegalArgumentException();
 	}
-	
+
+	/*
+	private double dist2(double dx, double dy) {
+		if (dx < -L/2) dx = L + dx;
+		if (dx >  L/2) dx = L - dx;
+		if (dy < -L/2) dy = L + dy;
+		if (dy >  L/2) dy = L - dy;
+		return dx*dx + dy*dy;
+	}
 	public int countOverlaps(double x, double y) {
 		int acc = 0;
 		for (int i = 0; i < cnt; i++)
 			if (dist2(x-xs[i], y-ys[i]) < R*R)
 				acc++;
+		return acc;
+	}
+*/
+
+	public int countOverlaps(double x, double y) {
+		if (cnt == 0) return 0;
+		double dx = x-xs[0];
+		double dy = y-ys[0];
+		if (dx >  L/2) x -= L;
+		if (dx < -L/2) x += L;
+		if (dy >  L/2) y -= L;
+		if (dy < -L/2) y += L;
+		int acc = 0;
+		for (int i = 0; i < cnt; i++) {
+			dx = x-xs[i];
+			dy = y-ys[i];
+			if (dx*dx + dy*dy < R*R)
+				acc++;
+		}
 		return acc;
 	}
 }
