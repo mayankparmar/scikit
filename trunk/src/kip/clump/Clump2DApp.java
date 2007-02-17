@@ -32,14 +32,16 @@ public class Clump2DApp extends Job {
 	
 	public void animate() {
 		clump.getParams(params);
-		sf.getAccumulator().setBinWidth(params.fget("kR bin-width"));
+        double binWidth = clump.shiftBinWidth(params.fget("kR bin-width"));
+		sf.getAccumulator().setBinWidth(binWidth);
 	}
 	
 	public void run() {
 		clump = new Clump2D(params);
         grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
-        
-		sf = new StructureFactor((int)(2*clump.L), clump.L, clump.R, params.fget("kR bin-width"));
+
+        double binWidth = clump.shiftBinWidth(params.fget("kR bin-width"));
+		sf = new StructureFactor((int)(2*clump.L), clump.L, clump.R, binWidth);
 		sf.setBounds(0.1, 14);
         plot.setDataSet(0, sf.getAccumulator());
         plot.setDataSet(1, new Function(sf.kRmin, sf.kRmax) {
