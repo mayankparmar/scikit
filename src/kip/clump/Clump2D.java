@@ -1,7 +1,6 @@
 package kip.clump;
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 import kip.util.Random;
 import scikit.jobs.Parameters;
 
@@ -16,8 +15,9 @@ public class Clump2D {
 	
 	// value of kR which minimizes j1(kR)/kR
 	public static final double KR_SP = 5.13562230184068255630140;
-	// S(k) ~ 1 / (V(KR_SP)/T+1) => T_SP = V(KR_SP)
-	public static final double T_SP = 2*j1(KR_SP)/KR_SP;
+	// S(k) ~ 1 / (V(kR_sp)/T+1)
+	// => T_SP = - V(kR_sp) = - 2 j1(kR_sp) / kR_sp 
+	public static final double T_SP = 0.132279487396100031736846;
 
 	public Clump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
