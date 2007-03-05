@@ -591,11 +591,10 @@ public final class MathPlus extends Object {
             3.58236398605498653373E-2, -2.34591795718243348568E-1,
             7.14304917030273074085E-2, 1.00000000000000000320E0
         };
-        double MAXGAM = 171.624376956302725;
-        double LOGPI  = 1.14472988584940017414;
+//        double MAXGAM = 171.624376956302725;
+//        double LOGPI  = 1.14472988584940017414;
 
         double p, z;
-        int    i;
 
         double q = Math.abs(x);
 
@@ -605,7 +604,6 @@ public final class MathPlus extends Object {
                 if (p == q) {
                     throw new ArithmeticException("gamma: overflow");
                 }
-                i = (int) p;
                 z = q - p;
                 if (z > 0.5) {
                     p += 1.0;
