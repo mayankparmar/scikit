@@ -2,7 +2,6 @@ package kip.dyn1D;
 
 import scikit.jobs.*;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 
 
 public class PhiFourth extends Dynamics1D {
@@ -38,7 +37,7 @@ public class PhiFourth extends Dynamics1D {
 	
 	public void setParameters(Parameters params) {
 		super.setParameters(params);
-		eps = params.fget("\u03b5", 1); // ε
+		eps = params.fget("\u03b5", 1);
 		beta = params.fget("beta", 1);
 	}
 	
