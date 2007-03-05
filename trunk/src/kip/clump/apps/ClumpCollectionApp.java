@@ -1,7 +1,9 @@
-package kip.clump;
+package kip.clump.apps;
 
 import static kip.util.MathPlus.*;
 import static scikit.jobs.DoubleValue.format;
+import kip.clump.Clump2D;
+import kip.clump.StructureFactor;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.plot.GridDisplay;
@@ -48,11 +50,10 @@ public class ClumpCollectionApp extends Job {
     		final Clump2D clump = new Clump2D(params);
             grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
             
-            double binWidth = clump.shiftBinWidth(params.fget("kR bin-width"));
-    		sf = new StructureFactor((int)(2*clump.L), clump.L, clump.R, binWidth);
+            sf = clump.newStructureFactor(params.fget("kR bin-width"));
     		sf.setBounds(0.1, 14);
             plot.setDataSet(0, sf.getAccumulator());
-            plot.setDataSet(1, new Function(sf.kRmin, sf.kRmax) {
+            plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
             	public double eval(double kR) {
             		double V = 2*j1(kR)/kR;
             		return 1/(V/clump.T+1);
@@ -61,26 +62,24 @@ public class ClumpCollectionApp extends Job {
             
             double eqTime = params.fget("Equilibration time");
             while (clump.time() < eqTime) {
-            	sf.accumulate(clump.ptsX, clump.ptsY);
+            	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
-            	for (int j = 0; j < clump.numPts/2; j++)
-            		clump.mcsTrial();
+            	clump.simulate(0.5);
         		yield();
             }
             sf.getAccumulator().clear();
             double stopTime = params.fget("Stop time");
             while (clump.time() < stopTime) {
-            	sf.accumulate(clump.ptsX, clump.ptsY);
+            	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
-            	for (int j = 0; j < clump.numPts/2; j++)
-            		clump.mcsTrial();
+            	clump.simulate(0.5);
         		yield();
             }
             
             String filename = params.sget("Output directory")+
                 "/R="+clump.R+",T="+format(clump.T)+"" +
                 ",ts="+eqTime+",tf="+stopTime+".txt";
-            scikit.util.Dump.doubleArray(filename, sf.acc.copyData(), 2);
+            scikit.util.Dump.doubleArray(filename, sf.getAccumulator().copyData(), 2);
             
             params.set("T", format(clump.T+dT));
         }

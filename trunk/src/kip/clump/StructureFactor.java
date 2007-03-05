@@ -33,6 +33,14 @@ public class StructureFactor {
 		return acc;
 	}
 	
+	public double kRmin() {
+		return kRmin;
+	}
+	
+	public double kRmax() {
+		return kRmax;
+	}
+	
 	public void setBounds(double kRmin, double kRmax) {
 		this.kRmin = kRmin;
 		this.kRmax = kRmax;
@@ -51,6 +59,14 @@ public class StructureFactor {
 	}
 	
 	public void accumulate(int[] data) {
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftData[2*i] = data[i];
+			fftData[2*i+1] = 0;
+		}
+		accumulateAux();
+	}
+	
+	public void accumulate(double[] data) {
 		for (int i = 0; i < Lp*Lp; i++) {
 			fftData[2*i] = data[i];
 			fftData[2*i+1] = 0;

@@ -53,22 +53,20 @@ class PtsList {
 		throw new IllegalArgumentException();
 	}
 
-	/*
-	private double dist2(double dx, double dy) {
-		if (dx < -L/2) dx = L + dx;
-		if (dx >  L/2) dx = L - dx;
-		if (dy < -L/2) dy = L + dy;
-		if (dy >  L/2) dy = L - dy;
-		return dx*dx + dy*dy;
-	}
-	public int countOverlaps(double x, double y) {
-		int acc = 0;
-		for (int i = 0; i < cnt; i++)
-			if (dist2(x-xs[i], y-ys[i]) < R*R)
-				acc++;
-		return acc;
-	}
-*/
+//	private double dist2(double dx, double dy) {
+//		if (dx < -L/2) dx = L + dx;
+//		if (dx >  L/2) dx = L - dx;
+//		if (dy < -L/2) dy = L + dy;
+//		if (dy >  L/2) dy = L - dy;
+//		return dx*dx + dy*dy;
+//	}
+//	public int countOverlaps(double x, double y) {
+//		int acc = 0;
+//		for (int i = 0; i < cnt; i++)
+//			if (dist2(x-xs[i], y-ys[i]) < R*R)
+//				acc++;
+//		return acc;
+//	}
 
 	public int countOverlaps(double x, double y) {
 		if (cnt == 0) return 0;
@@ -97,7 +95,7 @@ public class PtsGrid {
 	int gridCols;  // columns in grid  
 	double dx; // distance between grid elements
 	PtsList[] grid;  // list of indices into x[], y[].
-	int[] rawElements;
+	double[] rawElements;
 	
 	LatticeNeighbors neigh1, neigh2;
 	int[][] nlist1, nlist2;
@@ -117,7 +115,7 @@ public class PtsGrid {
 		grid = new PtsList[gridCols*gridCols];
 		for (int i = 0; i < grid.length; i++)
 			grid[i] = new PtsList(L, R);
-		rawElements = new int[gridCols*gridCols];
+		rawElements = new double[gridCols*gridCols];
 		
 		// effectiveR is how many lattice spacings (length dx) away we need to
 		// look to find relevant cells.  the sqrt(2) is necessary to to account for

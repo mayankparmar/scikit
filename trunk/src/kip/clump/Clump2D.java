@@ -1,23 +1,13 @@
 package kip.clump;
 
 import static java.lang.Math.*;
-import kip.util.Random;
 import scikit.jobs.Parameters;
 
 
-public class Clump2D {
+public class Clump2D extends AbstractClump2D {	
 	PtsGrid pts;
-	
-	double L, R, T;	
 	int t_cnt, numPts;
 	double[] ptsX, ptsY;
-	Random random = new Random();
-	
-	// value of kR which minimizes j1(kR)/kR
-	public static final double KR_SP = 5.13562230184068255630140;
-	// S(k) ~ 1 / (V(kR_sp)/T+1)
-	// => T_SP = - V(kR_sp) = - 2 j1(kR_sp) / kR_sp 
-	public static final double T_SP = 0.132279487396100031736846;
 
 	public Clump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
@@ -43,7 +33,7 @@ public class Clump2D {
 		}
 	}
 	
-	public void getParams(Parameters params) {
+	public void readParams(Parameters params) {
 		T = params.fget("T");
 	}
 	
@@ -65,7 +55,7 @@ public class Clump2D {
 		return acc;
 	}
 	
-	public void mcsTrial() {
+	void mcsTrial() {
 		int i = random.nextInt(numPts);
 		double x = ptsX[i];
 		double y = ptsY[i];
@@ -87,7 +77,22 @@ public class Clump2D {
 		t_cnt++;
 	}
 	
-	public int[] coarseGrained() {
+	public void simulate(double mcs) {
+		for (int i = 0; i < numPts*mcs; i++)
+			mcsTrial();
+	}
+	
+	public StructureFactor newStructureFactor(double binWidth) {
+		// round binwidth down so that it divides KR_SP without remainder.
+		binWidth = KR_SP / floor(KR_SP/binWidth);
+		return new StructureFactor((int)(2*L), L, R, binWidth);
+	}
+	
+	public void accumulateIntoStructureFactor(StructureFactor sf) {
+		sf.accumulate(ptsX, ptsY);		
+	}
+	
+	public double[] coarseGrained() {
 		return pts.rawElements;
 	}
 	
@@ -97,10 +102,5 @@ public class Clump2D {
 	
 	public double time() {
 		return (double)t_cnt/numPts;
-	}
-	
-	// round binwidth down so that it divides KR_SP without remainder.
-	public double shiftBinWidth(double binWidth) {
-		return KR_SP / floor(KR_SP/binWidth);
 	}
 }
