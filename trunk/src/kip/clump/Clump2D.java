@@ -7,6 +7,7 @@ import scikit.jobs.Parameters;
 public class Clump2D extends AbstractClump2D {	
 	PtsGrid pts;
 	int t_cnt, numPts;
+	double dt;
 	double[] ptsX, ptsY;
 
 	public Clump2D(Parameters params) {
@@ -16,6 +17,7 @@ public class Clump2D extends AbstractClump2D {
 		L = R*params.fget("L/R");
 		T = params.fget("T");
 		double dx = params.fget("dx");
+		dt = params.fget("dt");
 		
 		numPts = (int)(L*L);
 		pts = new PtsGrid(L, R, dx);
@@ -35,6 +37,7 @@ public class Clump2D extends AbstractClump2D {
 	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
+		dt = params.fget("dt");
 	}
 	
 	double dist2(double dx, double dy) {
@@ -77,8 +80,8 @@ public class Clump2D extends AbstractClump2D {
 		t_cnt++;
 	}
 	
-	public void simulate(double mcs) {
-		for (int i = 0; i < numPts*mcs; i++)
+	public void simulate() {
+		for (int i = 0; i < numPts*dt; i++)
 			mcsTrial();
 	}
 	
