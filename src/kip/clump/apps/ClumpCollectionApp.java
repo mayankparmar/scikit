@@ -64,7 +64,7 @@ public class ClumpCollectionApp extends Job {
             while (clump.time() < eqTime) {
             	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
-            	clump.simulate(0.5);
+            	clump.simulate();
         		yield();
             }
             sf.getAccumulator().clear();
@@ -72,7 +72,7 @@ public class ClumpCollectionApp extends Job {
             while (clump.time() < stopTime) {
             	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
-            	clump.simulate(0.5);
+            	clump.simulate();
         		yield();
             }
             

@@ -18,7 +18,7 @@ abstract public class AbstractClump2D {
 	abstract public void readParams(Parameters params);
 	abstract public StructureFactor newStructureFactor(double binWidth);
 	abstract public void accumulateIntoStructureFactor(StructureFactor sf);
-	abstract public void simulate(double mcs);
+	abstract public void simulate();
 	abstract public double[] coarseGrained();
 	abstract public int numColumns();
 	abstract public double time();

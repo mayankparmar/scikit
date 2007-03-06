@@ -1,14 +1,13 @@
 package kip.clump;
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.j1;
+import static kip.util.MathPlus.*;
 import jnt.FFT.ComplexDouble2DFFT;
 import scikit.jobs.Parameters;
 
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;
-	double dx;
-	double t;
+	double dx, dt, t;
 	boolean noiseless;
 	double[] phi, phibar;
 	double[] scratch;
@@ -23,6 +22,7 @@ public class FieldClump2D extends AbstractClump2D {
 		L = R*params.fget("L/R");
 		T = params.fget("T");
 		dx = params.fget("dx");
+		dt = params.fget("dt");
 		
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
@@ -41,6 +41,7 @@ public class FieldClump2D extends AbstractClump2D {
 	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
+		dt = params.fget("dt");
 	}
 	
 	
@@ -94,41 +95,27 @@ public class FieldClump2D extends AbstractClump2D {
 	}
 
 
-	public void simulate(double mcs) {
-		int iters = max((int) (mcs / 0.01), 1);
-		double dt = mcs / iters;
+	public void simulate() {
+		convolveWithRange(phi, phibar, R);
 
-//		for (int j = 0; j < iters; j++) {
-//			convolveWithRange(phi, phibar, R);
-//			for (int i = 0; i < Lp*Lp; i++) {
-//				scratch[i] = - dt*(phibar[i]+T*log(phi[i])); //+ sqrt(dt*phi2*2*T/dx)*noise();
-//			}
-//			double a = mean(scratch, Lp*Lp);
-//			for (int i = 0; i < Lp*Lp; i++) {
-//				phi[i] += scratch[i] - a;
-//			}
+//		for (int i = 0; i < Lp*Lp; i++) {
+//		scratch[i] = - dt*(phibar[i]+T*log(phi[i])) + sqrt(dt*2*T/dx)*noise();
 //		}
-
-		for (int j = 0; j < iters; j++) {
-			convolveWithRange(phi, phibar, R);
-			for (int i = 0; i < Lp*Lp; i++) {
-				double phi2 = phi[i] * phi[i];
-				scratch[i] = - phi2*dt*(phibar[i]+T*log(phi[i])); // + sqrt(dt*phi2*2*T/dx)*noise();
-			}
-			double a = mean(scratch, Lp*Lp);
-			for (int i = 0; i < Lp*Lp; i++) {
-				phi[i] += scratch[i] - a;
-			}
-//			double a = mean(scratch, Lp*Lp) / meanSquared(phi, Lp*Lp);
-//			for (int i = 0; i < Lp*Lp; i++) {
-//				double phi2 = phi[i] * phi[i];
-//				phi[i] += scratch[i] - a * phi2;
-//			}
-		}
+//		double a = mean(scratch, Lp*Lp);
+//		for (int i = 0; i < Lp*Lp; i++) {
+//		phi[i] += scratch[i] - a;
+//		}
 		
-		System.out.println(mean(phi, Lp*Lp));
-		System.out.println(smallest(phi));
-		t += mcs;
+		for (int i = 0; i < Lp*Lp; i++) {
+			double phi2 = phi[i] * phi[i];
+			scratch[i] = - phi2*dt*(phibar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*noise();
+		}
+		double a = mean(scratch, Lp*Lp) / meanSquared(phi, Lp*Lp);
+		for (int i = 0; i < Lp*Lp; i++) {
+			double phi2 = phi[i] * phi[i];
+			phi[i] += scratch[i] - a * phi2;
+		}
+		t += dt;
 	}
 	
 	public StructureFactor newStructureFactor(double binWidth) {

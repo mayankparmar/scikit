@@ -58,17 +58,10 @@ public class StructureFactor {
 		accumulateAux();
 	}
 	
-	public void accumulate(int[] data) {
-		for (int i = 0; i < Lp*Lp; i++) {
-			fftData[2*i] = data[i];
-			fftData[2*i+1] = 0;
-		}
-		accumulateAux();
-	}
-	
 	public void accumulate(double[] data) {
+		double dx = (L/Lp);
 		for (int i = 0; i < Lp*Lp; i++) {
-			fftData[2*i] = data[i];
+			fftData[2*i] = data[i]*dx*dx;
 			fftData[2*i+1] = 0;
 		}
 		accumulateAux();
