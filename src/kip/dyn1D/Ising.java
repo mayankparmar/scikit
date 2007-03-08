@@ -2,9 +2,7 @@ package kip.dyn1D;
 
 import scikit.jobs.*;
 import kip.ising.SpinBlocks1D;
-import kip.util.Random;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 
 
 public class Ising extends AbstractIsing {

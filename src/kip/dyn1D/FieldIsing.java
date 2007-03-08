@@ -2,7 +2,6 @@ package kip.dyn1D;
 
 import scikit.jobs.*;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 
 
 public class FieldIsing extends AbstractIsing {
