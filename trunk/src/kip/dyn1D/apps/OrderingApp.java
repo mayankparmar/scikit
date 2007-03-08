@@ -4,7 +4,6 @@ import scikit.plot.*;
 import scikit.jobs.*;
 import kip.dyn1D.*;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 
 
 class Structure {
