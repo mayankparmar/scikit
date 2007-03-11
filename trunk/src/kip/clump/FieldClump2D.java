@@ -2,20 +2,27 @@ package kip.clump;
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
+import static kip.util.DoubleArray.*;
 import jnt.FFT.ComplexDouble2DFFT;
 import scikit.jobs.Parameters;
 
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;
 	double dx, dt, t;
-	boolean noiseless;
-	double[] phi, phibar;
-	double[] scratch;
+	double[] phi, phi_bar, del_phi;
+	boolean[] onBoundary;
+	int elementsInsideBoundary;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
-
+	double[] fftScratch;
 	
-	public FieldClump2D(Parameters params, boolean noiseless) {
-		this.noiseless = noiseless;
+	boolean unstableDynamics = false;
+	boolean noiselessDynamics = false;
+	public boolean rescaleClipped = false;
+	public double rms_dF_dphi;
+	public double freeEnergyDensity;
+	
+	
+	public FieldClump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 		
 		R = params.fget("R");
@@ -31,12 +38,16 @@ public class FieldClump2D extends AbstractClump2D {
 		t = 0;
 
 		phi = new double[Lp*Lp];
-		phibar = new double[Lp*Lp];
-		for (int i = 0; i < Lp*Lp; i++)
-			phi[i] = DENSITY*(1 + (random.nextDouble()-0.5)/10);
+		phi_bar = new double[Lp*Lp];
+		del_phi = new double[Lp*Lp];
+		onBoundary = new boolean[Lp*Lp];
+		elementsInsideBoundary = Lp*Lp;
 		
-		scratch = new double[2*Lp*Lp];
+		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
+		
+		for (int i = 0; i < Lp*Lp; i++)
+			phi[i] = DENSITY;
 	}
 	
 	public void readParams(Parameters params) {
@@ -44,77 +55,154 @@ public class FieldClump2D extends AbstractClump2D {
 		dt = params.fget("dt");
 	}
 	
+	public void initializeFieldWithSeed() {
+		for (int i = 0; i < Lp*Lp; i++) {
+			if (onBoundary[i])
+				continue;
+			
+			double x = dx*(i%Lp - Lp/2);
+			double y = dx*(i/Lp - Lp/2);
+			double r = sqrt(x*x+y*y);
+			double mag = 0.8 / (1+sqr(r/R));
+			
+			double kR = KR_SP; // it's fun to try different values
+			
+			double x2 = x*cos(PI/3)   + y*sin(PI/3);
+			double x3 = x*cos(2*PI/3) + y*sin(2*PI/3);
+			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
+			
+//			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
+		}
+	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
 		for (int i = 0; i < Lp*Lp; i++) {
-			scratch[2*i] = src[i];
-			scratch[2*i+1] = 0;
+			fftScratch[2*i] = src[i];
+			fftScratch[2*i+1] = 0;
 		}
 		
-		fft.transform(scratch);
+		fft.transform(fftScratch);
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
 				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 				double J = (kR == 0 ? 1 : 2*j1(kR)/kR);
-				scratch[2*i] *= J;
-				scratch[2*i+1] *= J;
+				fftScratch[2*i] *= J;
+				fftScratch[2*i+1] *= J;
 			}
 		}
-		fft.backtransform(scratch);
+		fft.backtransform(fftScratch);
 		
 		for (int i = 0; i < Lp*Lp; i++) {
-			dest[i] = scratch[2*i] / (Lp*Lp);
+			dest[i] = fftScratch[2*i] / (Lp*Lp);
 		}		
 	}
 	
-	double smallest(double[] a) {
-		double m = a[0];
-		for (int i = 0; i < a.length; i++)
-			if (a[i] < m)
-				m = a[i];
-		return m;
+	public void useNoiselessDynamics() {
+		noiselessDynamics = true;
 	}
 	
-	double mean(double[] a, int len) {
-		double s = 0;
-		for (int i = 0; i < len; i++)
-			s += a[i];
-		return s / len;
+	public void useFixedBoundaryConditions() {
+		int thickness = 4;
+		for (int i = 0; i < thickness; i++) {
+			int j = Lp-thickness+i;
+			for (int k = 0; k < Lp; k++) {
+				onBoundary[i*Lp+k] = onBoundary[j*Lp+k] = true;
+				onBoundary[k*Lp+i] = onBoundary[k*Lp+j] = true;
+			}
+		}
+		elementsInsideBoundary = Lp*Lp;
+		for (int i = 0; i < Lp*Lp; i++) {
+			if (onBoundary[i]) {
+				phi[i] = DENSITY;
+				elementsInsideBoundary--;
+			}
+		}
 	}
 	
-	double meanSquared(double[] a, int len) {
-		double s = 0;
-		for (int i = 0; i < len; i++)
-			s += a[i]*a[i];
-		return s / len;
+	public double phiVariance() {
+		double var = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+			var += sqr(phi[i]-DENSITY);
+		return var / (Lp*Lp);
+	}
+	
+	public double phiMin() {
+		return min(phi);
+	}
+	public double phiMax() {
+		return max(phi);
+	}
+	
+	public void scaleField(double scale) {
+		// phi will not be scaled above PHI_UB or below PHI_LB
+		double PHI_UB = 5;
+		double PHI_LB = 0.01;
+		double s1 = (PHI_UB-DENSITY)/(max(phi)-DENSITY+1e-10);
+		double s2 = (PHI_LB-DENSITY)/(min(phi)-DENSITY-1e-10);
+		rescaleClipped = scale > min(s1,s2);
+		if (rescaleClipped)
+			scale = min(s1,s2);
+		for (int i = 0; i < Lp*Lp; i++) {
+			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
+		}
 	}
 	
 	double noise() {
-		return noiseless ? 0 : random.nextGaussian();
+		return noiselessDynamics ? 0 : random.nextGaussian();
 	}
 
-
+	double mean(double[] a) {
+		double sum = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+			if (!onBoundary[i])
+				sum += a[i];
+		return sum/elementsInsideBoundary; 
+	}
+	
+	double meanSquared(double[] a) {
+		double sum = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+			if (!onBoundary[i])
+				sum += a[i]*a[i];
+		return sum/elementsInsideBoundary;
+	}
+	
 	public void simulate() {
-		convolveWithRange(phi, phibar, R);
-
-//		for (int i = 0; i < Lp*Lp; i++) {
-//		scratch[i] = - dt*(phibar[i]+T*log(phi[i])) + sqrt(dt*2*T/dx)*noise();
-//		}
-//		double a = mean(scratch, Lp*Lp);
-//		for (int i = 0; i < Lp*Lp; i++) {
-//		phi[i] += scratch[i] - a;
-//		}
+		convolveWithRange(phi, phi_bar, R);
 		
-		for (int i = 0; i < Lp*Lp; i++) {
-			double phi2 = phi[i] * phi[i];
-			scratch[i] = - phi2*dt*(phibar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*noise();
+		if (unstableDynamics) {
+			for (int i = 0; i < Lp*Lp; i++) {
+				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/dx)*noise();
+			}
+			double mu = mean(del_phi)-(DENSITY-mean(phi));
+			for (int i = 0; i < Lp*Lp; i++) {
+				del_phi[i] -= mu;
+			}
 		}
-		double a = mean(scratch, Lp*Lp) / meanSquared(phi, Lp*Lp);
-		for (int i = 0; i < Lp*Lp; i++) {
-			double phi2 = phi[i] * phi[i];
-			phi[i] += scratch[i] - a * phi2;
+		else {
+			for (int i = 0; i < Lp*Lp; i++) {
+				double phi2 = phi[i] * phi[i];
+				del_phi[i] = - phi2*dt*(phi_bar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*noise();
+			}
+			double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
+			for (int i = 0; i < Lp*Lp; i++) {
+				del_phi[i] -= mu*phi[i]*phi[i];
+			}
 		}
+		
+		rms_dF_dphi = 0;
+		freeEnergyDensity = 0;
+		for (int i = 0; i < Lp*Lp; i++) {
+			if (!onBoundary[i]) {
+				rms_dF_dphi += sqr(del_phi[i] / (dt*phi[i]*phi[i]));
+				freeEnergyDensity += phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
+				phi[i] += del_phi[i];
+			}
+		}
+		
+		rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
+		freeEnergyDensity /= elementsInsideBoundary;
 		t += dt;
 	}
 	

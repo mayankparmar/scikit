@@ -59,7 +59,7 @@ public class SpinodalApp extends Job {
         data = new int[L*L];
         
         grid.setData(L, L, data);
-        grid.setBounds(0, 16);
+        grid.setScale(0, 16);
         
         addDisplay(grid);
         
