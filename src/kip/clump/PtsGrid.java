@@ -155,11 +155,11 @@ public class PtsGrid {
 	
 	public void remove(double x, double y) {
 		grid[gridIndex(x, y)].remove(x, y);
-		rawElements[gridIndex(x,y)]--;
+		rawElements[gridIndex(x,y)] -= 1/(dx*dx);
 	}
 	
 	public void add(double x, double y) {
 		grid[gridIndex(x, y)].add(x, y);
-		rawElements[gridIndex(x,y)]++;
+		rawElements[gridIndex(x,y)] += 1/(dx*dx);
 	}
 }

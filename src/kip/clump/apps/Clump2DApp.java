@@ -2,6 +2,7 @@ package kip.clump.apps;
 
 import static kip.util.MathPlus.j1;
 import kip.clump.*;
+import scikit.jobs.ChoiceValue;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.plot.Function;
@@ -21,6 +22,7 @@ public class Clump2DApp extends Job {
 	}
 	
 	public Clump2DApp() {
+		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.15);
 		params.addm("dt", 1.0);
 		if (fieldDynamics) {
@@ -40,11 +42,15 @@ public class Clump2DApp extends Job {
 	
 	public void animate() {
 		clump.readParams(params);
+		if (params.sget("Zoom").equals("Yes"))
+			grid.setAutoScale();
+		else
+			grid.setScale(0, 2);
 	}
 	
 	public void run() {
 		if (fieldDynamics)
-			clump = new FieldClump2D(params, false);
+			clump = new FieldClump2D(params);
 		else
 			clump = new Clump2D(params);
 		
