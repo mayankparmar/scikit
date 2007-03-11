@@ -8,9 +8,10 @@ import javax.swing.*;
 
 
 public class GridDisplay extends JComponent implements Display {
-    private BufferedImage _image;
+	private static final long serialVersionUID = 1L;
+	private BufferedImage _image;
     private int _w, _h;
-    private boolean _autoAdjust;
+    private boolean _autoScale;
     private double _min, _max;
     private double[] _data;
     private int[] _idata;
@@ -64,7 +65,7 @@ public class GridDisplay extends JComponent implements Display {
         _h = h;
         _data = data;
         _idata = idata;
-        _autoAdjust = true;
+        _autoScale = true;
         _pixelArray = new int[w*h*3];
         _image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);    
     }
@@ -80,12 +81,15 @@ public class GridDisplay extends JComponent implements Display {
     }
     
     
-    public void setBounds(double min, double max) {
-    	_autoAdjust = false;
+    public void setScale(double min, double max) {
+    	_autoScale = false;
     	_min = min;
     	_max = max;
     }
     
+    public void setAutoScale() {
+    	_autoScale = true;
+    }
     
     private void initColorWheel() {
         for (int i = 0; i < WHEEL_SIZE; i++) {
@@ -130,7 +134,7 @@ public class GridDisplay extends JComponent implements Display {
     
     public void animate() {
         if (_image != null) {
-        	if (_autoAdjust)
+        	if (_autoScale)
         		findBounds();
             int pixelArrayOffset = 0;
             for (int y = 0; y < _h; y++) {
