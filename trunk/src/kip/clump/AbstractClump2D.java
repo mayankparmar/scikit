@@ -4,7 +4,7 @@ import kip.util.Random;
 import scikit.jobs.Parameters;
 
 abstract public class AbstractClump2D {
-	public double L, R, T;
+	public double L, R, T, dx;
 	Random random = new Random();
 	
 	public static final double DENSITY = 1;

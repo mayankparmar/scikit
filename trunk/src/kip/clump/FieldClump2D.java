@@ -8,7 +8,7 @@ import scikit.jobs.Parameters;
 
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;
-	double dx, dt, t;
+	double dt, t;
 	double[] phi, phi_bar, del_phi;
 	boolean[] onBoundary;
 	int elementsInsideBoundary;
