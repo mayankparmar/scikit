@@ -16,7 +16,7 @@ public class Clump2D extends AbstractClump2D {
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-		double dx = params.fget("dx");
+		dx = params.fget("dx");
 		dt = params.fget("dt");
 		
 		numPts = (int)(L*L);

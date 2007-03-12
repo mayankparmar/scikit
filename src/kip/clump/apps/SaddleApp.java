@@ -48,6 +48,7 @@ public class SaddleApp extends Job {
 		
 		grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		grid.setScale(0.0, 2);
+		grid.setDeltaX(clump.dx/clump.R);
 		addDisplay(grid);
 		yield();
 		
