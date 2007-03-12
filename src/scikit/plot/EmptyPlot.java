@@ -1,20 +1,10 @@
 package scikit.plot;
 
 import static java.lang.Math.*;
-
 import java.util.Vector;
-
-import java.text.AttributedString;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
-
-import javax.swing.JFrame;
 import javax.swing.JComponent;
-import javax.swing.WindowConstants;
-
-import java.awt.Stroke;
-import java.awt.BasicStroke;
-import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.Color;
@@ -26,10 +16,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
-import java.awt.font.TextAttribute;
 
 
 public class EmptyPlot extends JComponent {	
+	private static final long serialVersionUID = 1L;
 	private static int FONT_SIZE = 12;
 	private static int MARGIN = 6;
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
@@ -56,7 +46,7 @@ public class EmptyPlot extends JComponent {
 	private Rectangle _selection = new Rectangle();
 	private boolean _selectionActive = false;
 	
-	private boolean _logscaleX = false, _logscaleY = false;
+//	private boolean _logscaleX = false, _logscaleY = false;
 	
 	
 	public EmptyPlot(String title, boolean inFrame) {
@@ -103,8 +93,8 @@ public class EmptyPlot extends JComponent {
 	
 	
 	synchronized public void setLogScale(boolean logscaleX, boolean logscaleY) {
-		_logscaleX = logscaleX;
-		_logscaleY = logscaleY;
+//		_logscaleX = logscaleX;
+//		_logscaleY = logscaleY;
 	}
 	
 	
@@ -174,7 +164,7 @@ public class EmptyPlot extends JComponent {
 		
 		double step = i * pow(10, p);		
 		
-		Vector<Double> ret = new Vector();
+		Vector<Double> ret = new Vector<Double>();
 		double mult = floor(lo / step) + 1;
 		while (mult*step < hi) {
 			ret.add((Double)(mult*step));

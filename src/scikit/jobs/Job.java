@@ -68,6 +68,7 @@ public abstract class Job implements Runnable {
 		start();
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void kill() {
 		if (_thread != null) {
 			killRequested = true;

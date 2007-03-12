@@ -26,6 +26,7 @@ public class ClumpCollectionApp extends Job {
 		params.add("R", 12);
 		params.add("L/R", 16);
 		params.add("dx", 3);
+		params.add("dt", 0.5);
 		params.add("T min", 0.15);
 		params.add("T max", 0.25);
 		params.add("T iterations", 5);
@@ -79,7 +80,7 @@ public class ClumpCollectionApp extends Job {
             String filename = params.sget("Output directory")+
                 "/R="+clump.R+",T="+format(clump.T)+"" +
                 ",ts="+eqTime+",tf="+stopTime+".txt";
-            scikit.util.Dump.doubleArray(filename, sf.getAccumulator().copyData(), 2);
+            scikit.util.Dump.dumpColumns(filename, sf.getAccumulator().copyData(), 2);
             
             params.set("T", format(clump.T+dT));
         }

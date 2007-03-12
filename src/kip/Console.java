@@ -1,5 +1,4 @@
 package kip;
-import bsh.Interpreter;
 
 
 public class Console {

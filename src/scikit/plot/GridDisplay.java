@@ -1,9 +1,16 @@
 package scikit.plot;
 
-
 import static java.lang.Math.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import javax.swing.*;
 
 
@@ -16,7 +23,7 @@ public class GridDisplay extends JComponent implements Display {
     private double[] _data;
     private int[] _idata;
     private int[] _pixelArray;
-
+    private double _dx = 1;
     private double colors[][] = {
         {1-1.0,     0, 0, 0},
         {1-0.98,    10, 0, 50},
@@ -28,22 +35,24 @@ public class GridDisplay extends JComponent implements Display {
         {1-0.15,   235, 195, 80}, // yellow
         {1-0,      255, 255, 255}
     };
-    
     private int WHEEL_SIZE = 512;
     private int wheel[] = new int[WHEEL_SIZE];
-    
-    
+	private JPopupMenu _popup = new JPopupMenu();
+
+	
     public GridDisplay(String title, boolean inFrame) {
+		addMouseListener(_mouseListener);
+        initColorWheel();
         if (inFrame) {
             scikit.jobs.Job.frame(this, title);
         }
-        initColorWheel();
     }
     
     
     public Dimension getPreferredSize() {
         return new Dimension(300, 300);
     }
+    
     
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -87,11 +96,18 @@ public class GridDisplay extends JComponent implements Display {
     	_max = max;
     }
     
+    
     public void setAutoScale() {
     	_autoScale = true;
     }
     
-    private void initColorWheel() {
+    
+    public void setDeltaX(double dx) {
+    	_dx = dx;
+    }
+    
+    
+   private void initColorWheel() {
         for (int i = 0; i < WHEEL_SIZE; i++) {
             double a = (double)i / WHEEL_SIZE;
             
@@ -111,6 +127,14 @@ public class GridDisplay extends JComponent implements Display {
     
     private double getValue(int i) {
     	return (_data != null) ? _data[i] : _idata[i];
+    }
+    
+    
+    private double[] copyData() {
+    	double[] ret = new double[_w*_h];
+    	for (int i = 0; i < _w*_h; i++)
+    		ret[i] = getValue(i);
+    	return ret;
     }
     
     
@@ -160,5 +184,46 @@ public class GridDisplay extends JComponent implements Display {
         _data = null;
         _pixelArray = null;
     }
+    
+    
+    private boolean hasData() {
+    	return _data != null || _idata != null;
+    }
+    
+    
+	private void saveData(String str) {
+		try {
+			PrintWriter pw = scikit.util.Dump.pwFromDialog(this, str);
+			scikit.util.Dump.writeOctaveGrid(pw, copyData(), _w, _dx);
+		} catch (IOException e) {}
+	}
+	
+	
+	private void fillPopup() {
+		_popup.removeAll();
+		JMenuItem menuItem = new JMenuItem("Save data...");
+		menuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				saveData("grid.txt");
+			}
+		});
+		_popup.add(menuItem);
+	}
+	
+	
+	private MouseListener _mouseListener = new MouseAdapter() {
+		public void mousePressed(MouseEvent e) {
+			if (e.isPopupTrigger() && hasData()) {
+				fillPopup();
+				_popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger() && hasData()) {
+				fillPopup();
+				_popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		}
+	};
 }
 

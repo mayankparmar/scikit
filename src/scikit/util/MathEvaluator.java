@@ -360,7 +360,6 @@ public class MathEvaluator
                 // two operands
                 else if ( startOperator > 0 && nOperator.getType() == 2 )
                 {
-                    nOperator = nOperator;
                     nLeft 	= new Node( this, s.substring(0,  startOperator), nLevel + 1 );
                     nRight 	= new Node( this, s.substring(startOperator + nOperator.getOperator().length()), nLevel + 1);
                 }
