@@ -2,6 +2,7 @@ package scikit.plot;
 
 
 public class Histogram extends Plot {
+	private static final long serialVersionUID = 1L;
 	private double _defaultBinWidth;
 	
 	public Histogram(String title, double defaultBinWidth, boolean frame) {

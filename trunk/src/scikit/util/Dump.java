@@ -4,41 +4,66 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-
+import java.awt.Frame;
+import java.awt.Component;
 import java.awt.FileDialog;
 
 public class Dump {
 	
-	public static void saveDialog(java.awt.Component comp, String str, double[] data, int cols) {
+	public static PrintWriter pwFromDialog(Component comp, String fname) throws IOException {
 		for (; comp != null; comp = comp.getParent()) {
-			if (comp instanceof java.awt.Frame) {
-				FileDialog d = new FileDialog((java.awt.Frame)comp, "Save", FileDialog.SAVE);
-				d.setFile(str);
-				d.show();
-				String file  = d.getDirectory() + d.getFile();
-				doubleArray(file, data, cols);
+			if (comp instanceof Frame) {
+				FileDialog d = new FileDialog((Frame)comp, "Save", FileDialog.SAVE);
+				d.setFile(fname);
+				d.setVisible(true);
+				return pwFromString(d.getDirectory()+d.getFile());
 			}
 		}
+		throw new IOException();
+	}
+	
+	public static PrintWriter pwFromString(String fname) throws IOException {
+		File file = new File(fname);
+		FileWriter fw = new FileWriter(file);
+		return new PrintWriter(fw);				
 	}
 	
 	
-    public static void doubleArray(String filename, double[] data, int cols) {
-        try {
-            File file = new File(filename);
-            FileWriter fw = new FileWriter(file);
-            PrintWriter pw = pw = new PrintWriter(fw);
-			cols = Math.max(cols, 1);
-			int i = 0;
-            while (i+cols <= data.length) {
-				pw.print(cols == 1 ? i : data[i++]);
-				for (int c = 1; c < cols; c++) {
-					pw.print("\t" + data[i++]);
-				}
+	public static void writeOctaveGrid(PrintWriter pw, double[] data, int cols, double dx) throws IOException {
+    	if (cols < 1)
+    		throw new IllegalArgumentException();
+		pw.println("#name: dx\n#type: scalar");
+		pw.println(dx);
+		pw.println("#name: grid\n#type: matrix");
+		pw.println("#rows: "+data.length/cols);
+		pw.println("#columns: "+cols);
+		for (int i = 0; i < data.length; i++) {
+			pw.print(data[i]);
+			if ((i+1) % cols == 0)
 				pw.println();
-            }
-            pw.close();
-        } catch(IOException e) {
-            System.err.println("An error occurred saving file `" + filename + "`");
-        }
+			else
+				pw.print(' ');
+		}
+		pw.close();
+	}
+	
+	
+    public static void writeColumns(PrintWriter pw, double[] data, int cols) throws IOException {
+    	if (cols < 1)
+    		throw new IllegalArgumentException();
+		for (int i = 0; i < data.length; i++) {
+			pw.print(data[i]);
+			if ((i+1) % cols == 0)
+				pw.println();
+			else
+				pw.print(' ');
+		}
+		pw.close();
+    }
+    
+    
+    public static void dumpColumns(String str, double[] data, int cols) {
+    	try { writeColumns(pwFromString(str), data, cols); }
+    	catch (IOException e) {}
     }
 }

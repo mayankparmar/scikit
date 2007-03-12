@@ -2,7 +2,8 @@ package kip.ising;
 
 
 public class Clusters1D {
-	static private final int NONE = Integer.MIN_VALUE;
+	// CHECK ME
+	// static private final int NONE = Integer.MIN_VALUE;
 	
 	public SpinBlocks1D spins;
 	public int L;                 // size of lattice
@@ -69,7 +70,6 @@ public class Clusters1D {
 				if (fast) {
 					int sumOfNeighborsInRange = spins.sumInRange(site, site+R) - direction;
 					int parallelSpins = (direction*sumOfNeighborsInRange + R) / 2;
-					double meanNumberOfBondsToCreate = bondProbability * parallelSpins;
 					int n = binomialDeviate(parallelSpins, bondProbability);					
 					
 					selectRandomSitesInRange(site, n);

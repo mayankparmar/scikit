@@ -2,17 +2,9 @@ package scikit.plot;
 
 
 import static java.lang.Math.*;
-
-import java.util.Vector;
-
-import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
-
-import java.awt.Shape;
-import java.awt.Rectangle;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;
 import java.awt.Stroke;
@@ -22,14 +14,15 @@ import java.awt.geom.Rectangle2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.FileDialog;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 
 public class Plot extends EmptyPlot implements Display {
+	private static final long serialVersionUID = 1L;
 	private static final int NUM_DATA_SETS = 8;
 	private static final int MAX_DATA_POINTS = 300;
 	private static final double AUTOSCALE_SLOP = 0.10;		// extend view 10% on rescale
-	private static final double AUTOSCALE_NEARNESS = 0.02;	// extend view when data within 2% of bound
 
 	private double[][] _dataBuffer = new double[NUM_DATA_SETS][];
 	protected DataSet[]  _dataSets = new DataSet[NUM_DATA_SETS];
@@ -45,12 +38,11 @@ public class Plot extends EmptyPlot implements Display {
 	
 	public enum Style {LINES, MARKS, BARS};
 	
-	protected JPopupMenu _popup;
+	protected JPopupMenu _popup = new JPopupMenu();
 	
 	
 	public Plot(String title, boolean frame) {
 		super(title, frame);
-		_popup = new JPopupMenu();
 	}
 	
 	
@@ -159,13 +151,6 @@ public class Plot extends EmptyPlot implements Display {
 		_maxX = max(bounds[1], _maxX);
 		_minY = min(bounds[2], _minY);
 		_maxY = max(bounds[3], _maxY);
-	}
-	
-	
-	private boolean hasBars() {
-		for (boolean b : _drawBars)
-			if (b) return true;
-		return false;
 	}
 	
 	
@@ -293,7 +278,10 @@ public class Plot extends EmptyPlot implements Display {
 	}
 	
 	private void saveDataset(DataSet data, String str) {
-		scikit.util.Dump.saveDialog(this, str, data.copyData(), 2);
+		try {
+			PrintWriter pw = scikit.util.Dump.pwFromDialog(this, str);
+			scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
+		} catch (IOException e) {}
 	}
 	
 	private void fillPopup() {
@@ -305,7 +293,6 @@ public class Plot extends EmptyPlot implements Display {
 				final String str = "Dataset" + cnt;
 				JMenuItem menuItem = new JMenuItem("Save " + str + "...");
 				menuItem.setForeground(_colors[i]);
-				final Plot p = this;
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						saveDataset(dataSet, str);

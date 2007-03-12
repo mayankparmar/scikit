@@ -50,10 +50,12 @@ public class FieldClump2D extends AbstractClump2D {
 			phi[i] = DENSITY;
 	}
 	
+	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
 		dt = params.fget("dt");
 	}
+	
 	
 	public void initializeFieldWithSeed() {
 		for (int i = 0; i < Lp*Lp; i++) {
@@ -66,14 +68,15 @@ public class FieldClump2D extends AbstractClump2D {
 			double mag = 0.8 / (1+sqr(r/R));
 			
 			double kR = KR_SP; // it's fun to try different values
-			
-			double x2 = x*cos(PI/3)   + y*sin(PI/3);
-			double x3 = x*cos(2*PI/3) + y*sin(2*PI/3);
-			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
+			double x1 = x*cos(1*PI/6) + y*sin(1*PI/6);
+			double x2 = x*cos(3*PI/6) + y*sin(3*PI/6);
+			double x3 = x*cos(5*PI/6) + y*sin(5*PI/6);
+			phi[i] = DENSITY*(1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
 			
 //			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
 	}
+	
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
 		for (int i = 0; i < Lp*Lp; i++) {
@@ -98,9 +101,11 @@ public class FieldClump2D extends AbstractClump2D {
 		}		
 	}
 	
+	
 	public void useNoiselessDynamics() {
 		noiselessDynamics = true;
 	}
+	
 	
 	public void useFixedBoundaryConditions() {
 		int thickness = 4;
@@ -120,6 +125,7 @@ public class FieldClump2D extends AbstractClump2D {
 		}
 	}
 	
+	
 	public double phiVariance() {
 		double var = 0;
 		for (int i = 0; i < Lp*Lp; i++)
@@ -127,12 +133,6 @@ public class FieldClump2D extends AbstractClump2D {
 		return var / (Lp*Lp);
 	}
 	
-	public double phiMin() {
-		return min(phi);
-	}
-	public double phiMax() {
-		return max(phi);
-	}
 	
 	public void scaleField(double scale) {
 		// phi will not be scaled above PHI_UB or below PHI_LB
@@ -148,10 +148,12 @@ public class FieldClump2D extends AbstractClump2D {
 		}
 	}
 	
+	
 	double noise() {
 		return noiselessDynamics ? 0 : random.nextGaussian();
 	}
 
+	
 	double mean(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp; i++)
@@ -160,6 +162,7 @@ public class FieldClump2D extends AbstractClump2D {
 		return sum/elementsInsideBoundary; 
 	}
 	
+	
 	double meanSquared(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp; i++)
@@ -167,6 +170,7 @@ public class FieldClump2D extends AbstractClump2D {
 				sum += a[i]*a[i];
 		return sum/elementsInsideBoundary;
 	}
+	
 	
 	public void simulate() {
 		convolveWithRange(phi, phi_bar, R);
@@ -200,11 +204,11 @@ public class FieldClump2D extends AbstractClump2D {
 				phi[i] += del_phi[i];
 			}
 		}
-		
 		rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
 		freeEnergyDensity /= elementsInsideBoundary;
 		t += dt;
 	}
+	
 	
 	public StructureFactor newStructureFactor(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
@@ -212,17 +216,21 @@ public class FieldClump2D extends AbstractClump2D {
 		return new StructureFactor(Lp, L, R, binWidth);
 	}
 	
+	
 	public void accumulateIntoStructureFactor(StructureFactor sf) {
 		sf.accumulate(phi);
 	}
+	
 	
 	public double[] coarseGrained() {
 		return phi;
 	}
 	
+	
 	public int numColumns() {
 		return Lp;
 	}
+	
 	
 	public double time() {
 		return t;

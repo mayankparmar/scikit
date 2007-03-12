@@ -7,6 +7,7 @@ import java.lang.reflect.*;
 
 
 public class AppletLauncher extends JApplet {
+	private static final long serialVersionUID = 1L;
 	Job job;
 	
 	public void init() {

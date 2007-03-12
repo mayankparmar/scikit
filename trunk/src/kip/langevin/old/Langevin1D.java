@@ -228,7 +228,7 @@ public class Langevin1D implements Cloneable {
         String filename = path + "/_h" + h + "_r" + randomSeed + "_t" + (int)t + "_dt" + dt + "_R" + R;
         if (_ψ == null)
             _ψ = ψ;
-        scikit.util.Dump.doubleArray(filename, _ψ, 1);
+        scikit.util.Dump.dumpColumns(filename, _ψ, 1);
     }
     
     private static int maxIndex(double[] a) {

@@ -54,6 +54,6 @@ public class FastIsing1DApp extends AbstractSimulation {
 	
 		
 	public static void main(String[] args) {
-		SimulationControl c = SimulationControl.createApp(new FastIsing1DApp());
+		SimulationControl.createApp(new FastIsing1DApp());
    }
 }

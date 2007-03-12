@@ -1,15 +1,12 @@
 package scikit.jobs;
 
-import static java.lang.Math.*;
-import java.util.Vector;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 
 
 public class Control extends JPanel {
+	private static final long serialVersionUID = 1L;
 	private Job _job;
 	private JPanel _buttonPanel;
 	private JButton _startStopButton;
@@ -57,23 +54,23 @@ public class Control extends JPanel {
 			String str = e.getActionCommand();
 			if (str.equals("Start")) {
 				_job.start();
-				_startStopButton.setLabel("Stop");
-				_resetButton.setLabel("Reset");
+				_startStopButton.setText("Stop");
+				_resetButton.setText("Reset");
 				_stepButton.setEnabled(false);
 			}
 			if (str.equals("Stop")) {
 				_job.stop();
-				_startStopButton.setLabel("Start");
+				_startStopButton.setText("Start");
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Step")) {
-				_resetButton.setLabel("Reset");
+				_resetButton.setText("Reset");
 				_job.step();
 			}
 			if (str.equals("Reset")) {
 				_job.kill();
-				_startStopButton.setLabel("Start");
-				_resetButton.setLabel("Defaults");
+				_startStopButton.setText("Start");
+				_resetButton.setText("Defaults");
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Defaults")) {
@@ -85,7 +82,7 @@ public class Control extends JPanel {
 	
 	private void createButtonPanel() {
 		_buttonPanel = new JPanel();
-		JButton b1, b2, b3, b4;
+		JButton b1, b2, b3;
 		b1 = new JButton("Start");
 		b2 = new JButton("Step");
 		b3 = new JButton("Reset");

@@ -3,7 +3,7 @@ package scikit.jobs;
 import java.util.Vector;
 
 public class JobManager {
-	static Vector<Job> jobs = new Vector();
+	static Vector<Job> jobs = new Vector<Job>();
 	
 	public static int add(Job job) {
 		jobs.add(job);

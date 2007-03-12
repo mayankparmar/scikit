@@ -1,8 +1,6 @@
 package mina.wanglandau;
 import org.opensourcephysics.controls.*;
 import org.opensourcephysics.display.*;
-import java.awt.*;
-import java.text.NumberFormat;
 import java.awt.Color;
 
 
@@ -166,13 +164,13 @@ public class WangLandau extends AbstractAnimation {
       densityPanel.addDrawable(densityData = new Dataset(Color.blue));
       densityPanel.setPreferredMinMaxY(0, 10000);
       densityPanel.setAutoscaleY(true);      
-      DrawingFrame frame = new DrawingFrame("Density of States", densityPanel);
+      new DrawingFrame("Density of States", densityPanel);
       
       histogramPanel = new PlottingPanel("E", "H(E)", "");
       histogramPanel.addDrawable(histogramData = new Dataset());
       histogramPanel.setPreferredMinMaxY(0, 10000);
       histogramPanel.setAutoscaleY(true);      
-      frame = new DrawingFrame("Histogram", histogramPanel);
+      new DrawingFrame("Histogram", histogramPanel);
       
       heatPanel = new PlottingPanel("T", "C(T)", "");
       heatPanel.addDrawable(heatData = new Dataset(Color.black, Color.red, true));
@@ -181,7 +179,7 @@ public class WangLandau extends AbstractAnimation {
       heatPanel.setAutoscaleY(true);      
       heatData.setMarkerShape(Dataset.NO_MARKER);
       heatData.setSorted(true);
-      frame = new DrawingFrame("Heat Capacity", heatPanel);
+      new DrawingFrame("Heat Capacity", heatPanel);
    }
    
    
