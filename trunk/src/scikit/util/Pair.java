@@ -24,9 +24,9 @@ public class Pair<A,B> {
 
 	public boolean equals(Object other) {
 		return
-			other instanceof Pair &&
-			equals(first, ((Pair)other).first) &&
-			equals(second, ((Pair)other).second);
+			other instanceof Pair<?,?> &&
+			equals(first, ((Pair<?,?>)other).first) &&
+			equals(second, ((Pair<?,?>)other).second);
 	}
 
 	public int hashCode() {
