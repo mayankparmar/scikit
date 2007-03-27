@@ -13,7 +13,7 @@ public class AppletLauncher extends JApplet {
 	public void init() {
 		String className = getParameter("Class");
 		try {
-			Class c = Class.forName(className);
+			Class<?> c = Class.forName(className);
 			Method m = c.getMethod("initApplet", new Class[] {Class.forName("javax.swing.JApplet")});
 			job = (Job) m.invoke(null, new Object[] {this});
 		} catch (ClassNotFoundException e) {
