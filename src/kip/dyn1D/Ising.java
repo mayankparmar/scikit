@@ -1,6 +1,6 @@
 package kip.dyn1D;
 
-import scikit.jobs.*;
+import scikit.params.Parameters;
 import kip.ising.SpinBlocks1D;
 import static java.lang.Math.*;
 

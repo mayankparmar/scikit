@@ -1,4 +1,4 @@
-package scikit.jobs;
+package scikit.params;
 
 
 import java.util.Vector;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 
 
-public class Parameters implements Cloneable {
+public class Parameters {
 	private Vector<String> keys = new Vector<String>();	
 	private HashMap<String, GuiValue> map = new HashMap<String, GuiValue>();
 	private ChangeListener _listener = null;

@@ -3,6 +3,7 @@ package scikit.jobs;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import scikit.params.GuiValue;
 
 
 public class Control extends JPanel {

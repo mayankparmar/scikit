@@ -1,7 +1,7 @@
 package kip.clump;
 
 import kip.util.Random;
-import scikit.jobs.Parameters;
+import scikit.params.Parameters;
 
 abstract public class AbstractClump2D {
 	public double L, R, T, dx;

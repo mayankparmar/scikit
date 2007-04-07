@@ -1,7 +1,7 @@
 package kip.clump;
 
 import static java.lang.Math.*;
-import scikit.jobs.Parameters;
+import scikit.params.Parameters;
 
 
 public class Clump2D extends AbstractClump2D {	
