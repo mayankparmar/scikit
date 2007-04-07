@@ -1,5 +1,7 @@
 package kip.dyn1D.apps;
 
+import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 import scikit.plot.*;
 import scikit.jobs.*;
 import kip.dyn1D.*;

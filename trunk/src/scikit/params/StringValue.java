@@ -1,4 +1,4 @@
-package scikit.jobs;
+package scikit.params;
 
 public class StringValue extends GuiValue {
 	public StringValue(Object v) {

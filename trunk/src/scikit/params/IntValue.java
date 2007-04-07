@@ -1,4 +1,4 @@
-package scikit.jobs;
+package scikit.params;
 
 public class IntValue extends GuiValue {
 	private int _lo = Integer.MIN_VALUE, _hi = Integer.MAX_VALUE;

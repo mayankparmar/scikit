@@ -2,6 +2,7 @@ package kip.ising;
 
 import static java.lang.Math.*;
 import kip.util.Random;
+import scikit.params.Parameters;
 import scikit.plot.*;
 import scikit.jobs.*;
 

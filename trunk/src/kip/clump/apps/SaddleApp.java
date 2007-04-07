@@ -1,9 +1,9 @@
 package kip.clump.apps;
 
 import kip.clump.*;
-import scikit.jobs.ChoiceValue;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.params.ChoiceValue;
 import scikit.plot.GridDisplay;
 
 

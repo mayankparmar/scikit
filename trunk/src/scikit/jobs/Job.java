@@ -1,6 +1,7 @@
 package scikit.jobs;
 
 
+import scikit.params.Parameters;
 import scikit.plot.Display;
 import java.util.*;
 import javax.swing.event.ChangeListener;

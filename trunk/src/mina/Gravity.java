@@ -3,6 +3,8 @@ package mina;
 
 
 import static java.lang.Math.*;
+import scikit.params.DoubleValue;
+import scikit.params.IntValue;
 import scikit.plot.*;
 import scikit.jobs.*;
 
