@@ -28,7 +28,7 @@ public class Complex extends Object {
         (the x-coordinate in rectangular coordinates).
         @return Re[z] where z is this Complex number.
     */
-    public double real() {
+    public double re() {
         return x;
     }
     
@@ -37,7 +37,7 @@ public class Complex extends Object {
         (the y-coordinate in rectangular coordinates).
         @return Im[z] where z is this Complex number.
     */
-    public double imag() {
+    public double im() {
         return y;
     }
     
@@ -79,7 +79,7 @@ public class Complex extends Object {
         @return z+w where z is this Complex number.
     */
     public Complex plus(Complex w) {
-        return new Complex(x+w.real(),y+w.imag());
+        return new Complex(x+w.re(),y+w.im());
     }
     
     /**
@@ -89,7 +89,7 @@ public class Complex extends Object {
         @return z-w where z is this Complex number.
     */
     public Complex minus(Complex w) {
-        return new Complex(x-w.real(),y-w.imag());
+        return new Complex(x-w.re(),y-w.im());
     }
     
     /**
@@ -98,7 +98,7 @@ public class Complex extends Object {
         @return z*w where z is this Complex number.
     */
     public Complex times(Complex w) {
-        return new Complex(x*w.real()-y*w.imag(),x*w.imag()+y*w.real());
+        return new Complex(x*w.re()-y*w.im(),x*w.im()+y*w.re());
     }
     
     /**
@@ -109,7 +109,7 @@ public class Complex extends Object {
     */
     public Complex div(Complex w) {
         double den=Math.pow(w.mod(),2);
-        return new Complex((x*w.real()+y*w.imag())/den,(y*w.real()-x*w.imag())/den);
+        return new Complex((x*w.re()+y*w.im())/den,(y*w.re()-x*w.im())/den);
     }
     
     /**
