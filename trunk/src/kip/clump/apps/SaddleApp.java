@@ -4,11 +4,11 @@ import kip.clump.*;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.params.ChoiceValue;
-import scikit.plot.GridDisplay;
+import scikit.plot.FieldDisplay;
 
 
 public class SaddleApp extends Job {
-	GridDisplay grid = new GridDisplay("Grid", true);
+	FieldDisplay grid = new FieldDisplay("Grid", true);
 	FieldClump2D clump;
 
 	public static void main(String[] args) {

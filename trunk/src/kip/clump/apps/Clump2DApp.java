@@ -6,12 +6,12 @@ import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.params.ChoiceValue;
-import scikit.plot.GridDisplay;
+import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 
 
 public class Clump2DApp extends Job {
-    GridDisplay grid = new GridDisplay("Grid", true);
+    FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
     StructureFactor sf;
     AbstractClump2D clump;
