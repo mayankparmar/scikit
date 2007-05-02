@@ -5,6 +5,8 @@ import static java.lang.Math.*;
 import kip.dyn1D.*;
 import scikit.params.ChoiceValue;
 import scikit.plot.*;
+import scikit.dataset.Function;
+import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
 public class NucleationApp extends Job {

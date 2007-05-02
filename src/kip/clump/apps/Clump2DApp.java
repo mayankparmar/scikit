@@ -2,10 +2,10 @@ package kip.clump.apps;
 
 import static kip.util.MathPlus.j1;
 import kip.clump.*;
+import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.params.ChoiceValue;
-import scikit.plot.Function;
 import scikit.plot.GridDisplay;
 import scikit.plot.Plot;
 

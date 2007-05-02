@@ -1,7 +1,7 @@
 package kip.clump;
 
 import jnt.FFT.ComplexDouble2DFFT;
-import scikit.plot.Accumulator;
+import scikit.dataset.Accumulator;
 import static java.lang.Math.*;
 
 /*

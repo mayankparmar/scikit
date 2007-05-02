@@ -4,6 +4,10 @@ package scikit.plot;
 import static java.lang.Math.*;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
+
+import scikit.dataset.DataSet;
+import scikit.dataset.DynamicArray;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.BasicStroke;

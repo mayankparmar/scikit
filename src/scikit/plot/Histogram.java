@@ -1,5 +1,7 @@
 package scikit.plot;
 
+import scikit.dataset.Accumulator;
+
 
 public class Histogram extends Plot {
 	private static final long serialVersionUID = 1L;
