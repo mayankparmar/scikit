@@ -6,9 +6,9 @@ import static java.lang.Math.*;
 
 
 public class SpinodalApp extends Job {
-    GridDisplay grid = new GridDisplay("Grid", true);
+    FieldDisplay grid = new FieldDisplay("Grid", true);
     int L;
-    int[] data;
+    double[] data;
     double beta, J;
     
 	public static void main(String[] args) {
@@ -27,7 +27,7 @@ public class SpinodalApp extends Job {
     }
     
     
-    private int sumNeighbors(int i) {
+    private double sumNeighbors(int i) {
         int N = L*L;
         int y = i/L;
         int up   = (i+L)%N;
@@ -56,7 +56,7 @@ public class SpinodalApp extends Job {
     public void run() {
         L = params.iget("Size");
 
-        data = new int[L*L];
+        data = new double[L*L];
         
         grid.setData(L, L, data);
         grid.setScale(0, 16);
