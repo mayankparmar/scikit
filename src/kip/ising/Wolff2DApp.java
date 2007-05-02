@@ -2,6 +2,7 @@ package kip.ising;
 
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.params.DoubleValue;
 import scikit.plot.GridDisplay;
 import kip.util.Complex;
 
@@ -83,7 +84,8 @@ public class Wolff2DApp extends Job {
 
 	public Wolff2DApp() {
 		params.add("L", 512);
-		params.addm("T", Ising.Tc);
+		//params.addm("T", Ising.Tc);
+		params.addm("T", new DoubleValue(Ising.Tc, Ising.Tc-0.2, Ising.Tc+0.2)).enableAuxiliaryEditor();		
 	}
 	
 	public void animate() {
@@ -127,7 +129,7 @@ public class Wolff2DApp extends Job {
 	        for (int yc = 0; yc < Lc; yc++) {
 	        	for (int xc = 0; xc < Lc; xc++) {
 	        		Complex c = new Complex(xc-Lc/2,yc-Lc/2);
-	        		c = c.sqrt().times(new Complex(L/Math.sqrt(Lc),0));
+	        		c = c.sqrt().times(new Complex(1.01*L/Math.sqrt(Lc),0));
 	        		int x = (int)c.re() + L/2;
 	        		int y = (int)c.im() + L/2;
 	        		if (x >= 0 && x < L && y >= 0 && y < L) {
