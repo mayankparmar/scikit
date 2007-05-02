@@ -5,6 +5,7 @@ import static java.lang.Math.*;
 import scikit.params.DoubleValue;
 import scikit.params.IntValue;
 import scikit.plot.*;
+import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
 

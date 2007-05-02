@@ -141,7 +141,7 @@ public abstract class Job implements Runnable {
 			j.debugPlot = new scikit.plot.Plot("Debug : " + j.toString(), true);
 			j.addDisplay(j.debugPlot);
 		}
-		j.debugPlot.setDataSet(i, new scikit.plot.PointSet(0, 1, data));
+		j.debugPlot.setDataSet(i, new scikit.dataset.PointSet(0, 1, data));
 		// try to force an immediate repaint
 		j.debugPlot.animate();
 		Thread.yield();

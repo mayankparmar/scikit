@@ -4,11 +4,11 @@ import static kip.util.MathPlus.*;
 import static scikit.params.DoubleValue.format;
 import kip.clump.Clump2D;
 import kip.clump.StructureFactor;
+import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.plot.GridDisplay;
 import scikit.plot.Plot;
-import scikit.plot.Function;
 
 
 public class ClumpCollectionApp extends Job {

@@ -112,7 +112,7 @@ abstract public class Dynamics1D implements Cloneable {
     // -- NUCLEATION ----------------------------------------------------------------
     //
     
-    public scikit.plot.Function saddleProfile() {
+    public scikit.dataset.Function saddleProfile() {
         return null;
     }
     

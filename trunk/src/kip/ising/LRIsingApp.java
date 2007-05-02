@@ -4,6 +4,7 @@ import static java.lang.Math.*;
 import kip.util.Random;
 import scikit.params.Parameters;
 import scikit.plot.*;
+import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
 

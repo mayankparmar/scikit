@@ -77,9 +77,9 @@ public class PhiFourth extends Dynamics1D {
     //
     
     
-    public scikit.plot.Function saddleProfile() {
+    public scikit.dataset.Function saddleProfile() {
         double N_R = (double)N/R;
-        return new scikit.plot.Function(-N_R/2, N_R/2) {
+        return new scikit.dataset.Function(-N_R/2, N_R/2) {
             public double eval(double x) {
                 double eps3 = eps*eps*eps;
                 double u = 1;
