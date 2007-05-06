@@ -73,6 +73,10 @@ public class FieldClump2D extends AbstractClump2D {
 			double x3 = x*cos(5*PI/6) + y*sin(5*PI/6);
 			phi[i] = DENSITY*(1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
 			
+			// uncomment for four fold symmetry 
+//			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(y*kR/R)));
+			
+			// uncomment for random initial condition
 //			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
 	}
