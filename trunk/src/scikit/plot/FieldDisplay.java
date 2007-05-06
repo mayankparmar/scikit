@@ -6,7 +6,7 @@ import static java.lang.Math.min;
 public class FieldDisplay extends AbstractGrid {
 	private static final long serialVersionUID = 1L;
 	private double _data[];
-	private boolean _autoScale;
+	private boolean _autoScale = true;
 	private double _min, _max;
 
 	private double _colors[][] = {
