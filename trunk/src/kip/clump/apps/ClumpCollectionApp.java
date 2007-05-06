@@ -23,7 +23,7 @@ public class ClumpCollectionApp extends Job {
 
 	public ClumpCollectionApp() {
 		params.add("Output directory", "/Users/kbarros/Desktop/output/");
-		params.add("R", 12);
+		params.add("R", 12.0);
 		params.add("L/R", 16);
 		params.add("dx", 3);
 		params.add("dt", 0.5);
