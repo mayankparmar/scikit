@@ -29,7 +29,7 @@ public class FieldDisplay extends AbstractGrid {
 	}
 
 	public void setData(int w, int h, double[] data) {
-		if (w*h != data.length)
+		if (w*h > data.length)
 			throw new IllegalArgumentException("Width and height don't match array size");
 		_data = data;
 		setImageSize(w, h);
