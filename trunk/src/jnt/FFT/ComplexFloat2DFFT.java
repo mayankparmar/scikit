@@ -22,7 +22,9 @@ public class ComplexFloat2DFFT {
   /** Create an FFT for transforming nrows*ncols points of Complex, double precision
     * data. */
   public ComplexFloat2DFFT(int nrows, int ncols) {
-    this.nrows = nrows;
+	if ((nrows <= 0) || (ncols <= 0))
+	  throw new IllegalArgumentException("The array dimensions >=0 : "+nrows+","+ncols);
+	this.nrows = nrows;
     this.ncols = ncols;
     rowFFT = new ComplexFloatFFT_Mixed(ncols);
     colFFT = (nrows == ncols ? rowFFT : new ComplexFloatFFT_Mixed(nrows));

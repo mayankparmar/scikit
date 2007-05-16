@@ -20,7 +20,6 @@ package jnt.FFT;
   * @author Contribution of the National Institute of Standards and Technology,
   * @author not subject to copyright.
   */
-
 public abstract class ComplexFloatFFT {
     
   int n;
@@ -52,6 +51,15 @@ public abstract class ComplexFloatFFT {
   public void transform (float data[]) {
     transform (data, 0,2); }
 
+  /** Compute the Fast Fourier Transform of data leaving the result in data.
+    * The array data must contain the data points in the following locations:
+    *<PRE>
+    *    Re(d[i]) = data[i0 + stride*i]
+    *    Im(d[i]) = data[i0 + stride*i+1]
+    *</PRE>
+    */
+  public abstract void transform (float data[], int i0, int stride);
+
   /** Return data in wraparound order.
     * @see <a href="package-summary.html#wraparound">wraparound format</A> */
   public float[] toWraparoundOrder(float data[]){
@@ -68,15 +76,6 @@ public abstract class ComplexFloatFFT {
       newdata[2*i]   = data[i0+stride*i];
       newdata[2*i+1] = data[i0+stride*i+1]; }
     return newdata; }
-
-  /** Compute the Fast Fourier Transform of data leaving the result in data.
-    * The array data must contain the data points in the following locations:
-    *<PRE>
-    *    Re(d[i]) = data[i0 + stride*i]
-    *    Im(d[i]) = data[i0 + stride*i+1]
-    *</PRE>
-    */
-  public abstract void transform (float data[], int i0, int stride);
 
   /** Compute the (unnomalized) inverse FFT of data, leaving it in place.*/
   public void backtransform (float data[]) {

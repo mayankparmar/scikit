@@ -72,11 +72,11 @@ public class ComplexDouble2DFFT {
 	newdata[i*2*ncols + 2*j+1]=data[i*rowspan +2*j+1]; }
     return newdata; }
 
-  /** Compute the (unnomalized) inverse FFT of data, leaving it in place.*/
+  /** Compute the (unnormalized) inverse FFT of data, leaving it in place.*/
   public void backtransform(double data[]) {
     backtransform(data,2*ncols); }
 
-  /** Compute the (unnomalized) inverse FFT of data, leaving it in place.*/
+  /** Compute the (unnormalized) inverse FFT of data, leaving it in place.*/
   public void backtransform(double data[], int rowspan) {
     checkData(data,rowspan);
     for(int j=0; j<ncols; j++){
@@ -101,5 +101,4 @@ public class ComplexDouble2DFFT {
       for(int j=0; j<ncols; j++){
 	data[i*rowspan + 2*j]   *= norm; 
 	data[i*rowspan + 2*j+1] *= norm; }}}
-
 }
