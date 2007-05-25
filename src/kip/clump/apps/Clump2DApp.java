@@ -15,7 +15,7 @@ public class Clump2DApp extends Job {
     Plot plot = new Plot("Structure factor", true);
     StructureFactor sf;
     AbstractClump2D clump;
-    boolean fieldDynamics = true;
+    boolean fieldDynamics = false;
 	
 	public static void main(String[] args) {
 		frame(new Control(new Clump2DApp()), "Clump Model");

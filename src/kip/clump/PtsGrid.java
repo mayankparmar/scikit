@@ -94,8 +94,8 @@ public class PtsGrid {
 	
 	int gridCols;  // columns in grid  
 	double dx; // distance between grid elements
-	PtsList[] grid;  // list of indices into x[], y[].
-	double[] rawElements;
+	PtsList[] grid;  // grid of cells, each containing list of particle positions
+	double[] rawElements; // particle density stored for each cell
 	
 	LatticeNeighbors neigh1, neigh2;
 	int[][] nlist1, nlist2;
