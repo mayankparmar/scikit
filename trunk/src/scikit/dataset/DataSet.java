@@ -20,7 +20,7 @@ abstract public class DataSet {
 		return new double[] {minX, maxX, minY, maxY};
 	}
 	
-	/** Returns a copy of this dataset */
+	/** Returns a copy of this dataset in the format [x1, y1, x2, y2, ...] */
 	abstract public double[] copyData();
 	
 	/** Returns a copy of the subset of this data within range */
