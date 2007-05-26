@@ -38,15 +38,8 @@ public class Histogram extends Plot {
     public void setNormalizing(int i, boolean norm) {
 		getAccumulator(i).setNormalizing(norm);
     }
-    
-	private double getBinWidth(int i) {
-		if (_dataSets[i] != null && _dataSets[i] instanceof Accumulator)
-			return ((Accumulator)_dataSets[i]).getBinWidth();
-		else
-			return _defaultBinWidth;
-	}
 	
-	private Accumulator getAccumulator(int i) {
+	public Accumulator getAccumulator(int i) {
 		if (_dataSets[i] == null) {
 			_dataSets[i] = new Accumulator(_defaultBinWidth);
 			setStyle(i, Style.BARS);
@@ -57,5 +50,12 @@ public class Histogram extends Plot {
 		else {
 			throw new IllegalArgumentException("Object at index " + i + " is not an Accumulator.");
 		}
+	}
+
+	private double getBinWidth(int i) {
+		if (_dataSets[i] != null && _dataSets[i] instanceof Accumulator)
+			return ((Accumulator)_dataSets[i]).getBinWidth();
+		else
+			return _defaultBinWidth;
 	}
 }
