@@ -31,20 +31,30 @@ public class Ising extends AbstractIsing {
 		return (double)spins.sumAll() / N;
 	}
 	
-	
+
 	public void randomizeField(double m) {
 		if (m == 1 || m == -1) {
 			for (int i = 0; i < N; i++)
-				if (spins.get(i) != m)
-					spins.flip(i);
+				spins.set(i, (int)m);
 		}
 		else {
-			for (int i = 0; i < N; i++)
-				if (random.nextDouble() < (1 - spins.get(i)*m)/2)
-					spins.flip(i);
+			for (int i = 0; i < N; i++) {
+				// p(s = +-1) = (1 +- m) / 2
+				int s = (random.nextDouble() < (1+m)/2) ? 1 : -1;
+				spins.set(i, s);
+			}
 		}
 	}
 	
+	
+	public void setField(double m) {
+		double mAcc = 0;
+		for (int i = 0; i < N; i++) {
+			int s = (mAcc > i*m) ? -1 : 1;
+			spins.set(i, s);
+			mAcc += s;
+		}
+	}
 	
 	public double fieldElement(int i) {
 		int scale = Integer.numberOfTrailingZeros(dx);
@@ -92,6 +102,8 @@ public class Ising extends AbstractIsing {
 						}
 					}
 					break;
+				default:
+					assert false;
 			}
 		}
 	}

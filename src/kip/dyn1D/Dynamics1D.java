@@ -105,6 +105,7 @@ abstract public class Dynamics1D implements Cloneable {
 	
 	abstract public double magnetization();
 	abstract public void randomizeField(double m);
+	abstract public void setField(double m);
 	abstract public double fieldElement(int i);
 	abstract protected void _step(); // step without saving "old" sim copies
     

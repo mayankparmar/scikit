@@ -42,9 +42,12 @@ public class PhiFourth extends Dynamics1D {
 	}
 	
 	public void randomizeField(double m) {
-		for (int i = 0; i < N_dx; i++) {
-			field[i] = 0;
-		}
+		setField(m);
+	}
+	
+	public void setField(double m) {
+		for (int i = 0; i < N_dx; i++)
+			field[i] = m;		
 	}
 	
 	public double magnetization() {
