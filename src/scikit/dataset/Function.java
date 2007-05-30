@@ -25,6 +25,8 @@ abstract public class Function extends DataSet {
 	}
 	
 	public double[] copyPartial(int N, double xmin, double xmax, double ymin, double ymax) {
+		xmin = max(xmin, this.xmin);
+		xmax = min(xmax, this.xmax);
 		double[] ret = new double[2*N];
 		for (int i = 0; i < N; i++) {
 			double x = (xmax - xmin) * i / (N-1) + xmin;
