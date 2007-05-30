@@ -86,6 +86,12 @@ public class SpinBlocks1D implements Cloneable {
 		netSum += dm;
 	}
 	
+	public void set(int x, int s) {
+		assert (s == 1 || s == -1);
+		if (get(x) != s)
+			flip(x);
+	}
+	
 	public int get(int x) {
 		return blocks[0][x];
 	}
