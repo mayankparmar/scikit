@@ -3,8 +3,8 @@ package kip.dyn1D.apps;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
 import scikit.plot.*;
-import scikit.dataset.Coarsened;
-import scikit.dataset.Function;
+import scikit.dataset.Accumulator;
+import scikit.dataset.DiscreteFunction;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
 import kip.dyn1D.*;
@@ -12,47 +12,75 @@ import static java.lang.Math.*;
 
 
 class Structure {
-	int N, n, dx;
+	int Lp;
+	double L;
+	double R;
+	double kRmin = 0, kRmax = Double.MAX_VALUE;
 	
-	public double[] avg;
-	public Coarsened coarse;
-	
-	private double[][] accum;
-	private int[] cnt;
-	private double[] data;
 	jnt.FFT.RealDoubleFFT fft;
+	private double[] fftScratch;
 	
-	public Structure(int N, int dx, int R, double kRmax, int numSteps) {
-		this.N = N;
-		this.dx = dx;
-		n = (int) ((kRmax * N) / (2 * PI * R)) + 1;
-		n = min(n, N/dx);
-		kRmax = 2 * PI * R * (n-1) / N;
-		
-		avg = new double[n];
-		coarse = new Coarsened(avg, 0, kRmax, 0.1);
-		
-		accum = new double[numSteps][n];
-		cnt = new int[numSteps];
-		data = new double[N/dx];
-		fft = new jnt.FFT.RealDoubleFFT_Radix2(N/dx);
+	public Structure(int Lp, double L, int R) {
+		this.Lp = Lp;
+		this.L = L;
+		this.R = R;
+		fftScratch = new double[Lp];
+		fft = new jnt.FFT.RealDoubleFFT_Radix2(Lp);
+	}
+
+	public void setBounds(double kRmin, double kRmax) {
+		this.kRmin = kRmin;
+		this.kRmax = kRmax;
 	}
 	
-	public double[] fn(double[] field, int timeIndex) {
-		for (int i = 0; i < N/dx; i++)
-			data[i] = field[i];
-		fft.transform(data);
+	public void accumulate(double[] field, Accumulator acc) {
+		double dx = L/Lp;
+		for (int i = 0; i < Lp; i++)
+			fftScratch[i] = field[i];
+		fft.transform(fftScratch);
 		
-		cnt[timeIndex]++;
-		
-		accum[timeIndex][0] += data[0]*data[0] / (N/(dx*dx));
-		avg[0] = accum[timeIndex][0] / cnt[timeIndex];
-		for (int i = 1; i < n; i++) {
-			accum[timeIndex][i] += (data[i]*data[i] + data[N/dx-i]*data[N/dx-i]) / (N/(dx*dx));
-			avg[i] = accum[timeIndex][i] / cnt[timeIndex];
+		for (int i = 0; i < Lp/2; i++) {
+			double kR = 2*PI*i*R/L;
+			if (kR >= kRmin && kR <= kRmax) {			
+				double re = fftScratch[i];
+				double im = (i == 0) ? 0 : fftScratch[Lp-i];
+				acc.accum(kR, (re*re+im*im)*dx*dx/L);
+			}
 		}
+	}
+	
+	public double theory(AbstractIsing sim, double kR) {
+		double Q = kR == 0 ? 1 : sin(kR)/kR;
+		double K = sim.J/sim.T;
+		double t = sim.time();
+		double M = 2;
+		double D;
 		
-		return avg;
+		switch (sim.dynamics) {
+		case METROPOLIS:
+			M = 4; // fall through
+		case GLAUBER:
+			D = -1 + Q*K;
+			return (exp(M*D*t)*(/*1*/ + 1/D) - 1/D);
+			
+		case KAWA_METROPOLIS:
+			M = 4; // fall through
+		case KAWA_GLAUBER:
+			D = -1 + Q*(1 + K) - Q*Q*K;
+			return  kR == 0 ? 1 : exp(M*D*t)*(1+(1-Q)/D) - (1-Q)/D;
+
+		default:
+			return Double.NaN;
+		}
+	}
+	
+	
+	public void theory(AbstractIsing sim, Accumulator acc) {
+		for (int i = 0; i < Lp/2; i++) {
+			double kR = 2*PI*i*R/L;
+			if (kR >= kRmin && kR <= kRmax)
+				acc.accum(kR, theory(sim, kR));
+		}
 	}
 }
 
@@ -62,8 +90,12 @@ public class OrderingApp extends Job {
 	Plot structurePlot = new Plot("Structure", true);
 	AbstractIsing sim;
 	Structure structure;
+	
+	Accumulator[] structSim;
+	Accumulator structTheory;
+	
 	double[] field;
-	int numSteps = 10;
+	int numSteps = 25;
 	
 	public static void main(String[] args) {
 		frame(new Control(new OrderingApp()), "Growth for Ising Droplets");
@@ -73,72 +105,61 @@ public class OrderingApp extends Job {
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
 		params.add("Simulation type", new ChoiceValue("Ising", "Langevin"));
 		params.add("kR maximum", 20.0);
-		params.addm("Coarse graining size", 0.1);
+		params.add("kR bin width", 0.1);
 		params.add("Random seed", 0);
 		params.add("N", 1<<20);
-		params.add("R", 512);
-		params.add("dx", 32);
-		params.addm("T", 4.0/9.0);
-		params.addm("J", 1.0);
-		params.addm("dt", 0.1);
+		params.add("R", 1<<9);
+		params.add("dx", 1<<6);
+		params.add("T", 4.0/9.0);
+		params.add("J", 1.0);
+		params.add("dt", 0.1);
 		params.add("time");
 	}
 	
 	public void animate() {
-		sim.setParameters(params);
 		params.set("time", DoubleValue.format(sim.time()));
-		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
 		fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.copyField()));
 	}
 	
+	private Accumulator makeStructureAccumulator() {
+		Accumulator ret = new Accumulator(params.fget("kR bin width"));
+		ret.setAveraging(true);
+		return ret;
+	}
 	
 	public void run() {
-		double kRmax = params.fget("kR maximum");
-		
 		String type = params.sget("Simulation type");
 		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
 		fieldPlot.setYRange(-1, 1);
 		addDisplay(fieldPlot);
-		
-		structure = new Structure(sim.N, sim.dx, sim.R, kRmax, numSteps);
-		structure.coarse.setBinWidth(params.fget("Coarse graining size"));
-		structurePlot.setDataSet(0, structure.coarse);
-		structurePlot.setDataSet(1, new Function(0, kRmax) {
-			public double eval(double kR) {
-				if (sim.time() == 0) return 1;
-				double Q = kR == 0 ? 1 : sin(kR)/kR;
-				double K = sim.J/sim.T;
-				double t = sim.time();
-				double M = 2;
-				double D;
-				
-				switch (sim.dynamics) {
-				case METROPOLIS:
-					M = 4; // fall through
-				case GLAUBER:
-					D = -1 + Q*K;
-					return exp(M*D*t)*(1 + 1/D) - 1/D;
-					
-				case KAWA_METROPOLIS:
-					M = 4; // fall through
-				case KAWA_GLAUBER:
-					D = -1 + Q*(1 + K) - Q*Q*K;
-					return kR == 0 ? 1 : exp(M*D*t)*(1+(1-Q)/D) - (1-Q)/D;
-					
-				default:
-					return Double.NaN;
-				}
-			}
-		});
 		addDisplay(structurePlot);
+		
+		structure = new Structure(sim.N/sim.dx, sim.N, sim.R);
+		structure.setBounds(0, params.fget("kR maximum"));
+		structSim = new Accumulator[numSteps];
+		for (int i = 0; i < numSteps; i++)
+			structSim[i] = makeStructureAccumulator();
+		structTheory = makeStructureAccumulator();
 		
 		while (true) {
 			sim.initialize(params);
-			sim.randomizeField(0);
+//			sim.randomizeField(0);
+			sim.setField(0);
 			
 			for (int i = 0; i < numSteps; i++) {
-				structure.fn(sim.copyField(), i);
+				final int ip = i;
+				structTheory.clear();
+				structure.theory(sim, structTheory);
+				structure.accumulate(sim.copyField(), structSim[i]);
+				structurePlot.setDataSet(0, structSim[i]);
+				structurePlot.setDataSet(1, structTheory);
+				structurePlot.setDataSet(2, new DiscreteFunction(structTheory.copyData(), 2) {
+					public double eval(double kR) {
+						return (structTheory.eval(kR)-structSim[ip].eval(kR))*sqrt(sim.R);
+					}
+				});
+				
 				yield();
 				sim.step();
 			}

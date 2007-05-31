@@ -6,13 +6,17 @@ import static java.lang.Math.*;
 
 
 public class Accumulator extends DataSet {
+	// two accumulators are used internally. the "orig" accumulator
+	// may use a possibly smaller binwidth that the regular accumulator.
+	// by storing the "orig" accumulator, no information is lost when
+	// the binwidth is increased.
 	private double _origBinWidth, _binWidth;
-    private double _fullSum = 0;
     // each bin holds an array of two numbers.  the first is
     // total accumulated value for this bin.  the second is a
     // count of the accumulation operations performed, in case
     // averaging is desired.
 	private AbstractMap<Double, double[]> _origHash, _hash;
+    private double _fullSum = 0;
 	private boolean _avg = false;
 	private boolean _norm = false;
     
@@ -35,12 +39,8 @@ public class Accumulator extends DataSet {
         
         for (Double k : _hash.keySet()) {
 			ret[i] = k;
-            ret[i+1] = _hash.get(k)[0];
-            if (_norm)
-                ret[i+1] /= _binWidth * _fullSum;
-            else if (_avg)
-                ret[i+1] /= _hash.get(k)[1];
-             i += 2;
+            ret[i+1] = eval(k);
+            i += 2;
 		}
 		return ret;	
 	}
@@ -68,6 +68,18 @@ public class Accumulator extends DataSet {
         _norm = norm;
     }
 	
+	public double eval(double x) {
+		double[] val = _hash.get(key(x, _binWidth));
+		if (val == null)
+			return Double.NaN;
+        if (_norm)
+            return val[0] / (_binWidth * _fullSum);
+        else if (_avg)
+            return val[0] / val[1];
+        else
+        	return val[0];
+	}
+
 	public void accum(double x) {
 		accum(x, 1.0);
 	}
@@ -78,13 +90,16 @@ public class Accumulator extends DataSet {
         _fullSum += v;
 	}
 	
+	private static double key(double x, double bw) {
+		return bw * rint(x/bw); // each binning cell is labeled by its center coordinate, k.
+	}
+	
 	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {
-		double k = bw * rint(x/bw); // each binning cell is labeled by its center coordinate, k.
-		double[] val = h.get(k);
+		double[] val = h.get(key(x, bw));
 		if (val == null)
 			val = new double[] {0, 0};
 		val[0] += v;
 		val[1] += cnt;
-		h.put(k, val);
+		h.put(key(x, bw), val);
 	}
 }

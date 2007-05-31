@@ -5,7 +5,6 @@ import scikit.dataset.*;
 import scikit.plot.*;
 import scikit.jobs.*;
 import kip.dyn1D.*;
-import kip.dyn1D.AbstractIsing.DynType;
 import static java.lang.Math.*;
 
 
@@ -22,13 +21,14 @@ public class RelaxationApp extends Job {
 
 	public RelaxationApp() {
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis"));
+		params.add("Simulation type", new ChoiceValue("Ising", "Langevin"));
 		params.add("Random seed", 0);
 		params.add("N", 1<<20);
 		params.add("R", 1<<16);
 		params.add("T", 0.75);
 		params.add("dt", 0.2);
-		params.add("dx", 1);
-		params.add("Initial magnetization", 1.0);
+		params.add("dx", 1<<10);
+		params.add("Initial magnetization", 0.95);
 		params.add("time");
 		params.add("cnt");
 	}
@@ -40,7 +40,8 @@ public class RelaxationApp extends Job {
 	
 	
 	public void run() {
-		sim = new Ising(params);
+		String type = params.sget("Simulation type");
+		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
 		magnetHist.setBinWidth(0, sim.dt);
 		magnetHist.setAveraging(0, true);
@@ -49,15 +50,17 @@ public class RelaxationApp extends Job {
 		Derivative deriv = new Derivative(magnetHist.getAccumulator(0));
 		deriv.invertDependentParameter = true;
 		magnetDeriv.setDataSet(0, deriv);
-		magnetDeriv.setDataSet(1, new Function(0, 1) {
+		magnetDeriv.setDataSet(1, new Function(0, 0.95) {
 			public double eval(double m) {
 				double bm = m/sim.T;
-				if (sim.dynamics == DynType.GLAUBER)
+				switch (sim.dynamics) {
+				case GLAUBER:
 					return tanh(bm) - m;
-				else if (sim.dynamics == DynType.METROPOLIS)
+				case METROPOLIS:
 					return 2 * exp(-abs(bm)) * (sinh(bm) - m*cosh(bm));
-				else
+				default:
 					return Double.NaN;
+				}
 			}
 		});
 		addDisplay(magnetDeriv);
