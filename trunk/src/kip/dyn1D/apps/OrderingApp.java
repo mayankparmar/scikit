@@ -61,7 +61,7 @@ class Structure {
 			M = 4; // fall through
 		case GLAUBER:
 			D = -1 + Q*K;
-			return (exp(M*D*t)*(/*1*/ + 1/D) - 1/D);
+			return (exp(M*D*t)*(1 + 1/D) - 1/D);
 			
 		case KAWA_METROPOLIS:
 			M = 4; // fall through
@@ -95,7 +95,7 @@ public class OrderingApp extends Job {
 	Accumulator structTheory;
 	
 	double[] field;
-	int numSteps = 25;
+	int numSteps = 10;
 	
 	public static void main(String[] args) {
 		frame(new Control(new OrderingApp()), "Growth for Ising Droplets");
@@ -108,7 +108,7 @@ public class OrderingApp extends Job {
 		params.add("kR bin width", 0.1);
 		params.add("Random seed", 0);
 		params.add("N", 1<<20);
-		params.add("R", 1<<9);
+		params.add("R", 1<<12);
 		params.add("dx", 1<<6);
 		params.add("T", 4.0/9.0);
 		params.add("J", 1.0);
@@ -144,24 +144,24 @@ public class OrderingApp extends Job {
 		
 		while (true) {
 			sim.initialize(params);
-//			sim.randomizeField(0);
-			sim.setField(0);
+			sim.randomizeField(0);
+//			sim.setField(0);
 			
 			for (int i = 0; i < numSteps; i++) {
-				final int ip = i;
+				sim.step();
 				structTheory.clear();
 				structure.theory(sim, structTheory);
 				structure.accumulate(sim.copyField(), structSim[i]);
 				structurePlot.setDataSet(0, structSim[i]);
 				structurePlot.setDataSet(1, structTheory);
-				structurePlot.setDataSet(2, new DiscreteFunction(structTheory.copyData(), 2) {
-					public double eval(double kR) {
-						return (structTheory.eval(kR)-structSim[ip].eval(kR))*sqrt(sim.R);
-					}
-				});
+//				final int ip = i;
+//				structurePlot.setDataSet(2, new DiscreteFunction(structTheory.copyData(), 2) {
+//					public double eval(double kR) {
+//						return (structTheory.eval(kR)-structSim[ip].eval(kR))*sqrt(sim.R);
+//					}
+//				});
 				
 				yield();
-				sim.step();
 			}
 			
 			params.set("Random seed", params.iget("Random seed")+1);			
