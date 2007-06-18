@@ -9,9 +9,9 @@ import scikit.plot.*;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
-public class Gravity extends Job {
+public class Gravity extends Simulation {
 	public static void main(String[] args) {
-		frame(new Control(new Gravity()), "Particles in a box");
+		new Control(new Gravity(), "Particles in a box");
 	}
 
 	Plot particles = new Plot("Particles", true);
@@ -26,7 +26,7 @@ public class Gravity extends Job {
 		params.add("Gravity", new DoubleValue(0.00001, 0,  0.00002));
 		params.addm("dt", new DoubleValue(0.05, 0, 0.2));
 
-		addDisplay(particles);
+		Job.addDisplay(particles);
 	}
 
 
@@ -75,7 +75,7 @@ public class Gravity extends Job {
 				}
 			}
 			
-			yield();
+			Job.animate();
 		}
 	}
 }

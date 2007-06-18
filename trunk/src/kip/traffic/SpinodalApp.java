@@ -5,14 +5,15 @@ import scikit.jobs.*;
 import static java.lang.Math.*;
 
 
-public class SpinodalApp extends Job {
+public class SpinodalApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
+    
     int L;
     double[] data;
     double beta, J;
     
 	public static void main(String[] args) {
-		frame(new Control(new SpinodalApp()), "Spinodal Model");
+		new Control(new SpinodalApp(), "Spinodal Model");
 	}
     
     public SpinodalApp() {
@@ -61,19 +62,19 @@ public class SpinodalApp extends Job {
         grid.setData(L, L, data);
         grid.setScale(0, 16);
         
-        addDisplay(grid);
+        Job.addDisplay(grid);
         
         while (true) {
             for (int i = 0; i < L*L; i++)
                 data[i] = 0;
                 
-            yield();
+            Job.animate();
             
             while (true) {
                 for (int i = 0; i < L*L; i++) {
                     monteCarloTrial();
                 }
-                yield();            
+                Job.animate();
             }
         }
     }

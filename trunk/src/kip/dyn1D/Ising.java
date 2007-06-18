@@ -81,7 +81,7 @@ public class Ising extends AbstractIsing {
 			int i = random.nextInt(N);
 			int s_i = spins.get(i);
 			double dE = 2*s_i*(h + J*(spins.sumInRange(i)-s_i)/(2*R));
-			
+			scikit.jobs.Job.yield();
 			switch (dynamics) {
 				case METROPOLIS:
 				case GLAUBER:

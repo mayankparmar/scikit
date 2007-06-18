@@ -13,7 +13,7 @@ import static java.lang.Math.*;
 // purpose of this program: to determine breakdown time of linear theory as 
 // a function of R.
 
-public class Ordering2App extends Job {
+public class Ordering2App extends Simulation {
 	Plot structurePlot = new Plot("Magnetization", true);
 	AbstractIsing sim;
 	double[] field;
@@ -21,7 +21,7 @@ public class Ordering2App extends Job {
 	double tmax;
 	
 	public static void main(String[] args) {
-		frame(new Control(new Ordering2App()), "Phase Ordering Linear Breakdown");
+		new Control(new Ordering2App(), "Phase Ordering Linear Breakdown");
 	}
 	
 	public Ordering2App() {
@@ -81,7 +81,7 @@ public class Ordering2App extends Job {
 		structurePlot.setDataSet(2, structures[1]);
 		structurePlot.setDataSet(3, structures[2]);
 		structurePlot.setDataSet(4, structures[3]);
-		addDisplay(structurePlot);
+		Job.addDisplay(structurePlot);
 		
 		params.set("iterations", 0);
 		for (int iterations = 0; ; iterations++) {
@@ -98,7 +98,7 @@ public class Ordering2App extends Job {
 					double m = sim.magnetization();
 					// System.out.println("time " + sim.time() + "Accumulating " + sim.N*m);
 					structures[i].accum(sim.time(), sim.N*m*m);
-					yield();
+					Job.animate();
 					sim.step();
 				}
 			}

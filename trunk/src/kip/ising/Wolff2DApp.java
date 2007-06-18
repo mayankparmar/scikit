@@ -2,6 +2,7 @@ package kip.ising;
 
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.params.DoubleValue;
 import scikit.plot.GridDisplay;
 import kip.util.Complex;
@@ -73,13 +74,13 @@ class Ising {
 	}
 }
 
-public class Wolff2DApp extends Job {
+public class Wolff2DApp extends Simulation {
     GridDisplay grid = new GridDisplay("Ising spins", true);
     GridDisplay grid2 = new GridDisplay("Conformal mapping", true);    
 	Ising sim;
 	
 	public static void main(String[] args) {
-		frame(new Control(new Wolff2DApp()), "Clump Model");
+		new Control(new Wolff2DApp(), "Clump Model");
 	}
 
 	public Wolff2DApp() {
@@ -112,8 +113,8 @@ public class Wolff2DApp extends Job {
         grid2.setColor(2, 130, 200, 200); // spin up (alternate)
         grid2.setColor(4, 0, 100, 0); // branch cut
 
-        addDisplay(grid);
-        addDisplay(grid2);
+        Job.addDisplay(grid);
+        Job.addDisplay(grid2);
         
         while (true) {
         	sim.step();
@@ -148,7 +149,7 @@ public class Wolff2DApp extends Job {
 	        	}
 	       	}
         	
-        	yield();
+        	Job.animate();
         }
 	}
 }

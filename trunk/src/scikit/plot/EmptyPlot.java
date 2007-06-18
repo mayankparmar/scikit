@@ -58,7 +58,7 @@ public class EmptyPlot extends JComponent {
 		_minY = _topMinY; _maxY = _topMaxY;
 		
 		if (inFrame) {
-			scikit.jobs.Job.frame(this, title);
+            scikit.util.Utilities.frame(this, title);
 		}
 	}
 	
@@ -67,19 +67,19 @@ public class EmptyPlot extends JComponent {
 		return new Dimension(300, 300);
 	}
 	
-	synchronized public void setXRange(double minX, double maxX) {
+	public void setXRange(double minX, double maxX) {
 		_topMinX = _minX = minX;
 		_topMaxX = _maxX = maxX;
 		_zoomed = false;
 	}
 	
-	synchronized public void setYRange(double minY, double maxY) {
+	public void setYRange(double minY, double maxY) {
 		_topMinY = _minY = minY;
 		_topMaxY = _maxY = maxY;
 		_zoomed = false;
 	}
 	
-	synchronized public void resetViewWindow() {
+	public void resetViewWindow() {
 		_minX = _topMinX;
 		_maxX = _topMaxX;
 		_minY = _topMinY;
@@ -88,11 +88,11 @@ public class EmptyPlot extends JComponent {
 	}
 	
 		
-	synchronized public void setTitle(String title) {
+	public void setTitle(String title) {
 	}
 	
 	
-	synchronized public void setLogScale(boolean logscaleX, boolean logscaleY) {
+	public void setLogScale(boolean logscaleX, boolean logscaleY) {
 //		_logscaleX = logscaleX;
 //		_logscaleY = logscaleY;
 	}
@@ -222,8 +222,10 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
+	protected void autoScaleBounds() {
+	}
+	
 	protected void paintData(Graphics2D g) {
-		
 	}
 	
 	private void paintBound(Graphics2D g) {
@@ -245,7 +247,7 @@ public class EmptyPlot extends JComponent {
 	}
 	
 	
-	synchronized protected void paintComponent(Graphics g1) {
+	protected void paintComponent(Graphics g1) {
 		Graphics2D g = (Graphics2D)g1;
 
 		int w = getWidth(), h = getHeight();
@@ -253,11 +255,13 @@ public class EmptyPlot extends JComponent {
 		_bound.y = MARGIN;
 		_bound.width = max(w - 2*MARGIN, 0);
 		_bound.height = max(h - 2*MARGIN, 0);
-		
 		paintBound(g);
-		
 		g.setClip(_bound.x+1, _bound.y+1, _bound.width-1, _bound.height-1);
+		
+		if (!_zoomed)
+			autoScaleBounds();
 		paintTicks(g);
+		
 		paintData(g);
 		paintSelection(g);
 		paintLabels(g);
@@ -315,7 +319,6 @@ public class EmptyPlot extends JComponent {
 			if (withinBounds(event) && event.getClickCount() > 1) {
 				resetViewWindow();
 				_selectionActive = false;
-				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);
 				repaint();
 			}
 		}
@@ -336,7 +339,6 @@ public class EmptyPlot extends JComponent {
 			if (_selectionActive) {
 				changeViewWindow(fixRectangle(_selection));
 				_selectionActive = false;
-				scikit.jobs.Job.wakeProvidersFor(EmptyPlot.this);
 				repaint();
 			}
 		}

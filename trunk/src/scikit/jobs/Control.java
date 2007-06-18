@@ -14,8 +14,8 @@ public class Control extends JPanel {
 	private JButton _stepButton;	
 	private JButton _resetButton;	
 	
-	public Control(Job job) {
-		_job = job;
+	public Control(Simulation sim) {
+		_job = new Job(sim);
 		
 		JComponent paramPane = createParameterPane();
 		createButtonPanel();
@@ -25,6 +25,11 @@ public class Control extends JPanel {
 		add(_buttonPanel, BorderLayout.SOUTH);
 	}
 	
+	public Control(Simulation sim, String title) {
+		this(sim);
+		JFrame frame = scikit.util.Utilities.frame(this, title);
+		frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+	}
 	
 	public void addButton(String name, final String flag) {
 		try {		
@@ -55,6 +60,7 @@ public class Control extends JPanel {
 			String str = e.getActionCommand();
 			if (str.equals("Start")) {
 				_job.start();
+				_job.params().setLocked(true);
 				_startStopButton.setText("Stop");
 				_resetButton.setText("Reset");
 				_stepButton.setEnabled(false);
@@ -65,17 +71,19 @@ public class Control extends JPanel {
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Step")) {
-				_resetButton.setText("Reset");
 				_job.step();
+				_job.params().setLocked(true);
+				_resetButton.setText("Reset");
 			}
 			if (str.equals("Reset")) {
 				_job.kill();
+				_job.params().setLocked(false);				
 				_startStopButton.setText("Start");
 				_resetButton.setText("Defaults");
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Defaults")) {
-				_job.params.setDefaults();
+				_job.params().setDefaults();
 			}
 		}
 	};
@@ -118,7 +126,7 @@ public class Control extends JPanel {
 		c.insets = new Insets(2, 2, 2, 2);
 		
 		// add parameters
-		for (final String k : _job.params.keys()) {
+		for (final String k : _job.params().keys()) {
 			JLabel label = new JLabel(k + ":", SwingConstants.RIGHT);
 			c.gridx = 0;
 			c.weightx = 0;
@@ -126,7 +134,7 @@ public class Control extends JPanel {
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
-			GuiValue v = _job.params.getValue(k);
+			GuiValue v = _job.params().getValue(k);
 			JComponent field = v.createEditor();
 			c.gridx = 1;
 			c.weightx = 1;

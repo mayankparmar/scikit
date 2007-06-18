@@ -5,12 +5,13 @@ import kip.clump.*;
 import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 
 
-public class Clump2DApp extends Job {
+public class Clump2DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
     StructureFactor sf;
@@ -18,7 +19,7 @@ public class Clump2DApp extends Job {
     boolean fieldDynamics = false;
 	
 	public static void main(String[] args) {
-		frame(new Control(new Clump2DApp()), "Clump Model");
+		new Control(new Clump2DApp(), "Clump Model");
 	}
 	
 	public Clump2DApp() {
@@ -65,8 +66,8 @@ public class Clump2DApp extends Job {
         		return 1/(V/clump.T+1);
         	}
         });
-        addDisplay(grid);
-        addDisplay(plot);
+        Job.addDisplay(grid);
+        Job.addDisplay(plot);
         
         boolean equilibrating = true;
         while (true) {
@@ -77,7 +78,7 @@ public class Clump2DApp extends Job {
 				sf.getAccumulator().clear();
 			}
 			clump.accumulateIntoStructureFactor(sf);
-			yield();
+			Job.animate();
 		}
  	}
 }

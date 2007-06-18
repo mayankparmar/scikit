@@ -1,6 +1,7 @@
 package kip.clump;
 
 import static java.lang.Math.*;
+import scikit.jobs.Job;
 import scikit.params.Parameters;
 
 
@@ -81,8 +82,10 @@ public class Clump2D extends AbstractClump2D {
 	}
 	
 	public void simulate() {
-		for (int i = 0; i < numPts*dt; i++)
+		for (int i = 0; i < numPts*dt; i++) {
 			mcsTrial();
+			Job.yield();
+		}
 	}
 	
 	public StructureFactor newStructureFactor(double binWidth) {

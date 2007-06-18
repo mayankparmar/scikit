@@ -4,9 +4,9 @@ package scikit.plot;
 import static java.lang.Math.*;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
-
 import scikit.dataset.DataSet;
 import scikit.dataset.DynamicArray;
+import scikit.jobs.Display;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -53,6 +53,11 @@ public class Plot extends EmptyPlot implements Display {
 	public void clear() {
 		_dataSets = new DataSet[NUM_DATA_SETS];
 		resetViewWindow();
+		repaint();
+	}
+    
+	public void animate() {
+		repaint();
 	}
 	
 
@@ -75,18 +80,8 @@ public class Plot extends EmptyPlot implements Display {
 		_dataSets[i]   = dataSet;
 	}
 	
-    
-	synchronized public void animate() {
-		int i = 0;
-		if (!_zoomed)
-			autoScaleBounds();
-		for (DataSet dataSet : _dataSets)
-			_dataBuffer[i++] = dataSet == null ? null : dataSet.copyPartial(256, _minX, _maxX, _minY, _maxY);
-		repaint();
-	}
 	
-	
-	synchronized public void setStyle(int i, Style... styles) {
+	public void setStyle(int i, Style... styles) {
 		_drawMarks[i] = _drawLines[i] = _drawBars[i] = false;
 		for (Style style : styles) {
 			switch (style) {
@@ -118,7 +113,7 @@ public class Plot extends EmptyPlot implements Display {
 		b[3] += h*AUTOSCALE_SLOP;
 	}
 	
-	private void autoScaleBounds() {
+	protected void autoScaleBounds() {
 		double[] bounds = null;
 		
 		// if bounds got corrupted, completely reset them to "top"
@@ -178,6 +173,10 @@ public class Plot extends EmptyPlot implements Display {
 		Stroke oldStroke = g.getStroke();
 		g.setStroke(new BasicStroke(2f));
 		
+		int i = 0;
+		for (DataSet dataSet : _dataSets)
+			_dataBuffer[i++] = dataSet == null ? null : dataSet.copyPartial(256, _minX, _maxX, _minY, _maxY);
+		
 		int j = 0;
 		for (double[] xy : _dataBuffer) {
 			if (xy != null) {
@@ -186,7 +185,7 @@ public class Plot extends EmptyPlot implements Display {
 				xy = reducedData(xy, rect, MAX_DATA_POINTS);
 				g.setColor(_colors[j]);
 				
-				for (int i = 0; i+1 < xy.length; i += 2) {
+				for (i = 0; i+1 < xy.length; i += 2) {
 					if (_drawMarks[j])
 						drawMark(g, xy[i], xy[i+1]);
 					if (_drawBars[j])

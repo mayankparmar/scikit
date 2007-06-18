@@ -2,9 +2,10 @@ package kip.ising;
 
 import static java.lang.Math.*;
 import kip.util.Random;
+import java.awt.Color;
 import scikit.params.Parameters;
-import scikit.plot.*;
-import scikit.dataset.PointSet;
+import scikit.graphics.*;
+import scikit.dataset.*;
 import scikit.jobs.*;
 
 
@@ -121,14 +122,14 @@ class LRIsing {
 }
 
 
-public class LRIsingApp extends Job {
-	Plot fieldPlot = new Plot("Fields", true);
-	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
+public class LRIsingApp extends Simulation {
+	Plot fieldPlot = new Plot("Fields");
+//	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);	
 	LRIsing sim;
 	
 	
 	public static void main(String[] args) {
-		frame(new Control(new LRIsingApp()), "Long Range Ising");
+		new Control(new LRIsingApp(), "Long Range Ising");
 	}
 	
 	public LRIsingApp() {
@@ -143,33 +144,31 @@ public class LRIsingApp extends Job {
 	
 	
 	public void animate() {
-		nucTimes.setBinWidth(2, params.fget("Bin width"));
+//		nucTimes.setBinWidth(2, params.fget("Bin width"));
 		sim.setParameters(params);
 	}
 	
 	void simulateUntilNucleation() {
 		while (!sim.nucleated()) {
 			sim.step();
-			yield();
+			Job.animate();
 		}
-		nucTimes.accum(2, sim.t);
+//		nucTimes.accum(2, sim.t);
 	}
 	
 	public void run() {
 		sim = new LRIsing(params);
 		
-//		fieldPlot.setAutoScale(false);
-		fieldPlot.setDataSet(0, new PointSet(0, sim.L, sim.ψ));
-		fieldPlot.setXRange(0, sim.N-sim.L);
-		fieldPlot.setYRange(-1.1, 0.1);
+		fieldPlot.addLines(0, new PointSet(0, sim.L, sim.ψ), Color.RED);
+		fieldPlot.setYRange(-1, 1);
 		
-		addDisplay(fieldPlot);
-		addDisplay(nucTimes);		
+		Job.addDisplay(fieldPlot);
+//		Job.addDisplay(nucTimes);		
 		
 		while (true) {
 			sim.initialize(params);
 			simulateUntilNucleation();
-			params.set("Random seed", params.iget("Random seed")+1);			
+			params.set("Random seed", params.iget("Random seed")+1);
 		}
 	}
 }

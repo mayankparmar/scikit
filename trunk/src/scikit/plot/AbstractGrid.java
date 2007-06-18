@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 
 import javax.swing.*;
 
+import scikit.jobs.Display;
+
 
 abstract class AbstractGrid extends JComponent implements Display {
 	protected static final long serialVersionUID = 1L;
@@ -25,7 +27,7 @@ abstract class AbstractGrid extends JComponent implements Display {
     public AbstractGrid(String title, boolean inFrame) {
 		addMouseListener(_mouseListener);
         if (inFrame) {
-            scikit.jobs.Job.frame(this, title);
+            scikit.util.Utilities.frame(this, title);
         }
     }
     
@@ -59,6 +61,7 @@ abstract class AbstractGrid extends JComponent implements Display {
     public void clear() {
         _image = null;
         _pixelArray = null;
+        repaint();
     }
 
     

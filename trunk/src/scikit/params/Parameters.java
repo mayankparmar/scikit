@@ -3,13 +3,11 @@ package scikit.params;
 
 import java.util.Vector;
 import java.util.HashMap;
-import javax.swing.event.ChangeListener;
 
 
 public class Parameters {
 	private Vector<String> keys = new Vector<String>();	
 	private HashMap<String, GuiValue> map = new HashMap<String, GuiValue>();
-	private ChangeListener _listener = null;
 	
 	
 	public Parameters() {}
@@ -17,10 +15,6 @@ public class Parameters {
 	public Parameters(Object... keyvals) {
 		for (int i = 0; i < keyvals.length; i += 2)
 			add((String)keyvals[i], keyvals[i+1]);
-	}
-
-	public void setChangeListener(ChangeListener listener) {
-		_listener = listener;
 	}
 
 	public void setDefaults() {
@@ -44,8 +38,6 @@ public class Parameters {
 		else
 			v = new StringValue(val);
 		
-		if (_listener != null)
-			v.addChangeListener(_listener);
 		keys.add(key);	
 		map.put(key, v);
 		return v;
