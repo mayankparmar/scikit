@@ -9,7 +9,7 @@ import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
-public class NucleationApp extends Job {
+public class NucleationApp extends Simulation {
 	Plot fieldPlot = new Plot("Fields", true);
     Histogram profilePlot = new Histogram("Average Droplet Profile", 0.0, true);
 	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);
@@ -22,7 +22,7 @@ public class NucleationApp extends Job {
     double LATE_BEGIN = 30;
 	
 	public static void main(String[] args) {
-		frame(new Control(new NucleationApp()), "Nucleation");
+		new Control(new NucleationApp(), "Nucleation");
 	}
 	
 	public NucleationApp() {
@@ -84,7 +84,7 @@ public class NucleationApp extends Job {
         
 		while (!sim.nucleated() && sim.time() < highBound) {
 			sim.step();
-			yield();
+			Job.animate();
 		}
         
         if (lowBound < sim.time() && sim.time() < highBound) {
@@ -119,16 +119,16 @@ public class NucleationApp extends Job {
         profilePlot.setAveraging(0, true);
         profilePlot.setDataSet(1, sim.saddleProfile());
         
-		addDisplay(fieldPlot);
-		addDisplay(nucTimes);
-		addDisplay(profilePlot);
+		Job.addDisplay(fieldPlot);
+		Job.addDisplay(nucTimes);
+		Job.addDisplay(profilePlot);
         
 		while (params.iget("Profile count") < params.iget("Max count")) {
             sim.initialize(params);
             equilibrate();
             simulateUntilNucleation();
             params.set("Random seed", params.iget("Random seed")+1);
-            yield();
+            Job.animate();
 		}
 	}
 }

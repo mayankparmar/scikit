@@ -5,19 +5,20 @@ import kip.clump3d.StructureFactor3D;
 import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 
 
-public class Clump3DApp  extends Job {
+public class Clump3DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
     StructureFactor3D sf;
     Clump3D clump;
  	
 	public static void main(String[] args) {
-		frame(new Control(new Clump3DApp()), "Clump Model");
+		new Control(new Clump3DApp(), "Clump Model");
 	}
 	
 	public Clump3DApp() {
@@ -54,8 +55,8 @@ public class Clump3DApp  extends Job {
         		return 1/(clump.potential(kR)/clump.T+1);
 	        }
 		});
-        addDisplay(grid);
-        addDisplay(plot);
+        Job.addDisplay(grid);
+        Job.addDisplay(plot);
         
         boolean equilibrating = true;
         while (true) {
@@ -66,7 +67,7 @@ public class Clump3DApp  extends Job {
 				sf.getAccumulator().clear();
 			}
 			clump.accumulateIntoStructureFactor(sf);
-			yield();
+			Job.animate();
 		}
  	}
 

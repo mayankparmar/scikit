@@ -8,7 +8,7 @@ import kip.dyn1D.*;
 import static java.lang.Math.*;
 
 
-public class RelaxationApp extends Job {
+public class RelaxationApp extends Simulation {
 	Histogram magnetHist = new Histogram("Magnetization", 0, true);
 	Plot magnetDeriv = new Plot("dM/dt", true);
 	
@@ -16,7 +16,7 @@ public class RelaxationApp extends Job {
 	int numSteps = 100;
 	
 	public static void main(String[] args) {
-		frame(new Control(new RelaxationApp()), "Ising Magnetization Relaxation");
+		new Control(new RelaxationApp(), "Ising Magnetization Relaxation");
 	}
 
 	public RelaxationApp() {
@@ -45,7 +45,7 @@ public class RelaxationApp extends Job {
 		
 		magnetHist.setBinWidth(0, sim.dt);
 		magnetHist.setAveraging(0, true);
-		addDisplay(magnetHist);
+		Job.addDisplay(magnetHist);
 		
 		Derivative deriv = new Derivative(magnetHist.getAccumulator(0));
 		deriv.invertDependentParameter = true;
@@ -63,7 +63,7 @@ public class RelaxationApp extends Job {
 				}
 			}
 		});
-		addDisplay(magnetDeriv);
+		Job.addDisplay(magnetDeriv);
 		
 		params.set("cnt", 0);
 		for (int cnt = 0; cnt < 2000; cnt++) {
@@ -72,7 +72,7 @@ public class RelaxationApp extends Job {
 			
 			for (int i = 0; i < numSteps; i++) {
 				magnetHist.accum(0, sim.time(), sim.magnetization());
-				yield();
+				Job.animate();
 				sim.step();
 			}
 			

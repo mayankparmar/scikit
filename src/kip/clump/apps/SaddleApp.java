@@ -3,16 +3,17 @@ package kip.clump.apps;
 import kip.clump.*;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.plot.FieldDisplay;
 
 
-public class SaddleApp extends Job {
+public class SaddleApp extends Simulation {
 	FieldDisplay grid = new FieldDisplay("Grid", true);
 	FieldClump2D clump;
 
 	public static void main(String[] args) {
-		frame(new Control(new SaddleApp()), "Clump Model Saddle Profile");
+		new Control(new SaddleApp(), "Clump Model Saddle Profile");
 	}
 
 	public SaddleApp() {
@@ -49,8 +50,8 @@ public class SaddleApp extends Job {
 		grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		grid.setScale(0.0, 2);
 		grid.setDeltaX(clump.dx/clump.R);
-		addDisplay(grid);
-		yield();
+		Job.addDisplay(grid);
+		Job.animate();
 		
 		while (true) {
 			
@@ -60,7 +61,7 @@ public class SaddleApp extends Job {
 			double scale = var1/var2;
 			clump.scaleField(scale);
 			
-			yield();
+			Job.animate();
 		}
 	}
 }

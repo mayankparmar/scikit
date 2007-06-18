@@ -1,4 +1,4 @@
-package scikit.plot;
+package scikit.jobs;
 
 
 public interface Display {

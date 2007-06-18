@@ -6,18 +6,19 @@ import kip.clump3d.StructureFactor3D;
 import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 
 
-public class ClumpCollection3DApp extends Job {
+public class ClumpCollection3DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
     StructureFactor3D sf;
 	
 	
 	public static void main(String[] args) {
-		frame(new Control(new ClumpCollection3DApp()), "Clump Model -- S(k) Collection");
+		new Control(new ClumpCollection3DApp(), "Clump Model -- S(k) Collection");
 	}
 
 	public ClumpCollection3DApp() {
@@ -38,8 +39,8 @@ public class ClumpCollection3DApp extends Job {
 	}
 	
 	public void run() {
-        addDisplay(grid);
-        addDisplay(plot);
+        Job.addDisplay(grid);
+        Job.addDisplay(plot);
         
         int iters = params.iget("T iterations");
         double dT = (params.fget("T max") - params.fget("T min")) / iters;
@@ -64,7 +65,7 @@ public class ClumpCollection3DApp extends Job {
             	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
             	clump.simulate();
-        		yield();
+        		Job.animate();
             }
             sf.getAccumulator().clear();
             double stopTime = params.fget("Stop time");
@@ -72,7 +73,7 @@ public class ClumpCollection3DApp extends Job {
             	clump.accumulateIntoStructureFactor(sf);
             	params.set("Time", clump.time());
             	clump.simulate();
-        		yield();
+        		Job.animate();
             }
             
             String filename = params.sget("Output directory")+

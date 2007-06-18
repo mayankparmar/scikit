@@ -9,9 +9,9 @@ import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
 
-public class PistonApp extends Job {
+public class PistonApp extends Simulation {
 	public static void main(String[] args) {
-		frame(new Control(new PistonApp()), "Ideal Gas Simulation");
+		new Control(new PistonApp(), "Ideal Gas Simulation");
 	}
 	
 	double[] pistonLine = new double[2];
@@ -39,11 +39,6 @@ public class PistonApp extends Job {
 		params.addm("Piston acceleration", new DoubleValue(0.00001, 0,  0.00002)).enableAuxiliaryEditor();
 		params.addm("dt", new DoubleValue(0.05, 0, 0.2));
 		params.addm("Bin width", new DoubleValue(0.0002, 0.00005, 0.01));
-		
-		addDisplay(particles);
-		addDisplay(enthalpy);
-		addDisplay(idealGas);
-		addDisplay(distrib);
 	}
 	
 	
@@ -74,7 +69,7 @@ public class PistonApp extends Job {
 	}
 	
 	
-	public void run() {
+	public void run() {		
 		N = params.iget("# of particles");
 		px	= params.fget("Initial piston position");
 		pv	= params.fget("Initial piston velocity");
@@ -94,9 +89,14 @@ public class PistonApp extends Job {
 		particles.setDataSet(0, new PointSet(0, 1, x));
 		particles.setDataSet(1, new PointSet(-0.1, N-0.8, pistonLine));
 		
+		Job.addDisplay(particles);
+		Job.addDisplay(enthalpy);
+		Job.addDisplay(idealGas);
+		Job.addDisplay(distrib);
+		
 		while (true) {
 			simulationStep();
-			yield();
+			Job.animate();
 		}
 	}
 	

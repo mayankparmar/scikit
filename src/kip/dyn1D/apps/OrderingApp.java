@@ -3,9 +3,7 @@ package kip.dyn1D.apps;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
 import scikit.plot.*;
-import scikit.dataset.Accumulator;
-import scikit.dataset.DiscreteFunction;
-import scikit.dataset.PointSet;
+import scikit.dataset.*;
 import scikit.jobs.*;
 import kip.dyn1D.*;
 import static java.lang.Math.*;
@@ -85,7 +83,7 @@ class Structure {
 }
 
 
-public class OrderingApp extends Job {
+public class OrderingApp extends Simulation {
 	Plot fieldPlot = new Plot("Fields", true);
 	Plot structurePlot = new Plot("Structure", true);
 	AbstractIsing sim;
@@ -98,7 +96,7 @@ public class OrderingApp extends Job {
 	int numSteps = 10;
 	
 	public static void main(String[] args) {
-		frame(new Control(new OrderingApp()), "Growth for Ising Droplets");
+		new Control(new OrderingApp(), "Growth for Ising Droplets");
 	}
 
 	public OrderingApp() {
@@ -132,8 +130,8 @@ public class OrderingApp extends Job {
 		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
 		fieldPlot.setYRange(-1, 1);
-		addDisplay(fieldPlot);
-		addDisplay(structurePlot);
+		Job.addDisplay(fieldPlot);
+		Job.addDisplay(structurePlot);
 		
 		structure = new Structure(sim.N/sim.dx, sim.N, sim.R);
 		structure.setBounds(0, params.fget("kR maximum"));
@@ -161,7 +159,7 @@ public class OrderingApp extends Job {
 //					}
 //				});
 				
-				yield();
+				Job.animate();
 			}
 			
 			params.set("Random seed", params.iget("Random seed")+1);			
