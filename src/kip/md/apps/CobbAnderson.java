@@ -1,10 +1,14 @@
 package kip.md.apps;
 
 import java.awt.Color;
+import static java.lang.Math.*;
 import kip.clump.PtsGrid;
 import kip.util.Random;
+import scikit.dataset.DynamicArray;
 import scikit.graphics.*;
 import scikit.jobs.*;
+import static scikit.util.Utilities.format;
+import org.opensourcephysics.numerics.*;
 
 
 public class CobbAnderson extends Simulation {
@@ -25,19 +29,22 @@ public class CobbAnderson extends Simulation {
 	
 	
 	public CobbAnderson() {
-		params.add("Length", 50);
-		params.add("Density A", 1);
-		params.add("Sigma A", 1);
-		params.add("Epsilon A", 1);
-		params.add("Mass A", 1);
+		params.add("Length", 10.0);
+		params.add("Density A", 1.0);
+		params.add("Sigma A", 1.0);
+		params.add("Epsilon A", 1.0);
+		params.add("Mass A", 1.0);
 		params.add("dt", 0.01);
+		params.add("time");
 	}
+	
 	
 	public static void main(String[] args) {
 		new Control(new CobbAnderson(), "Particle Simulation");
 	}
 	
 	public void animate() {
+		params.set("time", format(phase[4*N]));
 	}
 	
 	public void run() {
@@ -55,14 +62,50 @@ public class CobbAnderson extends Simulation {
 		canvas.addDrawable(particles);
 		Job.addDisplay(canvas);
 		
-		while (true)
+		ODE ode = new ODE() {
+			public void getRate(double[] state, double[] rate) {
+				CobbAnderson.this.getRate(state, rate);
+			}
+			public double[] getState() {
+				return phase;
+			}
+		};
+		
+		ODESolver solver = new Verlet(ode);
+		solver.initialize(params.fget("dt"));
+		while (true) {
+			solver.step();
 			Job.animate();
+		}
+	}
+	
+	private void getRate(double[] state, double[] rate) {
+		for (int i = 0; i < N; i++) {
+			// set dx/dt = v
+			rate[4*i+0] = state[4*i+1];
+			rate[4*i+2] = state[4*i+3];
+			calculateForce(i, state, rate);
+		}
+		rate[4*N] = 1;
+	}
+	
+	private DynamicArray getPointsInRange(double x, double y) {
+		return null;
+	}
+	
+	private void calculateForce(int i, double[] state, double[] rate) {
+		rate[4*i+1] = 0.00001;
+		rate[4*i+3] = 0;
 	}
 	
 	private void initializeParticles() {
+		int rootN = (int)ceil(sqrt(N));
+		double dx = L/rootN;
 		for (int i = 0; i < N; i++) {
-			phase[(2*i+0)*2] = 2 + rand.nextDouble()*(L-4);
-			phase[(2*i+1)*2] = 2 + rand.nextDouble()*(L-4);
+			int x = i % rootN;
+			int y = i / rootN;
+			phase[(2*i+0)*2] = (x+0.5+0.1*rand.nextGaussian()) * dx;
+			phase[(2*i+1)*2] = (y+0.5+0.1*rand.nextGaussian()) * dx;
 		}
 	}
 }
