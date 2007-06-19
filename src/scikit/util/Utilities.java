@@ -1,9 +1,16 @@
 package scikit.util;
 
+import static java.lang.Math.abs;
+import java.text.DecimalFormat;
 import scikit.jobs.Job;
 
 public class Utilities {
-	
+	static DecimalFormat df1 = new DecimalFormat("0.####");
+	static DecimalFormat df2 = new DecimalFormat("0.####E0");
+	static public String format(double x) {
+		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
+	}
+		
 	
 	// utility method for quickly viewing data.
 	private static scikit.plot.Plot debugPlot;

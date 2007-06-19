@@ -1,7 +1,7 @@
 package kip.dyn1D.apps;
 
 import scikit.params.ChoiceValue;
-import scikit.params.DoubleValue;
+import static scikit.util.Utilities.format;
 import scikit.plot.*;
 import scikit.dataset.*;
 import scikit.jobs.*;
@@ -115,7 +115,7 @@ public class OrderingApp extends Simulation {
 	}
 	
 	public void animate() {
-		params.set("time", DoubleValue.format(sim.time()));
+		params.set("time", format(sim.time()));
 		fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.copyField()));
 	}
 	

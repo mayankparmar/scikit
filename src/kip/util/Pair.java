@@ -1,4 +1,4 @@
-package scikit.util;
+package kip.util;
 
 
 public class Pair<A,B> {
