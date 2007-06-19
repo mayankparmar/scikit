@@ -22,12 +22,20 @@ public class DynamicArray extends DataSet {
 	*
 	* @param x
 	*/
-	public void append(double... xs) {
-		for (double x : xs) {
-			if (_length >= _data.length)
-				increaseCapacity();
-			_data[_length++] = x;
-		}
+	public void append(double x) {
+		if (_length >= _data.length)
+			increaseCapacity();
+		_data[_length++] = x;
+	}
+	
+	/**
+	* Appends two values to the end of the dynamic array
+	*
+	* @param x
+	*/
+	public void append2(double x1, double x2) {
+		append(x1);
+		append(x2);
 	}
 	
 	/**

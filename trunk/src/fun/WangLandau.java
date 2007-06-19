@@ -146,8 +146,8 @@ public class WangLandau extends Simulation {
 
 		for (int e = 0; e <= 4*N; e++) {
 			if (g[e] > 0) {
-				densityData.append   (e - 2*N, g[e] - g[0]);
-				histogramData.append (e - 2*N, H[e]);
+				densityData.append2  (e - 2*N, g[e] - g[0]);
+				histogramData.append2(e - 2*N, H[e]);
 			}
 		}
 
