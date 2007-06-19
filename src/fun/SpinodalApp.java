@@ -1,4 +1,4 @@
-package kip.traffic;
+package fun;
 
 import scikit.plot.*;
 import scikit.jobs.*;

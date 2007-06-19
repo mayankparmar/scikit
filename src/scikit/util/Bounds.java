@@ -42,9 +42,16 @@ public class Bounds {
 		return "["+xmin+"--"+xmax+" , "+ymin+"--"+ymax+" , "+zmin+"--"+zmax+"]";
 	}
 	
-	public Bounds createUnion(Bounds b) {
-		return new Bounds(min(xmin, b.xmin), max(xmax, b.xmax),
-						 min(ymin, b.ymin), max(ymax, b.ymax),
-						 min(zmin, b.zmin), max(zmax, b.zmax));	
+	public Bounds createUnion(Bounds... bs) {
+		Bounds ret = clone();
+		for (Bounds b : bs) {
+			ret.xmin = min(ret.xmin, b.xmin);
+			ret.xmax = max(ret.xmax, b.xmax);
+			ret.ymin = min(ret.ymin, b.ymin);
+			ret.ymax = max(ret.ymax, b.ymax);
+			ret.zmin = min(ret.zmin, b.zmin);
+			ret.zmax = max(ret.zmax, b.zmax);
+		}
+		return ret;
 	}
 }
