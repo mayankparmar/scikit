@@ -72,15 +72,20 @@ public class Canvas implements Display {
 		return bounds;
 	}
 	
+	
+	protected void setProjection(GL gl) {
+		Bounds bounds = getBounds();
+		(new GLU()).gluOrtho2D(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
+	}
+	
 	protected void display(GL gl) {
 		gl.glMatrixMode( GL.GL_PROJECTION );
 		gl.glLoadIdentity(); // TODO necessary?
-		Bounds bounds = getBounds();
-		(new GLU()).gluOrtho2D(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
+		setProjection(gl);
+		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		
 		for (Drawable drawable : drawables) {
 			drawable.draw(gl, getBounds());
 		}

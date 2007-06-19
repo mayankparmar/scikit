@@ -61,7 +61,6 @@ public class Canvas2D extends Canvas {
 	
 	protected void setViewWindow(Bounds b) {
 		_curBounds = b.clone();
-		System.out.println(_curBounds);
 		_zoomed = true;
 	}
 	
@@ -122,8 +121,6 @@ public class Canvas2D extends Canvas {
 				double dx = _selectionEnd.x - _selectionStart.x;
 				double dy = _selectionEnd.y - _selectionStart.y;
 				if (abs(dx) > 4 && abs(dy) > 4) {
-					System.out.println(pixToCoord(_selectionStart));
-					System.out.println(pixToCoord(_selectionEnd));
 					Bounds b = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));
 					setViewWindow(b);
 				}

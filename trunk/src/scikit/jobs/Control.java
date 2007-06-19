@@ -94,7 +94,7 @@ public class Control extends JPanel {
 		JButton b1, b2, b3;
 		b1 = new JButton("Start");
 		b2 = new JButton("Step");
-		b3 = new JButton("Reset");
+		b3 = new JButton("Defaults");
 		b1.addActionListener(_actionListener);
 		b2.addActionListener(_actionListener);
 		b3.addActionListener(_actionListener);
