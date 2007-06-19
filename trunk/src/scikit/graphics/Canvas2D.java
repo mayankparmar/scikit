@@ -66,7 +66,7 @@ public class Canvas2D extends Canvas {
 	
 	protected Bounds getBounds() {
 		if (!_zoomed) {
-			_curBounds = _topBounds.createUnion(super.getBounds());			
+			_curBounds = _curBounds.createUnion(_topBounds, super.getBounds());			
 		}
 		return _curBounds;
 	}
