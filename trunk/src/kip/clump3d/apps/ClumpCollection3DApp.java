@@ -1,6 +1,6 @@
 package kip.clump3d.apps;
 
-import static scikit.params.DoubleValue.format;
+import static scikit.util.Utilities.format;
 import kip.clump3d.Clump3D;
 import kip.clump3d.StructureFactor3D;
 import scikit.dataset.Function;

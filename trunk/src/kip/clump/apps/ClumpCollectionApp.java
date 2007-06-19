@@ -1,7 +1,7 @@
 package kip.clump.apps;
 
 import static kip.util.MathPlus.*;
-import static scikit.params.DoubleValue.format;
+import static scikit.util.Utilities.*;
 import kip.clump.Clump2D;
 import kip.clump.StructureFactor;
 import scikit.dataset.Function;

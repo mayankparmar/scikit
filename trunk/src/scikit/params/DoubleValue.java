@@ -1,18 +1,12 @@
 package scikit.params;
 
-import java.text.DecimalFormat;
-import static java.lang.Math.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import static scikit.util.Utilities.*;
 
 
 public class DoubleValue extends GuiValue {
-	static DecimalFormat df1 = new DecimalFormat("0.####");
-	static DecimalFormat df2 = new DecimalFormat("0.####E0");
-	static public String format(double x) {
-		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
-	}
-	
+
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
 	public DoubleValue(double x) {

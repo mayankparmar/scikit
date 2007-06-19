@@ -1,12 +1,12 @@
 package kip.dyn1D.apps;
 
 import scikit.params.ChoiceValue;
-import scikit.params.DoubleValue;
 import scikit.params.Parameters;
 import scikit.plot.*;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.jobs.*;
+import static scikit.util.Utilities.*;
 import kip.dyn1D.*;
 import static java.lang.Math.*;
 
@@ -39,7 +39,7 @@ public class Ordering2App extends Simulation {
 	}
 	
 	public void animate() {
-		params.set("time", DoubleValue.format(sim.time()));
+		params.set("time", format(sim.time()));
 	}
 	
 	public void run() {
