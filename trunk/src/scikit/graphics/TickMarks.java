@@ -1,10 +1,6 @@
 package scikit.graphics;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.floor;
-import static java.lang.Math.log;
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
+import static java.lang.Math.*;
 import java.awt.Canvas;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -22,8 +18,14 @@ public class TickMarks implements Drawable {
 	
 	private static GLUT glut = new GLUT();
 	private static int FONT = GLUT.BITMAP_8_BY_13;
-//	private static int MARGIN = 6;
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
+	// pixel length constants
+	private static int FONT_HEIGHT = 8;
+	private static int MARGIN = 4;
+	private static int LABEL_CUTOFF = 15;
+	
+	private static NumberFormat nf1 = new DecimalFormat("0.######");
+	private static NumberFormat nf2 = new DecimalFormat("0.######E0");
 
 	
 	public TickMarks(Canvas canvas) {
@@ -42,19 +44,13 @@ public class TickMarks implements Drawable {
 	}
 	
 	
-	private static void drawString(String str) {
-		glut.glutBitmapString(FONT, str); 
-	}
-
 	private static String tickToString(double tick, double length) {
 		StringBuffer str;
 		if (length > 0.00001 && length < 100000) {
-			NumberFormat nf = new DecimalFormat("0.######");
-			str = new StringBuffer(nf.format(tick));
+			str = new StringBuffer(nf1.format(tick));
 		}
 		else {
-			NumberFormat nf = new DecimalFormat("0.######E0");
-			str = new StringBuffer(nf.format(tick));
+			str = new StringBuffer(nf2.format(tick));
 			int i = str.indexOf("E");
 			str.replace(i, i+1, " E");
 			//if (abs(tick) >= 1)
@@ -123,23 +119,30 @@ public class TickMarks implements Drawable {
 	}
 	
 	
-	private static void paintLabels(GL gl, double w, double h, Bounds bounds) {
-		gl.glColor3d(0, 0, 0);
+	private static void paintLabels(GL gl, double pixWidth, double pixHeight, Bounds bounds) {
+		double widthPerPix = bounds.getWidth() / pixWidth;
+		double heightPerPix = bounds.getHeight() / pixHeight;
 		
-		for (double x : getTicks(bounds.xmin, bounds.xmax, w*TICKS_PER_PIXEL)) {
-			if ((x - bounds.xmin) / bounds.getWidth() < 0.05)
+		gl.glColor3d(0, 0, 0);
+		double FUDGE = 0.5; // this fudge factor prevents "jitters". weirdness in GL pixel addressing?
+		
+		for (double x : getTicks(bounds.xmin, bounds.xmax, pixWidth*TICKS_PER_PIXEL)) {
+			if (min(x-bounds.xmin, bounds.xmax-x) < LABEL_CUTOFF*widthPerPix)
 				continue;
 			gl.glPushMatrix();
-			gl.glRasterPos2d(x, bounds.ymin + bounds.getHeight()/64);
-			drawString(tickToString(x, bounds.getWidth()));
+			String label = tickToString(x, bounds.getWidth());
+			int len = glut.glutBitmapLength(FONT, " "+label);
+			gl.glRasterPos2d(x-len*widthPerPix/2, bounds.ymin+(MARGIN+FUDGE)*heightPerPix);
+			glut.glutBitmapString(FONT, label); 
 			gl.glPopMatrix();
 		}
-		for (double y : getTicks(bounds.ymin, bounds.ymax, h*TICKS_PER_PIXEL)) {
-			if ((y - bounds.ymin) / bounds.getHeight() < 0.05)
+		for (double y : getTicks(bounds.ymin, bounds.ymax, pixHeight*TICKS_PER_PIXEL)) {
+			if (min(y-bounds.ymin, bounds.ymax-y) < LABEL_CUTOFF*heightPerPix)
 				continue;
 			gl.glPushMatrix();
-			gl.glRasterPos2d(bounds.xmin + bounds.getWidth()/64, y);
-			drawString(tickToString(y, bounds.getHeight()));
+			String label = tickToString(y, bounds.getHeight());
+			gl.glRasterPos2d(bounds.xmin+MARGIN*widthPerPix, y-FONT_HEIGHT*heightPerPix/2);
+			glut.glutBitmapString(FONT, label); 
 			gl.glPopMatrix();
 		}
 	}
