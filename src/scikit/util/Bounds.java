@@ -39,7 +39,7 @@ public class Bounds {
 	}
 	
 	public String toString() {
-		return "["+xmin+"--"+xmax+" , "+ymin+"--"+ymax+" , "+zmin+"--"+zmax+"]";
+		return "["+xmin+"::"+xmax+" , "+ymin+"::"+ymax+" , "+zmin+"::"+zmax+"]";
 	}
 	
 	public Bounds createUnion(Bounds... bs) {

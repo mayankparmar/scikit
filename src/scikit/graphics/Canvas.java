@@ -42,7 +42,7 @@ public class Canvas implements Display {
 	
 	public void animate() {
 		// mystery: the obvious doesn't work. for some reason, repaint() is not triggering display():
-		//		canvas.repaint();
+		// //		canvas.repaint();
 		//
 		// so we have to force a display in the GUI thread instead.
 		// N.B.: can't call display() from this thread, since its a blocking call, but
@@ -81,21 +81,22 @@ public class Canvas implements Display {
 	}
 	
 	
-	protected void setProjection(GL gl) {
-		Bounds bounds = getBounds();
+	protected void setProjection(GL gl, Bounds bounds) {
 		(new GLU()).gluOrtho2D(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
 	}
 	
 	protected void display(GL gl) {
+		Bounds bounds = getBounds();
+
 		gl.glMatrixMode( GL.GL_PROJECTION );
 		gl.glLoadIdentity(); // TODO necessary?
-		setProjection(gl);
+		setProjection(gl, bounds);
 		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		for (Drawable drawable : drawables) {
-			drawable.draw(gl, getBounds());
+			drawable.draw(gl, bounds);
 		}
 	}
 	

@@ -39,6 +39,7 @@ public class Canvas2D extends Canvas {
 	
 	public void clear() {
 		super.clear();
+		_curBounds = _topBounds.clone();
 		_zoomed = false;
 	}
 	
@@ -54,14 +55,9 @@ public class Canvas2D extends Canvas {
 		_zoomed = false;
 	}
 	
-	protected void resetViewWindow() {
-		_curBounds = _topBounds.clone(); // TODO delete line?
-		_zoomed = false;
-	}
-	
-	protected void setViewWindow(Bounds b) {
-		_curBounds = b.clone();
-		_zoomed = true;
+	public void resetViewWindow() {
+		if (!_zoomed)
+			_curBounds = _topBounds.createUnion(super.getBounds());
 	}
 	
 	protected Bounds getBounds() {
@@ -105,8 +101,9 @@ public class Canvas2D extends Canvas {
 	private MouseListener _mouseListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent event) {
 			if (event.getClickCount() > 1) {
-				resetViewWindow();
+				_zoomed = false;
 				_selectionActive = false;
+				resetViewWindow();
 				animate(); // TODO canvas.repaint?
 			}
 		}
@@ -121,8 +118,8 @@ public class Canvas2D extends Canvas {
 				double dx = _selectionEnd.x - _selectionStart.x;
 				double dy = _selectionEnd.y - _selectionStart.y;
 				if (abs(dx) > 4 && abs(dy) > 4) {
-					Bounds b = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));
-					setViewWindow(b);
+					_zoomed = true;
+					_curBounds = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));;
 				}
 				_selectionActive = false;
 				animate();
