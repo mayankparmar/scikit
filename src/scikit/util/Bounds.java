@@ -54,4 +54,16 @@ public class Bounds {
 		}
 		return ret;
 	}
+
+	public double getWidth() {
+		return xmax - xmin;
+	}
+	
+	public double getHeight() {
+		return ymax - ymin;
+	}
+	
+	public double getDepth() {
+		return zmax - zmin;
+	}
 }
