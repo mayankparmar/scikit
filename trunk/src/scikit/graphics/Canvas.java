@@ -41,7 +41,7 @@ public class Canvas implements Display {
 	}
 	
 	public void animate() {
-		// the obvious doesn't work. for some reason, repaint() is not triggering display():
+		// mystery: the obvious doesn't work. for some reason, repaint() is not triggering display():
 		//		canvas.repaint();
 		//
 		// so we have to force a display in the GUI thread instead.
@@ -69,6 +69,14 @@ public class Canvas implements Display {
 		Bounds bounds = new Bounds();
 		for (Drawable drawable : drawables)
 			bounds = (Bounds)bounds.createUnion(drawable.getBounds());
+		
+		// extend bounds a little bit
+		double w = bounds.xmax - bounds.xmin;
+		double h = bounds.ymax - bounds.ymin;
+		bounds.xmin -= w/16;
+		bounds.xmax += w/16;
+		bounds.ymin -= h/16;
+		bounds.ymax += h/16;
 		return bounds;
 	}
 	
