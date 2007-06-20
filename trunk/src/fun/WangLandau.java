@@ -99,6 +99,8 @@ public class WangLandau extends Simulation {
 
 			g[E] += Math.log(f);
 			H[E] += 1;
+			
+			Job.yield();
 		}
 	}
 
@@ -150,15 +152,18 @@ public class WangLandau extends Simulation {
 				histogramData.append2(e - 2*N, H[e]);
 			}
 		}
-
+		
 		for (double T = 0.5; T < 5; T += 0.1)
 			heatData.accum(T, Thermodynamics.heatCapacity(N, g, 1/T));
 		for (double T = 1.2; T < 1.8; T += 0.02)
 			heatData.accum(T, Thermodynamics.heatCapacity(N, g, 1/T));
-
+		
+		densityPlot.resetViewWindow();
+		heatPlot.resetViewWindow();
+		
 		densityPlot.addPoints(0, densityData, Color.BLUE);
 		histogramPlot.addPoints(0, histogramData, Color.BLACK);
-		heatPlot.addLines(0, heatData, Color.RED);	      
+		heatPlot.addLines(0, heatData, Color.RED);
 	}
 }
 
