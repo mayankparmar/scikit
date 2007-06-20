@@ -7,7 +7,7 @@ import javax.media.opengl.glu.GLUquadric;
 
 import scikit.util.Bounds;
 
-public class Particles2D implements Drawable {
+public class ParticleGraphics2D implements Drawable {
 	private GLU glu = new GLU();
 	private GLUquadric quadric = glu.gluNewQuadric();
 
@@ -21,15 +21,10 @@ public class Particles2D implements Drawable {
 	private int _N1;
 	
 	
-	public Particles2D(double[] phase, double radius, double L, Color color) {
-		_phase = phase;
+	public ParticleGraphics2D(double radius, double L, Color color) {
 		_radius = radius;
 		_bounds = new Bounds(0, L, 0, L);
 		_color = color;
-		
-		_stride = 1;
-		_N0 = 0;
-		_N1 = phase.length/(2*_stride);
 	}
 	
 	public void draw(GL gl, Bounds bounds) {
@@ -44,7 +39,8 @@ public class Particles2D implements Drawable {
 	}
 	
 	
-	public void setPhaseArrayFormat(int stride, int N0, int N1) {
+	public void setPhaseArray(double[] phase, int stride, int N0, int N1) {
+		_phase = phase;
 		_stride = stride;
 		_N0 = N0;
 		_N1 = N1;

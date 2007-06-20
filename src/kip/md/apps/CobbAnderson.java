@@ -1,28 +1,35 @@
 package kip.md.apps;
 
 import java.awt.Color;
+import java.util.ArrayList;
+
 import static java.lang.Math.*;
-import kip.clump.PtsGrid;
-import kip.util.Random;
-import scikit.dataset.DynamicArray;
+import kip.md.PointGrid2D;
+import kip.util.*;
 import scikit.graphics.*;
 import scikit.jobs.*;
+import scikit.util.*;
 import static scikit.util.Utilities.format;
 import org.opensourcephysics.numerics.*;
 
 
 public class CobbAnderson extends Simulation {
+	private final double PARTICLES_PER_CELL = 4;
+	private final double SIGMA_CUTOFF = 3;
+	
 	Canvas2D canvas = new Canvas2D("Particles");
 	Random rand = new Random();
 	
+	int N;			// number of particles
 	double L;		// system length
 	// lennard jones parameters
 	// V = 4 eps [ (sig/r)^12 - (sig/r)^6 ]
 	double sigma;
 	double epsilon;
 	
-	PtsGrid pts;
-	int N;
+	
+	Point pts[];
+	PointGrid2D<Point> grid;
 	// complete state of configuration.  4N+1 elements: positions, velocities, time.
 	// packed as: (x_1, vx_1, y_1, vy_1, ..., time)
 	double[] phase;
@@ -50,16 +57,20 @@ public class CobbAnderson extends Simulation {
 	public void run() {
 		L = params.fget("Length");
 		N = (int) (params.fget("Density A")*L*L);
-		
 		sigma = params.fget("Sigma A");
 		epsilon = params.fget("Epsilon A");
+		
+		pts = new Point[N];
+		for (int i = 0; i < N; i++)
+			pts[i] = new Point(0,0);
+		grid = new PointGrid2D<Point>(L, (int)(sqrt(N/PARTICLES_PER_CELL)));
 		
 		phase = new double[4*N+1];
 		initializeParticles();
 		
-		Particles2D particles = new Particles2D(phase, 0.2, L, Color.BLUE);
-		particles.setPhaseArrayFormat(2, 0, N);
-		canvas.addDrawable(particles);
+		ParticleGraphics2D gfx = new ParticleGraphics2D(0.2, L, Color.BLUE);
+		gfx.setPhaseArray(phase, 2, 0, N);
+		canvas.addDrawable(gfx);
 		Job.addDisplay(canvas);
 		
 		ODE ode = new ODE() {
@@ -75,6 +86,7 @@ public class CobbAnderson extends Simulation {
 		solver.initialize(params.fget("dt"));
 		while (true) {
 			solver.step();
+			correctBounds();
 			Job.animate();
 		}
 	}
@@ -84,28 +96,63 @@ public class CobbAnderson extends Simulation {
 			// set dx/dt = v
 			rate[4*i+0] = state[4*i+1];
 			rate[4*i+2] = state[4*i+3];
-			calculateForce(i, state, rate);
 		}
+		
+		if (true)
+			calculateForces(state, rate);
+		
 		rate[4*N] = 1;
 	}
 	
-	private DynamicArray getPointsInRange(double x, double y) {
-		return null;
-	}
 	
-	private void calculateForce(int i, double[] state, double[] rate) {
-		rate[4*i+1] = 0.00001;
-		rate[4*i+3] = 0;
+	private void calculateForces(double[] state, double[] rate) {
+		grid.clear();
+		for (int i = 0; i < N; i++) {
+			pts[i].set(phase[4*i+0], phase[4*i+2]);
+			grid.addPoint(pts[i]);
+		}
+		
+		for (int i = 0; i < N; i++) {
+			ArrayList<Point> ns = grid.pointsWithinRange(pts[i], sigma*SIGMA_CUTOFF);
+			for (int j = 0; j < ns.size(); j++) {
+				double fx = 0;
+				double fy = 0;
+				if (pts[i] != ns.get(j)) {
+					double dx = separation(pts[i].x - ns.get(j).x);
+					double dy = separation(pts[i].y - ns.get(j).y);
+					double r = sqrt(dx*dx + dy*dy);
+					if (r < sigma*SIGMA_CUTOFF) {
+						double r3_inv = 1/r*r*r;
+						fx -= 0.1*dx*r3_inv;
+						fy -= 0.1*dy*r3_inv;
+					}
+				}
+				rate[4*i+1] = fx;
+				rate[4*i+3] = fy;
+			}
+		}
 	}
 	
 	private void initializeParticles() {
 		int rootN = (int)ceil(sqrt(N));
 		double dx = L/rootN;
 		for (int i = 0; i < N; i++) {
-			int x = i % rootN;
-			int y = i / rootN;
-			phase[(2*i+0)*2] = (x+0.5+0.1*rand.nextGaussian()) * dx;
-			phase[(2*i+1)*2] = (y+0.5+0.1*rand.nextGaussian()) * dx;
+			phase[4*i+0] = (i%rootN + 0.5 + 0.1*rand.nextGaussian()) * dx;
+			phase[4*i+1] = 0;
+			phase[4*i+2] = (i/rootN + 0.5 + 0.1*rand.nextGaussian()) * dx;
+			phase[4*i+3] = 0;
+		}
+		correctBounds();
+	}
+	
+	private double separation(double dx) {
+		return dx - L*Math.floor(dx/L+0.5);
+	}
+	
+	private void correctBounds() {
+		for (int i = 0; i < N; i++) {
+			phase[4*i+0] = (phase[4*i+0]+L)%L;
+			phase[4*i+2] = (phase[4*i+2]+L)%L;
 		}
 	}
 }
