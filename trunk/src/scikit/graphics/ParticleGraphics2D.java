@@ -49,7 +49,7 @@ public class ParticleGraphics2D implements Drawable {
 	private void drawCircle(GL gl, double x, double y) {
 		gl.glPushMatrix();		
 		gl.glTranslated(x, y, 0);
-		glu.gluDisk(quadric, 0, _radius, 32, 1);
+		glu.gluDisk(quadric, 0, _radius, 6, 1);
 		gl.glPopMatrix();
 	}
 }

@@ -63,6 +63,13 @@ public class DynamicArray extends DataSet {
 	}
 	
 	/**
+	 * Removes all elements from the array.
+	 */
+	public void clear() {
+		_length = 0;
+	}
+	
+	/**
 	* Returns a copy of the dynamic array as a static array
 	*/
 	public double[] copyData() {

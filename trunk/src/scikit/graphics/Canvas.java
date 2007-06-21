@@ -24,7 +24,7 @@ public class Canvas implements Display {
 	public Canvas() {
 		GLCapabilities capabilities = new GLCapabilities();
 		capabilities.setSampleBuffers(true);
-		capabilities.setNumSamples(4);
+		capabilities.setNumSamples(2);
 		canvas = new GLCanvas(capabilities);
 		canvas.addGLEventListener(new EventListener());
 		canvas.setPreferredSize(new Dimension(300, 300));
