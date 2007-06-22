@@ -39,14 +39,13 @@ public class Job {
 	}
 	
 	public void stop() {
-		assert (thread != null);
 		state = State.STOP;
 	}
 	
 	public void kill() {
-		assert (thread != null);
 		state = State.KILL;
-		coop.triggerProcessingLoop();
+		if (thread != null)
+			coop.triggerProcessingLoop();
 	}
 	
 	public Parameters params() {
