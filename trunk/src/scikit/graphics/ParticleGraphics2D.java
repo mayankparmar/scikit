@@ -21,9 +21,9 @@ public class ParticleGraphics2D implements Drawable {
 	private int _N1;
 	
 	
-	public ParticleGraphics2D(double radius, double L, Color color) {
+	public ParticleGraphics2D(double radius, Bounds bounds, Color color) {
 		_radius = radius;
-		_bounds = new Bounds(0, L, 0, L);
+		_bounds = bounds;
 		_color = color;
 	}
 	

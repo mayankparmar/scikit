@@ -6,6 +6,8 @@ import javax.swing.JApplet;
 import java.lang.reflect.*;
 
 
+// needs to be reworked.
+// use this class to launch a specific simulation as an applet. 
 public class AppletLauncher extends JApplet {
 	private static final long serialVersionUID = 1L;
 	Job job;
