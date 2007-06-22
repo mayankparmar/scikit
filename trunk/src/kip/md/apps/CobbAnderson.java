@@ -22,28 +22,30 @@ public class CobbAnderson extends Simulation {
 	Canvas2D canvas = new Canvas2D("Particles");
 	Random rand = new Random();
 	
-	int N;			// number of particles
+	int NA, NB;		// number of particles
 	double L;		// system length
 	// lennard jones parameters
-	// V = 4 eps [ (sig/r)^12 - (sig/r)^6 ]
-	double sigma;
+	// V(r) = 4 eps [ (sig/r)^12 - (sig/r)^6 ]
+	// where sigma is the sum of radii
+	double RA, RB; // radius of particles
+	double MA, MB; // mass of particles
 	double epsilon;
 	
 	// complete state of configuration.  4N+1 elements: positions, velocities, time.
 	// packed as: (x_1, vx_1, y_1, vy_1, ..., time)
 	double[] phase;
 	Verlet solver;
-	PointGrid2D grid;
-
+	PointGrid2D gridA, gridB;
 	
 	
 	public CobbAnderson() {
 		params.add("Length", 20.0);
-		params.add("Density A", 0.8);
-		params.add("Sigma A", 1.0);
-		params.add("Epsilon A", 1.0);
-		params.add("Mass A", 1.0);
-		params.add("dt", 0.01);
+		params.add("Density A", 0.05);
+		params.add("Density B", 0.2);
+		params.add("Radius A", 1.0);
+		params.add("Radius B", 0.5);
+		params.add("Epsilon", 1.0);
+		params.add("dt", 0.002);
 		params.add("time");
 	}
 	
@@ -53,27 +55,36 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	public void animate() {
-		params.set("time", format(phase[4*N]));
+		params.set("time", format(phase[4*(NA+NB)]));
 		
 		Bounds bounds = new Bounds(0, L, 0, L);
-		Particle2DGraphics particles = new Particle2DGraphics(0.2, bounds, Color.BLUE);
-		particles.setPoints(phase, 2, 0, N);
+		Particle2DGraphics particlesA = new Particle2DGraphics(RA, bounds, Color.BLUE);
+		particlesA.setPoints(phase, 2, 0, NA);
+		Particle2DGraphics particlesB = new Particle2DGraphics(RB, bounds, Color.GREEN);
+		particlesB.setPoints(phase, 2, NA, NA+NB);
+		
 		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
-//		voronoi.setPoints(phase, 2, 0, N);
+		voronoi.setPoints(phase, 2, 0, NA);
 		
 		canvas.removeAllGraphics();
-		canvas.addGraphics(particles);
+		canvas.addGraphics(particlesA);
+		canvas.addGraphics(particlesB);
 		canvas.addGraphics(voronoi);
 	}
 	
 	public void run() {
 		L = params.fget("Length");
-		N = (int) (params.fget("Density A")*L*L);
-		sigma = params.fget("Sigma A");
-		epsilon = params.fget("Epsilon A");
+		NA = (int) (params.fget("Density A")*L*L);
+		NB = (int) (params.fget("Density B")*L*L);
+		RA = params.fget("Radius A");
+		RB = params.fget("Radius B");
+		MA = PI*RA*RA;
+		MB = PI*RB*RB;
+		epsilon = params.fget("Epsilon");
 		
-		grid = new PointGrid2D(L, (int)(sqrt(N/PARTICLES_PER_CELL)));
-		phase = new double[4*N+1];
+		gridA = new PointGrid2D(L, (int)(sqrt(NA/PARTICLES_PER_CELL)));
+		gridB = new PointGrid2D(L, (int)(sqrt(NB/PARTICLES_PER_CELL)));
+		phase = new double[4*(NA+NB)+1];
 		initializeParticles();
 		
 		Job.addDisplay(canvas);
@@ -97,7 +108,7 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	private void getRate(double[] state, double[] rate) {
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < NA+NB; i++) {
 			// set dx/dt = v
 			rate[4*i+0] = state[4*i+1];
 			rate[4*i+2] = state[4*i+3];
@@ -106,52 +117,69 @@ public class CobbAnderson extends Simulation {
 		if (solver.getRateCounter() == 1)
 			calculateForces(state, rate);
 		
-		rate[4*N] = 1;
+		rate[4*(NA+NB)] = 1;
 	}
 	
 	
 	private void calculateForces(double[] state, double[] rate) {
-		grid.setPoints(state, 2, 0, N);
-		
-		for (int i = 0; i < N; i++) {
-			double fx = 0;
-			double fy = 0;
-			double x = phase[4*i+0];
-			double y = phase[4*i+2];
-			DynamicArray ns = grid.pointOffsetsWithinRange(x, y, sigma*SIGMA_CUTOFF);
+		gridA.setPoints(state, 2, 0, NA);
+		gridB.setPoints(state, 2, NA, NA+NB);
+		 
+		for (int i = 0; i < NA+NB; i++) {
+			double R = i < NA ? RA : RB;
+			double M = i < NA ? MA : MB;
 			
-			for (int j = 0; j < ns.size()/2; j++) {
-				double dx = ns.get(2*j+0);
-				double dy = ns.get(2*j+1);
-				double r = sqrt(dx*dx + dy*dy);
-				if (0 < r && r < sigma*SIGMA_CUTOFF) {
-					double a = sigma/r;
-					double a3 = a*a*a;
-					double a6 = a3*a3;
-					double a12 = a6*a6;
-					double A = 4*epsilon*(12*a12-6*a6)/(r*r);
-					fx -= dx*A;
-					fy -= dy*A;
-				}
-				rate[4*i+1] = fx;
-				rate[4*i+3] = fy;
+			rate[4*i+1] = 0;
+			rate[4*i+3] = 0;
+			accumulateForces(i, state, rate, (R+RA), M, gridA);
+			accumulateForces(i, state, rate, (R+RB), M, gridB);
+		}
+	}
+	
+	private void accumulateForces(int i, double[] state, double[] rate, double sigma, double M, PointGrid2D grid) {
+		double x = state[4*i+0];
+		double y = state[4*i+2];		
+		DynamicArray ns = grid.pointOffsetsWithinRange(x, y, sigma*SIGMA_CUTOFF);
+		
+		for (int j = 0; j < ns.size()/2; j++) {
+			double dx = ns.get(2*j+0);
+			double dy = ns.get(2*j+1);
+			double r = sqrt(dx*dx + dy*dy);
+			if (0 < r && r < sigma*SIGMA_CUTOFF) {
+				double a = sigma/r;
+				double a3 = a*a*a;
+				double a6 = a3*a3;
+				double a12 = a6*a6;
+				double LJ = 4*epsilon*(12*a12-6*a6)/(r*r);
+				rate[4*i+1] -= dx*LJ/M; // accumulate force_x
+				rate[4*i+3] -= dy*LJ/M; // accumulate force_y
 			}
 		}
 	}
 	
 	private void initializeParticles() {
-		int rootN = (int)ceil(sqrt(N));
+		int rootN = (int)ceil(sqrt(NA+NB));
 		double dx = L/rootN;
-		for (int i = 0; i < N; i++) {
-			phase[4*i+0] = (i%rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
-			phase[4*i+1] = 0;
-			phase[4*i+2] = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
-			phase[4*i+3] = 0;
+		int cntA = 0, cntB = 0;
+		for (int i = 0; i < NA+NB; i++) {
+			double x = (i%rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
+			double y = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
+			if (cntA*NB <= cntB*NA && NA != 0)
+				initializeParticle(cntA++, x, y);
+			else
+				initializeParticle(NA+cntB++, x, y);
 		}
+	}
+
+	private void initializeParticle(int i, double x, double y) {
+		phase[4*i+0] = x;
+		phase[4*i+1] = 0;
+		phase[4*i+2] = y;
+		phase[4*i+3] = 0;
 	}
 	
 	private void correctBounds() {
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < NA+NB; i++) {
 			phase[4*i+0] = (phase[4*i+0]+L)%L;
 			phase[4*i+2] = (phase[4*i+2]+L)%L;
 		}

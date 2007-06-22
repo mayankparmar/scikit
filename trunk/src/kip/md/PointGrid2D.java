@@ -14,10 +14,10 @@ public class PointGrid2D {
 	@SuppressWarnings(value={"unchecked"})
 	public PointGrid2D(double L, int cols) {
 		_L = L;
-		_cols = cols;
-		_dx = L / cols;
-		_cells = new DynamicArray[cols*cols];
-		for (int i = 0; i < cols*cols; i++)
+		_cols = max(cols, 1);
+		_dx = L / _cols;
+		_cells = new DynamicArray[_cols*_cols];
+		for (int i = 0; i < _cols*_cols; i++)
 			_cells[i] = new DynamicArray();
 	}
 	
