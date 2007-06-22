@@ -8,8 +8,11 @@ import kip.util.*;
 import scikit.dataset.DynamicArray;
 import scikit.graphics.*;
 import scikit.jobs.*;
+import scikit.util.Bounds;
 import static scikit.util.Utilities.format;
 import org.opensourcephysics.numerics.*;
+
+import delaunay.VoronoiGraphics;
 
 
 public class CobbAnderson extends Simulation {
@@ -31,11 +34,13 @@ public class CobbAnderson extends Simulation {
 	double[] phase;
 	Verlet solver;
 	PointGrid2D grid;
+
+	VoronoiGraphics voronoi;
 	
 	
 	public CobbAnderson() {
 		params.add("Length", 20.0);
-		params.add("Density A", 1.0);
+		params.add("Density A", 0.8);
 		params.add("Sigma A", 1.0);
 		params.add("Epsilon A", 1.0);
 		params.add("Mass A", 1.0);
@@ -49,6 +54,8 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	public void animate() {
+		voronoi.setPoints(phase, 2, 0, N);
+		
 		params.set("time", format(phase[4*N]));
 	}
 	
@@ -62,10 +69,15 @@ public class CobbAnderson extends Simulation {
 		phase = new double[4*N+1];
 		initializeParticles();
 		
-		ParticleGraphics2D gfx = new ParticleGraphics2D(0.2, L, Color.BLUE);
+		Bounds bounds = new Bounds(0, L, 0, L);
+		ParticleGraphics2D gfx = new ParticleGraphics2D(0.2, bounds, Color.BLUE);
 		gfx.setPhaseArray(phase, 2, 0, N);
 		canvas.addDrawable(gfx);
+		
+		voronoi = new VoronoiGraphics(bounds);
+		canvas.addDrawable(voronoi);
 		Job.addDisplay(canvas);
+		
 		
 		ODE ode = new ODE() {
 			public void getRate(double[] state, double[] rate) {
@@ -108,23 +120,23 @@ public class CobbAnderson extends Simulation {
 			double x = phase[4*i+0];
 			double y = phase[4*i+2];
 			DynamicArray ns = grid.pointOffsetsWithinRange(x, y, sigma*SIGMA_CUTOFF);
-//			System.out.println(ns.size()/2);
-			int cnt = 0;
 			
 			for (int j = 0; j < ns.size()/2; j++) {
 				double dx = ns.get(2*j+0);
 				double dy = ns.get(2*j+1);
 				double r = sqrt(dx*dx + dy*dy);
 				if (0 < r && r < sigma*SIGMA_CUTOFF) {
-					double r3_inv = 1/r*r*r;
-					fx += 0.1*dx*r3_inv;
-					fy += 0.1*dy*r3_inv;
-					cnt++;
+					double a = sigma/r;
+					double a3 = a*a*a;
+					double a6 = a3*a3;
+					double a12 = a6*a6;
+					double A = 4*epsilon*(12*a12-6*a6)/(r*r);
+					fx -= dx*A;
+					fy -= dy*A;
 				}
 				rate[4*i+1] = fx;
 				rate[4*i+3] = fy;
 			}
-//			System.out.println(cnt + "\n");
 		}
 	}
 	
@@ -132,9 +144,9 @@ public class CobbAnderson extends Simulation {
 		int rootN = (int)ceil(sqrt(N));
 		double dx = L/rootN;
 		for (int i = 0; i < N; i++) {
-			phase[4*i+0] = (i%rootN + 0.5 + 0.1*rand.nextGaussian()) * dx;
+			phase[4*i+0] = (i%rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
 			phase[4*i+1] = 0;
-			phase[4*i+2] = (i/rootN + 0.5 + 0.1*rand.nextGaussian()) * dx;
+			phase[4*i+2] = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
 			phase[4*i+3] = 0;
 		}
 	}
