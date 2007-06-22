@@ -35,7 +35,6 @@ public class CobbAnderson extends Simulation {
 	Verlet solver;
 	PointGrid2D grid;
 
-	VoronoiGraphics voronoi;
 	
 	
 	public CobbAnderson() {
@@ -54,9 +53,17 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	public void animate() {
-		voronoi.setPoints(phase, 2, 0, N);
-		
 		params.set("time", format(phase[4*N]));
+		
+		Bounds bounds = new Bounds(0, L, 0, L);
+		Particle2DGraphics particles = new Particle2DGraphics(0.2, bounds, Color.BLUE);
+		particles.setPoints(phase, 2, 0, N);
+		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
+//		voronoi.setPoints(phase, 2, 0, N);
+		
+		canvas.removeAllGraphics();
+		canvas.addGraphics(particles);
+		canvas.addGraphics(voronoi);
 	}
 	
 	public void run() {
@@ -69,15 +76,7 @@ public class CobbAnderson extends Simulation {
 		phase = new double[4*N+1];
 		initializeParticles();
 		
-		Bounds bounds = new Bounds(0, L, 0, L);
-		ParticleGraphics2D gfx = new ParticleGraphics2D(0.2, bounds, Color.BLUE);
-		gfx.setPhaseArray(phase, 2, 0, N);
-		canvas.addDrawable(gfx);
-		
-		voronoi = new VoronoiGraphics(bounds);
-		canvas.addDrawable(voronoi);
 		Job.addDisplay(canvas);
-		
 		
 		ODE ode = new ODE() {
 			public void getRate(double[] state, double[] rate) {

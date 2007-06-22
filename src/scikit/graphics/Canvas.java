@@ -19,6 +19,7 @@ import scikit.util.Bounds;
 public class Canvas implements Display {
 	protected GLCanvas canvas;
 	protected Vector<Graphics> drawables = new Vector<Graphics>();
+	protected Bounds _curBounds = new Bounds();
 	
 	
 	public Canvas() {
@@ -41,6 +42,8 @@ public class Canvas implements Display {
 	}
 	
 	public void animate() {
+		_curBounds = getCurrentBounds();
+		
 		// mystery: the obvious doesn't work. for some reason, repaint() is not triggering display():
 		// //		canvas.repaint();
 		//
@@ -56,16 +59,20 @@ public class Canvas implements Display {
 	}
 	
 	public void clear() {
-		drawables.clear();
+		removeAllGraphics();
 		animate();
 	}
 	
-	public void addDrawable(Graphics d) {
+	public void removeAllGraphics() {
+		drawables.clear();
+	}
+	
+	public void addGraphics(Graphics d) {
 		drawables.add(d);
 	}
 	
 	
-	protected Bounds getBounds() {
+	protected Bounds getCurrentBounds() {
 		Bounds bounds = new Bounds();
 		for (Graphics drawable : drawables)
 			bounds = (Bounds)bounds.createUnion(drawable.getBounds());
@@ -86,17 +93,15 @@ public class Canvas implements Display {
 	}
 	
 	protected void display(GL gl) {
-		Bounds bounds = getBounds();
-
 		gl.glMatrixMode( GL.GL_PROJECTION );
 		gl.glLoadIdentity(); // TODO necessary?
-		setProjection(gl, bounds);
+		setProjection(gl, _curBounds);
 		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		for (Graphics drawable : drawables) {
-			drawable.draw(gl, bounds);
+			drawable.draw(gl, _curBounds);
 		}
 	}
 	
