@@ -16,8 +16,6 @@ public class Canvas2D extends Canvas {
 	// when the user zooms out (double clicks to "resetViewWindow()"), the current
 	// view bounds is set to topBounds (and then extended to fit data).
 	protected Bounds _topBounds = new Bounds();
-	// the current view bounds
-	protected Bounds _curBounds = new Bounds();
 	// is the view zoomed in?  this will disable autoscale
 	protected boolean _zoomed = false;
 	
@@ -57,14 +55,14 @@ public class Canvas2D extends Canvas {
 	
 	public void resetViewWindow() {
 		if (!_zoomed)
-			_curBounds = _topBounds.createUnion(super.getBounds());
+			_curBounds = _topBounds.createUnion(super.getCurrentBounds());
 	}
 	
-	protected Bounds getBounds() {
-		if (!_zoomed) {
-			_curBounds = _curBounds.createUnion(_topBounds, super.getBounds());			
-		}
-		return _curBounds;
+	protected Bounds getCurrentBounds() {
+		if (_zoomed)
+			return _curBounds;
+		else
+			return _curBounds.createUnion(_topBounds, super.getCurrentBounds());			
 	}
 	
 	protected void display(GL gl) {
@@ -104,7 +102,7 @@ public class Canvas2D extends Canvas {
 				_zoomed = false;
 				_selectionActive = false;
 				resetViewWindow();
-				animate(); // TODO canvas.repaint?
+				animate();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
@@ -119,7 +117,7 @@ public class Canvas2D extends Canvas {
 				double dy = _selectionEnd.y - _selectionStart.y;
 				if (abs(dx) > 4 && abs(dy) > 4) {
 					_zoomed = true;
-					_curBounds = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));;
+					_curBounds = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));
 				}
 				_selectionActive = false;
 				animate();

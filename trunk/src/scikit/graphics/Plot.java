@@ -9,7 +9,6 @@ import scikit.util.Bounds;
 
 public class Plot extends Canvas2D {
 	enum Style {LINES, MARKS, BARS};
-	public DatasetGraphics wraps[] = new DatasetGraphics[16];
 	
 	public Plot() {
 		super();
@@ -22,29 +21,28 @@ public class Plot extends Canvas2D {
 	}
 	
 	
-	public void clear() {
-		super.clear();
-		wraps = new DatasetGraphics[16];
+	public void removeAllGraphics() {
+		super.removeAllGraphics();
 		drawables.add(new TickMarks(canvas));
 	}
 	
-	public void addPoints(int index, DataSet data, Color color) {
-		addDataset(index, data, color, Style.MARKS);
+	public void addPoints(DataSet data, Color color) {
+		addDataset(data, color, Style.MARKS);
 	}
 
-	public void addLines(int index, DataSet data, Color color) {
-		addDataset(index, data, color, Style.LINES);
+	public void addLines(DataSet data, Color color) {
+		addDataset(data, color, Style.LINES);
 	}
 	
-	public void addBars(int index, DataSet data, Color color) {
-		addDataset(index, data, color, Style.BARS);
+	public void addBars(DataSet data, Color color) {
+		addDataset(data, color, Style.BARS);
 	}
 	
 	
-	private void addDataset(int index, DataSet data, Color color, Style style) {
-		drawables.remove(wraps[index]);
-		wraps[index] = new DatasetGraphics(data, color, style);
-		drawables.add(wraps[index]);		
+	private void addDataset(DataSet data, Color color, Style style) {
+		DatasetGraphics gfx = new DatasetGraphics(data, color, style);
+		drawables.add(gfx);
+		// register gfx pulldown save dialog
 	}
 	
 	

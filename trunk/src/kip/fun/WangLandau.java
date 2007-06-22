@@ -158,12 +158,17 @@ public class WangLandau extends Simulation {
 		for (double T = 1.2; T < 1.8; T += 0.02)
 			heatData.accum(T, Thermodynamics.heatCapacity(N, g, 1/T));
 		
-		densityPlot.resetViewWindow();
-		heatPlot.resetViewWindow();
 		
-		densityPlot.addPoints(0, densityData, Color.BLUE);
-		histogramPlot.addPoints(0, histogramData, Color.BLACK);
-		heatPlot.addLines(0, heatData, Color.RED);
+		densityPlot.removeAllGraphics();
+		densityPlot.addPoints(densityData, Color.BLUE);
+		densityPlot.resetViewWindow();
+		
+		histogramPlot.removeAllGraphics();
+		histogramPlot.addPoints(histogramData, Color.BLACK);
+		
+		heatPlot.removeAllGraphics();
+		heatPlot.resetViewWindow();
+		heatPlot.addLines(heatData, Color.RED);
 	}
 }
 
