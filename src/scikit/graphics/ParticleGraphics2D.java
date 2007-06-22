@@ -7,7 +7,7 @@ import javax.media.opengl.glu.GLUquadric;
 
 import scikit.util.Bounds;
 
-public class ParticleGraphics2D implements Drawable {
+public class ParticleGraphics2D implements Graphics {
 	private GLU glu = new GLU();
 	private GLUquadric quadric = glu.gluNewQuadric();
 

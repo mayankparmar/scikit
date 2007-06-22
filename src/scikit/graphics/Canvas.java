@@ -18,7 +18,7 @@ import scikit.util.Bounds;
 
 public class Canvas implements Display {
 	protected GLCanvas canvas;
-	protected Vector<Drawable> drawables = new Vector<Drawable>();
+	protected Vector<Graphics> drawables = new Vector<Graphics>();
 	
 	
 	public Canvas() {
@@ -60,14 +60,14 @@ public class Canvas implements Display {
 		animate();
 	}
 	
-	public void addDrawable(Drawable d) {
+	public void addDrawable(Graphics d) {
 		drawables.add(d);
 	}
 	
 	
 	protected Bounds getBounds() {
 		Bounds bounds = new Bounds();
-		for (Drawable drawable : drawables)
+		for (Graphics drawable : drawables)
 			bounds = (Bounds)bounds.createUnion(drawable.getBounds());
 		
 		// extend bounds a little bit
@@ -95,7 +95,7 @@ public class Canvas implements Display {
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		for (Drawable drawable : drawables) {
+		for (Graphics drawable : drawables) {
 			drawable.draw(gl, bounds);
 		}
 	}

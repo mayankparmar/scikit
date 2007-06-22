@@ -2,10 +2,10 @@ package delaunay;
 
 import javax.media.opengl.GL;
 
-import scikit.graphics.Drawable;
+import scikit.graphics.Graphics;
 import scikit.util.Bounds;
 
-public class VoronoiGraphics implements Drawable {
+public class VoronoiGraphics implements Graphics {
 	private Bounds _bds;
 	private DelaunayTriangulation _dt;
 	
