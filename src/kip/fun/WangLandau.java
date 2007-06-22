@@ -1,4 +1,4 @@
-package fun;
+package kip.fun;
 
 import scikit.jobs.*;
 import scikit.graphics.*;
