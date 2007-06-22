@@ -13,7 +13,7 @@ import com.sun.opengl.util.GLUT;
 import scikit.util.Bounds;
 
 
-public class TickMarks implements Drawable {
+public class TickMarks implements Graphics {
 	private Canvas _canvas;
 	
 	private static GLUT glut = new GLUT();
