@@ -1,4 +1,4 @@
-package fun;
+package kip.fun;
 
 
 import static java.lang.Math.*;
