@@ -49,7 +49,7 @@ public class Particle2DGraphics implements Graphics {
 	private void drawCircle(GL gl, double x, double y) {
 		gl.glPushMatrix();		
 		gl.glTranslated(x, y, 0);
-		glu.gluDisk(quadric, 0, _radius, 6, 1);
+		glu.gluDisk(quadric, 0, _radius, 12, 1);
 		gl.glPopMatrix();
 	}
 }

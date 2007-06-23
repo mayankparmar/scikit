@@ -33,14 +33,16 @@ public class Verlet extends AbstractODESolver {
   private double[] rate1; // stores the initial rate
   private double[] rate2; // used to compute the estimated the acceleration at x(n+1).
   private int rateCounter = -1; // step has not yet been called
-
+  private int numPhaseEqn;
+  
   /**
    * Constructs the velocity Verlet ODESolver for a system of ordinary  differential equations.
    *
    * @param ode the system of differential equations.
    */
-  public Verlet(ODE ode) {
+  public Verlet(ODE ode, int numPhaseEqn) {
     super(ode);
+    this.numPhaseEqn = numPhaseEqn;
   }
 
   /**
@@ -99,18 +101,18 @@ public class Verlet extends AbstractODESolver {
     ode.getRate(state, rate1); // get the initial rate
     double dt2 = stepSize*stepSize; // the step size squared
     // increment the positions using the velocity and acceleration
-    for(int i = 0;i<numEqn-1;i += 2) {
+    for(int i = 0;i<numPhaseEqn;i += 2) {
       state[i] += stepSize*rate1[i]+dt2*rate1[i+1]/2;
     }
     rateCounter = 1; // getRate has been called once
     ode.getRate(state, rate2); // rate at the new positions
     rateCounter = 2; // getRate has been called twice
-    for(int i = 1;i<numEqn;i += 2) {
+    for(int i = 0;i<numPhaseEqn;i += 2) {
       // increment the velocities with the average rate
-      state[i] += stepSize*(rate1[i]+rate2[i])/2.0;
+      state[i+1] += stepSize*(rate1[i+1]+rate2[i+1])/2.0;
     }
-    if(numEqn%2==1) {                              // last equation if  we have an odd number of equations
-      state[numEqn-1] += stepSize*rate1[numEqn-1]; // usually the independent variable
+    for (int i = numPhaseEqn;i<numEqn;i += 2) {
+      state[i] += stepSize*rate1[i];
     }
     return stepSize;
   }
