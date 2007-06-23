@@ -39,14 +39,15 @@ public class CobbAnderson extends Simulation {
 	
 	
 	public CobbAnderson() {
-		params.add("Length", 20.0);
-		params.add("Density A", 0.05);
-		params.add("Density B", 0.2);
+		params.add("Length", 50.0);
+		params.add("Density A", 0.15);
+		params.add("Density B", 0.05);
 		params.add("Radius A", 1.0);
-		params.add("Radius B", 0.5);
+		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
-		params.add("dt", 0.002);
-		params.add("time");
+		params.addm("dt", 0.05);
+		params.addm("Temperature", 1.0);
+		params.add("Time");
 	}
 	
 	
@@ -55,16 +56,18 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	public void animate() {
-		params.set("time", format(phase[4*(NA+NB)]));
+		solver.setStepSize(params.fget("dt"));
+		params.set("Time", format(phase[4*(NA+NB)]));
 		
+		double scale = pow(2, 1/6.);
 		Bounds bounds = new Bounds(0, L, 0, L);
-		Particle2DGraphics particlesA = new Particle2DGraphics(RA, bounds, Color.BLUE);
+		Particle2DGraphics particlesA = new Particle2DGraphics(scale*RA, bounds, Color.BLUE);
 		particlesA.setPoints(phase, 2, 0, NA);
-		Particle2DGraphics particlesB = new Particle2DGraphics(RB, bounds, Color.GREEN);
+		Particle2DGraphics particlesB = new Particle2DGraphics(scale*RB, bounds, Color.GREEN);
 		particlesB.setPoints(phase, 2, NA, NA+NB);
 		
 		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
-		voronoi.setPoints(phase, 2, 0, NA);
+//		voronoi.setPoints(phase, 2, 0, NA);
 		
 		canvas.removeAllGraphics();
 		canvas.addGraphics(particlesA);
@@ -98,7 +101,7 @@ public class CobbAnderson extends Simulation {
 			}
 		};
 		
-		solver = new Verlet(ode);
+		solver = new Verlet(ode, 4*(NA+NB));
 		solver.initialize(params.fget("dt"));
 		while (true) {
 			solver.step();
