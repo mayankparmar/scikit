@@ -30,10 +30,14 @@ public class CobbAnderson extends Simulation {
 	double RA, RB; // radius of particles
 	double MA, MB; // mass of particles
 	double epsilon;
+	double T;
+	double Q;
 	
 	// complete state of configuration.  4N+1 elements: positions, velocities, time.
 	// packed as: (x_1, vx_1, y_1, vy_1, ..., time)
 	double[] phase;
+	int timeOffset, gammaOffset;
+	
 	Verlet solver;
 	PointGrid2D gridA, gridB;
 	
@@ -46,8 +50,10 @@ public class CobbAnderson extends Simulation {
 		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
 		params.addm("dt", 0.05);
-		params.addm("Temperature", 1.0);
+		params.addm("Temperature", 0.3);
+		params.addm("Bath coupling", 0.1);
 		params.add("Time");
+		params.add("Gamma");
 	}
 	
 	
@@ -57,7 +63,10 @@ public class CobbAnderson extends Simulation {
 	
 	public void animate() {
 		solver.setStepSize(params.fget("dt"));
-		params.set("Time", format(phase[4*(NA+NB)]));
+		T = params.fget("Temperature");
+		Q = params.fget("Bath coupling");
+		params.set("Time", format(phase[timeOffset]));
+		params.set("Gamma", format(phase[gammaOffset]));
 		
 		double scale = pow(2, 1/6.);
 		Bounds bounds = new Bounds(0, L, 0, L);
@@ -84,11 +93,18 @@ public class CobbAnderson extends Simulation {
 		MA = PI*RA*RA;
 		MB = PI*RB*RB;
 		epsilon = params.fget("Epsilon");
+		T = params.fget("Temperature");
+		Q = params.fget("Bath coupling");
 		
 		gridA = new PointGrid2D(L, (int)(sqrt(NA/PARTICLES_PER_CELL)));
 		gridB = new PointGrid2D(L, (int)(sqrt(NB/PARTICLES_PER_CELL)));
-		phase = new double[4*(NA+NB)+1];
+		phase = new double[4*(NA+NB)+2];
 		initializeParticles();
+		
+		timeOffset  = 4*(NA+NB)+0;
+		gammaOffset = 4*(NA+NB)+1;
+		phase[timeOffset] = 0;
+		phase[gammaOffset] = 0;
 		
 		Job.addDisplay(canvas);
 		
@@ -120,7 +136,20 @@ public class CobbAnderson extends Simulation {
 		if (solver.getRateCounter() == 1)
 			calculateForces(state, rate);
 		
-		rate[4*(NA+NB)] = 1;
+		rate[timeOffset] = 1;
+		rate[gammaOffset] = Q*(kineticEnergy() - (2/2)*(NA+NB)*T)/(NA+NB);
+	}
+	
+	
+	private double kineticEnergy() {
+		double K = 0;
+		for (int i = 0; i < NA+NB; i++) {
+			double M = i < NA ? MA : MB;
+			double vx = phase[4*i+1];
+			double vy = phase[4*i+3];
+			K += 0.5*M*(vx*vx+vy*vy);
+		}
+		return K;
 	}
 	
 	
@@ -136,6 +165,8 @@ public class CobbAnderson extends Simulation {
 			rate[4*i+3] = 0;
 			accumulateForces(i, state, rate, (R+RA), M, gridA);
 			accumulateForces(i, state, rate, (R+RB), M, gridB);
+			rate[4*i+1] -= phase[gammaOffset]*state[4*i+1]; // nose-hoover drag term
+			rate[4*i+3] -= phase[gammaOffset]*state[4*i+3];
 		}
 	}
 	

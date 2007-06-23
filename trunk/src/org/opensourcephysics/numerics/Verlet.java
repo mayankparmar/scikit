@@ -111,7 +111,7 @@ public class Verlet extends AbstractODESolver {
       // increment the velocities with the average rate
       state[i+1] += stepSize*(rate1[i+1]+rate2[i+1])/2.0;
     }
-    for (int i = numPhaseEqn;i<numEqn;i += 2) {
+    for (int i = numPhaseEqn;i<numEqn;i++) {
       state[i] += stepSize*rate1[i];
     }
     return stepSize;
