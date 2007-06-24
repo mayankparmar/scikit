@@ -9,23 +9,17 @@ import scikit.util.Bounds;
 
 public class Plot extends Canvas2D {
 	enum Style {LINES, MARKS, BARS};
+	Graphics _tickMarks = new TickMarks(_canvas);
 	
 	public Plot() {
 		super();
-		drawables.add(new TickMarks(canvas));
 	}
 	
 	public Plot(String title) {
 		this();
-		scikit.util.Utilities.frame(canvas, title);
+		scikit.util.Utilities.frame(_canvas, title);
 	}
-	
-	
-	public void removeAllGraphics() {
-		super.removeAllGraphics();
-		drawables.add(new TickMarks(canvas));
-	}
-	
+		
 	public void addPoints(DataSet data, Color color) {
 		addDataset(data, color, Style.MARKS);
 	}
@@ -39,9 +33,15 @@ public class Plot extends Canvas2D {
 	}
 	
 	
+	protected void drawAllGraphics(GL gl, Bounds bounds) {
+		_tickMarks.draw(gl, bounds);
+		super.drawAllGraphics(gl, bounds);
+	}
+	
+	
 	private void addDataset(DataSet data, Color color, Style style) {
 		DatasetGraphics gfx = new DatasetGraphics(data, color, style);
-		drawables.add(gfx);
+		_drawables.add(gfx);
 		// register gfx pulldown save dialog
 	}
 	
