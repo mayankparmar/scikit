@@ -16,7 +16,7 @@ import scikit.util.Bounds;
 
 public class Canvas implements Display {
 	protected GLCanvas _canvas;
-	protected Vector<Graphics> _drawables = new Vector<Graphics>();
+	protected Vector<Graphics> _graphics = new Vector<Graphics>();
 	protected Bounds _curBounds = new Bounds();
 	
 	
@@ -67,18 +67,18 @@ public class Canvas implements Display {
 	}
 	
 	public void removeAllGraphics() {
-		_drawables.clear();
+		_graphics.clear();
 	}
 	
-	public void addGraphics(Graphics d) {
-		_drawables.add(d);
+	public void addGraphics(Graphics g) {
+		_graphics.add(g);
 	}
 	
 	
 	protected Bounds getCurrentBounds() {
 		Bounds bounds = new Bounds();
-		for (Graphics drawable : _drawables)
-			bounds = (Bounds)bounds.createUnion(drawable.getBounds());
+		for (Graphics g : _graphics)
+			bounds = (Bounds)bounds.createUnion(g.getBounds());
 		
 		// extend bounds a little bit
 		double w = bounds.xmax - bounds.xmin;
@@ -97,8 +97,8 @@ public class Canvas implements Display {
 	
 	
 	protected void drawAllGraphics(GL gl, Bounds bounds) {
-		for (Graphics drawable : _drawables) {
-			drawable.draw(gl, bounds);
+		for (Graphics g : _graphics) {
+			g.draw(gl, bounds);
 		}	
 	}
 	

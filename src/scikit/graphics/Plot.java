@@ -40,9 +40,9 @@ public class Plot extends Canvas2D {
 	
 	
 	private void addDataset(DataSet data, Color color, Style style) {
-		DatasetGraphics gfx = new DatasetGraphics(data, color, style);
-		_drawables.add(gfx);
-		// register gfx pulldown save dialog
+		DatasetGraphics g = new DatasetGraphics(data, color, style);
+		addGraphics(g);
+		// register pulldown save dialog for dataset?
 	}
 	
 	
