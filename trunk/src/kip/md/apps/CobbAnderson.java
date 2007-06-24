@@ -10,6 +10,7 @@ import kip.util.*;
 import scikit.dataset.DynamicArray;
 import scikit.graphics.*;
 import scikit.jobs.*;
+import scikit.params.ChoiceValue;
 import scikit.util.Bounds;
 import static scikit.util.Utilities.format;
 import org.opensourcephysics.numerics.*;
@@ -23,6 +24,7 @@ public class CobbAnderson extends Simulation {
 	Canvas2D canvas = new Canvas2D("Particles");
 	Random rand = new Random();
 	
+	boolean onDisk;
 	int NA, NB;		// number of particles
 	double L;		// system length
 	// lennard jones parameters
@@ -44,6 +46,7 @@ public class CobbAnderson extends Simulation {
 	
 	
 	public CobbAnderson() {
+		params.add("Topology", new ChoiceValue("Torus", "Disk"));
 		params.add("Length", 50.0);
 		params.add("Density A", 0.15);
 		params.add("Density B", 0.05);
@@ -77,18 +80,21 @@ public class CobbAnderson extends Simulation {
 		particlesB.setPoints(phase, 2, NA, NA+NB);
 		
 		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
-//		voronoi.construct(phase, 2, 0, NA+NB);
+		voronoi.construct(phase, 2, 0, NA+NB);
 		
 		canvas.removeAllGraphics();
 		canvas.addGraphics(particlesA);
 		canvas.addGraphics(particlesB);
+		canvas.addGraphics(onDisk ? new CircleGraphics(L/2., L/2., L/2.) : new RectangleGraphics(0., 0., L, L));
 		canvas.addGraphics(voronoi);
 	}
 	
 	public void run() {
+		onDisk = params.sget("Topology").equals("Disk");
 		L = params.fget("Length");
-		NA = (int) (params.fget("Density A")*L*L);
-		NB = (int) (params.fget("Density B")*L*L);
+		double area = onDisk ? (PI*(L/2.)*(L/2.)) : L*L;
+		NA = (int) (params.fget("Density A")*area);
+		NB = (int) (params.fget("Density B")*area);
 		RA = params.fget("Radius A");
 		RB = params.fget("Radius B");
 		MA = PI*RA*RA;
@@ -99,8 +105,10 @@ public class CobbAnderson extends Simulation {
 		
 		gridA = new PointGrid2D(L, (int)(sqrt(NA/PARTICLES_PER_CELL)));
 		gridB = new PointGrid2D(L, (int)(sqrt(NB/PARTICLES_PER_CELL)));
+		gridA.usePeriodicBoundaryConditions(!onDisk);
+		gridB.usePeriodicBoundaryConditions(!onDisk);
 		phase = new double[4*(NA+NB)+2];
-		initializeParticlesInDisk();
+		if (onDisk) initializeParticlesInDisk(); else initializeParticlesInSquare();
 		
 		timeOffset  = 4*(NA+NB)+0;
 		gammaOffset = 4*(NA+NB)+1;
@@ -164,14 +172,17 @@ public class CobbAnderson extends Simulation {
 			
 			rate[4*i+1] = 0;
 			rate[4*i+3] = 0;
-			accumulateForces(i, state, rate, (R+RA), M, gridA);
-			accumulateForces(i, state, rate, (R+RB), M, gridB);
+			accumulatePairwiseForces(i, state, rate, (R+RA), M, gridA);
+			accumulatePairwiseForces(i, state, rate, (R+RB), M, gridB);
+			if (onDisk)
+				accumulateBoundaryForces(i, state, rate, R, M);
+			
 			rate[4*i+1] -= phase[gammaOffset]*state[4*i+1]; // nose-hoover drag term
 			rate[4*i+3] -= phase[gammaOffset]*state[4*i+3];
 		}
 	}
 	
-	private void accumulateForces(int i, double[] state, double[] rate, double sigma, double M, PointGrid2D grid) {
+	private void accumulatePairwiseForces(int i, double[] state, double[] rate, double sigma, double M, PointGrid2D grid) {
 		double x = state[4*i+0];
 		double y = state[4*i+2];		
 		DynamicArray ns = grid.pointOffsetsWithinRange(x, y, sigma*SIGMA_CUTOFF);
@@ -192,6 +203,25 @@ public class CobbAnderson extends Simulation {
 		}
 	}
 	
+	private void accumulateBoundaryForces(int i, double[] state, double[] rate, double sigma, double M) {
+		double boundaryRadius = L/2.;
+		double xc = state[4*i+0] - L/2.;
+		double yc = state[4*i+2] - L/2.;
+		double distanceFromCenter = sqrt(xc*xc + yc*yc);
+		double dx = xc*(boundaryRadius/distanceFromCenter - 1);
+		double dy = yc*(boundaryRadius/distanceFromCenter - 1);
+		double r = boundaryRadius - distanceFromCenter;
+		if (r < sigma*SIGMA_CUTOFF) {
+			double a = sigma/r;
+			double a3 = a*a*a;
+			double a6 = a3*a3;
+			double a12 = a6*a6;
+			double LJ = 4*epsilon*(12*a12-6*a6)/(r*r);
+			rate[4*i+1] -= dx*LJ/M; // accumulate force_x
+			rate[4*i+3] -= dy*LJ/M; // accumulate force_y
+		}
+	}
+	
 	private void initializeParticlesInSquare() {
 		int rootN = (int)ceil(sqrt(NA+NB));
 		double dx = L/rootN;
@@ -207,7 +237,7 @@ public class CobbAnderson extends Simulation {
 	}
 	
 	private void initializeParticlesInDisk() {
-		double R = L/2. - 2*max(RA, RB);
+		double R = L/2. - max(RA, RB);
 		int N = NA+NB;
 		int cntA = 0, cntB = 0;
 		for (int i = 0; i < N; i++) {
