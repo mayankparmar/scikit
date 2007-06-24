@@ -10,6 +10,7 @@ public class PointGrid2D {
 	private int _cols;
 	private double _dx;
 	private DynamicArray _cells[];
+	private boolean _periodic = true;
 	
 	@SuppressWarnings(value={"unchecked"})
 	public PointGrid2D(double L, int cols) {
@@ -21,6 +22,10 @@ public class PointGrid2D {
 			_cells[i] = new DynamicArray();
 	}
 	
+	
+	public void usePeriodicBoundaryConditions(boolean periodic) {
+		_periodic = periodic;
+	}
 	
 	public void clear() {
 		for (DynamicArray e : _cells)
@@ -56,8 +61,15 @@ public class PointGrid2D {
 		for (int di = -imax; di <= imax; di++) {
 			for (int dj = -imax; dj <= imax; dj++) {
 				if (di*di + dj*dj <= d2Cutoff) {
-					int i2 = (i1+di+_cols)%_cols;
-					int j2 = (j1+dj+_cols)%_cols;
+					int i2 = i1+di;
+					int j2 = j1+dj;
+					if (_periodic) {
+						i2 = (i2+_cols)%_cols;
+						j2 = (j2+_cols)%_cols;						
+					}
+					else if (min(i2,j2) < 0 || max(i2,j2) >= _cols) {
+						continue;
+					}
 					
 					DynamicArray cell = _cells[_cols*j2+i2];
 					for (int n = 0; n < cell.size()/2; n++) {
