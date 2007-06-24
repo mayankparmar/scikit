@@ -1,5 +1,7 @@
 package kip.md.apps;
 
+import geometry.VoronoiGraphics;
+
 import java.awt.Color;
 import static java.lang.Math.*;
 
@@ -12,7 +14,6 @@ import scikit.util.Bounds;
 import static scikit.util.Utilities.format;
 import org.opensourcephysics.numerics.*;
 
-import delaunay.VoronoiGraphics;
 
 
 public class CobbAnderson extends Simulation {
@@ -76,7 +77,7 @@ public class CobbAnderson extends Simulation {
 		particlesB.setPoints(phase, 2, NA, NA+NB);
 		
 		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
-//		voronoi.setPoints(phase, 2, 0, NA);
+//		voronoi.construct(phase, 2, 0, NA+NB);
 		
 		canvas.removeAllGraphics();
 		canvas.addGraphics(particlesA);
@@ -99,7 +100,7 @@ public class CobbAnderson extends Simulation {
 		gridA = new PointGrid2D(L, (int)(sqrt(NA/PARTICLES_PER_CELL)));
 		gridB = new PointGrid2D(L, (int)(sqrt(NB/PARTICLES_PER_CELL)));
 		phase = new double[4*(NA+NB)+2];
-		initializeParticles();
+		initializeParticlesInDisk();
 		
 		timeOffset  = 4*(NA+NB)+0;
 		gammaOffset = 4*(NA+NB)+1;
@@ -191,7 +192,7 @@ public class CobbAnderson extends Simulation {
 		}
 	}
 	
-	private void initializeParticles() {
+	private void initializeParticlesInSquare() {
 		int rootN = (int)ceil(sqrt(NA+NB));
 		double dx = L/rootN;
 		int cntA = 0, cntB = 0;
@@ -204,7 +205,29 @@ public class CobbAnderson extends Simulation {
 				initializeParticle(NA+cntB++, x, y);
 		}
 	}
-
+	
+	private void initializeParticlesInDisk() {
+		double R = L/2. - 2*max(RA, RB);
+		int N = NA+NB;
+		int cntA = 0, cntB = 0;
+		for (int i = 0; i < N; i++) {
+			// these expressions for radius and angle were derived to give a spiral trajectory
+			// in which the radial distance between loops has a fixed length, and the "velocity"
+			// is constant. here the particle number, i, plays the role of "time".
+			// it is somewhat surprising that the angle a(t) is independent of the bounding radius R
+			// and total particle number N.
+			double r = R * sqrt((double)(i+1) / N);
+			double a = 2 * sqrt(PI * (i+1));
+			
+			double x = L/2. + r*cos(a);
+			double y = L/2. + r*sin(a);
+			if (cntA*NB <= cntB*NA && NA != 0)
+				initializeParticle(cntA++, x, y);
+			else
+				initializeParticle(NA+cntB++, x, y);			
+		}
+	}
+	
 	private void initializeParticle(int i, double x, double y) {
 		phase[4*i+0] = x;
 		phase[4*i+1] = 0;
