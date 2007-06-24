@@ -6,8 +6,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import static java.lang.Math.*;
 import scikit.util.*;
 
 
@@ -26,13 +24,13 @@ public class Canvas2D extends Canvas {
 	
 	public Canvas2D() {
 		super();
-		canvas.addMouseListener(_mouseListener);
-		canvas.addMouseMotionListener(_mouseMotionListener);		
+		_canvas.addMouseListener(_mouseListener);
+		_canvas.addMouseMotionListener(_mouseMotionListener);		
 	}
 	
 	public Canvas2D(String title) {
 		this();
-		scikit.util.Utilities.frame(canvas, title);
+		scikit.util.Utilities.frame(_canvas, title);
 	}
 	
 	public void clear() {
@@ -65,35 +63,20 @@ public class Canvas2D extends Canvas {
 			return _curBounds.createUnion(_topBounds, super.getCurrentBounds());			
 	}
 	
-	protected void display(GL gl) {
-		super.display(gl);
-		
-		if (_selectionActive) {
-			gl.glMatrixMode( GL.GL_PROJECTION );
-			gl.glLoadIdentity(); // TODO necessary?
-			(new GLU()).gluOrtho2D(0, canvas.getWidth(), 0, canvas.getHeight());
-			gl.glMatrixMode(GL.GL_MODELVIEW);
-			gl.glLoadIdentity();
-			
-			gl.glColor4f(0.3f, 0.6f, 0.5f, 0.2f);
-			gl.glBegin(GL.GL_QUADS);
-			gl.glVertex2d(_selectionStart.x, _selectionStart.y);
-			gl.glVertex2d(_selectionStart.x, _selectionEnd.y);
-			gl.glVertex2d(_selectionEnd.x, _selectionEnd.y);
-			gl.glVertex2d(_selectionEnd.x, _selectionStart.y);
-			gl.glEnd();
-		}
+	protected void drawAllGraphics(GL gl, Bounds bounds) {
+		super.drawAllGraphics(gl, bounds);
+		_selectionGraphics.draw(gl, bounds);
 	}
 	
 	private Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
-		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / canvas.getWidth();
-		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / canvas.getHeight();
+		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
+		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _canvas.getHeight();
 		return new Point(x, y);
 	}
 	
 	private Point eventToPix(MouseEvent event) {
-		return new Point(event.getX()-1, canvas.getHeight()-event.getY()+1);
+		return new Point(event.getX()-1, _canvas.getHeight()-event.getY()+1);
 	}
 	
 	private MouseListener _mouseListener = new MouseAdapter() {
@@ -113,21 +96,50 @@ public class Canvas2D extends Canvas {
 		}
 		public void mouseReleased(MouseEvent event) {
 			if (_selectionActive) {
-				double dx = _selectionEnd.x - _selectionStart.x;
-				double dy = _selectionEnd.y - _selectionStart.y;
-				if (abs(dx) > 4 && abs(dy) > 4) {
+				Bounds bds = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));
+				if (bds.getWidth() > _curBounds.getWidth()/128 &&
+					bds.getHeight() > _curBounds.getHeight()/128) {
 					_zoomed = true;
-					_curBounds = new Bounds(pixToCoord(_selectionStart), pixToCoord(_selectionEnd));
+					_curBounds = bds;
 				}
 				_selectionActive = false;
 				animate();
 			}
 		}
 	};
+	
 	private MouseMotionListener _mouseMotionListener = new MouseMotionAdapter() {
 		public void mouseDragged(MouseEvent event) {
 			_selectionEnd = eventToPix(event);
 			animate();
+		}
+	};
+	
+	private Graphics _selectionGraphics = new Graphics() {
+		public void draw(GL gl, Bounds bounds) {
+			if (_selectionActive) {
+				Point start = pixToCoord(_selectionStart);
+				Point end = pixToCoord(_selectionEnd);
+
+				gl.glColor4f(0.3f, 0.6f, 0.4f, 0.2f);
+				gl.glBegin(GL.GL_QUADS);
+				gl.glVertex2d(start.x, start.y);
+				gl.glVertex2d(start.x, end.y);
+				gl.glVertex2d(end.x, end.y);
+				gl.glVertex2d(end.x, start.y);
+				gl.glEnd();
+
+				gl.glColor4f(0.2f, 0.2f, 0.2f, 0.7f);
+				gl.glBegin(GL.GL_LINE_LOOP);
+				gl.glVertex2d(start.x, start.y);
+				gl.glVertex2d(start.x, end.y);
+				gl.glVertex2d(end.x, end.y);
+				gl.glVertex2d(end.x, start.y);
+				gl.glEnd();
+			}
+		}
+		public Bounds getBounds() {
+			return new Bounds();
 		}
 	};
 }

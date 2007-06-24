@@ -14,31 +14,34 @@ import scikit.jobs.Display;
 import scikit.util.Bounds;
 
 
-
-
 public class Canvas implements Display {
-	protected GLCanvas canvas;
-	protected Vector<Graphics> drawables = new Vector<Graphics>();
+	protected GLCanvas _canvas;
+	protected Vector<Graphics> _drawables = new Vector<Graphics>();
 	protected Bounds _curBounds = new Bounds();
 	
 	
 	public Canvas() {
 		GLCapabilities capabilities = new GLCapabilities();
-		capabilities.setSampleBuffers(true);
-		capabilities.setNumSamples(2);
-		canvas = new GLCanvas(capabilities);
-		canvas.addGLEventListener(new EventListener());
-		canvas.setPreferredSize(new Dimension(300, 300));
+		
+		// For some unknown reason, enabling GL "sample buffers" actually make anti-aliased lines
+		// look much worse on OS X. I guess it disables custom anti-aliasing code.
+		//
+		// capabilities.setSampleBuffers(true);
+		// capabilities.setNumSamples(4);
+		
+		_canvas = new GLCanvas(capabilities);
+		_canvas.addGLEventListener(new EventListener());
+		_canvas.setPreferredSize(new Dimension(300, 300));
 	}
 	
 	public Canvas(String title) {
 		this();
-		scikit.util.Utilities.frame(canvas, title);
+		scikit.util.Utilities.frame(_canvas, title);
 	}
 	
 	
 	public GLCanvas getCanvas() {
-		return canvas;
+		return _canvas;
 	}
 	
 	public void animate() {
@@ -53,7 +56,7 @@ public class Canvas implements Display {
 		//
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				canvas.display();
+				_canvas.display();
 			}
 		});		
 	}
@@ -64,17 +67,17 @@ public class Canvas implements Display {
 	}
 	
 	public void removeAllGraphics() {
-		drawables.clear();
+		_drawables.clear();
 	}
 	
 	public void addGraphics(Graphics d) {
-		drawables.add(d);
+		_drawables.add(d);
 	}
 	
 	
 	protected Bounds getCurrentBounds() {
 		Bounds bounds = new Bounds();
-		for (Graphics drawable : drawables)
+		for (Graphics drawable : _drawables)
 			bounds = (Bounds)bounds.createUnion(drawable.getBounds());
 		
 		// extend bounds a little bit
@@ -92,23 +95,24 @@ public class Canvas implements Display {
 		(new GLU()).gluOrtho2D(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
 	}
 	
-	protected void display(GL gl) {
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glLoadIdentity(); // TODO necessary?
-		setProjection(gl, _curBounds);
-		
-		gl.glMatrixMode(GL.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
-		for (Graphics drawable : drawables) {
-			drawable.draw(gl, _curBounds);
-		}
-	}
 	
+	protected void drawAllGraphics(GL gl, Bounds bounds) {
+		for (Graphics drawable : _drawables) {
+			drawable.draw(gl, bounds);
+		}	
+	}
 	
 	private class EventListener implements GLEventListener {
 		public void display(GLAutoDrawable glDrawable) {
-			Canvas.this.display(glDrawable.getGL());
+			GL gl = glDrawable.getGL();
+			gl.glMatrixMode( GL.GL_PROJECTION );
+			gl.glLoadIdentity(); // TODO necessary?
+			setProjection(gl, _curBounds);
+			
+			gl.glMatrixMode(GL.GL_MODELVIEW);
+			gl.glLoadIdentity();
+			gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+			drawAllGraphics(gl, _curBounds);
 		}
 
 		public void displayChanged(GLAutoDrawable gLDrawable, boolean modeChanged, boolean deviceChanged) {
@@ -118,10 +122,11 @@ public class Canvas implements Display {
 		public void init(GLAutoDrawable glDrawable) {
 			GL gl = glDrawable.getGL();
 			gl.glClearColor(1f, 1f, 1f, 0.0f);
-			gl.glEnable(GL.GL_LINE_SMOOTH);
 			gl.glEnable(GL.GL_BLEND);
 			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-			gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+			gl.glEnable(GL.GL_LINE_SMOOTH);
+			// gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+			// gl.glEnable(GL.GL_DEPTH_TEST);
 		}
 		
 		public void reshape(GLAutoDrawable glDrawable, int x, int y, int width, int height) {
