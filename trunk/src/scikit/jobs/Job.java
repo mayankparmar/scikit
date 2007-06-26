@@ -27,15 +27,19 @@ public class Job {
 	}
 	
 	public void step() {
-		createThread();
 		state = State.STEP;
-		coop.triggerProcessingLoop();
+		if (thread == null)
+			createThread();
+		else
+			coop.triggerProcessingLoop();
 	}
 	
 	public void start() {
-		createThread();
 		state = State.RUN;
-		coop.triggerProcessingLoop();
+		if (thread == null)
+			createThread();
+		else
+			coop.triggerProcessingLoop();
 	}
 	
 	public void stop() {
@@ -120,15 +124,14 @@ public class Job {
 		for (Display disp : displays) {
 			disp.clear();
 		}
-	}	
+	}
 
 	private static Job current() {
 		return current;
 	}
 	
 	private void createThread() {
-		if (thread != null)
-			return;
+		assert (thread == null);
 		thread = new Thread(new Runnable() {
 			public void run() {
 				try {
