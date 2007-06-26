@@ -5,12 +5,14 @@ public class SpinBlocks2D {
 	SpinBlockIndexer indexer;
 	int[] xIndices, yIndices;
 	int[/*yscale*/][/*xscale*/][] blocks;
+	int netSum;	
 	public int N, L, R;
 	
 	public SpinBlocks2D(int L, int R) {
 		this.L = L;
 		this.R = R;
 		N = L*L;
+		netSum = N;
 		
 		indexer = new SpinBlockIndexer(L, R);
 		int maxScale = indexer.maxScale();
@@ -29,6 +31,10 @@ public class SpinBlocks2D {
 		}
 	}
 	
+	
+	public int sumAll() {
+		return netSum;
+	}
 	
 	public int sumInRange(int x, int y) {
 		return sumInRange(x-R, x+R, y-R, y+R);
@@ -75,14 +81,21 @@ public class SpinBlocks2D {
 				blocks[yscale][xscale][yind*(L>>xscale) + xind] += dm;
 			}
 		}
+		netSum += dm;
+	}
+	
+	public void set(int x, int y, int s) {
+		assert (s == 1 || s == -1);
+		if (get(x, y) != s)
+			flip(x, y);
 	}
 	
 	public int get(int x, int y) {
 		return blocks[0][0][y*L+x];
 	}
 	
-	public int[] getAll() {
-		return blocks[0][0];
+	public int[] blocksAtScale(int scale) {
+		return blocks[scale][scale];
 	}
 }
 

@@ -75,9 +75,9 @@ import java.io.Serializable;
  */
 public class Random implements Serializable, Cloneable
 {
-   public Object clone() {
+   public Random clone() {
       try {
-         return super.clone();
+         return (Random)super.clone();
       } catch (Exception e) {
          return null;
       }
