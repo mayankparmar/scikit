@@ -23,7 +23,8 @@ public class IsingLRApp extends Simulation {
 	IsingLR sim;
 	
 	public IsingLRApp() {
-		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
+		params.addm("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
+		params.addm("Scale colors", new ChoiceValue("False", "True"));
 		params.add("Random seed", 0);
 		params.add("L", 1<<8);
 		params.add("R", 1<<4);
@@ -40,8 +41,10 @@ public class IsingLRApp extends Simulation {
 		sim.setParameters(params);
 		
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
-		fieldDisplay.setScale(-1, 1);
-		
+		if (params.sget("Scale colors").equals("False"))
+			fieldDisplay.setScale(-1, 1);
+		else
+			fieldDisplay.setAutoScale();
 		structureDisplay.setDataSet(0, structure.getAccumulator());
 	}
 	
@@ -62,7 +65,7 @@ public class IsingLRApp extends Simulation {
 			}
 			lastUpdate = sim.time();
 			structure.getAccumulator().clear();
-			structure.accumulate(sim.getField(dx));
+//			structure.accumulate(sim.getField(dx));
 			Job.animate();
 		}
 	}

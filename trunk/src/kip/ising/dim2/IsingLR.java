@@ -20,16 +20,6 @@ public class IsingLR extends RewindableDynamics {
 
 	
 	public IsingLR(Parameters params) {
-		String dyn = params.sget("Dynamics", "Ising Glauber");
-		if (dyn.equals("Ising Glauber"))
-			dynamics = DynType.GLAUBER;
-		else if (dyn.equals("Ising Metropolis"))
-			dynamics = DynType.METROPOLIS;
-		else if (dyn.equals("Kawasaki Glauber"))
-			dynamics = DynType.KAWA_GLAUBER;
-		else if (dyn.equals("Kawasaki Metropolis"))
-			dynamics = DynType.KAWA_METROPOLIS;
-		
 		L = Integer.highestOneBit(params.iget("L"));
 		params.set("L", L);
 		R = min(params.iget("R"), L/2-1);
@@ -42,6 +32,16 @@ public class IsingLR extends RewindableDynamics {
 	
 	
 	public void setParameters(Parameters params) {
+		String dyn = params.sget("Dynamics", "Ising Glauber");
+		if (dyn.equals("Ising Glauber"))
+			dynamics = DynType.GLAUBER;
+		else if (dyn.equals("Ising Metropolis"))
+			dynamics = DynType.METROPOLIS;
+		else if (dyn.equals("Kawasaki Glauber"))
+			dynamics = DynType.KAWA_GLAUBER;
+		else if (dyn.equals("Kawasaki Metropolis"))
+			dynamics = DynType.KAWA_METROPOLIS;
+		
 		dt = params.fget("dt");
 		T  = params.fget("T");
 		J  = params.fget("J", 1);
@@ -94,7 +94,7 @@ public class IsingLR extends RewindableDynamics {
 				return dE <= 0 || random.nextDouble() < Math.exp(-dE/T);
 			case GLAUBER:
 			case KAWA_GLAUBER:
-				return random.nextDouble() < exp(-dE/T)/(1+exp(-dE/T));
+				return (dE <= 0 && T == 0) || random.nextDouble() < exp(-dE/T)/(1+exp(-dE/T));
 			default:
 				assert false;
 		}
