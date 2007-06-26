@@ -61,6 +61,7 @@ abstract class AbstractGrid extends JComponent implements Display {
     public void clear() {
         _image = null;
         _pixelArray = null;
+        _w = _h = 0;
         repaint();
     }
 
@@ -86,11 +87,12 @@ abstract class AbstractGrid extends JComponent implements Display {
     abstract protected int getColor(int i);
     
     protected void setImageSize(int w, int h) {
-        _w = w;
-        _h = h;
-        _pixelArray = new int[w*h*3];
-        _image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);    
-
+    	if (w != _w || h != _h) {
+    		_w = w;
+    		_h = h;
+    		_pixelArray = new int[w*h*3];
+    		_image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    	}
     }
     
 
