@@ -68,13 +68,17 @@ public class Job {
 		current()._animate();
 	}
 	private void _animate() {
-		assert (Thread.currentThread() == thread);		
+		if (Thread.currentThread() != thread) {
+			throw new IllegalThreadStateException("Job.animate() must be called from simulation thread.");
+		}
 		switch (state) {
 		case STEP:
 		case STOP:
 			state = State.STOP;
-			animateDisplays();
-			coop.pass();
+			do {
+				animateDisplays();
+				coop.pass();
+			} while (state == State.STOP);
 			break;
 			
 		case RUN:
@@ -95,7 +99,9 @@ public class Job {
 		current()._yield();
 	}
 	private void _yield() {
-		assert (Thread.currentThread() == thread);
+		if (Thread.currentThread() != thread) {
+			throw new IllegalThreadStateException("Job.yield() must be called from simulation thread.");
+		}
 		if (System.currentTimeMillis() - lastYield > yieldDelay) {
 			coop.triggerProcessingLoop();
 			coop.pass();
