@@ -2,6 +2,8 @@ package scikit.util;
 
 import static java.lang.Math.abs;
 import java.text.DecimalFormat;
+import java.util.Collection;
+
 import scikit.jobs.Job;
 
 public class Utilities {
@@ -10,7 +12,29 @@ public class Utilities {
 	static public String format(double x) {
 		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
 	}
-		
+	
+	
+	public static int[] integerSequence(int n) {
+		int ret[] = new int[n];
+		for (int i = 0; i < n; i++)
+			ret[i] = n;
+		return ret;
+	}
+	
+	public static int sumArray(int[] n) {
+		int ret = 0;
+		for (int i = 0; i < n.length; i++)
+			ret += n[i];
+		return ret;
+	}
+	
+	public static int[] toArray(Collection<Integer> c) {
+		Integer a[] = c.toArray(new Integer[0]);
+		int[] ret = new int[a.length];
+		for (int i = 0; i < a.length; i++)
+			ret[i] = a[i];
+		return ret;
+	}
 	
 	// utility method for quickly viewing data.
 	private static scikit.plot.Plot debugPlot;
