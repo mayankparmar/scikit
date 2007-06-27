@@ -26,18 +26,20 @@ public class IsingLRApp extends Simulation {
 		params.addm("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
 		params.addm("Scale colors", new ChoiceValue("False", "True"));
 		params.add("Random seed", 0);
-		params.add("L", 1<<8);
-		params.add("R", 1<<4);
+		params.add("L", 1<<9);
+		params.add("R", 1<<5);
 		params.addm("T", 4.0/9.0);
 		params.addm("J", 1.0);
 		params.addm("h", -0.37);
 		params.addm("dt", 0.1);
 		params.add("time");
+		params.add("magnetization");
 	}
 	
 	
 	public void animate() {
 		params.set("time", format(sim.time()));
+		params.set("magnetization", sim.magnetization());
 		sim.setParameters(params);
 		
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
