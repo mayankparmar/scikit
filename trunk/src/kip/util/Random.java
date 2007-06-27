@@ -83,6 +83,24 @@ public class Random implements Serializable, Cloneable
       }
    }
    
+   
+   /**
+    * Randomizes all elements of an array.
+    * 
+    * @param data the array to be randomized
+    */
+   public void randomizeArray(int[] data) {
+	   int len = data.length;
+	   for (int i = 0; i < len-1; i++) {
+		   int r = i + nextInt(len-i);		   
+		   // swap data at indices i and r
+		   int temp = data[r];
+		   data[r] = data[i];
+		   data[i] = temp;
+	   }
+   }
+   
+   
   /**
    * True if the next nextGaussian is available.  This is used by
    * nextGaussian, which generates two gaussian numbers by one call,
