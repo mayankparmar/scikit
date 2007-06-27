@@ -20,6 +20,7 @@ import org.opensourcephysics.numerics.*;
 public class CobbAnderson extends Simulation {
 	private final double PARTICLES_PER_CELL = 1;
 	private final double SIGMA_CUTOFF = 3;
+	private final double DENSITY = 1;
 	
 	Canvas2D canvas = new Canvas2D("Particles");
 	Random rand = new Random();
@@ -27,9 +28,9 @@ public class CobbAnderson extends Simulation {
 	boolean onDisk;
 	int NA, NB;		// number of particles
 	double L;		// system length
-	// lennard jones parameters
-	// V(r) = 4 eps [ (sig/r)^12 - (sig/r)^6 ]
-	// where sigma is the sum of radii
+	// lennard jones, uses an unusual convention for sigma:
+	// V(r) = 4 eps [ (sig/r)^12 - 2 (sig/r)^6 ]
+	// where sigma is the sum of two particle radii
 	double RA, RB; // radius of particles
 	double MA, MB; // mass of particles
 	double epsilon;
@@ -48,8 +49,8 @@ public class CobbAnderson extends Simulation {
 	public CobbAnderson() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
 		params.add("Length", 50.0);
-		params.add("Density A", 0.15);
-		params.add("Density B", 0.05);
+		params.add("Area fraction A", 0.5);
+		params.add("Area fraction B", 0.1);
 		params.add("Radius A", 1.0);
 		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
@@ -72,15 +73,14 @@ public class CobbAnderson extends Simulation {
 		params.set("Time", format(phase[timeOffset]));
 		params.set("Gamma", format(phase[gammaOffset]));
 		
-		double scale = pow(2, 1/6.);
 		Bounds bounds = new Bounds(0, L, 0, L);
-		Particle2DGraphics particlesA = new Particle2DGraphics(scale*RA, bounds, Color.BLUE);
+		Particle2DGraphics particlesA = new Particle2DGraphics(RA, bounds, Color.BLUE);
 		particlesA.setPoints(phase, 2, 0, NA);
-		Particle2DGraphics particlesB = new Particle2DGraphics(scale*RB, bounds, Color.GREEN);
+		Particle2DGraphics particlesB = new Particle2DGraphics(RB, bounds, Color.GREEN);
 		particlesB.setPoints(phase, 2, NA, NA+NB);
 		
 		VoronoiGraphics voronoi = new VoronoiGraphics(bounds);		
-		voronoi.construct(phase, 2, 0, NA+NB);
+//		voronoi.construct(phase, 2, 0, NA+NB);
 		
 		canvas.removeAllGraphics();
 		canvas.addGraphics(particlesA);
@@ -92,13 +92,15 @@ public class CobbAnderson extends Simulation {
 	public void run() {
 		onDisk = params.sget("Topology").equals("Disk");
 		L = params.fget("Length");
-		double area = onDisk ? (PI*(L/2.)*(L/2.)) : L*L;
-		NA = (int) (params.fget("Density A")*area);
-		NB = (int) (params.fget("Density B")*area);
+		double systemArea = onDisk ? (PI*(L/2.)*(L/2.)) : L*L;
 		RA = params.fget("Radius A");
 		RB = params.fget("Radius B");
-		MA = PI*RA*RA;
-		MB = PI*RB*RB;
+		double particleAreaA = PI*RA*RA;
+		double particleAreaB = PI*RB*RB;
+		MA = DENSITY*particleAreaA;
+		MB = DENSITY*particleAreaB;
+		NA = (int) (params.fget("Area fraction A")*systemArea/particleAreaA);
+		NB = (int) (params.fget("Area fraction B")*systemArea/particleAreaB);
 		epsilon = params.fget("Epsilon");
 		T = params.fget("Temperature");
 		Q = params.fget("Bath coupling");
@@ -196,7 +198,7 @@ public class CobbAnderson extends Simulation {
 				double a3 = a*a*a;
 				double a6 = a3*a3;
 				double a12 = a6*a6;
-				double LJ = 4*epsilon*(12*a12-6*a6)/(r*r);
+				double LJ = 4*epsilon*12*(a12-a6)/(r*r);
 				rate[4*i+1] -= dx*LJ/M; // accumulate force_x
 				rate[4*i+3] -= dy*LJ/M; // accumulate force_y
 			}
@@ -216,7 +218,7 @@ public class CobbAnderson extends Simulation {
 			double a3 = a*a*a;
 			double a6 = a3*a3;
 			double a12 = a6*a6;
-			double LJ = 4*epsilon*(12*a12-6*a6)/(r*r);
+			double LJ = 4*epsilon*12*(a12-a6)/(r*r);
 			rate[4*i+1] -= dx*LJ/M; // accumulate force_x
 			rate[4*i+3] -= dy*LJ/M; // accumulate force_y
 		}
