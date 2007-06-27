@@ -1,13 +1,11 @@
 package kip.ising.dim2.apps;
 
 import kip.ising.dim2.IsingLR;
-import kip.clump.dim2.StructureFactor;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
 import static scikit.util.Utilities.format;
 
 
@@ -17,20 +15,19 @@ public class IsingLRApp extends Simulation {
 	}
 	
 	FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
-	Plot structureDisplay = new Plot("Structure Factor", true);
 	int dx;
-	StructureFactor structure;
 	IsingLR sim;
 	
 	public IsingLRApp() {
-		params.addm("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
+		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
 		params.addm("Scale colors", new ChoiceValue("False", "True"));
 		params.add("Random seed", 0);
-		params.add("L", 1<<9);
-		params.add("R", 1<<5);
-		params.addm("T", 4.0/9.0);
-		params.addm("J", 1.0);
-		params.addm("h", -0.37);
+		params.add("L", 1<<8);
+		params.add("R", 1<<4);
+		params.add("Initial magnetization", 0.6);
+		params.addm("T", 0.11);
+		params.addm("J", -1.0);
+		params.addm("h", 0);
 		params.addm("dt", 0.1);
 		params.add("time");
 		params.add("magnetization");
@@ -39,7 +36,7 @@ public class IsingLRApp extends Simulation {
 	
 	public void animate() {
 		params.set("time", format(sim.time()));
-		params.set("magnetization", sim.magnetization());
+		params.set("magnetization", format(sim.magnetization()));
 		sim.setParameters(params);
 		
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
@@ -47,17 +44,15 @@ public class IsingLRApp extends Simulation {
 			fieldDisplay.setScale(-1, 1);
 		else
 			fieldDisplay.setAutoScale();
-		structureDisplay.setDataSet(0, structure.getAccumulator());
 	}
 	
 	
 	public void run() {
 		Job.addDisplay(fieldDisplay);
-		Job.addDisplay(structureDisplay);
 		
 		sim = new IsingLR(params);
+		sim.setField(params.fget("Initial magnetization"));
 		dx = Math.max(Integer.highestOneBit(sim.R)/8, 1);
-		structure = new StructureFactor(sim.L/dx, sim.L, sim.R, 0.1);
 		
 		double lastUpdate = 0;
 		while (true) {
@@ -66,8 +61,6 @@ public class IsingLRApp extends Simulation {
 				Job.animate();
 			}
 			lastUpdate = sim.time();
-			structure.getAccumulator().clear();
-//			structure.accumulate(sim.getField(dx));
 			Job.animate();
 		}
 	}

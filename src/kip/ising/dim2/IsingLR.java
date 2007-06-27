@@ -75,6 +75,14 @@ public class IsingLR extends RewindableDynamics {
 		}
 	}
 
+	public void setField(double m) {
+		double mAcc = 0;
+		for (int i = 0; i < L*L; i++) {
+			int s = (mAcc > i*m) ? -1 : 1;
+			spins.set(i%L, i/L, s);
+			mAcc += s;
+		}
+	}
 	
 	public double[] getField(int dx) {
 		int scale = Integer.numberOfTrailingZeros(dx);
