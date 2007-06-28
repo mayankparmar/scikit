@@ -23,7 +23,7 @@ public class PointGrid2D {
 	}
 	
 	
-	public void usePeriodicBoundaryConditions(boolean periodic) {
+	public void setPeriodic(boolean periodic) {
 		_periodic = periodic;
 	}
 	
