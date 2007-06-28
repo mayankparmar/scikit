@@ -28,15 +28,17 @@ public class CobbAnderson extends Simulation {
 	public CobbAnderson() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
 		params.add("Length", 50.0);
-		params.add("Area fraction A", 0.5);
-		params.add("Area fraction B", 0.1);
+		params.add("Area fraction A", 0.7);
+		params.add("Area fraction B", 0.0);
 		params.add("Radius A", 1.0);
 		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
-		params.addm("dt", 0.02);
-		params.addm("Temperature", 2);
+		params.addm("dt", 0.05);
+		params.addm("Temperature", 1.0);
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
+		params.add("Reduced K.E.");
+//		params.add("Delta");
 	}
 	
 	
@@ -48,6 +50,8 @@ public class CobbAnderson extends Simulation {
 		sim.setStepSize(params.fget("dt"));
 		sim.setTemperature(params.fget("Temperature"), params.fget("Bath coupling"));
 		params.set("Time", format(sim.time()));
+		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
+//		params.set("Delta", format(sim.deltaKinetic));
 		
 		VoronoiGraphics voronoi = new VoronoiGraphics(new Bounds(0, L, 0, L));		
 //		voronoi.construct(phase, 2, 0, NA+NB);
@@ -73,11 +77,13 @@ public class CobbAnderson extends Simulation {
 		NB = (int) (params.fget("Area fraction B")*systemArea/particleAreaB);
 		epsilon = params.fget("Epsilon");
 		
-		sim = new Cobb(L, 2*max(RA, RB));
+		sim = new Cobb(L, 3*2*max(RA, RB));
+		sim.setPeriodic(!inDisk);
 		sim.addParticleType(NA, DENSITY*particleAreaA);
 		sim.addParticleType(NB, DENSITY*particleAreaB);
 		sim.initialize(params.fget("dt"));
 		
+		Job.animate();
 		while (true) {
 			sim.step();
 			Job.animate();
@@ -87,6 +93,20 @@ public class CobbAnderson extends Simulation {
 	class Cobb extends MolecularDynamics2D {
 		public Cobb(double L, double interactionRange) {
 			super(L, interactionRange);
+		}
+		
+		public double getExternalPotential(int type, double x, double y) {
+			if (inDisk) {
+				double R = type == 0 ? RA : RB;
+				double boundaryRadius = L/2.;
+				double xc = x - L/2.;
+				double yc = y - L/2.;
+				double distanceFromCenter = sqrt(xc*xc + yc*yc);
+				double r = boundaryRadius - distanceFromCenter;
+				return lennardJonesPotential(R, r);
+			}
+			else
+				return 0;
 		}
 		
 		public double[] getExternalForce(int type, double x, double y) {
@@ -106,7 +126,13 @@ public class CobbAnderson extends Simulation {
 				return new double[] {0, 0};
 			}
 		}
-
+		
+		public double getPairwisePotential(int type1, int type2, double r) {
+			double R1 = type1 == 0 ? RA : RB;
+			double R2 = type2 == 0 ? RA : RB;
+			return lennardJonesPotential(R1+R2, r);
+		}
+		
 		public double getPairwiseForce(int type1, int type2, double r) {
 			double R1 = type1 == 0 ? RA : RB;
 			double R2 = type2 == 0 ? RA : RB;
@@ -124,6 +150,13 @@ public class CobbAnderson extends Simulation {
 		// lennard jones, uses an unusual convention for sigma:
 		// V(r) = 4 eps [ (sig/r)^12 - 2 (sig/r)^6 ]
 		// where sigma is the sum of two particle radii
+		private double lennardJonesPotential(double sigma, double r) {
+			double a = sigma/r;
+			double a6 = a*a*a*a*a*a;
+			double a12 = a6*a6;
+			return 4*epsilon*(a12 - 2*a6);
+		}
+
 		private double lennardJonesForce(double sigma, double r) {
 			double a = sigma/r;
 			double a6 = a*a*a*a*a*a;
