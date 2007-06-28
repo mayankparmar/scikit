@@ -1,10 +1,6 @@
 package kip.md;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.ceil;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -44,7 +40,9 @@ abstract public class MolecularDynamics2D {
 	protected Verlet solver;
 	
 	abstract public double[] getParticlePositions();
+	abstract public double getPairwisePotential(int type1, int type2, double r);
 	abstract public double getPairwiseForce(int type1, int type2, double r);
+	abstract public double getExternalPotential(int type, double x, double y);
 	abstract public double[] getExternalForce(int type, double x, double y);
 	
 	
@@ -105,8 +103,10 @@ abstract public class MolecularDynamics2D {
 	}
 	
 	public void step() {
+		System.out.println(kineticEnergy() + potentialEnergy());
 		solver.step();
-		correctBounds();		
+//		brownianNoise();
+		correctBounds();
 	}
 	
 	public void setPeriodic(boolean b) {
@@ -127,6 +127,37 @@ abstract public class MolecularDynamics2D {
 		return phase[4*N];
 	}
 	
+	public double potentialEnergy() {
+		double V = 0;
+		for (int type = 0; type < numParticleTypes; type++) {
+			grids.get(type).setPoints(phase, 2, typeToIndex.get(type), typeToIndex.get(type+1));
+			grids.get(type).setPeriodic(periodic);
+		}
+		for (int i = 0; i < N; i++) {
+			int type1 = indexToType.get(i);
+			double x = phase[4*i+0];
+			double y = phase[4*i+2];
+			
+			// accumulate pairwise interactions
+			for (int type2 = 0; type2 < numParticleTypes; type2++) {
+				DynamicArray ns = grids.get(type2).pointOffsetsWithinRange(x, y, interactionRange);
+				for (int j = 0; j < ns.size()/2; j++) {
+					double dx = ns.get(2*j+0);
+					double dy = ns.get(2*j+1);
+					double r = sqrt(dx*dx + dy*dy);
+					if (0 < r) {
+						V += getPairwisePotential(type1, type2, r);
+					}
+				}
+			}
+			
+			// accumulate accelerations due to external forces
+			V += getExternalPotential(type1, x, y);
+		}
+		return V;
+	}
+	
+	
 	public double kineticEnergy() {
 		double K = 0;
 		for (int i = 0; i < N; i++) {
@@ -136,6 +167,10 @@ abstract public class MolecularDynamics2D {
 			K += 0.5*M*(vx*vx+vy*vy);
 		}
 		return K;
+	}
+	
+	public double reducedKineticEnergy() {
+		return (kineticEnergy() - N*T) / N*T;
 	}
 	
 	public Particle2DGraphics getGraphics(int type, double R, Color color) {
@@ -179,6 +214,10 @@ abstract public class MolecularDynamics2D {
 		for (int i = 0; i < N; i++) {
 			phase[4*i+0] = (phase[4*i+0]+L)%L;
 			phase[4*i+2] = (phase[4*i+2]+L)%L;
+			
+			if (max(abs(phase[4*i+1]), abs(phase[4*i+3])) > L/2) {
+				throw new IllegalStateException("Simulation has destablized");
+			}
 		}
 	}
 	
@@ -218,7 +257,7 @@ abstract public class MolecularDynamics2D {
 					double dx = ns.get(2*j+0);
 					double dy = ns.get(2*j+1);
 					double r = sqrt(dx*dx + dy*dy);
-					if (r > 0) {
+					if (0 < r) {
 						double force = getPairwiseForce(type1, type2, r);
 						rate[4*i+1] += (dx/r)*force/M;
 						rate[4*i+3] += (dy/r)*force/M;
@@ -230,14 +269,21 @@ abstract public class MolecularDynamics2D {
 			double force[] = getExternalForce(type1, x, y);
 			rate[4*i+1] += force[0]/M;
 			rate[4*i+3] += force[1]/M;
-			
-			// accumulate accelerations due to stochastic noise
-			if (canonicalEnsemble) {
+		}
+	}
+	
+	private void brownianNoise() {
+		// accumulate accelerations due to stochastic noise
+		if (canonicalEnsemble) {
+			for (int i = 0; i < N; i++) {
+				double M = masses.get(indexToType.get(i)); 
 				// dp/dt = - gamma 2p/2m + sqrt(2 gamma T) eta
 				// dv/dt = - (gamma v + sqrt(2 gamma T) eta) / m
 				double dt = solver.getStepSize();
-				rate[4*i+1] += (-gamma*state[4*i+1] + sqrt(2*gamma*T/dt)*rand.nextGaussian())/M;
-				rate[4*i+3] += (-gamma*state[4*i+3] + sqrt(2*gamma*T/dt)*rand.nextGaussian())/M;
+				phase[4*i+1] += sqrt(2*dt*gamma*T)*rand.nextGaussian()/M;
+				phase[4*i+1] += -dt*gamma*(phase[4*i+1])/M;
+				phase[4*i+3] += sqrt(2*dt*gamma*T)*rand.nextGaussian()/M;
+				phase[4*i+3] += -dt*gamma*(phase[4*i+3])/M;
 			}
 		}
 	}

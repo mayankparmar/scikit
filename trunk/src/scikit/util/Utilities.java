@@ -14,6 +14,12 @@ public class Utilities {
 	}
 	
 	
+	public static double periodicOffset(double L, double dx) {
+		if (dx >  L/2) return L-dx;
+		if (dx < -L/2) return L+dx;
+		return dx;
+	}
+	
 	public static int[] integerSequence(int n) {
 		int ret[] = new int[n];
 		for (int i = 0; i < n; i++)
