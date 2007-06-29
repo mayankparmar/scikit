@@ -1,7 +1,7 @@
 package kip.md2;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.sqr;
 
@@ -14,14 +14,17 @@ public class PointGrid2D<Pt extends Point> {
 	private double _L;
 	private int _cols;
 	private double _dx;
+	private boolean _periodic;
 	private Pt[] _points;
 	private ArrayList<Pt>[] _cells;
-
+	
+	
 	@SuppressWarnings("unchecked")
-	public PointGrid2D(double L, int cols, Pt[] points) {
+	public PointGrid2D(double L, int cols, boolean periodic, Pt[] points) {
 		_L = L;
 		_cols = max(cols, 1);
 		_dx = L / _cols;
+		_periodic = periodic;
 		_points = points;
 		_cells = new ArrayList[_cols*_cols];
 		for (int i = 0; i < _cols*_cols; i++)
@@ -38,6 +41,10 @@ public class PointGrid2D<Pt extends Point> {
 	}
 	
 	public ArrayList<Pt> pointOffsetsWithinRange(Point p, double R) {
+		int imax = (int)(R/_dx+1.0);
+		if (2*imax+1 > _cols)
+			return pointOffsetsWithinRangeSlow(p, R);
+		
 		double x = (p.x+_L)%_L;
 		double y = (p.y+_L)%_L;
 		int index = pointToIndex(x, y);
@@ -45,18 +52,32 @@ public class PointGrid2D<Pt extends Point> {
 		int j1 = index/_cols;
 		
 		ArrayList<Pt> ret = new ArrayList<Pt>();
-		int imax = (int)(R/_dx+1.0);
 		int d2Cutoff = (int) (sqr(R/_dx+sqrt(2))+1e-8);
 		
 		for (int di = -imax; di <= imax; di++) {
 			for (int dj = -imax; dj <= imax; dj++) {
 				if (di*di + dj*dj <= d2Cutoff) {
-					int i2 = (i1+di+_cols)%_cols;
-					int j2 = (j1+dj+_cols)%_cols;
-					ret.addAll(_cells[_cols*j2+i2]);
+					int i2 = i1+di;
+					int j2 = j1+dj;
+					if (_periodic) {
+						i2 = (i2+_cols)%_cols;
+						j2 = (j2+_cols)%_cols;						
+					}
+					else if (min(i2,j2) < 0 || max(i2,j2) >= _cols) {
+						continue;
+					}
+					
+					for (Pt p2 : _cells[_cols*j2+i2]) {
+						double dx = p2.x - p.x + (i1+di-i2)*_dx;
+						double dy = p2.y - p.y + (j1+dj-j2)*_dx;
+						if (dx*dx + dy*dy < R*R)
+							ret.add(p2);
+					}
 				}
 			}
 		}
+//		if (ret.size() != pointOffsetsWithinRangeSlow(p, R).size())
+//			throw new IllegalStateException("Counting error.");
 		return ret;
 	}
 	
@@ -65,10 +86,12 @@ public class PointGrid2D<Pt extends Point> {
 		ArrayList<Pt> ret = new ArrayList<Pt>();
 		
 		for (int i = 0; i < _points.length; i++) {
-			double dx = abs(p.x - _points[i].x);
-			double dy = abs(p.y - _points[i].y);
-			dx = Utilities.periodicOffset(_L, dx);
-			dy = Utilities.periodicOffset(_L, dy);
+			double dx = p.x - _points[i].x;
+			double dy = p.y - _points[i].y;
+			if (_periodic) {
+				dx = Utilities.periodicOffset(_L, dx);
+				dy = Utilities.periodicOffset(_L, dy);
+			}
 			if (dx*dx + dy*dy < R*R)
 				ret.add(_points[i]);
 		}

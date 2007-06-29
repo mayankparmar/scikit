@@ -13,10 +13,13 @@ public class Utilities {
 		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
 	}
 	
+	public static double sqr(double x) {
+		return x*x;
+	}
 	
 	public static double periodicOffset(double L, double dx) {
-		if (dx >  L/2) return L-dx;
-		if (dx < -L/2) return L+dx;
+		if (dx >  L/2) return dx-L;
+		if (dx < -L/2) return dx+L;
 		return dx;
 	}
 	
