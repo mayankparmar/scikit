@@ -2,23 +2,26 @@ package kip.md2;
 
 import static java.lang.Math.*;
 
-import java.awt.Color;
-import java.util.ArrayList;
-
 import kip.util.Random;
 
-import org.opensourcephysics.numerics.ODE;
-import org.opensourcephysics.numerics.Verlet;
+import org.opensourcephysics.numerics.*;
 
+import scikit.graphics.Canvas;
+import scikit.graphics.CircleGraphics;
 import scikit.graphics.Particle2DGraphics;
+import scikit.graphics.RectangleGraphics;
 import scikit.util.Bounds;
+import scikit.util.Point;
 import scikit.util.Utilities;
+import static scikit.util.Utilities.periodicOffset;
 
-public class MolecularDynamics2D {
-	protected Random rand = new Random();
-	protected Particle<?,?>[] particles;
-	protected int N;
-	protected double L; // system length
+
+public class MolecularDynamics2D<Pt extends Particle<Pt>> {
+	public Random rand = new Random();
+	public Pt[] particles;
+	public int N;
+	public double L; // system length
+	public boolean inDisk = true;
 	
 	protected boolean canonicalEnsemble = false; // microcanonical ensemble by default
 	protected double T, gamma; // temperature, and thermodynamic coupling of system to heat bath
@@ -28,12 +31,19 @@ public class MolecularDynamics2D {
 	protected double phase[];
 	// differential equation solver
 	protected Verlet solver;
+	// grid for finding neighbors quickly
+	PointGrid2D<Pt> grid;
+
 	
-	
-	public MolecularDynamics2D(double L, double dt, Particle[] particles) {
+	public MolecularDynamics2D(double L, boolean inDisk, double dt, Pt[] particles) {
 		this.L = L;
+		this.inDisk = inDisk;
 		this.particles = particles;
 		N = particles.length;
+		
+		// particles belong to this object
+		for (Pt p : particles)
+			p.tag.md = this;
 		
 		// initialize phase space array and ODE solver
 		phase = new double[4*N+1];
@@ -46,38 +56,42 @@ public class MolecularDynamics2D {
 				return phase;
 			}
 		};
+		particlesToPhase(phase); // TODO kill me
+		
+		grid = new PointGrid2D<Pt>(L, (int)sqrt(N), !inDisk, particles);
+		
 		solver = new Verlet(ode, 4*N);
 		solver.initialize(dt);
 	}
 	
-	public void layoutParticlesInDisk(Particle[] particles) {
+	public void layOutParticles() {
 		int[] indices = Utilities.integerSequence(N);
 		rand.randomizeArray(indices);
-		// this value of R is such that the minimum distance from a particle to the wall is half
-		// the minimum interparticle distance
-		double R = L / (2 + sqrt(PI/N));
-		for (int i = 0; i < N; i++) {
-			// these expressions for radius and angle are chosen to give a spiral trajectory
-			// in which the radial distance between loops has a fixed length, and the "velocity"
-			// is constant. here the particle number, i, plays the role of "time".
-			// it is somewhat surprising that the angle a(t) is independent of the bounding radius R
-			// and total particle number N.
-			double r = R * sqrt((double)(i+1) / N);
-			double a = 2 * sqrt(PI * (i+1));
-			particles[indices[i]].x = L/2. + r*cos(a);
-			particles[indices[i]].y = L/2. + r*sin(a);
-		}		
-	}
-	
-	public void layoutParticlesInSquare(Particle[] particles) {
-		int[] indices = Utilities.integerSequence(N);
-		rand.randomizeArray(indices);
-		int rootN = (int)ceil(sqrt(N));
-		double dx = L/rootN;
-		for (int i = 0; i < N; i++) {
-			particles[indices[i]].x = (i%rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
-			particles[indices[i]].y = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
-		}		
+		
+		if (inDisk) {
+			// this value of R is such that the minimum distance from a particle to the wall is half
+			// the minimum interparticle distance
+			double R = L / (2 + sqrt(PI/N));
+			for (int i = 0; i < N; i++) {
+				// these expressions for radius and angle are chosen to give a spiral trajectory
+				// in which the radial distance between loops has a fixed length, and the "velocity"
+				// is constant. here the particle number, i, plays the role of "time".
+				// it is somewhat surprising that the angle a(t) is independent of the bounding radius R
+				// and total particle number N.
+				double r = R * sqrt((double)(i+1) / N);
+				double a = 2 * sqrt(PI * (i+1));
+				particles[indices[i]].x = L/2. + r*cos(a);
+				particles[indices[i]].y = L/2. + r*sin(a);
+			}
+		} else {
+			int rootN = (int)ceil(sqrt(N));
+			double dx = L/rootN;
+			for (int i = 0; i < N; i++) {
+				particles[indices[i]].x = (i%rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
+				particles[indices[i]].y = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
+			}
+		}
+		particlesToPhase(phase); // TODO kill me
 	}
 	
 	public void setStepSize(double dt) {
@@ -99,22 +113,25 @@ public class MolecularDynamics2D {
 	
 	private void phaseToParticles(double[] state) {
 		for (int i = 0; i < N; i++) {
-			particles[i].x  = state[4*i+0]; 
-			particles[i].vx = state[4*i+1];
-			particles[i].y  = state[4*i+2];
-			particles[i].vy = state[4*i+3]; 
-		}		
+			Pt p = particles[i];
+			p.x  = (state[4*i+0] + L)%L; 
+			p.vx = state[4*i+1];
+			p.y  = (state[4*i+2] + L)%L;
+			p.vy = state[4*i+3];
+			
+			if (solver.getStepSize()*max(abs(p.vx), abs(p.vy)) > L/2) {
+				throw new IllegalStateException("Simulation has destablized");
+			}			
+		}
 	}
 	
 	public void step() {
-		System.out.println(kineticEnergy() + potentialEnergy());
-		
 		particlesToPhase(phase);
 		solver.step();
 		phaseToParticles(phase);
 		
-//		brownianNoise();
-		correctBounds();
+//		if (canonicalEnsemble)
+//			brownianNoise();
 	}
 	
 	
@@ -132,14 +149,12 @@ public class MolecularDynamics2D {
 		return phase[4*N];
 	}
 	
-	@SuppressWarnings("unchecked")
 	public double potentialEnergy() {
 		double V = 0;
 		
-		PointGrid2D<Particle> grid = new PointGrid2D<Particle>(L, (int)sqrt(N), particles);
-		for (Particle p1 : particles) {
-			ArrayList<Particle> ns = grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange());
-			for (Particle p2 : ns) {
+		grid.initialize();
+		for (Pt p1 : particles) {
+			for (Pt p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange)) {
 				if (p1 != p2)
 					V += p1.potential(p2);
 			}
@@ -152,7 +167,7 @@ public class MolecularDynamics2D {
 	
 	public double kineticEnergy() {
 		double K = 0;
-		for (Particle p : particles) {
+		for (Pt p : particles) {
 			double M = p.tag.mass;
 			K += 0.5*M*(p.vx*p.vx+p.vy*p.vy);
 		}
@@ -163,21 +178,38 @@ public class MolecularDynamics2D {
 		return (kineticEnergy() - N*T) / N*T;
 	}
 	
-	// TODO remove me
-	public Particle2DGraphics getGraphics(int type, double R, Color color) {
-		Bounds bounds = new Bounds(0, L, 0, L);
-		Particle2DGraphics graphics = new Particle2DGraphics(R, bounds, color);
-		graphics.setPoints(phase, 2, 0, N);
-		return graphics;
-	}
 	
-	private void correctBounds() {
-		for (Particle p : particles) {
-			p.x = (p.x+L)%L;
-			p.y = (p.y+L)%L;
-			if (max(abs(p.vx), abs(p.vy)) > L/2) {
-				throw new IllegalStateException("Simulation has destablized");
-			}
+	public void addGraphicsToCanvas(Canvas canvas) {
+		Bounds bounds = new Bounds(0, L, 0, L);
+		Particle2DGraphics graphics = new Particle2DGraphics(particles[0].tag.radius, bounds, particles[0].tag.color);
+		graphics.setPoints(phase, 2, 0, N);
+		canvas.addGraphics(graphics);
+		canvas.addGraphics(inDisk ? new CircleGraphics(L/2., L/2., L/2.) : new RectangleGraphics(0., 0., L, L));
+
+	}
+
+	public void boundaryDistance(Point p, double[] o) {
+		if (inDisk) {
+			double boundaryRadius = L/2.;
+			double xc = p.x - L/2.;
+			double yc = p.y - L/2.;
+			double distanceFromCenter = sqrt(xc*xc + yc*yc);
+			o[0] = xc*(boundaryRadius/distanceFromCenter - 1);
+			o[1] = yc*(boundaryRadius/distanceFromCenter - 1);
+			o[2] = 0;
+		}
+	}
+
+	public void displacement(Point p1, Point p2, double[] o) {
+		if (inDisk) {
+			o[0] = p2.x-p1.x;
+			o[1] = p2.y-p1.y;
+			o[2] = 0;
+		}
+		else {
+			o[0] = periodicOffset(L, p2.x-p1.x);
+			o[1] = periodicOffset(L, p2.y-p1.y);
+			o[2] = 0;
 		}
 	}
 	
@@ -190,7 +222,7 @@ public class MolecularDynamics2D {
 			rate[4*i+2] = particles[i].vy;
 		}
 		
-		if (solver.getRateCounter() == 1)
+//		if (solver.getRateCounter() == 1)
 			calculateForces(rate);
 		
 		rate[4*N] = 1;
@@ -199,10 +231,11 @@ public class MolecularDynamics2D {
 	
 	// TODO use Vec3 for forces
 	private void calculateForces(double[] rate) {
-		PointGrid2D<Particle> grid = new PointGrid2D<Particle>(L, (int)sqrt(N), particles);
-		
+		double[] f = new double[3];
+
+		grid.initialize();
 		for (int i = 0; i < N; i++) {
-			Particle p1 = particles[i];
+			Pt p1 = particles[i];
 			double M = p1.tag.mass;
 			
 			// initialize accelerations to zero
@@ -210,32 +243,30 @@ public class MolecularDynamics2D {
 			rate[4*i+3] = 0;
 			
 			// accumulate accelerations due to pairwise interactions
-			for (Particle p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange())) {
+			for (Pt p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange)) {
 				if (p1 != p2) {
-					double[] force = p1.force(p2);
-					rate[4*i+1] += force[0]/M;
-					rate[4*i+3] += force[1]/M;
+					p1.force(p2, f);
+					rate[4*i+1] += f[0]/M;
+					rate[4*i+3] += f[1]/M;
 				}
 			}
 			
 			// accumulate accelerations due to external forces
-			double force[] = p1.force();
-			rate[4*i+1] += force[0]/M;
-			rate[4*i+3] += force[1]/M;
+			p1.force(f);
+			rate[4*i+1] += f[0]/M;
+			rate[4*i+3] += f[1]/M;
 		}
 	}
 	
 	private void brownianNoise() {
 		// accumulate accelerations due to stochastic noise
-		if (canonicalEnsemble) {
-			for (Particle p : particles) {
-				double M = p.tag.mass;
-				// dp/dt = - gamma 2p/2m + sqrt(2 gamma T) eta
-				// dv/dt = - (gamma v + sqrt(2 gamma T) eta) / m
-				double dt = solver.getStepSize();
-				p.vx += (-dt*gamma*p.vx + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
-				p.vy += (-dt*gamma*p.vy + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
-			}
+		for (Pt p : particles) {
+			double M = p.tag.mass;
+			// dp/dt = - gamma 2p/2m + sqrt(2 gamma T) eta
+			// dv/dt = - (gamma v + sqrt(2 gamma T) eta) / m
+			double dt = solver.getStepSize();
+			p.vx += (-dt*gamma*p.vx + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
+			p.vy += (-dt*gamma*p.vy + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
 		}
 	}
 }
