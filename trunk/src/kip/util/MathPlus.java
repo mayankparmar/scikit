@@ -90,6 +90,16 @@ public final class MathPlus extends Object {
     ** Function Methods
     */
 
+	
+	
+	static public double sqr(double x) {
+		return x*x;
+	}
+
+	static public double sign(double x) {
+		return x/java.lang.Math.abs(x);
+	}
+	
     /**
      * @param x a double value
      * @return The log<sub>10</sub>
@@ -102,11 +112,6 @@ public final class MathPlus extends Object {
         }
         return Math.log(x) / 2.30258509299404568401;
     }
-	
-	
-	static public double sqr(double x) {
-		return x*x;
-	}
 
     /**
      * @param x a double value
