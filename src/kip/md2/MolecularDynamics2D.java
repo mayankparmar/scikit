@@ -2,6 +2,10 @@ package kip.md2;
 
 import static java.lang.Math.*;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Vector;
+
 import kip.util.Random;
 
 import org.opensourcephysics.numerics.*;
@@ -17,7 +21,7 @@ import static scikit.util.Utilities.periodicOffset;
 
 
 public class MolecularDynamics2D<Pt extends Particle<Pt>> {
-	public Random rand = new Random();
+	public Random rand = new Random(0);
 	public Pt[] particles;
 	public int N;
 	public double L; // system length
@@ -242,8 +246,22 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 			rate[4*i+1] = 0;
 			rate[4*i+3] = 0;
 			
+			
+			ArrayList<Pt> ns = grid.pointOffsetsWithinRangeSlow(p1, p1.tag.interactionRange);
+//			Comparator<Pt> cmp = new Comparator<Pt>() {
+//				public int compare(Pt p1, Pt p2) {
+//					if (p1.x != p2.x) {
+//						return (int)kip.util.MathPlus.sign(p1.x - p2.x);
+//					}
+//					else {
+//						return (int)kip.util.MathPlus.sign(p1.y - p2.y);
+//					}
+//				}
+//			};
+//			java.util.Collections.sort(ns, cmp);
+			
 			// accumulate accelerations due to pairwise interactions
-			for (Pt p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange)) {
+			for (Pt p2 : ns) {
 				if (p1 != p2) {
 					p1.force(p2, f);
 					rate[4*i+1] += f[0]/M;
