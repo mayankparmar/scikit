@@ -30,7 +30,7 @@ public class LennardJonesApp extends Simulation {
 
 	public LennardJonesApp() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
-		params.add("Length", 20.0);
+		params.add("Length", 10.0);
 		params.add("Area fraction A", 0.7);
 		params.add("Area fraction B", 0.0);
 		params.add("Radius A", 1.0);

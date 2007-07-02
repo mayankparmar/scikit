@@ -2,11 +2,8 @@ package kip.md2;
 
 import static java.lang.Math.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Vector;
-
 import kip.util.Random;
+import kip.util.Vec3;
 
 import org.opensourcephysics.numerics.*;
 
@@ -47,7 +44,7 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 		
 		// particles belong to this object
 		for (Pt p : particles)
-			p.tag.md = this;
+			p.tag.initialize(this);
 		
 		// initialize phase space array and ODE solver
 		phase = new double[4*N+1];
@@ -192,29 +189,35 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 
 	}
 
-	public void boundaryDistance(Point p, double[] o) {
+	Vec3 tempVec = new Vec3(0,0,0);
+	
+	public Vec3 boundaryDistance(Point p) {
 		if (inDisk) {
 			double boundaryRadius = L/2.;
 			double xc = p.x - L/2.;
 			double yc = p.y - L/2.;
 			double distanceFromCenter = sqrt(xc*xc + yc*yc);
-			o[0] = xc*(boundaryRadius/distanceFromCenter - 1);
-			o[1] = yc*(boundaryRadius/distanceFromCenter - 1);
-			o[2] = 0;
+			tempVec.x = xc*(boundaryRadius/distanceFromCenter - 1);
+			tempVec.y = yc*(boundaryRadius/distanceFromCenter - 1);
+			tempVec.z = 0;
+			return tempVec;
 		}
+		else
+			return null;
 	}
 
-	public void displacement(Point p1, Point p2, double[] o) {
+	public Vec3 displacement(Point p1, Point p2) {
 		if (inDisk) {
-			o[0] = p2.x-p1.x;
-			o[1] = p2.y-p1.y;
-			o[2] = 0;
+			tempVec.x = p2.x-p1.x;
+			tempVec.y = p2.y-p1.y;
+			tempVec.z = 0;
 		}
 		else {
-			o[0] = periodicOffset(L, p2.x-p1.x);
-			o[1] = periodicOffset(L, p2.y-p1.y);
-			o[2] = 0;
+			tempVec.x = periodicOffset(L, p2.x-p1.x);
+			tempVec.y = periodicOffset(L, p2.y-p1.y);
+			tempVec.z = 0;
 		}
+		return tempVec;
 	}
 	
 	private void getRate(double[] state, double[] rate) {
@@ -233,10 +236,9 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 	}
 	
 	
-	// TODO use Vec3 for forces
 	private void calculateForces(double[] rate) {
-		double[] f = new double[3];
-
+		Vec3 f = new Vec3(0,0,0);
+		
 		grid.initialize();
 		for (int i = 0; i < N; i++) {
 			Pt p1 = particles[i];
@@ -246,33 +248,19 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 			rate[4*i+1] = 0;
 			rate[4*i+3] = 0;
 			
-			
-			ArrayList<Pt> ns = grid.pointOffsetsWithinRangeSlow(p1, p1.tag.interactionRange);
-//			Comparator<Pt> cmp = new Comparator<Pt>() {
-//				public int compare(Pt p1, Pt p2) {
-//					if (p1.x != p2.x) {
-//						return (int)kip.util.MathPlus.sign(p1.x - p2.x);
-//					}
-//					else {
-//						return (int)kip.util.MathPlus.sign(p1.y - p2.y);
-//					}
-//				}
-//			};
-//			java.util.Collections.sort(ns, cmp);
-			
 			// accumulate accelerations due to pairwise interactions
-			for (Pt p2 : ns) {
+			for (Pt p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange)) {
 				if (p1 != p2) {
 					p1.force(p2, f);
-					rate[4*i+1] += f[0]/M;
-					rate[4*i+3] += f[1]/M;
+					rate[4*i+1] += f.x/M;
+					rate[4*i+3] += f.y/M;
 				}
 			}
 			
 			// accumulate accelerations due to external forces
 			p1.force(f);
-			rate[4*i+1] += f[0]/M;
-			rate[4*i+3] += f[1]/M;
+			rate[4*i+1] += f.x/M;
+			rate[4*i+3] += f.y/M;
 		}
 	}
 	

@@ -7,4 +7,8 @@ public class ParticleTag {
 	public double interactionRange;
 	public Color color;
 	public MolecularDynamics2D<?> md;
+	
+	public void initialize(MolecularDynamics2D<?> md) {
+		this.md = md;
+	}
 }

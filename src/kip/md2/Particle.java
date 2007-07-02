@@ -1,5 +1,6 @@
 package kip.md2;
 
+import kip.util.Vec3;
 import scikit.util.Point;
 
 
@@ -11,8 +12,8 @@ abstract public class Particle<T extends Particle<T>> extends Point {
 		this.tag = tag;
 	}
 	
-	abstract public void force(T that, double[] f);
-	abstract public void force(double[] f);
+	abstract public void force(T that, Vec3 f);
+	abstract public void force(Vec3 f);
 	abstract public double potential(T that);
 	abstract public double potential();
 }
