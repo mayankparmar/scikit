@@ -3,6 +3,9 @@ package kip.fastestlap;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
+
+import kip.util.Vec3;
+
 import com.sun.opengl.impl.GLUquadricImpl;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
