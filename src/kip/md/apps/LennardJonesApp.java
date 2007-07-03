@@ -5,7 +5,6 @@ import java.awt.Color;
 
 import geometry.VoronoiGraphics;
 
-import scikit.dataset.DynamicArray;
 import scikit.graphics.Canvas2D;
 import scikit.graphics.Plot;
 import scikit.jobs.Control;
@@ -18,14 +17,15 @@ import scikit.util.Bounds;
 import kip.md.LJParticle2D;
 import kip.md.MolecularDynamics2D;
 import kip.md.ParticleTag;
+import kip.md.StringAnalysis;
 
 
 public class LennardJonesApp extends Simulation {
-	Plot vplot = new Plot("Total energy");
+	Plot alphaplot = new Plot("Total energy");
 	Canvas2D canvas = new Canvas2D("Particles");
-	DynamicArray potential;
-	MolecularDynamics2D<?> sim;
-
+	MolecularDynamics2D<LJParticle2D> sim;
+	StringAnalysis<LJParticle2D> strings;
+	
 
 	public LennardJonesApp() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
@@ -60,16 +60,13 @@ public class LennardJonesApp extends Simulation {
 		sim.addGraphicsToCanvas(canvas);
 		canvas.addGraphics(voronoi);
 		
-//		potential.append2(sim.time(), sim.potentialEnergy() + sim.kineticEnergy());
-//		vplot.removeAllGraphics();
-//		vplot.addLines(potential, Color.BLUE);
+		alphaplot.removeAllGraphics();
+		alphaplot.addLines(strings.getAveragedAlpha(), Color.BLUE);
 	}
 
 	public void run() {
 		Job.addDisplay(canvas);
-		Job.addDisplay(vplot);
-		
-		potential = new DynamicArray();
+		Job.addDisplay(alphaplot);
 		
 		double L = params.fget("Length");
 		boolean inDisk = params.sget("Topology").equals("Disk");
@@ -101,10 +98,12 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D(tagB);
 
 		sim = new MolecularDynamics2D<LJParticle2D>(L, inDisk, dt, particles);
+		strings = new StringAnalysis<LJParticle2D>(2, 0.1);
 		
 		Job.animate();
 		while (true) {
 			sim.step();
+			strings.addConfiguration(sim.time(), sim.particles);
 			Job.animate();
 		}
 	}
