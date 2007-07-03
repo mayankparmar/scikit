@@ -21,16 +21,15 @@ import kip.md2.ParticleTag;
 
 
 public class LennardJonesApp extends Simulation {
-	Plot kplot = new Plot("Kinetic");
-	Plot vplot = new Plot("Potential");
+	Plot vplot = new Plot("Total energy");
 	Canvas2D canvas = new Canvas2D("Particles");
-	DynamicArray kinetic, potential;
+	DynamicArray potential;
 	MolecularDynamics2D<?> sim;
 
 
 	public LennardJonesApp() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
-		params.add("Length", 10.0);
+		params.add("Length", 20.0);
 		params.add("Area fraction A", 0.7);
 		params.add("Area fraction B", 0.0);
 		params.add("Radius A", 1.0);
@@ -61,27 +60,21 @@ public class LennardJonesApp extends Simulation {
 		sim.addGraphicsToCanvas(canvas);
 		canvas.addGraphics(voronoi);
 		
-		kinetic.append2(sim.time(), sim.kineticEnergy());
-		potential.append2(sim.time(), sim.potentialEnergy()/2 + sim.kineticEnergy());
-		kplot.removeAllGraphics();
-		kplot.addLines(kinetic, Color.BLUE);
-		vplot.removeAllGraphics();
-		vplot.addLines(potential, Color.BLUE);
+//		potential.append2(sim.time(), sim.potentialEnergy() + sim.kineticEnergy());
+//		vplot.removeAllGraphics();
+//		vplot.addLines(potential, Color.BLUE);
 	}
 
 	public void run() {
 		Job.addDisplay(canvas);
-		Job.addDisplay(kplot);
 		Job.addDisplay(vplot);
 		
-		kinetic = new DynamicArray();
 		potential = new DynamicArray();
 		
 		double L = params.fget("Length");
 		boolean inDisk = params.sget("Topology").equals("Disk");
 		double dt = params.fget("dt");
-//		double epsilon = params.fget("Epsilon");
-
+		
 		ParticleTag tagA = new ParticleTag();
 		ParticleTag tagB = new ParticleTag();
 		tagA.radius = params.fget("Radius A");
@@ -108,7 +101,6 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D(tagB);
 
 		sim = new MolecularDynamics2D<LJParticle2D>(L, inDisk, dt, particles);
-		sim.layOutParticles();
 		
 		Job.animate();
 		while (true) {
