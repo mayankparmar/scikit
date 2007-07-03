@@ -228,8 +228,7 @@ abstract public class MolecularDynamics2D {
 			rate[4*i+2] = state[4*i+3];
 		}
 		
-		if (solver.getRateCounter() == 1)
-			calculateForces(state, rate);
+		calculateForces(state, rate);
 		
 		rate[4*N] = 1;
 	}

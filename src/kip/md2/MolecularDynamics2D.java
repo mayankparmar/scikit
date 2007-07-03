@@ -23,32 +23,37 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 	public int N;
 	public double L; // system length
 	public boolean inDisk = true;
+	public double time, dt;
 	
 	protected boolean canonicalEnsemble = false; // microcanonical ensemble by default
 	protected double T, gamma; // temperature, and thermodynamic coupling of system to heat bath
+	
 	
 	// complete state of configuration.  positions, velocities, packed as
 	// [x_1, vx_1, y_1, vy_1, ..., time]
 	protected double phase[];
 	// differential equation solver
-	protected Verlet solver;
+	protected ODESolver solver;
 	// grid for finding neighbors quickly
 	PointGrid2D<Pt> grid;
 
 	
 	public MolecularDynamics2D(double L, boolean inDisk, double dt, Pt[] particles) {
-		this.L = L;
-		this.inDisk = inDisk;
 		this.particles = particles;
 		N = particles.length;
+		this.L = L;
+		this.inDisk = inDisk;
+		time = 0;
+		this.dt = dt;
 		
-		// particles belong to this object
+		// initialize particles
 		for (Pt p : particles)
 			p.tag.initialize(this);
+		layOutParticles();
 		
 		// initialize phase space array and ODE solver
 		phase = new double[4*N+1];
-		phase[4*N] = 0;	// time
+		writeStateArray(phase); // TODO kill me		
 		ODE ode = new ODE() {
 			public void getRate(double[] state, double[] rate) {
 				MolecularDynamics2D.this.getRate(state, rate);
@@ -57,15 +62,12 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 				return phase;
 			}
 		};
-		particlesToPhase(phase); // TODO kill me
-		
 		grid = new PointGrid2D<Pt>(L, (int)sqrt(N), !inDisk, particles);
-		
 		solver = new Verlet(ode, 4*N);
 		solver.initialize(dt);
 	}
 	
-	public void layOutParticles() {
+	private void layOutParticles() {
 		int[] indices = Utilities.integerSequence(N);
 		rand.randomizeArray(indices);
 		
@@ -92,7 +94,6 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 				particles[indices[i]].y = (i/rootN + 0.5 + 0.01*rand.nextGaussian()) * dx;
 			}
 		}
-		particlesToPhase(phase); // TODO kill me
 	}
 	
 	public void setStepSize(double dt) {
@@ -103,16 +104,17 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 		return solver.getStepSize();
 	}
 	
-	private void particlesToPhase(double[] state) {
+	private void writeStateArray(double[] state) {
 		for (int i = 0; i < N; i++) {
 			state[4*i+0] = particles[i].x; 
 			state[4*i+1] = particles[i].vx;
 			state[4*i+2] = particles[i].y;
 			state[4*i+3] = particles[i].vy; 
 		}
+		state[4*N] = time;
 	}
 	
-	private void phaseToParticles(double[] state) {
+	private void readStateArray(double[] state) {
 		for (int i = 0; i < N; i++) {
 			Pt p = particles[i];
 			p.x  = (state[4*i+0] + L)%L; 
@@ -120,26 +122,32 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 			p.y  = (state[4*i+2] + L)%L;
 			p.vy = state[4*i+3];
 			
-			if (solver.getStepSize()*max(abs(p.vx), abs(p.vy)) > L/2) {
+			if (dt*max(abs(p.vx), abs(p.vy)) > L/2) {
 				throw new IllegalStateException("Simulation has destablized");
-			}			
+			}
 		}
+		time = state[4*N];
 	}
 	
 	public void step() {
-		particlesToPhase(phase);
+		writeStateArray(phase);
 		solver.step();
-		phaseToParticles(phase);
+		readStateArray(phase);
 		
-//		if (canonicalEnsemble)
-//			brownianNoise();
+		if (canonicalEnsemble)
+			brownianNoise();
 	}
 	
 	
 	public void setTemperature(double T, double gamma) {
-		canonicalEnsemble = true;
-		this.T = T;
-		this.gamma = gamma;
+		if (T >= 0) {
+			canonicalEnsemble = true;
+			this.T = T;
+			this.gamma = gamma;
+		}
+		else {
+			disableTemperature();
+		}
 	}
 	
 	public void disableTemperature() {
@@ -147,7 +155,7 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 	}
 	
 	public double time() {
-		return phase[4*N];
+		return time;
 	}
 	
 	public double potentialEnergy() {
@@ -157,7 +165,7 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 		for (Pt p1 : particles) {
 			for (Pt p2 : grid.pointOffsetsWithinRange(p1, p1.tag.interactionRange)) {
 				if (p1 != p2)
-					V += p1.potential(p2);
+					V += p1.potential(p2)/2.; // divisor of 2 corrects for double counting
 			}
 			// accumulate accelerations due to external forces
 			V += p1.potential();
@@ -221,18 +229,14 @@ public class MolecularDynamics2D<Pt extends Particle<Pt>> {
 	}
 	
 	private void getRate(double[] state, double[] rate) {
-		phaseToParticles(state);
-		
+		readStateArray(state);
 		for (int i = 0; i < N; i++) {
 			// set dx/dt = v
 			rate[4*i+0] = particles[i].vx;
 			rate[4*i+2] = particles[i].vy;
 		}
-		
-//		if (solver.getRateCounter() == 1)
-			calculateForces(rate);
-		
-		rate[4*N] = 1;
+		calculateForces(rate);		
+		rate[4*N] = 1; // dt/dt = 1
 	}
 	
 	
