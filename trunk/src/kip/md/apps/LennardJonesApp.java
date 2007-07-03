@@ -1,4 +1,4 @@
-package kip.md2.apps;
+package kip.md.apps;
 
 import static java.lang.Math.*;
 import java.awt.Color;
@@ -15,9 +15,9 @@ import scikit.params.ChoiceValue;
 import static scikit.util.Utilities.*;
 import scikit.util.Bounds;
 
-import kip.md2.LJParticle2D;
-import kip.md2.MolecularDynamics2D;
-import kip.md2.ParticleTag;
+import kip.md.LJParticle2D;
+import kip.md.MolecularDynamics2D;
+import kip.md.ParticleTag;
 
 
 public class LennardJonesApp extends Simulation {
