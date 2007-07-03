@@ -1,4 +1,4 @@
-package kip.md2;
+package kip.md;
 
 import java.awt.Color;
 
