@@ -1,7 +1,7 @@
 package kip.ising.dim1;
 
-import jnt.FFT.ComplexDoubleFFT;
-import jnt.FFT.ComplexDoubleFFT_Mixed;
+import scikit.numerics.fft.ComplexDoubleFFT;
+import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import scikit.params.Parameters;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;

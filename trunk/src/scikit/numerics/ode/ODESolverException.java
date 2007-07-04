@@ -1,4 +1,4 @@
-package org.opensourcephysics.numerics;
+package scikit.numerics.ode;
 /**
  * Signals that a numerical error occured within an ODE solver.
  *

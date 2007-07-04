@@ -1,6 +1,6 @@
 //Derived from Open Source Physics library, released under the GPL version 2.
 
-package org.opensourcephysics.numerics;
+package scikit.numerics.ode;
 
 /**
  * Verlet:  A velocity Verlet method ODE solver.

@@ -3,7 +3,6 @@ package kip.md.apps;
 import static java.lang.Math.*;
 import java.awt.Color;
 
-import geometry.VoronoiGraphics;
 
 import scikit.graphics.Canvas2D;
 import scikit.graphics.Plot;
@@ -14,6 +13,7 @@ import scikit.params.ChoiceValue;
 import static scikit.util.Utilities.*;
 import scikit.util.Bounds;
 
+import kip.geometry.VoronoiGraphics;
 import kip.md.LJParticle2D;
 import kip.md.MolecularDynamics2D;
 import kip.md.ParticleTag;
@@ -25,7 +25,6 @@ public class LennardJonesApp extends Simulation {
 	Canvas2D canvas = new Canvas2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
 	StringAnalysis strings;
-	
 
 	public LennardJonesApp() {
 		params.add("Topology", new ChoiceValue("Torus", "Disk"));
@@ -98,11 +97,12 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D(tagB);
 
 		sim = new MolecularDynamics2D<LJParticle2D>(L, inDisk, dt, particles);
-		strings = new StringAnalysis(sim, 10, 0.1);
+		strings = new StringAnalysis(sim, 100, 0.1);
 		
 		Job.animate();
 		while (true) {
-			sim.step();
+			for (int i = 0; i < 50; i++)
+				sim.step();
 			strings.addConfiguration(sim.time(), sim.particles);
 			Job.animate();
 		}

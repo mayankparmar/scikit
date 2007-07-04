@@ -1,4 +1,4 @@
-package jnt.FFT;
+package scikit.numerics.fft;
 /** Computes FFT's of complex, double precision data where n is an integer power of 2.
   * This appears to be slower than the Radix2 method,
   * but the code is smaller and simpler, and it requires little extra storage.

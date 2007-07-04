@@ -1,4 +1,4 @@
-package jnt.FFT;
+package scikit.numerics.fft;
 /** Supplies static methods for factoring integers needed by various FFT classes. 
   *
   * @author Bruce R. Miller bruce.miller@nist.gov

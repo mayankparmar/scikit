@@ -1,7 +1,7 @@
 package kip.clump.dim3;
 
-import jnt.FFT.ComplexDouble3DFFT;
 import scikit.dataset.Accumulator;
+import scikit.numerics.fft.ComplexDouble3DFFT;
 import static java.lang.Math.*;
 
 
