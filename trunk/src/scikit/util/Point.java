@@ -1,6 +1,6 @@
 package scikit.util;
 
-public class Point {
+public class Point implements Cloneable {
 	public double x = 0, y = 0, z = 0;
 	
 	public Point(double x, double y, double z) {

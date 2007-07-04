@@ -24,7 +24,7 @@ public class LennardJonesApp extends Simulation {
 	Plot alphaplot = new Plot("Total energy");
 	Canvas2D canvas = new Canvas2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
-	StringAnalysis<LJParticle2D> strings;
+	StringAnalysis strings;
 	
 
 	public LennardJonesApp() {
@@ -98,7 +98,7 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D(tagB);
 
 		sim = new MolecularDynamics2D<LJParticle2D>(L, inDisk, dt, particles);
-		strings = new StringAnalysis<LJParticle2D>(2, 0.1);
+		strings = new StringAnalysis(sim, 10, 0.1);
 		
 		Job.animate();
 		while (true) {
