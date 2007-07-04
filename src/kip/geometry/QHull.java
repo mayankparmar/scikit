@@ -1,4 +1,4 @@
-package geometry;
+package kip.geometry;
 
 import java.io.*;
 

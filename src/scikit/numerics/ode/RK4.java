@@ -5,7 +5,7 @@
  * <http://www.opensourcephysics.org/>
  */
 
-package org.opensourcephysics.numerics;
+package scikit.numerics.ode;
 
 /**
  * Title:        RK4

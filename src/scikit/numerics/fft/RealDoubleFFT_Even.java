@@ -1,4 +1,4 @@
-package jnt.FFT;
+package scikit.numerics.fft;
 /** Computes FFT's of real, double precision data when n is even, by
   * computing complex FFT.
   *

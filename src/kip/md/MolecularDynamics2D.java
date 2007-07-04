@@ -5,12 +5,12 @@ import static java.lang.Math.*;
 import kip.util.Random;
 import kip.util.Vec3;
 
-import org.opensourcephysics.numerics.*;
 
 import scikit.graphics.Canvas;
 import scikit.graphics.CircleGraphics;
 import scikit.graphics.Particle2DGraphics;
 import scikit.graphics.RectangleGraphics;
+import scikit.numerics.ode.*;
 import scikit.util.Bounds;
 import scikit.util.Point;
 import scikit.util.Utilities;

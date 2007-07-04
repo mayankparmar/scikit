@@ -3,7 +3,7 @@ package kip.clump.dim2;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 import static kip.util.DoubleArray.*;
-import jnt.FFT.ComplexDouble2DFFT;
+import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
 
 public class FieldClump2D extends AbstractClump2D {

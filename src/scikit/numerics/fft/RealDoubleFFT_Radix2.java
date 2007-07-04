@@ -1,4 +1,4 @@
-package jnt.FFT;
+package scikit.numerics.fft;
 /** Computes  FFT's of real, double precision data where n is an integral power of 2.
   * The physical layout of the mathematical data d[i] in the array data is as follows:
   *<PRE>

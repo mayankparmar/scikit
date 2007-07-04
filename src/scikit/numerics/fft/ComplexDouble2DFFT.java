@@ -1,4 +1,4 @@
-package jnt.FFT;
+package scikit.numerics.fft;
 /** Computes the FFT of 2 dimensional complex, double precision data.
   * The data is stored in a 1-dimensional array in Row-Major order.
   * The physical layout in the array data, of the mathematical data d[i,j] is as follows:
