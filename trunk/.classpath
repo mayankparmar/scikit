@@ -5,7 +5,7 @@
 	<classpathentry kind="lib" path="lib/jogl-1.1.0/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/jogl-1.1.0/jogl.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="JavaSims/lib/jogl-1.1.0/osx-universal"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="JavaSims/lib/jogl-1.1.0/linux-i586"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
