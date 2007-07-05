@@ -1,4 +1,4 @@
-package kip.ising.dim22;
+package rachele;
 
 import static java.lang.Math.exp;
 import static java.lang.Math.min;
