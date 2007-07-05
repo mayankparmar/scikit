@@ -1,4 +1,4 @@
-package kip.ising.dim22.apps;
+package rachele.apps;
 
 import kip.ising.dim2.IsingLR;
 import kip.clump.dim2.StructureFactor;
@@ -42,7 +42,7 @@ public class IsingLRApp extends Simulation {
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
 		fieldDisplay.setScale(-1, 1);
 		
-		structureDisplay.setDataSet(0, structure.getAccumulatorC());
+		structureDisplay.setDataSet(0, structure.getAccumulator());
 	}
 	
 	
@@ -61,7 +61,7 @@ public class IsingLRApp extends Simulation {
 				Job.animate();
 			}
 			lastUpdate = sim.time();
-			structure.getAccumulatorC().clear();
+			structure.getAccumulator().clear();
 			structure.accumulate(sim.getField(dx));
 			Job.animate();
 		}

@@ -1,4 +1,4 @@
-package kip.ising.dim22.apps;
+package rachele.apps;
 
 import scikit.jobs.Control;
 import scikit.jobs.Job;
