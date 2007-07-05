@@ -26,12 +26,10 @@ public class Accumulator extends DataSet {
 		_origBinWidth = _binWidth = binWidth;
 	}
 	
-    
 	public void clear() {
 		_origHash = new TreeMap<Double, double[]>();
 		_hash = new TreeMap<Double, double[]>();
 	}
-	
 	
 	public double[] copyData() {
 		int i = 0;
@@ -45,6 +43,9 @@ public class Accumulator extends DataSet {
 		return ret;	
 	}
 	
+	public Set<Double> keys() {
+		return _hash.keySet();
+	}
 	
 	public void setBinWidth(double binWidth) {
 		if (binWidth != _binWidth) {
@@ -91,7 +92,7 @@ public class Accumulator extends DataSet {
 	}
 	
 	private static double key(double x, double bw) {
-		return bw * rint(x/bw); // each binning cell is labeled by its center coordinate, k.
+		return bw * rint(x/bw); // each binning cell is labeled by its center coordinate, key().
 	}
 	
 	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {
