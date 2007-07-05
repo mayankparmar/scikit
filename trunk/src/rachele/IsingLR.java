@@ -15,7 +15,7 @@ public class IsingLR extends RewindableDynamics {
 	public DynType dynamics = DynType.GLAUBER;
 	
 	public int L, R;
-	public double T, J, h;
+	public double T, J, h, n;
 	public Random random = new Random();
 
 	
