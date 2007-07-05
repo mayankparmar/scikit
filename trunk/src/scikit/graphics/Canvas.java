@@ -91,8 +91,21 @@ public class Canvas implements Display {
 	}
 	
 	
-	protected void setProjection(GL gl, Bounds bounds) {
-		(new GLU()).gluOrtho2D(bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
+	protected void setDataProjection(GL gl) {
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glLoadIdentity();
+		Bounds cb = _curBounds;
+		(new GLU()).gluOrtho2D(cb.xmin, cb.xmax, cb.ymin, cb.ymax);
+		gl.glMatrixMode(GL.GL_MODELVIEW);
+		gl.glLoadIdentity();
+	}
+	
+	protected void setIdentityProjection(GL gl) {
+		gl.glMatrixMode(GL.GL_PROJECTION);
+		gl.glLoadIdentity();
+		(new GLU()).gluOrtho2D(0, _canvas.getWidth(), 0, _canvas.getHeight());
+		gl.glMatrixMode(GL.GL_MODELVIEW);
+		gl.glLoadIdentity();
 	}
 	
 	
@@ -105,12 +118,7 @@ public class Canvas implements Display {
 	private class EventListener implements GLEventListener {
 		public void display(GLAutoDrawable glDrawable) {
 			GL gl = glDrawable.getGL();
-			gl.glMatrixMode( GL.GL_PROJECTION );
-			gl.glLoadIdentity(); // TODO necessary?
-			setProjection(gl, _curBounds);
-			
-			gl.glMatrixMode(GL.GL_MODELVIEW);
-			gl.glLoadIdentity();
+			setDataProjection(gl);
 			gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 			drawAllGraphics(gl, _curBounds);
 		}
