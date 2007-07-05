@@ -1,7 +1,6 @@
 package scikit.jobs;
 
 import java.util.Vector;
-import scikit.params.Parameters;
 
 
 public class Job {
@@ -52,8 +51,8 @@ public class Job {
 			coop.triggerProcessingLoop();
 	}
 	
-	public Parameters params() {
-		return sim.params;
+	public Simulation sim() {
+		return sim;
 	}
 	
 	
