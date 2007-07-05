@@ -6,6 +6,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import javax.media.opengl.GL;
+
 import scikit.util.*;
 
 
@@ -68,11 +69,18 @@ public class Canvas2D extends Canvas {
 		_selectionGraphics.draw(gl, bounds);
 	}
 	
-	private Point pixToCoord(Point pix) {
+	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
 		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
 		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _canvas.getHeight();
 		return new Point(x, y);
+	}
+	
+	protected Point coordToPix(Point coord) {
+		Bounds cb = _curBounds;
+		double x = ((coord.x - cb.xmin)/(cb.xmax - cb.xmin)) * _canvas.getWidth();
+		double y = ((coord.y - cb.ymin)/(cb.ymax - cb.ymin)) * _canvas.getHeight();
+		return new Point(x, y);		
 	}
 	
 	private Point eventToPix(MouseEvent event) {
@@ -118,24 +126,25 @@ public class Canvas2D extends Canvas {
 	private Graphics _selectionGraphics = new Graphics() {
 		public void draw(GL gl, Bounds bounds) {
 			if (_selectionActive) {
-				Point start = pixToCoord(_selectionStart);
-				Point end = pixToCoord(_selectionEnd);
-
-				gl.glColor4f(0.3f, 0.6f, 0.4f, 0.2f);
+				setIdentityProjection(gl);
+				
+				gl.glColor4f(0.3f, 0.6f, 0.5f, 0.2f);
 				gl.glBegin(GL.GL_QUADS);
-				gl.glVertex2d(start.x, start.y);
-				gl.glVertex2d(start.x, end.y);
-				gl.glVertex2d(end.x, end.y);
-				gl.glVertex2d(end.x, start.y);
+				gl.glVertex2d(_selectionStart.x, _selectionStart.y);
+				gl.glVertex2d(_selectionStart.x, _selectionEnd.y);
+				gl.glVertex2d(_selectionEnd.x, _selectionEnd.y);
+				gl.glVertex2d(_selectionEnd.x, _selectionStart.y);
 				gl.glEnd();
 
 				gl.glColor4f(0.2f, 0.2f, 0.2f, 0.7f);
 				gl.glBegin(GL.GL_LINE_LOOP);
-				gl.glVertex2d(start.x, start.y);
-				gl.glVertex2d(start.x, end.y);
-				gl.glVertex2d(end.x, end.y);
-				gl.glVertex2d(end.x, start.y);
+				gl.glVertex2d(_selectionStart.x, _selectionStart.y);
+				gl.glVertex2d(_selectionStart.x, _selectionEnd.y);
+				gl.glVertex2d(_selectionEnd.x, _selectionEnd.y);
+				gl.glVertex2d(_selectionEnd.x, _selectionStart.y);
 				gl.glEnd();
+				
+				setDataProjection(gl);
 			}
 		}
 		public Bounds getBounds() {
