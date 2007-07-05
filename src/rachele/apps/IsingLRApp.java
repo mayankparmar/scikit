@@ -24,7 +24,7 @@ public class IsingLRApp extends Simulation {
 	
 	public IsingLRApp() {
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
-		params.add("Random seed", 0);
+		params.add("Random seed", 1);
 		params.add("L", 1<<8);
 		params.add("R", 1<<4);
 		params.addm("T", 4.0/9.0);
