@@ -37,10 +37,12 @@ public class IsingLRStructApp extends Simulation {
 		params.addm("T", 0.11);
 		params.addm("J", -1.0);
 		params.addm("h", 0.0);
-		params.addm("dt", 10.0);
-		params.addm("init time", 15);
+		params.addm("dt", 1.0);
+		params.addm("init time", 50);
 		params.add("time");
 		params.add("magnetization");
+		
+		flags.add("Clear S.F.");
 	}
 	
 	
@@ -61,7 +63,11 @@ public class IsingLRStructApp extends Simulation {
 		circleStructureDisplay.setDataSet(0, structure.getAccumulatorC());	
 		circleStructureDisplay.setDataSet(1, structure.getAccumulatorCA());	
 	
-
+		if (flags.contains("Clear S.F.")) {
+			// structure.getAccumulatorC().clear();
+			System.out.println("clicked");
+		}
+		flags.clear();
 	}
 	
 	
@@ -81,13 +87,13 @@ public class IsingLRStructApp extends Simulation {
 		//avStructV.setAveraging(true);
 		//avStructC.setAveraging(true);
 		
-		int initstep = 0;
-		for(int i = 0; i < params.fget("init time"); i ++){
+		System.out.println("equilibrating");
+		while (sim.time() < params.fget("init time")) {
 			sim.step();
-			initstep++;
-			System.out.println("init step = " + initstep);
+			Job.animate();
 		}
 		
+		System.out.println("running");
 		double lastUpdate = 0;
 		while (true) {
 			while (sim.time() - lastUpdate < 2) {
