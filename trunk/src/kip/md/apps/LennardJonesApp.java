@@ -60,7 +60,7 @@ public class LennardJonesApp extends Simulation {
 		canvas.addGraphics(voronoi);
 		
 		alphaplot.removeAllGraphics();
-		alphaplot.addLines(strings.getAveragedAlpha(), Color.BLUE);
+		alphaplot.addLines(strings.getAlpha(), Color.BLUE);
 	}
 
 	public void run() {
@@ -97,7 +97,7 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D(tagB);
 
 		sim = new MolecularDynamics2D<LJParticle2D>(L, inDisk, dt, particles);
-		strings = new StringAnalysis(sim, 100, 0.1);
+		strings = new StringAnalysis(sim, 100, 0.1, 2);
 		
 		Job.animate();
 		while (true) {
