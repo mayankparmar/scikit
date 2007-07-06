@@ -40,6 +40,8 @@ public class PointGrid2D<Pt extends Point> {
 		}
 	}
 	
+	ArrayList<Pt> tempArray = new ArrayList<Pt>();
+	
 	public ArrayList<Pt> pointOffsetsWithinRange(Point p, double R) {
 		int imax = (int)(R/_dx+1.0);
 		if (2*imax+1 > _cols)
@@ -51,7 +53,10 @@ public class PointGrid2D<Pt extends Point> {
 		int i1 = index%_cols;
 		int j1 = index/_cols;
 		
-		ArrayList<Pt> ret = new ArrayList<Pt>();
+		tempArray.clear();
+		ArrayList<Pt> ret = tempArray;
+//		ArrayList<Pt> ret = new ArrayList<Pt>();
+		
 		int d2Cutoff = (int) (sqr(R/_dx+sqrt(2))+1e-8);
 		
 		for (int di = -imax; di <= imax; di++) {
@@ -67,7 +72,11 @@ public class PointGrid2D<Pt extends Point> {
 						continue;
 					}
 					
-					for (Pt p2 : _cells[_cols*j2+i2]) {
+					// it is significantly faster to loop i explicitly, rather than
+					// for (Pt p : cell)
+					ArrayList<Pt> cell = _cells[_cols*j2+i2];
+					for (int i = 0; i < cell.size(); i++) {
+						Pt p2 = cell.get(i);
 						double dx = p2.x - p.x + (i1+di-i2)*_dx;
 						double dy = p2.y - p.y + (j1+dj-j2)*_dx;
 						if (dx*dx + dy*dy < R*R)

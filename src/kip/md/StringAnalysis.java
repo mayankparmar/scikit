@@ -12,13 +12,11 @@ public class StringAnalysis {
 	private double _memoryTime;
 	private ArrayList<Config> _history = new ArrayList<Config>();
 	private Accumulator _dx2, _dx4;
-	private MolecularDynamics2D<?> _md;
-	private double _dim;
+	private ParticleContext _pc;
 	
-	public StringAnalysis(MolecularDynamics2D<?> md, double memoryTime, double dt, double dim) {
-		_md = md;
+	public StringAnalysis(ParticleContext pc, double memoryTime, double dt) {
+		_pc = pc;
 		_memoryTime = memoryTime;
-		_dim = dim;
 		
 		_dx2 = new Accumulator(dt);
 		_dx4 = new Accumulator(dt);
@@ -42,7 +40,7 @@ public class StringAnalysis {
 			double t = last.time - prev.time;
 			if (t > 0) {
 				for (int i = 0; i < prev.ps.length; i++) {
-					double del2 = _md.displacement(prev.ps[i],last.ps[i]).norm2();
+					double del2 = _pc.displacement(prev.ps[i],last.ps[i]).norm2();
 					_dx2.accum(t, del2);
 					_dx4.accum(t, del2*del2);
 				}
@@ -51,14 +49,13 @@ public class StringAnalysis {
 	}
 	
 	public DataSet getAlpha() {
-//		DynamicArray ret = new DynamicArray();		
-//		for (double x : _dx2.keys()) {
-//			double dx2 = _dx2.eval(x);
-//			double dx4 = _dx4.eval(x);
-//			ret.append2(x, dx4/((1.0+2.0/_dim)*sqr(dx2)) - 1.0);
-//		}
-//		return ret;
-		return _dx2;
+		DynamicArray ret = new DynamicArray();		
+		for (double x : _dx2.keys()) {
+			double dx2 = _dx2.eval(x);
+			double dx4 = _dx4.eval(x);
+			ret.append2(x, dx4/((1.0+2.0/_pc.dim())*sqr(dx2)) - 1.0);
+		}
+		return ret;
 	}
 
 	class Config {

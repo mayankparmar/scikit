@@ -6,22 +6,17 @@ import kip.util.Vec3;
 public class LJParticle2D extends Particle<LJParticle2D> {
 	static final double epsilon=1;
 	
-
-	public LJParticle2D(ParticleTag tag) {
-		super(tag);
-	}
-	
 	public void force(LJParticle2D that, Vec3 f) {
-		_force(tag.md.displacement(this, that), tag.radius + that.tag.radius, f);
+		_force(tag.pc.displacement(this, that), tag.radius + that.tag.radius, f);
 	}
 	public void force(Vec3 f) {
-		_force(tag.md.boundaryDistance(this), tag.radius, f);
+		_force(tag.pc.boundaryDistance(this), tag.radius, f);
 	}
 	public double potential(LJParticle2D that) {
-		return _potential(tag.md.displacement(this, that), tag.radius + that.tag.radius);
+		return _potential(tag.pc.displacement(this, that), tag.radius + that.tag.radius);
 	}
 	public double potential() {
-		return _potential(tag.md.boundaryDistance(this), tag.radius);
+		return _potential(tag.pc.boundaryDistance(this), tag.radius);
 	}
 
 	private double _potential(Vec3 d, double sigma) {
