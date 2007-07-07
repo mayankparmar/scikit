@@ -17,15 +17,13 @@ public class IsingLRStructApp extends Simulation {
 	}
 	
 	FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
-	Plot structureDisplay = new Plot("Structure Factor - Vert and Hor Components", true);
+	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component", true);
+	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component", true);
 	Plot circleStructureDisplay = new Plot("Structure Factor - Circle Average", true);
 
 	int dx;
 	StructureFactor structure;
 	IsingLR sim;
-	//Accumulator avStructH;
-	//Accumulator avStructV;
-	//Accumulator avStructC;
 	
 	public IsingLRStructApp() {
 		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
@@ -56,15 +54,17 @@ public class IsingLRStructApp extends Simulation {
 			fieldDisplay.setScale(-1, 1);
 		else
 			fieldDisplay.setAutoScale();
-		structureDisplay.setDataSet(0, structure.getAccumulatorV());
-		structureDisplay.setDataSet(2, structure.getAccumulatorH());
-		structureDisplay.setDataSet(1, structure.getAccumulatorVA());	
-		structureDisplay.setDataSet(3, structure.getAccumulatorHA());
-		circleStructureDisplay.setDataSet(0, structure.getAccumulatorC());	
-		circleStructureDisplay.setDataSet(1, structure.getAccumulatorCA());	
+		structureDisplayV.setDataSet(0, structure.getAccumulatorV());
+		structureDisplayH.setDataSet(0, structure.getAccumulatorH());
+		structureDisplayV.setDataSet(1, structure.getAccumulatorVA());	
+		structureDisplayH.setDataSet(1, structure.getAccumulatorHA());
+		circleStructureDisplay.setDataSet(2, structure.getAccumulatorC());	
+		circleStructureDisplay.setDataSet(3, structure.getAccumulatorCA());	
 	
 		if (flags.contains("Clear S.F.")) {
-			// structure.getAccumulatorC().clear();
+			structure.getAccumulatorCA().clear();
+			structure.getAccumulatorHA().clear();
+			structure.getAccumulatorVA().clear();
 			System.out.println("clicked");
 		}
 		flags.clear();
@@ -73,7 +73,8 @@ public class IsingLRStructApp extends Simulation {
 	
 	public void run() {
 		Job.addDisplay(fieldDisplay);
-		Job.addDisplay(structureDisplay);
+		Job.addDisplay(structureDisplayV);
+		Job.addDisplay(structureDisplayH);
 		Job.addDisplay(circleStructureDisplay);
 		
 		sim = new IsingLR(params);
