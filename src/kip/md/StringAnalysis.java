@@ -1,11 +1,12 @@
 package kip.md;
 
 import java.util.ArrayList;
+import static java.lang.Math.*;
 
 import scikit.dataset.Accumulator;
 import scikit.dataset.DataSet;
 import scikit.dataset.DynamicArray;
-import scikit.util.Point;
+import scikit.graphics.Canvas;
 import static kip.util.MathPlus.*;
 
 public class StringAnalysis {
@@ -24,10 +25,10 @@ public class StringAnalysis {
 		_dx4.setAveraging(true);
 	}
 	
-	public <T extends Point> void addConfiguration(double time, T[] ps) {
-		Point[] psCopy = new Point[ps.length];
+	public void addConfiguration(double time, Particle<?>[] ps) {
+		Particle<?>[] psCopy = new Particle<?>[ps.length];
 		for (int i = 0; i < ps.length; i++) {
-			psCopy[i] = ps[i].clone();
+			psCopy[i] = (Particle<?>)ps[i].clone();
 		}
 
 		_history.add(new Config(time, psCopy));
@@ -57,11 +58,18 @@ public class StringAnalysis {
 		}
 		return ret;
 	}
-
+	
+	public void addGraphicsToCanvas(Canvas canvas) {
+		int cnt = _history.size();
+		for (int i = 0; i < cnt; i++) {
+			_pc.addGraphicsToCanvas(canvas, _history.get(i).ps);
+		}
+	}
+	
 	class Config {
 		double time;
-		Point[] ps;
-		public Config(double time, Point[] ps) {
+		Particle<?>[] ps;
+		public Config(double time, Particle<?>[] ps) {
 			this.time = time;
 			this.ps = ps;
 		}
