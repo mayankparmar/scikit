@@ -28,15 +28,16 @@ public class LennardJonesApp extends Simulation {
 	StringAnalysis strings;
 
 	public LennardJonesApp() {
-		params.add("Topology", new ChoiceValue("Torus", "Disk"));
+		params.add("String memory time", 0.5);
+		params.add("Topology", new ChoiceValue("Disk", "Torus"));
 		params.add("Length", 50.0);
 		params.add("Area fraction A", 0.7);
-		params.add("Area fraction B", 0.0);
+		params.add("Area fraction B", 0.1);
 		params.add("Radius A", 1.0);
 		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
-		params.addm("dt", 0.01);
-		params.addm("Temperature", 1.0);
+		params.addm("dt", 0.02);
+		params.addm("Temperature", 2.3);
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
 		params.add("Reduced K.E.");
@@ -58,6 +59,7 @@ public class LennardJonesApp extends Simulation {
 
 		canvas.removeAllGraphics();
 		sim.pc.addGraphicsToCanvas(canvas, sim.particles);
+//		strings.addGraphicsToCanvas(canvas);
 		canvas.addGraphics(voronoi);
 		
 		alphaplot.removeAllGraphics();
@@ -102,16 +104,15 @@ public class LennardJonesApp extends Simulation {
 		}
 		
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
-		strings = new StringAnalysis(pc, 100, 0.1);
+		strings = new StringAnalysis(pc, params.fget("String memory time"), 0.1);
 		
 		Job.animate();
 		while (true) {
-			long t1 = System.currentTimeMillis();
-			for (int i = 0; i < 50; i++)
+			for (int i = 0; i < 10; i++) {
 				sim.step();
-			long t2 = System.currentTimeMillis();
-			System.out.println(t2 - t1);
-//			strings.addConfiguration(sim.time(), sim.particles);
+				Job.yield();
+			}
+			strings.addConfiguration(sim.time(), sim.particles);
 			Job.animate();
 		}
 	}
