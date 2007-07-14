@@ -2,10 +2,10 @@ package kip.md.apps;
 
 import static java.lang.Math.*;
 import java.awt.Color;
+import java.io.File;
 
 
 import scikit.graphics.Canvas2D;
-import scikit.graphics.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -22,22 +22,21 @@ import kip.md.StringAnalysis;
 
 
 public class LennardJonesApp extends Simulation {
-	Plot alphaplot = new Plot("Total energy");
 	Canvas2D canvas = new Canvas2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
-	StringAnalysis strings;
+//	StringAnalysis strings;
 
 	public LennardJonesApp() {
-		params.add("String memory time", 0.5);
+		params.add("Output directory", "/Users/kbarros/Desktop/output");
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
-		params.add("Length", 50.0);
-		params.add("Area fraction A", 0.7);
-		params.add("Area fraction B", 0.1);
+		params.add("Length", 100.0);
+		params.add("Area fraction A", 0.8);
+		params.add("Area fraction B", 0.0);
 		params.add("Radius A", 1.0);
 		params.add("Radius B", 0.7);
 		params.add("Epsilon", 1.0);
-		params.addm("dt", 0.02);
-		params.addm("Temperature", 2.3);
+		params.addm("dt", 0.01);
+		params.addm("Temperature", 2);
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
 		params.add("Reduced K.E.");
@@ -54,28 +53,24 @@ public class LennardJonesApp extends Simulation {
 		params.set("Time", format(sim.time()));
 		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
 
-		VoronoiGraphics voronoi = new VoronoiGraphics(new Bounds(0, sim.pc.L, 0, sim.pc.L));		
+//		VoronoiGraphics voronoi = new VoronoiGraphics(new Bounds(0, sim.pc.L, 0, sim.pc.L));		
 //		voronoi.construct(phase, 2, 0, NA+NB);
 
 		canvas.removeAllGraphics();
 		sim.pc.addGraphicsToCanvas(canvas, sim.particles);
 //		strings.addGraphicsToCanvas(canvas);
-		canvas.addGraphics(voronoi);
-		
-		alphaplot.removeAllGraphics();
-		alphaplot.addLines(strings.getAlpha(), Color.BLUE);
+//		canvas.addGraphics(voronoi);
 	}
 
 	public void run() {
 		Job.addDisplay(canvas);
-		Job.addDisplay(alphaplot);
 		
 		double L = params.fget("Length");
 		ParticleContext pc = new ParticleContext(L, ParticleContext.typeForString(params.sget("Topology")));
 		double dt = params.fget("dt");		
 
-		ParticleTag tagA = new ParticleTag();
-		ParticleTag tagB = new ParticleTag();
+		ParticleTag tagA = new ParticleTag(1);
+		ParticleTag tagB = new ParticleTag(2);
 		tagA.pc = pc;
 		tagB.pc = pc;
 		tagA.radius = params.fget("Radius A");
@@ -103,8 +98,9 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i].tag = tagB;
 		}
 		
+		String dir = params.sget("Output directory") + File.separator;
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
-		strings = new StringAnalysis(pc, params.fget("String memory time"), 0.1);
+//		strings = new StringAnalysis(pc, params.fget("String memory time"), 0.1);
 		
 		Job.animate();
 		while (true) {
@@ -112,8 +108,9 @@ public class LennardJonesApp extends Simulation {
 				sim.step();
 				Job.yield();
 			}
-			strings.addConfiguration(sim.time(), sim.particles);
 			Job.animate();
+//			strings.addConfiguration(sim.time(), sim.particles);
+			ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
 		}
 	}
 }

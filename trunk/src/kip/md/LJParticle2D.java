@@ -3,16 +3,16 @@ package kip.md;
 import kip.util.Vec3;
 
 
-public class LJParticle2D extends Particle<LJParticle2D> {
+public class LJParticle2D extends Particle {
 	static final double epsilon=1;
 	
-	public void force(LJParticle2D that, Vec3 f) {
+	public void force(Particle that, Vec3 f) {
 		_force(tag.pc.displacement(this, that), tag.radius + that.tag.radius, f);
 	}
 	public void force(Vec3 f) {
 		_force(tag.pc.boundaryDistance(this), tag.radius, f);
 	}
-	public double potential(LJParticle2D that) {
+	public double potential(Particle that) {
 		return _potential(tag.pc.displacement(this, that), tag.radius + that.tag.radius);
 	}
 	public double potential() {

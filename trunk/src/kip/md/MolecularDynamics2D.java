@@ -9,7 +9,7 @@ import kip.util.Vec3;
 import scikit.numerics.ode.*;
 
 
-public class MolecularDynamics2D<Pt extends Particle<Pt>> {
+public class MolecularDynamics2D<Pt extends Particle> {
 	public Random rand = new Random(0);
 	public ParticleContext pc;
 	public Pt[] particles;
