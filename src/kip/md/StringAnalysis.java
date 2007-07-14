@@ -1,7 +1,6 @@
 package kip.md;
 
 import java.util.ArrayList;
-import static java.lang.Math.*;
 
 import scikit.dataset.Accumulator;
 import scikit.dataset.DataSet;
@@ -25,10 +24,10 @@ public class StringAnalysis {
 		_dx4.setAveraging(true);
 	}
 	
-	public void addConfiguration(double time, Particle<?>[] ps) {
-		Particle<?>[] psCopy = new Particle<?>[ps.length];
+	public void addConfiguration(double time, Particle[] ps) {
+		Particle[] psCopy = new Particle[ps.length];
 		for (int i = 0; i < ps.length; i++) {
-			psCopy[i] = (Particle<?>)ps[i].clone();
+			psCopy[i] = (Particle)ps[i].clone();
 		}
 
 		_history.add(new Config(time, psCopy));
@@ -68,8 +67,8 @@ public class StringAnalysis {
 	
 	class Config {
 		double time;
-		Particle<?>[] ps;
-		public Config(double time, Particle<?>[] ps) {
+		Particle[] ps;
+		public Config(double time, Particle[] ps) {
 			this.time = time;
 			this.ps = ps;
 		}

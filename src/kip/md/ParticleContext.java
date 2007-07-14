@@ -1,8 +1,23 @@
 package kip.md;
 
-import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.ceil;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.periodicOffset;
+
+import java.awt.Color;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
@@ -99,7 +114,7 @@ public class ParticleContext {
 	}
 	
 	
-	public void layOutParticles(Random rand, Particle<?>[] particles) {
+	public void layOutParticles(Random rand, Particle[] particles) {
 		int N = particles.length;
 		int[] indices = Utilities.integerSequence(N);
 		rand.randomizeArray(indices);
@@ -131,16 +146,91 @@ public class ParticleContext {
 			break;
 		}
 	}
-
 	
 	
-	public void addGraphicsToCanvas(Canvas canvas, final Particle<?>[] particles) {
+	public static void dumpParticles(String filename, Particle[] particles) {
+	  	try {
+	  		DataOutputStream dos = new DataOutputStream(new FileOutputStream(filename));
+	  		
+	  		// write context
+	  		ParticleContext pc = particles[0].tag.pc;
+	  		dos.writeDouble(pc.L);
+	  		dos.writeBoolean(pc.type == Type.Torus2D);
+	  		
+	  		// write tags
+	  		Set<ParticleTag> tags = new HashSet<ParticleTag>();
+	  		for (Particle p : particles)
+	  			tags.add(p.tag);
+	  		dos.writeInt(tags.size());
+	  		for (ParticleTag tag : tags) {
+	  			dos.writeInt(tag.id);
+	  			dos.writeDouble(tag.mass);
+	  			dos.writeDouble(tag.radius);
+	  			dos.writeInt(tag.color.getRed());
+	  			dos.writeInt(tag.color.getGreen());
+	  			dos.writeInt(tag.color.getBlue());
+	  		}
+	  		
+	  		// write particles
+	  		dos.writeInt(particles.length);
+	  		for (Particle p : particles) {
+	  			dos.writeInt(p.tag.id);
+	  			dos.writeDouble(p.x);
+	  			dos.writeDouble(p.y);
+	  			dos.writeDouble(p.z);
+	  		}
+	  		dos.close();
+	  	}
+    	catch (IOException e) {}
+	}
+	
+	public static Particle[] readParticles(String filename) {
+		Particle[] ret = null;
+		try {
+		    DataInputStream dis = new DataInputStream(new FileInputStream(filename));
+		    
+		    // read context
+		    double L = dis.readDouble();
+		    Type type = dis.readBoolean() ? Type.Torus2D : Type.Disk2D;
+		    ParticleContext pc = new ParticleContext(L, type);
+		    
+		    // read tags
+		    Map<Integer, ParticleTag> tags = new TreeMap<Integer, ParticleTag>();
+		    int ntags = dis.readInt();
+		    for (int i = 0; i < ntags; i++) {
+		    	ParticleTag tag = new ParticleTag(dis.readInt());
+		    	tag.pc = pc;
+		    	tag.mass = dis.readDouble();
+		    	tag.radius = dis.readDouble();
+		    	tag.color = new Color(dis.readInt(), dis.readInt(), dis.readInt());
+		    	tags.put(tag.id, tag);
+		    }
+		    
+		    // read particles
+			ret = new Particle[dis.readInt()];
+			for (int i = 0; i < ret.length; i++) {
+				ret[i] = new Particle();
+			    ret[i].tag = tags.get(dis.readInt());
+			    ret[i].x = dis.readDouble();
+			    ret[i].y = dis.readDouble();
+			    ret[i].z = dis.readDouble();
+			}
+		    dis.close();
+		}
+		catch (IOException e) {
+			System.err.println ("Unable to read from '" + filename + "'");
+		}
+		return ret;
+	}
+	
+	
+	public void addGraphicsToCanvas(Canvas canvas, final Particle[] particles) {
 		final GLU glu = new GLU();
 		final GLUquadric quadric = glu.gluNewQuadric();
 		
 		Graphics graphics = new Graphics() {
 			public void draw(GL gl, Bounds bounds) {
-				for (Particle<?> p : particles) {
+				for (Particle p : particles) {
 					gl.glColor4fv(p.tag.color.getComponents(null), 0);
 					gl.glPushMatrix();		
 					gl.glTranslated(p.x, p.y, 0);

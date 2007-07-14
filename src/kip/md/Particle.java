@@ -4,12 +4,20 @@ import kip.util.Vec3;
 import scikit.util.Point;
 
 
-abstract public class Particle<T extends Particle<T>> extends Point {
+public class Particle extends Point {
 	public double vx = 0, vy = 0, vz = 0;
 	public ParticleTag tag;
 	
-	abstract public void force(T that, Vec3 f);
-	abstract public void force(Vec3 f);
-	abstract public double potential(T that);
-	abstract public double potential();
+	public void force(Particle that, Vec3 f) {
+		f.x = f.y = f.z = 0;
+	}
+	public void force(Vec3 f) {
+		f.x = f.y = f.z = 0;
+	}
+	public double potential(Particle that) {
+		return 0;
+	}
+	public double potential() {
+		return 0;
+	}
 }
