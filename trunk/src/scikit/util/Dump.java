@@ -62,8 +62,17 @@ public class Dump {
     }
     
     
-    public static void dumpColumns(String str, double[] data, int cols) {
-    	try { writeColumns(pwFromString(str), data, cols); }
+    public static void dumpString(String fname, String str) {
+    	try {
+    		PrintWriter pw = pwFromString(fname);
+    		pw.write(str);
+    		pw.close();
+    	}
+    	catch (IOException e) {}
+    }
+    
+    public static void dumpColumns(String fname, double[] data, int cols) {
+    	try { writeColumns(pwFromString(fname), data, cols); }
     	catch (IOException e) {}
     }
 }

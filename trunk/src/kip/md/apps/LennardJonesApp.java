@@ -10,21 +10,19 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.util.Dump;
 import static scikit.util.Utilities.*;
-//import scikit.util.Bounds;
 
 //import kip.geometry.VoronoiGraphics;
 import kip.md.LJParticle2D;
 import kip.md.MolecularDynamics2D;
 import kip.md.ParticleContext;
 import kip.md.ParticleTag;
-//import kip.md.StringAnalysis;
 
 
 public class LennardJonesApp extends Simulation {
 	Scene2D canvas = new Scene2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
-//	StringAnalysis strings;
 
 	public LennardJonesApp() {
 		params.add("Output directory", "/Users/kbarros/Desktop/output");
@@ -53,11 +51,10 @@ public class LennardJonesApp extends Simulation {
 		params.set("Time", format(sim.time()));
 		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
 
-//		VoronoiGraphics voronoi = new VoronoiGraphics(new Bounds(0, sim.pc.L, 0, sim.pc.L));		
+//		VoronoiGraphics voronoi = new VoronoiGraphics(sim.pc.getBounds());		
 //		voronoi.construct(phase, 2, 0, NA+NB);
 
 		canvas.animate(sim.pc.getDrawables(sim.particles));
-//		strings.addGraphicsToCanvas(canvas);
 //		canvas.addGraphics(voronoi);
 	}
 	
@@ -100,8 +97,9 @@ public class LennardJonesApp extends Simulation {
 		}
 		
 		String dir = params.sget("Output directory") + File.separator;
+		Dump.dumpString(dir + "parameters.txt", params.toString());
+
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
-//		strings = new StringAnalysis(pc, params.fget("String memory time"), 0.1);
 		
 		Job.animate();
 		while (true) {
@@ -110,7 +108,6 @@ public class LennardJonesApp extends Simulation {
 				Job.yield();
 			}
 			Job.animate();
-//			strings.addConfiguration(sim.time(), sim.particles);
 			ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
 		}
 	}

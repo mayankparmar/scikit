@@ -16,7 +16,14 @@ public class Parameters {
 		for (int i = 0; i < keyvals.length; i += 2)
 			add((String)keyvals[i], keyvals[i+1]);
 	}
-
+	
+	public String toString() {
+		StringBuilder ret = new StringBuilder();
+		for (String k : keys)
+			ret.append(k + " = " + getValue(k).get() + "\n");
+		return ret.toString();
+	}
+	
 	public void setDefaults() {
 		for (String k : keys) {
 			set(k, getValue(k).getDefault());

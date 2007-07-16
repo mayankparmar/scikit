@@ -156,12 +156,12 @@ public class WangLandau extends Simulation {
 		
 		
 		densityPlot.resetViewWindow();
-		densityPlot.animate(Plot.points(densityData, Color.BLUE));
+		densityPlot.addPoints("Density", densityData, Color.BLUE);
 		
-		histogramPlot.animate(Plot.points(histogramData, Color.BLACK));
+		histogramPlot.addPoints("Histogram", histogramData, Color.BLACK);
 		
 		heatPlot.resetViewWindow();
-		heatPlot.animate(Plot.lines(heatData, Color.RED));
+		heatPlot.addLines("Heat capacity", heatData, Color.RED);
 	}
 	
 	public void clear() {

@@ -2,6 +2,7 @@ package scikit.graphics;
 
 import java.awt.Canvas;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import scikit.util.Bounds;
@@ -32,8 +33,7 @@ public class Scene {
 	
 	public void animate(Drawable... drawables) {
 		_drawables.clear();
-		for (Drawable d : drawables)
-			_drawables.add(d);
+		_drawables.addAll(Arrays.asList(drawables));
 		_curBounds = calculateCurrentBounds();
 		_canvas.repaint();
 	}
