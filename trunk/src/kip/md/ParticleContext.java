@@ -14,20 +14,17 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
-
 import kip.util.Random;
 import kip.util.Vec3;
-import scikit.graphics.Canvas;
-import scikit.graphics.CircleGraphics;
 import scikit.graphics.Graphics;
+import scikit.graphics.CircleGraphics;
+import scikit.graphics.Drawable;
 import scikit.graphics.RectangleGraphics;
 import scikit.util.Bounds;
 import scikit.util.Point;
@@ -224,32 +221,28 @@ public class ParticleContext {
 	}
 	
 	
-	public void addGraphicsToCanvas(Canvas canvas, final Particle[] particles) {
-		final GLU glu = new GLU();
-		final GLUquadric quadric = glu.gluNewQuadric();
+	public Drawable[] getDrawables(final Particle[] particles) {
+		ArrayList<Drawable> drawables = new ArrayList<Drawable>();
 		
-		Graphics graphics = new Graphics() {
-			public void draw(GL gl, Bounds bounds) {
+		drawables.add(new Drawable() {
+			public void draw(Graphics g) {
 				for (Particle p : particles) {
-					gl.glColor4fv(p.tag.color.getComponents(null), 0);
-					gl.glPushMatrix();		
-					gl.glTranslated(p.x, p.y, 0);
-					glu.gluDisk(quadric, 0, p.tag.radius, 12, 1);
-					gl.glPopMatrix();
+					g.setColor(p.tag.color);
+					g.fillCircle(p.x, p.y, p.tag.radius);
 				}
 			}
 			public Bounds getBounds() {
 				return new Bounds(0, L, 0, L);
 			}			
-		};
-		canvas.addGraphics(graphics);
+		});
 		switch (type) {
 		case Disk2D:
-			canvas.addGraphics(new CircleGraphics(L/2., L/2., L/2.));
+			drawables.add(new CircleGraphics(L/2., L/2., L/2.));
 			break;
 		case Torus2D:
-			canvas.addGraphics(new RectangleGraphics(0., 0., L, L));
+			drawables.add(new RectangleGraphics(0., 0., L, L));
 			break;
 		}
+		return drawables.toArray(new Drawable[0]);
 	}
 }

@@ -2,11 +2,9 @@ package scikit.graphics;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
-
 import scikit.util.Bounds;
 
-public class RectangleGraphics implements Graphics {
+public class RectangleGraphics implements Drawable {
 	private double _x, _y, _w, _h;
 	private Bounds _bounds;
 	private Color _color = Color.BLACK;
@@ -19,14 +17,9 @@ public class RectangleGraphics implements Graphics {
 		_bounds = new Bounds(x, x+w, y, y+h);
 	}
 	
-	public void draw(GL gl, Bounds bounds) {
-		gl.glColor3fv(_color.getColorComponents(null), 0);
-		gl.glBegin(GL.GL_LINE_LOOP);
-		gl.glVertex2d(_x, _y);
-		gl.glVertex2d(_x+_w, _y);
-		gl.glVertex2d(_x+_w, _y+_h);
-		gl.glVertex2d(_x, _y+_h);
-		gl.glEnd();
+	public void draw(Graphics g) {
+		g.setColor(_color);
+		g.drawRect(_x, _y, _w, _h);
 	}
 
 	public Bounds getBounds() {

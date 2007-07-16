@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import scikit.dataset.Accumulator;
 import scikit.dataset.DataSet;
 import scikit.dataset.DynamicArray;
-import scikit.graphics.Canvas;
+import scikit.graphics.Scene;
 import static kip.util.MathPlus.*;
 
 public class StringAnalysis {
@@ -58,11 +58,11 @@ public class StringAnalysis {
 		return ret;
 	}
 	
-	public void addGraphicsToCanvas(Canvas canvas) {
-		int cnt = _history.size();
-		for (int i = 0; i < cnt; i++) {
-			_pc.addGraphicsToCanvas(canvas, _history.get(i).ps);
-		}
+	public void addGraphicsToCanvas(Scene canvas) {
+//		int cnt = _history.size();
+//		for (int i = 0; i < cnt; i++) {
+//			_pc.addGraphicsToCanvas(canvas, _history.get(i).ps);
+//		}
 	}
 	
 	class Config {

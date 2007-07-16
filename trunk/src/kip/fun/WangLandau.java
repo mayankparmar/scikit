@@ -34,10 +34,6 @@ public class WangLandau extends Simulation {
 	}
 
 	public void run() {
-		Job.addDisplay(densityPlot);
-		Job.addDisplay(histogramPlot);
-		Job.addDisplay(heatPlot);
-		
 		L = params.iget("L");
 		density = params.fget("Impurity density");
 
@@ -159,16 +155,19 @@ public class WangLandau extends Simulation {
 			heatData.accum(T, Thermodynamics.heatCapacity(N, g, 1/T));
 		
 		
-		densityPlot.removeAllGraphics();
-		densityPlot.addPoints(densityData, Color.BLUE);
 		densityPlot.resetViewWindow();
+		densityPlot.animate(Plot.points(densityData, Color.BLUE));
 		
-		histogramPlot.removeAllGraphics();
-		histogramPlot.addPoints(histogramData, Color.BLACK);
+		histogramPlot.animate(Plot.points(histogramData, Color.BLACK));
 		
-		heatPlot.removeAllGraphics();
 		heatPlot.resetViewWindow();
-		heatPlot.addLines(heatData, Color.RED);
+		heatPlot.animate(Plot.lines(heatData, Color.RED));
+	}
+	
+	public void clear() {
+		densityPlot.clear();
+		histogramPlot.clear();
+		heatPlot.clear();
 	}
 }
 
