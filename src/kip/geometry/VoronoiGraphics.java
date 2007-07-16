@@ -2,11 +2,12 @@ package kip.geometry;
 
 import javax.media.opengl.GL;
 
+import scikit.graphics.Drawable;
 import scikit.graphics.Graphics;
 import scikit.util.Bounds;
 import scikit.util.Point;
 
-public class VoronoiGraphics implements Graphics {
+public class VoronoiGraphics implements Drawable {
 	private Bounds _bds;
 	private QHull _geom;
 	private Point[][] _faces;
@@ -24,7 +25,8 @@ public class VoronoiGraphics implements Graphics {
 		_faces = _geom.constructVoronoi2D(state, stride, N0, N1);
 	}
 	
-	public void draw(GL gl, Bounds bounds) {
+	public void draw(Graphics g) {
+		GL gl = (GL)g.engine();
 		if (_faces == null)
 			return;
 		

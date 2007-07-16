@@ -1,7 +1,7 @@
 package kip.md.apps;
 
-import static scikit.util.Utilities.format;
-import static java.lang.Math.*;
+//import static scikit.util.Utilities.format;
+//import static java.lang.Math.*;
 
 import java.awt.Color;
 import java.io.File;
@@ -12,7 +12,7 @@ import kip.md.Particle;
 import kip.md.ParticleContext;
 
 import scikit.dataset.Accumulator;
-import scikit.graphics.Canvas2D;
+import scikit.graphics.Scene2D;
 import scikit.graphics.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -21,7 +21,7 @@ import scikit.jobs.Simulation;
 
 public class AnalysisApp extends Simulation {
 	Plot wplot = new Plot("Mean squared displacement");
-	Canvas2D canvas = new Canvas2D("Particles");
+	Scene2D canvas = new Scene2D("Particles");
 	SnapshotArray snapshots;
 	Accumulator dx2;
 	
@@ -40,9 +40,7 @@ public class AnalysisApp extends Simulation {
 //		snapshots.getContext().addGraphicsToCanvas(canvas, snapshots.get(time));
 //		canvas.animate();
 		
-		wplot.removeAllGraphics();
-		wplot.addLines(dx2, Color.BLUE);
-		wplot.animate();
+		wplot.animate(Plot.lines(dx2, Color.BLUE));
 	}
 	
 	public void run() {

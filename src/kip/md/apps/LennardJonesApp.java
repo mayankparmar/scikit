@@ -5,24 +5,24 @@ import java.awt.Color;
 import java.io.File;
 
 
-import scikit.graphics.Canvas2D;
+import scikit.graphics.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import static scikit.util.Utilities.*;
-import scikit.util.Bounds;
+//import scikit.util.Bounds;
 
-import kip.geometry.VoronoiGraphics;
+//import kip.geometry.VoronoiGraphics;
 import kip.md.LJParticle2D;
 import kip.md.MolecularDynamics2D;
 import kip.md.ParticleContext;
 import kip.md.ParticleTag;
-import kip.md.StringAnalysis;
+//import kip.md.StringAnalysis;
 
 
 public class LennardJonesApp extends Simulation {
-	Canvas2D canvas = new Canvas2D("Particles");
+	Scene2D canvas = new Scene2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
 //	StringAnalysis strings;
 
@@ -56,15 +56,16 @@ public class LennardJonesApp extends Simulation {
 //		VoronoiGraphics voronoi = new VoronoiGraphics(new Bounds(0, sim.pc.L, 0, sim.pc.L));		
 //		voronoi.construct(phase, 2, 0, NA+NB);
 
-		canvas.removeAllGraphics();
-		sim.pc.addGraphicsToCanvas(canvas, sim.particles);
+		canvas.animate(sim.pc.getDrawables(sim.particles));
 //		strings.addGraphicsToCanvas(canvas);
 //		canvas.addGraphics(voronoi);
 	}
+	
+	public void clear() {
+		canvas.clear();
+	}
 
 	public void run() {
-		Job.addDisplay(canvas);
-		
 		double L = params.fget("Length");
 		ParticleContext pc = new ParticleContext(L, ParticleContext.typeForString(params.sget("Topology")));
 		double dt = params.fget("dt");		

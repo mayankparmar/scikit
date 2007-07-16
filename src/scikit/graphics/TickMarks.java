@@ -2,25 +2,19 @@ package scikit.graphics;
 
 import static java.lang.Math.*;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Vector;
 
-import javax.media.opengl.GL;
-
-import com.sun.opengl.util.GLUT;
-
 import scikit.util.Bounds;
 
 
-public class TickMarks implements Graphics {
+public class TickMarks implements Drawable {
 	private Canvas _canvas;
 	
-	private static GLUT glut = new GLUT();
-	private static int FONT = GLUT.BITMAP_8_BY_13;
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
 	// pixel length constants
-	private static int FONT_HEIGHT = 8;
 	private static int MARGIN = 4;
 	private static int LABEL_CUTOFF = 15;
 	
@@ -32,11 +26,11 @@ public class TickMarks implements Graphics {
 		_canvas = canvas;
 	}
 	
-	public void draw(GL gl, Bounds bounds) {
+	public void draw(Graphics g) {
 		double w = _canvas.getWidth();
 		double h = _canvas.getHeight();
-		paintTicks(gl, w, h, bounds);
-		paintLabels(gl, w, h, bounds);
+		paintTicks(g, w, h, g.scene().dataBounds());
+		paintLabels(g, w, h, g.scene().dataBounds());
 	}
 
 	public Bounds getBounds() {
@@ -102,49 +96,36 @@ public class TickMarks implements Graphics {
 	}
 	
 	
-	private static void paintTicks(GL gl, double w, double h, Bounds bounds) {
-		gl.glColor3d(0.82f, 0.82f, 0.87f); // light gray
-		gl.glBegin(GL.GL_LINES);
-		
+	private static void paintTicks(Graphics g, double w, double h, Bounds bounds) {
+		g.setColor(new Color(0.82f, 0.82f, 0.87f)); // light gray
 		for (double x : getTicks(bounds.xmin, bounds.xmax, w*TICKS_PER_PIXEL)) {
-			gl.glVertex2d(x, bounds.ymin);
-			gl.glVertex2d(x, bounds.ymax);
+			g.drawLine(x, bounds.ymin, x, bounds.ymax);
 		}
 		for (double y : getTicks(bounds.ymin, bounds.ymax, h*TICKS_PER_PIXEL)) {
-			gl.glVertex2d(bounds.xmin, y);
-			gl.glVertex2d(bounds.xmax, y);
+			g.drawLine(bounds.xmin, y, bounds.xmax, y);
 		}
-		
-		gl.glEnd();
 	}
 	
 	
-	private static void paintLabels(GL gl, double pixWidth, double pixHeight, Bounds bounds) {
+	private static void paintLabels(Graphics g, double pixWidth, double pixHeight, Bounds bounds) {
 		double widthPerPix = bounds.getWidth() / pixWidth;
 		double heightPerPix = bounds.getHeight() / pixHeight;
 		
-		gl.glColor3d(0, 0, 0);
-		double FUDGE = 0.5; // this fudge factor prevents "jitters". weirdness in GL pixel addressing?
+		g.setColor(Color.BLACK);
 		
 		for (double x : getTicks(bounds.xmin, bounds.xmax, pixWidth*TICKS_PER_PIXEL)) {
 			if (min(x-bounds.xmin, bounds.xmax-x) < LABEL_CUTOFF*widthPerPix)
 				continue;
-			gl.glPushMatrix();
 			String label = tickToString(x, bounds.getWidth());
-			int len = glut.glutBitmapLength(FONT, " "+label);
-			gl.glRasterPos2d(x-len*widthPerPix/2, bounds.ymin+(MARGIN+FUDGE)*heightPerPix);
-			glut.glutBitmapString(FONT, label); 
-			gl.glPopMatrix();
+			double y = bounds.ymin + MARGIN*heightPerPix;
+			g.drawString(label, x-g.stringWidth(" "+label)/2, y);
 		}
 		for (double y : getTicks(bounds.ymin, bounds.ymax, pixHeight*TICKS_PER_PIXEL)) {
 			if (min(y-bounds.ymin, bounds.ymax-y) < LABEL_CUTOFF*heightPerPix)
 				continue;
-			gl.glPushMatrix();
 			String label = tickToString(y, bounds.getHeight());
-			gl.glRasterPos2d(bounds.xmin+MARGIN*widthPerPix, y-FONT_HEIGHT*heightPerPix/2);
-			glut.glutBitmapString(FONT, label); 
-			gl.glPopMatrix();
+			double x = bounds.xmin + MARGIN*widthPerPix;
+			g.drawString(label, x, y-g.stringHeight(label)/2);
 		}
 	}
-	
 }

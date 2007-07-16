@@ -1,16 +1,16 @@
 package scikit.graphics;
 
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
-import javax.media.opengl.GL;
 
 import scikit.util.*;
 
 
-public class Canvas2D extends Canvas {
+public class Scene2D extends Scene {
 	
 	// when the user zooms out (double clicks to "resetViewWindow()"), the current
 	// view bounds is set to topBounds (and then extended to fit data).
@@ -23,15 +23,20 @@ public class Canvas2D extends Canvas {
 	protected Point _selectionStart = new Point(), _selectionEnd = new Point();
 	
 	
-	public Canvas2D() {
+	public Scene2D() {
 		super();
 		_canvas.addMouseListener(_mouseListener);
 		_canvas.addMouseMotionListener(_mouseMotionListener);		
 	}
 	
-	public Canvas2D(String title) {
+	public Scene2D(String title) {
 		this();
 		scikit.util.Utilities.frame(_canvas, title);
+	}
+	
+	public void animate(Drawable... drawables) {
+		super.animate(drawables);
+		_drawables.add(_selectionGraphics);
 	}
 	
 	public void clear() {
@@ -54,21 +59,16 @@ public class Canvas2D extends Canvas {
 	
 	public void resetViewWindow() {
 		if (!_zoomed)
-			_curBounds = _topBounds.createUnion(super.getCurrentBounds());
+			_curBounds = _topBounds.createUnion(super.calculateCurrentBounds());
 	}
 	
-	protected Bounds getCurrentBounds() {
+	protected Bounds calculateCurrentBounds() {
 		if (_zoomed)
 			return _curBounds;
 		else
-			return _curBounds.createUnion(_topBounds, super.getCurrentBounds());			
+			return _curBounds.createUnion(_topBounds, super.calculateCurrentBounds());
 	}
-	
-	protected void drawAllGraphics(GL gl, Bounds bounds) {
-		super.drawAllGraphics(gl, bounds);
-		_selectionGraphics.draw(gl, bounds);
-	}
-	
+		
 	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
 		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
@@ -93,14 +93,14 @@ public class Canvas2D extends Canvas {
 				_zoomed = false;
 				_selectionActive = false;
 				resetViewWindow();
-				animate();
+				_canvas.repaint();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
 			_selectionStart = eventToPix(event);
 			_selectionEnd = eventToPix(event);
 			_selectionActive = true;
-			animate();
+			_canvas.repaint();
 		}
 		public void mouseReleased(MouseEvent event) {
 			if (_selectionActive) {
@@ -111,7 +111,7 @@ public class Canvas2D extends Canvas {
 					_curBounds = bds;
 				}
 				_selectionActive = false;
-				animate();
+				_canvas.repaint();
 			}
 		}
 	};
@@ -119,32 +119,22 @@ public class Canvas2D extends Canvas {
 	private MouseMotionListener _mouseMotionListener = new MouseMotionAdapter() {
 		public void mouseDragged(MouseEvent event) {
 			_selectionEnd = eventToPix(event);
-			animate();
+			_canvas.repaint();
 		}
 	};
 	
-	private Graphics _selectionGraphics = new Graphics() {
-		public void draw(GL gl, Bounds bounds) {
+	private Drawable _selectionGraphics = new Drawable() {
+		public void draw(Graphics g) {
 			if (_selectionActive) {
-				setIdentityProjection(gl);
+				g.projectOrtho2D(g.scene().canvasBounds());
 				
-				gl.glColor4f(0.3f, 0.6f, 0.5f, 0.2f);
-				gl.glBegin(GL.GL_QUADS);
-				gl.glVertex2d(_selectionStart.x, _selectionStart.y);
-				gl.glVertex2d(_selectionStart.x, _selectionEnd.y);
-				gl.glVertex2d(_selectionEnd.x, _selectionEnd.y);
-				gl.glVertex2d(_selectionEnd.x, _selectionStart.y);
-				gl.glEnd();
-
-				gl.glColor4f(0.2f, 0.2f, 0.2f, 0.7f);
-				gl.glBegin(GL.GL_LINE_LOOP);
-				gl.glVertex2d(_selectionStart.x, _selectionStart.y);
-				gl.glVertex2d(_selectionStart.x, _selectionEnd.y);
-				gl.glVertex2d(_selectionEnd.x, _selectionEnd.y);
-				gl.glVertex2d(_selectionEnd.x, _selectionStart.y);
-				gl.glEnd();
+				Bounds sel = new Bounds(_selectionStart, _selectionEnd);
+				g.setColor(new Color(0.3f, 0.6f, 0.5f, 0.2f));
+				g.fillRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
+				g.setColor(new Color(0.2f, 0.2f, 0.2f, 0.7f));
+				g.drawRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
 				
-				setDataProjection(gl);
+				g.projectOrtho2D(g.scene().dataBounds());
 			}
 		}
 		public Bounds getBounds() {
