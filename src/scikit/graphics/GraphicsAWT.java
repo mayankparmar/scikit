@@ -19,11 +19,6 @@ public class GraphicsAWT implements Graphics {
 	public Scene scene() {
 		return scene;
 	}
-	
-	
-	public static Canvas createCanvas(Scene scene) {
-		return new Canvas();
-	}
 
 	public void projectOrtho2D(Bounds bds) {
 	}
@@ -63,4 +58,7 @@ public class GraphicsAWT implements Graphics {
 	public void drawString(String str, double x, double y) {
 	}
 
+	public static Canvas createCanvas(Scene scene) {
+		return new Canvas();
+	}
 }
