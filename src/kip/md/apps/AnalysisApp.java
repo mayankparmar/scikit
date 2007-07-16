@@ -1,5 +1,6 @@
 package kip.md.apps;
 
+import static java.lang.Math.*;
 //import static scikit.util.Utilities.format;
 //import static java.lang.Math.*;
 
@@ -30,7 +31,7 @@ public class AnalysisApp extends Simulation {
 	}
 	
 	public AnalysisApp() {
-		params.add("Input directory", "/Users/kbarros/Desktop/output");
+		params.add("Input directory", "/Users/kbarros/Desktop/phi=0.85");
 		params.add("time");
 	}
 	
@@ -40,7 +41,7 @@ public class AnalysisApp extends Simulation {
 //		snapshots.getContext().addGraphicsToCanvas(canvas, snapshots.get(time));
 //		canvas.animate();
 		
-		wplot.animate(Plot.lines(dx2, Color.BLUE));
+		wplot.addLines("Mean squared displacement", dx2, Color.BLUE);
 	}
 	
 	public void run() {
@@ -49,8 +50,8 @@ public class AnalysisApp extends Simulation {
 		dx2 = new Accumulator(0.1);
 		dx2.setAveraging(true);
 		
-		for (double time = 0.1; time < 30; time += 0.1) {
-			dx2.accum(time, secondMoment(time));
+		for (double time = 1; time < 100; time += 1) {
+			dx2.accum(log(time), log(secondMoment(time)));
 			Job.animate();
 		}
 	}

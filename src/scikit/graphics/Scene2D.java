@@ -6,6 +6,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import scikit.util.*;
 
@@ -35,8 +38,10 @@ public class Scene2D extends Scene {
 	}
 	
 	public void animate(Drawable... drawables) {
-		super.animate(drawables);
-		_drawables.add(_selectionGraphics);
+		List<Drawable> ds = new ArrayList<Drawable>();
+		ds.addAll(Arrays.asList(drawables));
+		ds.add(_selectionGraphics);
+		super.animate(ds.toArray(new Drawable[0]));
 	}
 	
 	public void clear() {

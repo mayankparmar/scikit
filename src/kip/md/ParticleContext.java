@@ -78,6 +78,10 @@ public class ParticleContext {
 		throw new IllegalStateException();
 	}
 	
+	public Bounds getBounds() {
+		return new Bounds(0, L, 0, L);
+	}
+	
 	Vec3 tempVec = new Vec3(0,0,0);
 	
 	public Vec3 boundaryDistance(Point p) {
