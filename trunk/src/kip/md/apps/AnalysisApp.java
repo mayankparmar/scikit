@@ -44,7 +44,7 @@ public class AnalysisApp extends Simulation {
 		
 		boolean ls = params.sget("Log scale").equals("True");
 		wplot.setLogScale(ls, ls);
-		wplot.registerLines("Mean squared displacement", dx2, Color.BLUE);
+		wplot.registerPoints("Mean squared displacement", dx2, Color.BLUE);
 	}
 	
 	public void clear() {
@@ -58,17 +58,28 @@ public class AnalysisApp extends Simulation {
 		dx2 = new Accumulator(0.1);
 		dx2.setAveraging(true);
 		
-		for (double time = 1; time < 100; time += 1) {
-			dx2.accum(time, secondMoment(time));
-			Job.animate();
+		for (int i = 0; i < 10; i++) {
+			double tf = snapshots.t_f - 10*i;
+			for (double time = 0.1; time < 2; time += 0.1) {
+				dx2.accum(time, secondMoment(tf-time, tf));
+				Job.animate();
+			}
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			double tf = snapshots.t_f - 10*i;
+			for (double time = 1; time < 100; time += 1) {
+				dx2.accum(time, secondMoment(tf-time, tf));
+				Job.animate();
+			}
 		}
 	}
 	
-	public double secondMoment(double t) {
+	public double secondMoment(double t1, double t2) {
 		double dx2 = 0;
 		
-		Particle[] ps1 = snapshots.get(snapshots.t_f - t);
-		Particle[] ps2 = snapshots.get(snapshots.t_f);
+		Particle[] ps1 = snapshots.get(t1);
+		Particle[] ps2 = snapshots.get(t2);
 		ParticleContext pc = ps1[0].tag.pc;
 		
 		for (int i = 0; i < ps1.length; i++) {
