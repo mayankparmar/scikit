@@ -64,14 +64,6 @@ public class GraphicsGL implements Graphics {
 		return pixBds.ymax * (y - datBds.ymin) / datBds.getHeight();
 	}
 	
-//	private double offsetX(double x) {
-//		return x * pixBds.getWidth() / datBds.getWidth();
-//	}
-	
-//	private double offsetY(double y) {
-//		return y * pixBds.getHeight() / datBds.getHeight(); 
-//	}
-	
 	private void vertex2d(GL gl, double x, double y) {
 		gl.glVertex2d(transX(x), transY(y));
 	}
@@ -192,7 +184,7 @@ public class GraphicsGL implements Graphics {
 				
 				Graphics g = new GraphicsGL(gl, scene);
 				g.projectOrtho2D(g.scene().dataBounds());
-				for (Drawable d : scene._drawables)
+				for (Drawable d : scene.allDrawables())
 					d.draw(g);
 			}
 			

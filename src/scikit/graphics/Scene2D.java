@@ -7,20 +7,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import scikit.util.*;
 
 
-public class Scene2D extends Scene {
-	
-	// when the user zooms out (double clicks to "resetViewWindow()"), the current
-	// view bounds is set to topBounds (and then extended to fit data).
-	protected Bounds _topBounds = new Bounds();
-	// is the view zoomed in?  this will disable autoscale
-	protected boolean _zoomed = false;
-	
+public class Scene2D extends Scene {	
 	// is the mouse selection active?
 	protected boolean _selectionActive = false;
 	protected Point _selectionStart = new Point(), _selectionEnd = new Point();
@@ -37,17 +29,15 @@ public class Scene2D extends Scene {
 		scikit.util.Utilities.frame(_canvas, title);
 	}
 	
-	public void animate(Drawable... drawables) {
+	protected List<Drawable> allDrawables() {
 		List<Drawable> ds = new ArrayList<Drawable>();
-		ds.addAll(Arrays.asList(drawables));
+		ds.addAll(super.allDrawables());
 		ds.add(_selectionGraphics);
-		super.animate(ds.toArray(new Drawable[0]));
+		return ds;
 	}
 	
-	public void clear() {
-		super.clear();
-		_curBounds = _topBounds.clone();
-		_zoomed = false;
+	public void setAutoScale(boolean autoScale) {
+		_autoScale = autoScale;
 	}
 	
 	public void setXRange(double xmin, double xmax) {
@@ -62,18 +52,6 @@ public class Scene2D extends Scene {
 		_zoomed = false;
 	}
 	
-	public void resetViewWindow() {
-		if (!_zoomed)
-			_curBounds = _topBounds.createUnion(super.calculateCurrentBounds());
-	}
-	
-	protected Bounds calculateCurrentBounds() {
-		if (_zoomed)
-			return _curBounds;
-		else
-			return _curBounds.createUnion(_topBounds, super.calculateCurrentBounds());
-	}
-		
 	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
 		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
@@ -97,7 +75,7 @@ public class Scene2D extends Scene {
 			if (event.getClickCount() > 1) {
 				_zoomed = false;
 				_selectionActive = false;
-				resetViewWindow();
+				_curBounds = _topBounds.createUnion(calculateDataBounds());
 				_canvas.repaint();
 			}
 		}
