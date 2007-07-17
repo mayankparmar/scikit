@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import scikit.dataset.DataSet;
+import scikit.dataset.Transformer;
 import scikit.util.Bounds;
+import scikit.util.Point;
 
 
 public class Plot extends Scene2D {
@@ -128,7 +130,7 @@ class DatasetDw implements Drawable {
 		Bounds bounds = g.scene().dataBounds();
 		g.setColor(_color);
 
-		double pts[] = _data.copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
+		double pts[] = transformedData().copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
 
 		for (int i = 0; i < pts.length; i += 2) {
 			switch (_style) {
@@ -146,8 +148,17 @@ class DatasetDw implements Drawable {
 		}
 	}
 
+	private DataSet transformedData() {
+		return new Transformer(_data) {
+			public void transform(Point p) {
+				if (_plot._logScaleX) p.x = log10(p.x);
+				if (_plot._logScaleY) p.y = log10(p.y);
+			}
+		};
+	}
+	
 	public Bounds getBounds() {
-		double[] bds = _data.getBounds();
+		double[] bds = transformedData().getBounds();
 		if (_style == Style.BARS) {
 			bds[2] = min(bds[2], 0);
 			bds[3] = max(bds[3], 0);
@@ -155,7 +166,7 @@ class DatasetDw implements Drawable {
 		return new Bounds(bds[0], bds[1], bds[2], bds[3]);
 	}
 
-	// implement a limited form of equality: two "dataset drawables" are equal
+	// implement a special form of equality: two "dataset drawables" are equal
 	// when their names are equal.
 	public boolean equals(Object data) {
 		if (data instanceof DatasetDw)

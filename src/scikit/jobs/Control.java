@@ -1,6 +1,9 @@
 package scikit.jobs;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import java.awt.*;
 import java.awt.event.*;
 import scikit.params.GuiValue;
@@ -90,6 +93,7 @@ public class Control {
 			b.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent event) {
 					_job.sim().flags.add(s);
+					_job.wake();
 				}
 			});
 			buttonPanel.add(b);
@@ -119,6 +123,7 @@ public class Control {
 			grid.setConstraints(label, c);
 			panel.add(label);
 			
+			// add primary editor for parameter
 			GuiValue v = _job.sim().params.getValue(k);
 			JComponent field = v.createEditor();
 			c.gridx = 1;
@@ -127,12 +132,20 @@ public class Control {
 			grid.setConstraints(field, c);
 			panel.add(field);
 			
+			// possible add auxiliary editor
 			JComponent slider = v.createAuxiliaryEditor();
 			if (slider != null) {
 				c.gridy++;
 				grid.setConstraints(slider, c);
 				panel.add(slider);
 			}
+			
+			// wake job when parameter value has changed
+			v.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent arg0) {
+					_job.wake();
+				}
+			});
 			
 			c.gridy++;
 		}
