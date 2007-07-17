@@ -54,7 +54,7 @@ public class LennardJonesApp extends Simulation {
 //		VoronoiGraphics voronoi = new VoronoiGraphics(sim.pc.getBounds());		
 //		voronoi.construct(phase, 2, 0, NA+NB);
 
-		canvas.animate(sim.pc.getDrawables(sim.particles));
+		canvas.displayAll(sim.pc.getDrawables(sim.particles));
 //		canvas.addGraphics(voronoi);
 	}
 	

@@ -41,7 +41,7 @@ public class AnalysisApp extends Simulation {
 //		snapshots.getContext().addGraphicsToCanvas(canvas, snapshots.get(time));
 //		canvas.animate();
 		
-		wplot.addLines("Mean squared displacement", dx2, Color.BLUE);
+		wplot.displayLines("Mean squared displacement", dx2, Color.BLUE);
 	}
 	
 	public void run() {

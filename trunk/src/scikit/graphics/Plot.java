@@ -3,7 +3,6 @@ package scikit.graphics;
 import static java.lang.Math.*;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import scikit.dataset.DataSet;
@@ -24,41 +23,47 @@ public class Plot extends Scene2D {
 	}
 	
 	public void setLogScale(boolean logScaleX, boolean logScaleY) {
-		_logScaleX = logScaleX;
-		_logScaleY = logScaleY;
+		if (logScaleX != _logScaleX || logScaleY != _logScaleY) {
+			_logScaleX = logScaleX;
+			_logScaleY = logScaleY;
+			_curBounds = _topBounds.clone();
+			display();
+		}
 	}
 	
-	public void animate(Drawable... drawables) {
+	protected List<Drawable> allDrawables() {
 		List<Drawable> ds = new ArrayList<Drawable>();
-		ds.add(new TickMarks(_canvas));
-		ds.addAll(Arrays.asList(drawables));
+		ds.add(new TickMarks(this));
 		ds.addAll(_datas);
-		super.animate(ds.toArray(new Drawable[0]));
-		
-		// register pulldown save dialog for dataset?
+		ds.addAll(super.allDrawables());
+		return ds;
 	}
 	
-	public void addPoints(String name, DataSet data, Color color) {
-		add(new DatasetDw(name, data, color, DatasetDw.Style.MARKS));
+	public void displayPoints(String name, DataSet data, Color color) {
+		displayDataset(name, data, color, DatasetDw.Style.MARKS);
 	}
 
-	public void addLines(String name, DataSet data, Color color) {
-		add(new DatasetDw(name, data, color, DatasetDw.Style.LINES));
+	public void displayLines(String name, DataSet data, Color color) {
+		displayDataset(name, data, color, DatasetDw.Style.LINES);
 	}
 	
-	public void addBars(String name, DataSet data, Color color) {
-		add(new DatasetDw(name, data, color, DatasetDw.Style.BARS));
+	public void displayBars(String name, DataSet data, Color color) {
+		displayDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
-	private void add(DatasetDw data) {
+	private void displayDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
+		DatasetDw dw = new DatasetDw(this, name, data, color, style);
 		// if the list contains an element with the same name as 'dataset',
 		// replace that element with 'dataset'
-		if (_datas.contains(data))
-			_datas.set(_datas.indexOf(data), data);
+		if (_datas.contains(dw))
+			_datas.set(_datas.indexOf(dw), dw);
 		// otherwise, add 'dataset' to the end of the list
 		else
-			_datas.add(data);
-		animate();
+			_datas.add(dw);
+		
+		// register pulldown save dialog for dataset?
+		
+		display();
 	}
 }
 
@@ -66,24 +71,26 @@ public class Plot extends Scene2D {
 class DatasetDw implements Drawable {
 	enum Style {LINES, MARKS, BARS};
 	
+	Plot _plot;
 	String _name;
 	DataSet _data;
 	Color _color;
 	Style _style;
-	
-	public DatasetDw(String name, DataSet data, Color color, Style style) {
+
+	public DatasetDw(Plot plot, String name, DataSet data, Color color, Style style) {
+		_plot = plot;
 		_name = name;
 		_data = data;
 		_color = color;
 		_style = style;
 	}		
-	
+
 	public void draw(Graphics g) {
 		Bounds bounds = g.scene().dataBounds();
 		g.setColor(_color);
-		
+
 		double pts[] = _data.copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
-		
+
 		for (int i = 0; i < pts.length; i += 2) {
 			switch (_style) {
 			case MARKS:
@@ -99,7 +106,7 @@ class DatasetDw implements Drawable {
 			}
 		}
 	}
-	
+
 	public Bounds getBounds() {
 		double[] bds = _data.getBounds();
 		if (_style == Style.BARS) {
@@ -108,7 +115,7 @@ class DatasetDw implements Drawable {
 		}
 		return new Bounds(bds[0], bds[1], bds[2], bds[3]);
 	}
-	
+
 	// implement a limited form of equality: two "dataset drawables" are equal
 	// when their names are equal.
 	public boolean equals(Object data) {
@@ -118,3 +125,4 @@ class DatasetDw implements Drawable {
 			return false;
 	}
 }
+

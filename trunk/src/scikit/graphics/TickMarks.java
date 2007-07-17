@@ -1,7 +1,6 @@
 package scikit.graphics;
 
 import static java.lang.Math.*;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -11,7 +10,7 @@ import scikit.util.Bounds;
 
 
 public class TickMarks implements Drawable {
-	private Canvas _canvas;
+	private Plot _plot;
 	
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
 	// pixel length constants
@@ -22,13 +21,21 @@ public class TickMarks implements Drawable {
 	private static NumberFormat nf2 = new DecimalFormat("0.######E0");
 
 	
-	public TickMarks(Canvas canvas) {
-		_canvas = canvas;
+	public TickMarks(Plot plot) {
+		_plot = plot;
 	}
 	
 	public void draw(Graphics g) {
-		double w = _canvas.getWidth();
-		double h = _canvas.getHeight();
+		Bounds bds = g.scene().canvasBounds();
+		double w = bds.getWidth();
+		double h = bds.getHeight();
+		
+		if (_plot._logScaleX) {
+			
+		}
+		else {
+		}
+		
 		paintTicks(g, w, h, g.scene().dataBounds());
 		paintLabels(g, w, h, g.scene().dataBounds());
 	}
@@ -59,10 +66,6 @@ public class TickMarks implements Drawable {
 		return str.toString();
 	}
 	
-	
-	private static double log10(double x) {
-		return log(x) / log(10);
-	}
 	
 	private static Vector<Double> getTicks(double lo, double hi, double desiredTickNum) {
 		// find "step" between ticks:  s = i * 10^p, where i is one of 1, 2, 5, 8,
