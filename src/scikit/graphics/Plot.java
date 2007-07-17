@@ -22,13 +22,64 @@ public class Plot extends Scene2D {
 		scikit.util.Utilities.frame(_canvas, title);
 	}
 	
+	public void clear() {
+		_datas.clear();
+		super.clear();
+	}
+	
+	/**
+	 * Sets the plot view to optionally display the x and/or y coordinates on a logarithmic
+	 * scale. Also animates the display.
+	 * 
+	 * @param logScaleX True if the x coordinate should be displayed on a logarithmic scale 
+	 * @param logScaleY True if the y coordinate should be displayed on a logarithmic scale
+	 */
 	public void setLogScale(boolean logScaleX, boolean logScaleY) {
 		if (logScaleX != _logScaleX || logScaleY != _logScaleY) {
 			_logScaleX = logScaleX;
 			_logScaleY = logScaleY;
 			_curBounds = _topBounds.clone();
-			display();
+			animate();
 		}
+	}
+	
+	/**
+	 * Registers the dataset corresponding to <code>name</code> to display points. If a dataset
+	 * with the same name is already registered, it will be replaced by this one. Also animates
+	 * the display.
+	 * 
+	 * @param name The name of the dataset
+	 * @param data The dataset to be registered
+	 * @param color The color of the dataset
+	 */
+	public void registerPoints(String name, DataSet data, Color color) {
+		setDataset(name, data, color, DatasetDw.Style.MARKS);
+	}
+
+	/**
+	 * Registers the dataset corresponding to <code>name</code> to display lines. If a dataset
+	 * with the same name is already registered, it will be replaced by this one. Also animates
+	 * the display.
+	 * 
+	 * @param name The name of the dataset
+	 * @param data The dataset to be registered
+	 * @param color The color of the dataset
+	 */
+	public void registerLines(String name, DataSet data, Color color) {
+		setDataset(name, data, color, DatasetDw.Style.LINES);
+	}
+	
+	/**
+	 * Registers the dataset corresponding to <code>name</code> to display bars. If a dataset
+	 * with the same name is already registered, it will be replaced by this one. Also animates
+	 * the display.
+	 * 
+	 * @param name The name of the dataset
+	 * @param data The dataset to be registered
+	 * @param color The color of the dataset
+	 */
+	public void registerBars(String name, DataSet data, Color color) {
+		setDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
 	protected List<Drawable> allDrawables() {
@@ -38,20 +89,8 @@ public class Plot extends Scene2D {
 		ds.addAll(super.allDrawables());
 		return ds;
 	}
-	
-	public void displayPoints(String name, DataSet data, Color color) {
-		displayDataset(name, data, color, DatasetDw.Style.MARKS);
-	}
 
-	public void displayLines(String name, DataSet data, Color color) {
-		displayDataset(name, data, color, DatasetDw.Style.LINES);
-	}
-	
-	public void displayBars(String name, DataSet data, Color color) {
-		displayDataset(name, data, color, DatasetDw.Style.BARS);
-	}
-	
-	private void displayDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
+	private void setDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
 		DatasetDw dw = new DatasetDw(this, name, data, color, style);
 		// if the list contains an element with the same name as 'dataset',
 		// replace that element with 'dataset'
@@ -63,7 +102,7 @@ public class Plot extends Scene2D {
 		
 		// register pulldown save dialog for dataset?
 		
-		display();
+		animate();
 	}
 }
 
