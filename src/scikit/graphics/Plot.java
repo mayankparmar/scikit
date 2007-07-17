@@ -2,8 +2,17 @@ package scikit.graphics;
 
 import static java.lang.Math.*;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import scikit.dataset.DataSet;
 import scikit.dataset.Transformer;
@@ -14,9 +23,15 @@ import scikit.util.Point;
 public class Plot extends Scene2D {
 	ArrayList<DatasetDw> _datas = new ArrayList<DatasetDw>();
 	boolean _logScaleX = false, _logScaleY = false;
+	protected JPopupMenu _popup = new JPopupMenu();
+	
 	
 	public Plot() {
 		super();
+		_canvas.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
+			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
+		});
 	}
 	
 	public Plot(String title) {
@@ -55,7 +70,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerPoints(String name, DataSet data, Color color) {
-		setDataset(name, data, color, DatasetDw.Style.MARKS);
+		registerDataset(name, data, color, DatasetDw.Style.MARKS);
 	}
 
 	/**
@@ -68,7 +83,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerLines(String name, DataSet data, Color color) {
-		setDataset(name, data, color, DatasetDw.Style.LINES);
+		registerDataset(name, data, color, DatasetDw.Style.LINES);
 	}
 	
 	/**
@@ -81,7 +96,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerBars(String name, DataSet data, Color color) {
-		setDataset(name, data, color, DatasetDw.Style.BARS);
+		registerDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
 	protected List<Drawable> allDrawables() {
@@ -92,7 +107,7 @@ public class Plot extends Scene2D {
 		return ds;
 	}
 
-	private void setDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
+	private void registerDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
 		DatasetDw dw = new DatasetDw(this, name, data, color, style);
 		// if the list contains an element with the same name as 'dataset',
 		// replace that element with 'dataset'
@@ -102,9 +117,31 @@ public class Plot extends Scene2D {
 		else
 			_datas.add(dw);
 		
-		// register pulldown save dialog for dataset?
-		
 		animate();
+	}
+	
+	private void saveDataset(DataSet data, String str) {
+		try {
+			PrintWriter pw = scikit.util.Dump.pwFromDialog(_canvas, str);
+			scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
+		} catch (IOException e) {}
+	}
+	
+	private void maybeShowPopup(MouseEvent e) {
+		if (e.isPopupTrigger() && _datas.size() > 0) {
+			_popup.removeAll();
+			for (final DatasetDw d : _datas) {
+				JMenuItem menuItem = new JMenuItem("Save '" + d._name + "' ...");
+				menuItem.setForeground(d._color);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						saveDataset(d._data, d._name);
+					}
+				});
+				_popup.add(menuItem);
+			}
+			_popup.show(e.getComponent(), e.getX(), e.getY());
+		}
 	}
 }
 
