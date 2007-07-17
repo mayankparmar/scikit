@@ -1,6 +1,5 @@
 package kip.md.apps;
 
-import static java.lang.Math.*;
 //import static scikit.util.Utilities.format;
 //import static java.lang.Math.*;
 
@@ -18,6 +17,7 @@ import scikit.graphics.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.params.ChoiceValue;
 
 
 public class AnalysisApp extends Simulation {
@@ -31,6 +31,7 @@ public class AnalysisApp extends Simulation {
 	}
 	
 	public AnalysisApp() {
+		params.addm("Log scale", new ChoiceValue("True", "False"));
 		params.add("Input directory", "/Users/kbarros/Desktop/phi=0.85");
 		params.add("time");
 	}
@@ -41,7 +42,14 @@ public class AnalysisApp extends Simulation {
 //		snapshots.getContext().addGraphicsToCanvas(canvas, snapshots.get(time));
 //		canvas.animate();
 		
+		boolean ls = params.sget("Log scale").equals("True");
+		wplot.setLogScale(ls, ls);
 		wplot.registerLines("Mean squared displacement", dx2, Color.BLUE);
+	}
+	
+	public void clear() {
+		canvas.clear();
+		wplot.clear();
 	}
 	
 	public void run() {
@@ -51,7 +59,7 @@ public class AnalysisApp extends Simulation {
 		dx2.setAveraging(true);
 		
 		for (double time = 1; time < 100; time += 1) {
-			dx2.accum(log(time), log(secondMoment(time)));
+			dx2.accum(time, secondMoment(time));
 			Job.animate();
 		}
 	}

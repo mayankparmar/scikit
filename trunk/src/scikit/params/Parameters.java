@@ -10,13 +10,6 @@ public class Parameters {
 	private HashMap<String, GuiValue> map = new HashMap<String, GuiValue>();
 	
 	
-	public Parameters() {}
-
-	public Parameters(Object... keyvals) {
-		for (int i = 0; i < keyvals.length; i += 2)
-			add((String)keyvals[i], keyvals[i+1]);
-	}
-	
 	public String toString() {
 		StringBuilder ret = new StringBuilder();
 		for (String k : keys)
