@@ -34,12 +34,28 @@ public class Scene {
 		scikit.util.Utilities.frame(_canvas, title);
 	}
 	
-	public void displayAll(Drawable... drawables) {
+	/** Removes all drawables object from the scene leaving the state of the scene (such as
+	 * view bounds) unmodified.
+	 */
+	public void clearDrawables() {
+		_drawables.clear();
+		animate();
+	}
+	
+	/** Adds drawables objects to the scene. */
+	public void addDrawables(Drawable... drawables) {
+		_drawables.addAll(Arrays.asList(drawables));
+		animate();
+	}
+	
+	/** Sets the scene's drawable objects to be the specified list. */
+	public void setDrawables(Drawable... drawables) {
 		_drawables = Arrays.asList(drawables);
-		display();
+		animate();
 	}
 
-	public void display() {
+	/** Animates the scene by updating the view bounds and repainting the canvas component. */
+	public void animate() {
 		if (!_zoomed) {
 			if (_autoScale)
 				_curBounds = calculateDataBounds();
@@ -49,6 +65,8 @@ public class Scene {
 		_canvas.repaint();
 	}
 	
+	/** Completely clears the scene to it's initial state by removing all drawables and
+	 * resetting the view bounds. */
 	public void clear() {
 		_drawables.clear();
 		_curBounds = _topBounds.clone();
