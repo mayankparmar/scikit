@@ -1,5 +1,6 @@
 package rachele.ising.dim1;
 
+//import kip.clump.dim2.StructureFactor;
 import kip.util.Random;
 import scikit.params.Parameters;
 import rachele.ising.dim1.AbstractIsing1D;
@@ -19,6 +20,7 @@ public class FieldIsing1D extends AbstractIsing1D{
 	Random random = new Random();
 	
 	public static final double DENSITY = -.01;
+	public static final double KR_SP = 4.4934102;
 	
 	scikit.numerics.fft.RealDoubleFFT fft;
 	private double[] fftScratch;
@@ -89,34 +91,19 @@ public class FieldIsing1D extends AbstractIsing1D{
 	public void simulate() {
 		convolveWithRange(phi, phi_bar, R);
 
-		//System.out.println("random = " + random.nextGaussian());
-		
 		for (int i = 0; i < Lp; i++) {
-			//double phi2 = phi[i] * phi[i];
-			//del_phi[i] = - dt*phi2*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*random.nextGaussian();
-			del_phi[i] = - dt*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(dt*2*T/(dx))*random.nextGaussian();
+			double phi2 = phi[i] * phi[i];
+			del_phi[i] = - dt*phi2*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*random.nextGaussian();
+			//del_phi[i] = - dt*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(dt*2*T/(dx))*random.nextGaussian();
 			//System.out.println(i + " phi = " + phi[i] + " dphi = " + del_phi[i] + " phi2 = " + phi2);
 		}
 		double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
 		//System.out.println("mu = " + mu + " mean(dphi) = " + mean(del_phi) + " density = " + DENSITY + " mean(phi) = " + mean(phi) + " meanSq(phi) = " + meanSquared(phi) );
 		for (int i = 0; i < Lp; i++) {
+			//del_phi[i] -= mu;
 			del_phi[i] -= mu*phi[i]*phi[i];
 			phi[i] += del_phi[i];
 		}
-		//System.out.println("ave phi deviation= " +  (mean(phi) - DENSITY));
-		
-		
-		//rms_dF_dphi = 0;
-		//freeEnergyDensity = 0;
-		//for (int i = 0; i < Lp; i++) {
-		//		rms_dF_dphi += sqr(del_phi[i] / (dt*phi[i]*phi[i]));
-		//		freeEnergyDensity += phi[i]*phi_bar[i]+T*((1-phi[i])*log(1-phi[i])+(1+phi[i])*log(1+phi[i]));
-		//		phi[i] += del_phi[i];
-		//	}
-		//rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
 		t += dt;
-		//for(int i = 0; i < Lp; i++){
-		//	System.out.println("t = " + t + " " + i + " phi = " + phi[i] + " mu = " + mu);
-		//}
 	}
 }
