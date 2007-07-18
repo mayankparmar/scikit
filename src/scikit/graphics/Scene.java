@@ -50,7 +50,8 @@ public class Scene {
 	
 	/** Sets the scene's drawable objects to be the specified list. */
 	public void setDrawables(Drawable... drawables) {
-		_drawables = Arrays.asList(drawables);
+		_drawables.clear();
+		_drawables.addAll(Arrays.asList(drawables));
 		animate();
 	}
 
