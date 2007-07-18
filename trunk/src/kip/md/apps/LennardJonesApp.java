@@ -31,7 +31,7 @@ public class LennardJonesApp extends Simulation {
 		params.add("Area fraction A", 0.8);
 		params.add("Area fraction B", 0.0);
 		params.add("Radius A", 1.0);
-		params.add("Radius B", 0.7);
+		params.add("Radius B", 0.5);
 		params.add("Epsilon", 1.0);
 		params.addm("dt", 0.01);
 		params.addm("Temperature", 2);
@@ -95,20 +95,45 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D();
 			particles[NA+i].tag = tagB;
 		}
-		
-		String dir = params.sget("Output directory") + File.separator;
-		Dump.dumpString(dir + "parameters.txt", params.toString());
 
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
-		
-		Job.animate();
-		while (true) {
-			for (int i = 0; i < 10; i++) {
+
+		String dir = params.sget("Output directory");
+		if (dir.equals("")) {
+			while (true) {
+				maybeAnimate();
 				sim.step();
-				Job.yield();
 			}
-			Job.animate();
-			ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
 		}
+		else {
+			dir = dir + File.separator;
+			Dump.dumpString(dir + "parameters.txt", params.toString());
+		
+			while (sim.timeCnt < round(2000/sim.dt)) {
+				sim.step();
+				maybeAnimate();
+				if (sim.timeCnt % round(10/sim.dt) == 0)
+					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+			}
+			while (sim.timeCnt < round(2200/sim.dt)) {
+				sim.step();
+				maybeAnimate();
+				if (sim.timeCnt % round(1/sim.dt) == 0)
+					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+			}
+			while (sim.timeCnt < round(2220/sim.dt)) {
+				sim.step();
+				maybeAnimate();
+				if (sim.timeCnt % round(0.1/sim.dt) == 0)
+					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+			}
+		}
+	}
+	
+	void maybeAnimate() {
+		if (sim.timeCnt % 10 == 0)
+			Job.animate();
+		else
+			Job.yield();
 	}
 }
