@@ -6,10 +6,10 @@ import java.util.Collection;
 
 
 public class Utilities {
-	static DecimalFormat df1 = new DecimalFormat("0.####");
-	static DecimalFormat df2 = new DecimalFormat("0.####E0");
+	static DecimalFormat df1 = new DecimalFormat("0.#######");
+	static DecimalFormat df2 = new DecimalFormat("0.#######E0");
 	static public String format(double x) {
-		return (abs(x) > 0.001 && abs(x) < 1000 || x == 0 ? df1 : df2).format(x);
+		return (abs(x) > 0.0001 && abs(x) < 10000 || x == 0 ? df1 : df2).format(x);
 	}
 	
 	public static double sqr(double x) {
