@@ -1,6 +1,6 @@
 package scikit.graphics;
 
-import java.awt.Canvas;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +9,7 @@ import scikit.util.Bounds;
 
 
 public class Scene {
-	protected Canvas _canvas;
+	protected Component _component;
 	protected Bounds _curBounds = new Bounds();
 	private List<Drawable> _drawables = new ArrayList<Drawable>();
 	
@@ -23,15 +23,15 @@ public class Scene {
 	
 	public Scene() {
 		try {
-			_canvas = GraphicsGL.createCanvas(this);
+			_component = GraphicsGL.createComponent(this);
 		} catch (Throwable t) {
-			_canvas = GraphicsAWT.createCanvas(this);
+			_component = GraphicsAWT.createComponent(this);
 		}
 	}
 	
 	public Scene(String title) {
 		this();
-		scikit.util.Utilities.frame(_canvas, title);
+		scikit.util.Utilities.frame(_component, title);
 	}
 	
 	/** Removes all drawables object from the scene leaving the state of the scene (such as
@@ -63,7 +63,7 @@ public class Scene {
 			else
 				_curBounds = _curBounds.createUnion(calculateDataBounds());
 		}
-		_canvas.repaint();
+		_component.repaint();
 	}
 	
 	/** Completely clears the scene to it's initial state by removing all drawables and
@@ -72,15 +72,15 @@ public class Scene {
 		_drawables.clear();
 		_curBounds = _topBounds.clone();
 		_zoomed = false;
-		_canvas.repaint();
+		_component.repaint();
 	}
 	
-	public Canvas getCanvas() {
-		return _canvas;
+	public Component getCanvas() {
+		return _component;
 	}
 	
-	public Bounds canvasBounds() {
-		return new Bounds(0, _canvas.getWidth(), 0, _canvas.getHeight());
+	public Bounds pixelBounds() {
+		return new Bounds(0, _component.getWidth(), 0, _component.getHeight());
 	}
 	
 	public Bounds dataBounds() {

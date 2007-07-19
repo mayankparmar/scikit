@@ -2,7 +2,6 @@ package scikit.graphics;
 
 import static java.lang.Math.*;
 
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 
@@ -34,7 +33,7 @@ public class GraphicsGL implements Graphics {
 		this.gl = gl;
 		this.glut = new GLUT();
 		this.scene = scene;
-		datBds = pixBds = scene.canvasBounds();
+		datBds = pixBds = scene.pixelBounds();
 	}
 	
 	public Object engine() {
@@ -153,7 +152,7 @@ public class GraphicsGL implements Graphics {
 	}
 
 	
-	public static Canvas createCanvas(final Scene scene) {
+	public static GLCanvas createComponent(final Scene scene) {
 		GLCapabilities capabilities = new GLCapabilities();
 		
 		// For some unknown reason, enabling GL "sample buffers" actually make anti-aliased lines
@@ -183,7 +182,7 @@ public class GraphicsGL implements Graphics {
 				gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 				
 				Graphics g = new GraphicsGL(gl, scene);
-				g.projectOrtho2D(g.scene().dataBounds());
+				g.projectOrtho2D(scene.dataBounds());
 				for (Drawable d : scene.allDrawables())
 					d.draw(g);
 			}
