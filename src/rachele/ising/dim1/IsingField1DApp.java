@@ -22,10 +22,10 @@ public class IsingField1DApp extends Simulation{
 	}
 	
 	public IsingField1DApp(){
-		//params.addm("Zoom", new ChoiceValue("Yes", "No"));//don't know what this does
-		params.addm("T", 0.15);
-		params.addm("dt", 1.0);
-		params.add("R", 1000);
+		params.addm("T", 0.2);
+		params.addm("J", -2.5);
+		params.addm("dt", 0.01);
+		params.add("R", 10000);
 		params.add("L/R", 16.0);
 		params.add("dx", 125.0);
 		params.add("kR bin-width", 0.1);
@@ -35,7 +35,7 @@ public class IsingField1DApp extends Simulation{
 	
 	public void animate() {
 		params.set("Time", format(ising.t));
-		//ising.setParameters(params);
+		ising.readParams(params);
 		
 		SFPlot.setDataSet(0, sf.getAccumulator());
 	
@@ -48,7 +48,8 @@ public class IsingField1DApp extends Simulation{
 	
 	public void run(){
 		ising = new FieldIsing1D(params);
-		double binWidth = ising.KR_SP / floor(ising.KR_SP/params.fget("kR bin-width"));
+		double KR_SP = FieldIsing1D.KR_SP;
+		double binWidth = KR_SP / floor(KR_SP/params.fget("kR bin-width"));
 		sf = new StructureFactor1D(ising.Lp, ising.L, ising.R, binWidth);
 		fieldPlot.setYRange(-1, 1);
 		Job.addDisplay(fieldPlot);
@@ -56,7 +57,6 @@ public class IsingField1DApp extends Simulation{
 		sf.getAccumulator().clear();
 		
 		while (true) {
-			params.set("Time", ising.time());
 			ising.simulate();
 			sf.accumulate(ising.phi);
 			//avStructH.accum(structure.getAccumulatorH());

@@ -2,6 +2,8 @@ package rachele.ising.dim1;
 
 //import kip.clump.dim2.StructureFactor;
 import kip.util.Random;
+import scikit.numerics.fft.ComplexDoubleFFT;
+import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import scikit.params.Parameters;
 import rachele.ising.dim1.AbstractIsing1D;
 import static java.lang.Math.PI;
@@ -16,13 +18,13 @@ public class FieldIsing1D extends AbstractIsing1D{
 	double dt, t;
 	double[] phi,phi_bar, del_phi;
 	
-	public double L, R, T, dx;
+	public double L, R, T, J, dx;
 	Random random = new Random();
 	
-	public static final double DENSITY = -.01;
+	public static final double DENSITY = -0;
 	public static final double KR_SP = 4.4934102;
 	
-	scikit.numerics.fft.RealDoubleFFT fft;
+	ComplexDoubleFFT fft;
 	private double[] fftScratch;
 	public double freeEnergyDensity;
 	
@@ -45,8 +47,8 @@ public class FieldIsing1D extends AbstractIsing1D{
 		phi_bar = new double[Lp];
 		del_phi = new double[Lp];
 		
-		fftScratch = new double[Lp];
-		fft = new scikit.numerics.fft.RealDoubleFFT_Radix2(Lp);	
+		fftScratch = new double[2*Lp];
+		fft = new ComplexDoubleFFT_Mixed(Lp);
 		
 		for (int i = 0; i < Lp; i++)
 			phi[i] = DENSITY;
@@ -54,6 +56,7 @@ public class FieldIsing1D extends AbstractIsing1D{
 	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
+		J = params.fget("J");
 		dt = params.fget("dt");
 	}
 	
@@ -62,23 +65,30 @@ public class FieldIsing1D extends AbstractIsing1D{
 	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
+		// write real and imaginary components into scratch
 		for (int i = 0; i < Lp; i++) {
-			fftScratch[i] = src[i];
+			fftScratch[2*i+0] = src[i];
+			fftScratch[2*i+1] = 0;
 		}
 		
+		// multiply real and imaginary components by the fourier transform
+		// of the potential, V(k), a real quantity.  this corresponds to
+		// a convolution in "x" space.
 		fft.transform(fftScratch);
 		for (int x = -Lp/2; x < Lp/2; x++) {
 			double kR = (2*PI*x/L) * R;
-				int i = x + Lp/2;
-				double J = (kR == 0 ? 1 : sin(kR)/kR);
-				fftScratch[i] *= J;
+			int i = (x + Lp) % Lp;
+			double V = (kR == 0 ? 1 : sin(kR)/kR);
+			fftScratch[2*i+0] *= J*V;
+			fftScratch[2*i+1] *= J*V;
 		}
 		fft.backtransform(fftScratch);
 		
+		// after reverse fourier transformation, return the real result.  the
+		// imaginary component will be zero.
 		for (int i = 0; i < Lp; i++) {
-			dest[i] = fftScratch[i] / (Lp);
-			//check this normalization
-		}		
+			dest[i] = fftScratch[2*i+0] / Lp;
+		}
 	}
 	
 	public double[] copyField() {
@@ -92,17 +102,11 @@ public class FieldIsing1D extends AbstractIsing1D{
 		convolveWithRange(phi, phi_bar, R);
 
 		for (int i = 0; i < Lp; i++) {
-			double phi2 = phi[i] * phi[i];
-			del_phi[i] = - dt*phi2*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*random.nextGaussian();
-			//del_phi[i] = - dt*(phi_bar[i]+T*log(1.0-phi[i])-T*log(1.0+phi[i])) + sqrt(dt*2*T/(dx))*random.nextGaussian();
-			//System.out.println(i + " phi = " + phi[i] + " dphi = " + del_phi[i] + " phi2 = " + phi2);
+			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
 		}
-		double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
-		//System.out.println("mu = " + mu + " mean(dphi) = " + mean(del_phi) + " density = " + DENSITY + " mean(phi) = " + mean(phi) + " meanSq(phi) = " + meanSquared(phi) );
+		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp; i++) {
-			//del_phi[i] -= mu;
-			del_phi[i] -= mu*phi[i]*phi[i];
-			phi[i] += del_phi[i];
+			phi[i] += del_phi[i] - mu;
 		}
 		t += dt;
 	}
