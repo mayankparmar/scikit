@@ -28,7 +28,7 @@ public class Plot extends Scene2D {
 	
 	public Plot() {
 		super();
-		_canvas.addMouseListener(new MouseAdapter() {
+		_component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
 			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
 		});
@@ -36,7 +36,7 @@ public class Plot extends Scene2D {
 	
 	public Plot(String title) {
 		this();
-		scikit.util.Utilities.frame(_canvas, title);
+		scikit.util.Utilities.frame(_component, title);
 	}
 	
 	public void clear() {
@@ -122,7 +122,7 @@ public class Plot extends Scene2D {
 	
 	private void saveDataset(DataSet data, String str) {
 		try {
-			PrintWriter pw = scikit.util.Dump.pwFromDialog(_canvas, str);
+			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
 			scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
 		} catch (IOException e) {}
 	}

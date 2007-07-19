@@ -20,13 +20,13 @@ public class Scene2D extends Scene {
 	
 	public Scene2D() {
 		super();
-		_canvas.addMouseListener(_mouseListener);
-		_canvas.addMouseMotionListener(_mouseMotionListener);		
+		_component.addMouseListener(_mouseListener);
+		_component.addMouseMotionListener(_mouseMotionListener);		
 	}
 	
 	public Scene2D(String title) {
 		this();
-		scikit.util.Utilities.frame(_canvas, title);
+		scikit.util.Utilities.frame(_component, title);
 	}
 	
 	protected List<Drawable> allDrawables() {
@@ -54,20 +54,20 @@ public class Scene2D extends Scene {
 	
 	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
-		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
-		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _canvas.getHeight();
+		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _component.getWidth();
+		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _component.getHeight();
 		return new Point(x, y);
 	}
 	
 	protected Point coordToPix(Point coord) {
 		Bounds cb = _curBounds;
-		double x = ((coord.x - cb.xmin)/(cb.xmax - cb.xmin)) * _canvas.getWidth();
-		double y = ((coord.y - cb.ymin)/(cb.ymax - cb.ymin)) * _canvas.getHeight();
+		double x = ((coord.x - cb.xmin)/(cb.xmax - cb.xmin)) * _component.getWidth();
+		double y = ((coord.y - cb.ymin)/(cb.ymax - cb.ymin)) * _component.getHeight();
 		return new Point(x, y);		
 	}
 	
 	private Point eventToPix(MouseEvent event) {
-		return new Point(event.getX()-1, _canvas.getHeight()-event.getY()+1);
+		return new Point(event.getX()-1, _component.getHeight()-event.getY()+1);
 	}
 	
 	private MouseListener _mouseListener = new MouseAdapter() {
@@ -76,14 +76,14 @@ public class Scene2D extends Scene {
 				_zoomed = false;
 				_selectionActive = false;
 				_curBounds = _topBounds.createUnion(calculateDataBounds());
-				_canvas.repaint();
+				_component.repaint();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
 			_selectionStart = eventToPix(event);
 			_selectionEnd = eventToPix(event);
 			_selectionActive = true;
-			_canvas.repaint();
+			_component.repaint();
 		}
 		public void mouseReleased(MouseEvent event) {
 			if (_selectionActive) {
@@ -94,7 +94,7 @@ public class Scene2D extends Scene {
 					_curBounds = bds;
 				}
 				_selectionActive = false;
-				_canvas.repaint();
+				_component.repaint();
 			}
 		}
 	};
@@ -102,14 +102,14 @@ public class Scene2D extends Scene {
 	private MouseMotionListener _mouseMotionListener = new MouseMotionAdapter() {
 		public void mouseDragged(MouseEvent event) {
 			_selectionEnd = eventToPix(event);
-			_canvas.repaint();
+			_component.repaint();
 		}
 	};
 	
 	private Drawable _selectionGraphics = new Drawable() {
 		public void draw(Graphics g) {
 			if (_selectionActive) {
-				g.projectOrtho2D(g.scene().canvasBounds());
+				g.projectOrtho2D(g.scene().pixelBounds());
 				
 				Bounds sel = new Bounds(_selectionStart, _selectionEnd);
 				g.setColor(new Color(0.3f, 0.6f, 0.5f, 0.2f));

@@ -4,7 +4,8 @@ import static java.lang.Math.*;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import scikit.util.Bounds;
 
@@ -19,25 +20,28 @@ public class TickMarks implements Drawable {
 	
 	private static NumberFormat nf1 = new DecimalFormat("0.######");
 	private static NumberFormat nf2 = new DecimalFormat("0.######E0");
-
 	
 	public TickMarks(Plot plot) {
 		_plot = plot;
 	}
 	
 	public void draw(Graphics g) {
-		Bounds bds = g.scene().canvasBounds();
-		double w = bds.getWidth();
-		double h = bds.getHeight();
+		Bounds db = _plot.dataBounds();
+		Bounds cb = _plot.pixelBounds();
 		
-		if (_plot._logScaleX) {
-			
-		}
-		else {
-		}
+		List<Tick> xticks, yticks;
+		if (!_plot._logScaleX)
+			xticks = getLinTicks(db.xmin, db.xmax, cb.getWidth()*TICKS_PER_PIXEL);
+		else
+			xticks = getLinTicks(db.xmin, db.xmax, cb.getWidth()*TICKS_PER_PIXEL);
 		
-		paintTicks(g, w, h, g.scene().dataBounds());
-		paintLabels(g, w, h, g.scene().dataBounds());
+		if (!_plot._logScaleY)
+			yticks = getLinTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
+		else
+			yticks = getLinTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
+		
+		drawTickLines(g, xticks, yticks);
+		drawTickLabels(g, xticks, yticks);
 	}
 
 	public Bounds getBounds() {
@@ -47,19 +51,18 @@ public class TickMarks implements Drawable {
 	
 	private static String tickToString(double tick, double length) {
 		StringBuffer str;
-		if (length > 0.00001 && length < 100000) {
+		if (abs(tick) > 0.00001 && abs(tick) < 100000) {
 			str = new StringBuffer(nf1.format(tick));
 		}
 		else {
 			str = new StringBuffer(nf2.format(tick));
 			int i = str.indexOf("E");
-			str.replace(i, i+1, " E");
-			//if (abs(tick) >= 1)
-			//	str.insert(i+1, ' ');
+			str.replace(i, i+1, "e");
 			if (tick == 0)
 				str = new StringBuffer("0");
 		}
 		
+		// insert an empty space in place of negative sign
 		if (tick >= 0)
 			str.insert(0, ' ');
 			
@@ -67,7 +70,7 @@ public class TickMarks implements Drawable {
 	}
 	
 	
-	private static Vector<Double> getTicks(double lo, double hi, double desiredTickNum) {
+	private static ArrayList<Tick> getLinTicks(double lo, double hi, double desiredTickNum) {
 		// find "step" between ticks:  s = i * 10^p, where i is one of 1, 2, 5, 8,
 		// and x is an integer.  desired number of ticks is about 10.
 		
@@ -89,46 +92,58 @@ public class TickMarks implements Drawable {
 		
 		double step = i * pow(10, p);		
 		
-		Vector<Double> ret = new Vector<Double>();
+		ArrayList<Tick> ret = new ArrayList<Tick>();
 		double mult = floor(lo / step) + 1;
 		while (mult*step < hi) {
-			ret.add((Double)(mult*step));
+			ret.add(new Tick(mult*step, tickToString(mult*step, hi-lo), new Color(0.82f, 0.82f, 0.87f)));
 			mult++;
 		}
 		return ret;
 	}
 	
-	
-	private static void paintTicks(Graphics g, double w, double h, Bounds bounds) {
-		g.setColor(new Color(0.82f, 0.82f, 0.87f)); // light gray
-		for (double x : getTicks(bounds.xmin, bounds.xmax, w*TICKS_PER_PIXEL)) {
-			g.drawLine(x, bounds.ymin, x, bounds.ymax);
+	private void drawTickLines(Graphics g, List<Tick> xticks, List<Tick> yticks) {
+		Bounds db = _plot.dataBounds();
+		for (Tick tick : xticks) {
+			g.setColor(tick.color);
+			g.drawLine(tick.v, db.ymin, tick.v, db.ymax);
 		}
-		for (double y : getTicks(bounds.ymin, bounds.ymax, h*TICKS_PER_PIXEL)) {
-			g.drawLine(bounds.xmin, y, bounds.xmax, y);
+		for (Tick tick : yticks) {
+			g.setColor(tick.color);
+			g.drawLine(db.xmin, tick.v, db.xmax, tick.v);
 		}
 	}
 	
-	
-	private static void paintLabels(Graphics g, double pixWidth, double pixHeight, Bounds bounds) {
-		double widthPerPix = bounds.getWidth() / pixWidth;
-		double heightPerPix = bounds.getHeight() / pixHeight;
+	private void drawTickLabels(Graphics g, List<Tick> xticks, List<Tick> yticks) {
+		Bounds db = _plot.dataBounds();
+		Bounds cb = _plot.pixelBounds();
+		double heightPerPix = db.getHeight() / cb.getHeight();
+		double widthPerPix = db.getWidth() / cb.getWidth();
 		
 		g.setColor(Color.BLACK);
-		
-		for (double x : getTicks(bounds.xmin, bounds.xmax, pixWidth*TICKS_PER_PIXEL)) {
-			if (min(x-bounds.xmin, bounds.xmax-x) < LABEL_CUTOFF*widthPerPix)
-				continue;
-			String label = tickToString(x, bounds.getWidth());
-			double y = bounds.ymin + MARGIN*heightPerPix;
-			g.drawString(label, x-g.stringWidth(" "+label)/2, y);
+		for (Tick tick : xticks) {
+			double boundaryDistance = min(tick.v-db.xmin, db.xmax-tick.v) / widthPerPix;
+			if (tick.str != null && boundaryDistance > LABEL_CUTOFF) {
+				double y = db.ymin + MARGIN*heightPerPix;
+				g.drawString(tick.str, tick.v-g.stringWidth(" "+tick.str)/2, y);
+			}
 		}
-		for (double y : getTicks(bounds.ymin, bounds.ymax, pixHeight*TICKS_PER_PIXEL)) {
-			if (min(y-bounds.ymin, bounds.ymax-y) < LABEL_CUTOFF*heightPerPix)
-				continue;
-			String label = tickToString(y, bounds.getHeight());
-			double x = bounds.xmin + MARGIN*widthPerPix;
-			g.drawString(label, x, y-g.stringHeight(label)/2);
+		for (Tick tick : yticks) {
+			if (tick.str != null) {
+				double x = db.xmin + MARGIN*widthPerPix;
+				g.drawString(tick.str, x, tick.v-g.stringHeight(tick.str)/2);
+			}
 		}
+	}
+}
+
+
+class Tick {
+	double v;
+	String str;
+	Color color;
+	public Tick(double v, String str, Color color) {
+		this.v = v;
+		this.str = str;
+		this.color = color;
 	}
 }
