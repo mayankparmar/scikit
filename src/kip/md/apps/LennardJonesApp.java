@@ -27,13 +27,13 @@ public class LennardJonesApp extends Simulation {
 	public LennardJonesApp() {
 		params.add("Output directory", "/Users/kbarros/Desktop/output");
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
-		params.add("Length", 100.0);
+		params.add("Length", 70.0);
 		params.add("Area fraction A", 0.8);
-		params.add("Area fraction B", 0.0);
+		params.add("Area fraction B", 0.1);
 		params.add("Radius A", 1.0);
 		params.add("Radius B", 0.5);
 		params.add("Epsilon", 1.0);
-		params.addm("dt", 0.01);
+		params.addm("dt", 0.0025);
 		params.addm("Temperature", 2);
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
@@ -54,7 +54,7 @@ public class LennardJonesApp extends Simulation {
 //		VoronoiGraphics voronoi = new VoronoiGraphics(sim.pc.getBounds());		
 //		voronoi.construct(phase, 2, 0, NA+NB);
 
-		canvas.setDrawables(sim.pc.getDrawables(sim.particles));
+		canvas.setDrawables(sim.pc.boundaryDw(), sim.pc.particlesDw(sim.particles));
 //		canvas.addGraphics(voronoi);
 	}
 	
@@ -85,7 +85,8 @@ public class LennardJonesApp extends Simulation {
 		tagB.interactionRange = range;
 		int NA = (int) (params.fget("Area fraction A")*pc.systemArea()/particleAreaA);
 		int NB = (int) (params.fget("Area fraction B")*pc.systemArea()/particleAreaB);
-
+		
+		System.out.println(NA + " " + NB);
 		LJParticle2D[] particles = new LJParticle2D[NA+NB];
 		for (int i = 0; i < NA; i++) {
 			particles[i] = new LJParticle2D();
