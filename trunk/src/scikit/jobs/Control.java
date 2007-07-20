@@ -34,6 +34,13 @@ public class Control {
 		frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 	}
 	
+	/**
+	 * Returns the Job corresponding to this control
+	 * @return the corresponding job
+	 */
+	public Job getJob() {
+		return _job;
+	}
 	
 	private ActionListener _actionListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {

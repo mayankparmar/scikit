@@ -15,6 +15,7 @@ public class Job {
 	
 	private long lastYield, yieldDelay = 10;
 	private long lastAnimate, animateDelay = 50;	
+	private boolean throttleAnimation = false;
 	
 	private Vector<Display> displays = new Vector<Display>();
 
@@ -79,6 +80,14 @@ public class Job {
 	}
 
 	/**
+	 * Force a delay of 50 ms between each simulation step 
+	 * @param b
+	 */
+	public void throttleAnimation(boolean b) {
+		throttleAnimation = b;
+	}
+	
+	/**
 	 * Returns the underlying Simulation object for this Job. 
 	 */
 	public Simulation sim() {
@@ -111,6 +120,23 @@ public class Job {
 			throw new IllegalThreadStateException("Job.animate() must be called from simulation thread.");
 		}
 		switch (state) {
+		case RUN:
+			long timeUntilAnimate = lastAnimate + animateDelay - System.currentTimeMillis();
+			if (throttleAnimation && timeUntilAnimate > 0) {
+				coop.sleep(timeUntilAnimate);
+			}
+			if (throttleAnimation || timeUntilAnimate < 0) {
+				animateDisplays();
+				lastAnimate = System.currentTimeMillis();
+			}
+			_yield();
+			break;
+		}
+		
+		// during sleep() or yield() the user might have stopped the simulation. therefore
+		// we enter a new switch statement.
+		
+		switch (state) {
 		case STEP:
 		case STOP:
 			state = State.STOP;
@@ -119,15 +145,6 @@ public class Job {
 				coop.pass();
 			} while (state == State.STOP);
 			break;
-			
-		case RUN:
-			if (System.currentTimeMillis() - lastAnimate > animateDelay) {
-				animateDisplays();
-				lastAnimate = System.currentTimeMillis();
-			}
-			_yield();
-			break;
-			
 		case KILL:
 			throw new ThreadDeath();
 		}

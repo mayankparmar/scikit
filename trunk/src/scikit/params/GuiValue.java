@@ -36,7 +36,13 @@ abstract public class GuiValue {
 	
 	
 	// ----------------------------------------------- Listeners ---------------------------------------------
-
+	
+	// TODO: change listeners currently get fired on every minor change, for example locking and unlocking.
+	// the downside of this is that Control sets it so each parameter will call Job.wake(), even on locking
+	// events.  need to implement finer level of control.
+	// also, this invokeLater stuff seems unnecessary for most of the events..
+	// grumble grumble.
+	
 	private Vector<ChangeListener> _listeners = new Vector<ChangeListener>();
 
 	public void addChangeListener(ChangeListener listener) {
