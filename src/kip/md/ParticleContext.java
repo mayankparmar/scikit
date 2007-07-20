@@ -203,7 +203,7 @@ public class ParticleContext {
 		    	tag.pc = pc;
 		    	tag.mass = dis.readDouble();
 		    	tag.radius = dis.readDouble();
-		    	tag.color = new Color(dis.readInt(), dis.readInt(), dis.readInt());
+		    	tag.color = new Color(dis.readInt(), dis.readInt(), dis.readInt(), 128);
 		    	tags.put(tag.id, tag);
 		    }
 		    

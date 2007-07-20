@@ -7,14 +7,12 @@ public class Cooperation {
 	private volatile boolean triggered = false;
 	
 	/**
-	 * Adds an event to the GUI event queue which, when called back, will
-	 * call pass() from the GUI thread. pass() will hang the GUI thread
-	 * and allow the simulation thread to run. When the simulation thread
-	 * calls pass(), the GUI thread will back awakened, and this callback
-	 * will return.
-	 * In summary, schedules one processing loop while the GUI thread waits.
+	 * Schedules the GUI thread to call pass(). This signals the beginning of the
+	 * processing loop. The GUI thread will resume control upon completion of the
+	 * processing loop.
+	 * In the case that this event has already been triggered, does nothing.
 	 */
-	public void triggerProcessingLoop() {
+	synchronized public void triggerProcessingLoop() {
 		if (!triggered) {
 			triggered = true;
 			SwingUtilities.invokeLater(new Runnable() {
@@ -44,7 +42,8 @@ public class Cooperation {
 	}
 	
 	/**
-	 * Cooperatively allows the other thread in the processing loop to run.
+	 * Passes control to the next thread in the processing loop, and waits until
+	 * control returns.
 	 */
 	synchronized public void pass() {
 		notify();
@@ -54,5 +53,16 @@ public class Cooperation {
 		catch (InterruptedException e) {
 			System.err.println("Thread Interrupted.");
 		}
+	}
+	
+	/**
+	 * Causes the currently executing thread to sleep while allowing the processing
+	 * loop to continue.
+	 */
+	public void sleep(long ms) {
+		unregister();
+		try { Thread.sleep(ms); }
+		catch (InterruptedException e) {}
+		register();
 	}
 }
