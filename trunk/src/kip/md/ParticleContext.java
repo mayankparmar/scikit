@@ -14,7 +14,6 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -225,10 +224,19 @@ public class ParticleContext {
 	}
 	
 	
-	public Drawable[] getDrawables(final Particle[] particles) {
-		ArrayList<Drawable> drawables = new ArrayList<Drawable>();
-		
-		drawables.add(new Drawable() {
+	public Drawable boundaryDw() {
+		switch (type) {
+		case Disk2D:
+			return new CircleGraphics(L/2., L/2., L/2.);
+		case Torus2D:
+			return new RectangleGraphics(0., 0., L, L);
+		default:
+			return null;
+		}
+	}
+	
+	public Drawable particlesDw(final Particle[] particles) {
+		return new Drawable() {
 			public void draw(Graphics g) {
 				for (Particle p : particles) {
 					g.setColor(p.tag.color);
@@ -238,15 +246,6 @@ public class ParticleContext {
 			public Bounds getBounds() {
 				return new Bounds(0, L, 0, L);
 			}			
-		});
-		switch (type) {
-		case Disk2D:
-			drawables.add(new CircleGraphics(L/2., L/2., L/2.));
-			break;
-		case Torus2D:
-			drawables.add(new RectangleGraphics(0., 0., L, L));
-			break;
-		}
-		return drawables.toArray(new Drawable[0]);
+		};
 	}
 }

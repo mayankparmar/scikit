@@ -81,7 +81,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 			p.vy = state[4*i+3];
 			pc.wrap(p);
 			
-			if (dt*max(abs(p.vx), abs(p.vy)) > pc.L/2) {
+			if (dt*max(abs(p.vx), abs(p.vy)) > pc.L/10) {
 				throw new IllegalStateException("Simulation has destablized");
 			}
 		}
@@ -153,7 +153,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 			rate[4*i+0] = particles[i].vx;
 			rate[4*i+2] = particles[i].vy;
 		}
-		calculateForces(rate);		
+		calculateForces(rate);
 	}
 	
 	

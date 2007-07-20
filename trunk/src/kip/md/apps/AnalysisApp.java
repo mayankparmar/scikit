@@ -1,7 +1,5 @@
 package kip.md.apps;
 
-import static kip.util.MathPlus.sqr;
-
 import java.awt.Color;
 
 import kip.md.Particle;
@@ -18,7 +16,7 @@ import scikit.params.ChoiceValue;
 
 
 public class AnalysisApp extends Simulation {
-	Plot wplot = new Plot("Mean squared displacement");
+	Plot r2plot = new Plot("Mean squared displacement");
 	Plot alpha = new Plot("Non-Gaussian parameter");
 	SnapshotArray snapshots;
 	ParticleContext pc;
@@ -30,26 +28,29 @@ public class AnalysisApp extends Simulation {
 	
 	public AnalysisApp() {
 		params.addm("Log scale", new ChoiceValue("True", "False"));
-		params.add("Input directory", "/Users/kbarros/Desktop/data/phi=0.85");
+//		params.add("Input directory", "/Users/kbarros/Desktop/data/unary/phi=0.85");
+		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.75 B=0.1");
+		params.add("Particle ID", 1);
 	}
 	
 	public void animate() {
 		boolean ls = params.sget("Log scale").equals("True");
-		wplot.setLogScale(ls, ls);
-		wplot.registerPoints("Mean squared displacement", dx2, Color.BLUE);
+		r2plot.setLogScale(ls, ls);
+		r2plot.registerPoints("Mean squared displacement", dx2, Color.BLUE);
 		
 		alpha.setLogScale(true, false);
 		alpha.registerPoints("alpha", getAlpha(), Color.RED);
 	}
 	
 	public void clear() {
-		wplot.clear();
+		r2plot.clear();
 		alpha.clear();
 	}
 	
 	public void run() {
 		snapshots = new SnapshotArray(params.sget("Input directory"));
 		pc = snapshots.getContext();
+		int id = params.iget("Particle ID");
 		
 		dx2 = new Accumulator(0.1);
 		dx2.setAveraging(true);
@@ -59,8 +60,7 @@ public class AnalysisApp extends Simulation {
 		for (int i = 0; i < 10; i++) {
 			double tf = snapshots.t_f - 1*i;
 			for (double time = 0.1; time < 2; time += 0.1) {
-				dx2.accum(time, secondMoment(tf-time, tf));
-				dx4.accum(time, fourthMoment(tf-time, tf));
+				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
@@ -68,8 +68,7 @@ public class AnalysisApp extends Simulation {
 		for (int i = 0; i < 10; i++) {
 			double tf = snapshots.t_f - 10*i;
 			for (double time = 1; time < 100; time += 1) {
-				dx2.accum(time, secondMoment(tf-time, tf));
-				dx4.accum(time, fourthMoment(tf-time, tf));
+				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
@@ -86,24 +85,16 @@ public class AnalysisApp extends Simulation {
 		return ret;
 	}
 	
-	public double secondMoment(double t1, double t2) {	
+	public void accumMoments(double t1, double t2, int id, Accumulator dx2, Accumulator dx4) {
 		Particle[] ps1 = snapshots.get(t1);
 		Particle[] ps2 = snapshots.get(t2);
-		double dx2 = 0;
 		for (int i = 0; i < ps1.length; i++) {
-			dx2 += pc.displacement(ps1[i],ps2[i]).norm2();
+			if (ps1[i].tag.id == id) {
+				double r2 = pc.displacement(ps1[i],ps2[i]).norm2();
+				dx2.accum(t2-t1, r2);
+				dx4.accum(t2-t1, r2*r2);
+			}
 		}
-		return dx2 / ps1.length;
-	}
-	
-	public double fourthMoment(double t1, double t2) {
-		Particle[] ps1 = snapshots.get(t1);
-		Particle[] ps2 = snapshots.get(t2);
-		double dx4 = 0;
-		for (int i = 0; i < ps1.length; i++) {
-			dx4 += sqr(pc.displacement(ps1[i],ps2[i]).norm2());
-		}
-		return dx4 / ps1.length;
 	}
 }
 
