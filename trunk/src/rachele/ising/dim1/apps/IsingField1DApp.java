@@ -1,4 +1,4 @@
-package rachele.ising.dim1;
+package rachele.ising.dim1.apps;
 
 
 import static java.lang.Math.floor;
@@ -9,6 +9,7 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.plot.Plot;
 import rachele.ising.dim1.FieldIsing1D;
+import rachele.ising.dim1.StructureFactor1D;
 
 public class IsingField1DApp extends Simulation{
 
@@ -54,13 +55,14 @@ public class IsingField1DApp extends Simulation{
 		fieldPlot.setYRange(-1, 1);
 		Job.addDisplay(fieldPlot);
 		Job.addDisplay(SFPlot);
-		sf.getAccumulator().clear();
+		//sf.getAccumulator().clear();
 		
 		while (true) {
 			ising.simulate();
 			sf.accumulate(ising.phi);
 			//avStructH.accum(structure.getAccumulatorH());
 			Job.animate();
+			SFPlot.setDataSet(0, sf.getAccumulator());
 			fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
 		}
 	}

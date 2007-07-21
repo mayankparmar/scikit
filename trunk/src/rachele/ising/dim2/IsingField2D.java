@@ -10,7 +10,7 @@ import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
 
 public class IsingField2D {
-	public double L, R, T, dx;
+	public double L, R, T, dx, J;
 	public int Lp;
 	double dt, t;
 	public double[] phi;
@@ -30,11 +30,12 @@ public class IsingField2D {
 	
 	Random random = new Random();
 	
-	public static final double DENSITY = 0.001;
+	public static final double DENSITY = -0.001;
 	
 	public IsingField2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 		
+		J = params.fget("J");
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
@@ -64,6 +65,7 @@ public class IsingField2D {
 	public void readParams(Parameters params) {
 		T = params.fget("T");
 		dt = params.fget("dt");
+		J = params.fget("J");
 	}
 	
 	
@@ -103,9 +105,9 @@ public class IsingField2D {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
 				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				double J = (kR == 0 ? 1 : 2*j1(kR)/kR);
-				fftScratch[2*i] *= J;
-				fftScratch[2*i+1] *= J;
+				double V = (kR == 0 ? 1 : 2*j1(kR)/kR);
+				fftScratch[2*i] *= V*J;
+				fftScratch[2*i+1] *= V*J;
 			}
 		}
 		fft.backtransform(fftScratch);
@@ -190,11 +192,12 @@ public class IsingField2D {
 		convolveWithRange(phi, phi_bar, R);
 		
 		for (int i = 0; i < Lp*Lp; i++) {
-			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx*dx)*random.nextGaussian();
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp; i++) {
 			phi[i] += del_phi[i] - mu;
+			System.out.println("phi " + i + " = " + phi[i]);
 		}
 		t += dt;
 	}
