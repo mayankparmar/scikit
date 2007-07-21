@@ -1,13 +1,18 @@
 package rachele.ising.dim1;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.sqrt;
+//import static java.lang.Math.sin;
+//import static java.lang.Math.sqrt;
 import scikit.dataset.Accumulator;
-import scikit.numerics.fft.ComplexDouble2DFFT;
-import scikit.numerics.fft.RealDoubleFFT_Radix2;
+//import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.ComplexDoubleFFT;
+import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
+//import scikit.numerics.fft.RealDoubleFFT_Radix2;
 
 public class StructureFactor1D {
-	RealDoubleFFT_Radix2 fft;	// Object to perform transforms
+	//RealDoubleFFT_Radix2 fft;	// Object to perform transforms
+
+	ComplexDoubleFFT fft;
 	double[] fftData;       // Fourier transform data
 	int Lp;                 // # elements per side
 	double L;               // the actual system length, L = Lp*dx, where dx is lattice spacing
@@ -24,8 +29,9 @@ public class StructureFactor1D {
 		kRmax = (2*PI*(Lp/2)/L)*R;
 		acc = new Accumulator(kRbinWidth);
 		acc.setAveraging(true);
-		fft = new RealDoubleFFT_Radix2(Lp);
-		fftData = new double[Lp];
+		//fft = new RealDoubleFFT_Radix2(Lp);
+		fft = new ComplexDoubleFFT_Mixed(Lp);
+		fftData = new double[2*Lp];
 	}
 	
 	public Accumulator getAccumulator() {
@@ -33,15 +39,19 @@ public class StructureFactor1D {
 	}
 	
 	public void accumulate(double[] xs) {
-		for (int i = 0; i < Lp; i++)
-			fftData[i] = xs[i];
+		for (int i = 0; i < Lp; i++) {
+			fftData[2*i+0] = xs[i];
+			fftData[2*i+1] = 0;
+		}
 		fft.transform(fftData);
-		for (int y = -Lp/2; y < Lp/2; y++) {
-			double kR = (2*PI*Math.abs(y))*R;
+		for (int x = -Lp/2; x < Lp/2; x++) {
+			double kR = (2*PI*x/L) * R;
 			if (kR >= kRmin && kR <= kRmax) {
-				double re = fftData[y+Lp/2];
-				acc.accum(kR, (re*re)/(L));
-			}
+				int i = (x + Lp) % Lp;
+				double re = fftData[2*i];
+				double im = fftData[2*i+1];
+				acc.accum(kR, (re*re + im*im)/(L));
+				}
 		}
 	}
 	

@@ -14,9 +14,10 @@ import static java.lang.Math.sqrt;
 import static kip.util.DoubleArray.*;
 
 public class FieldIsing1D extends AbstractIsing1D{
-	int Lp;
-	double dt, t;
-	double[] phi,phi_bar, del_phi;
+	public int Lp;
+	public double dt, t;
+	public double[] phi;
+	double [] phi_bar, del_phi;
 	
 	public double L, R, T, J, dx;
 	Random random = new Random();
@@ -107,6 +108,7 @@ public class FieldIsing1D extends AbstractIsing1D{
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp; i++) {
 			phi[i] += del_phi[i] - mu;
+			
 		}
 		t += dt;
 	}
