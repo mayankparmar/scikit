@@ -19,24 +19,26 @@ import scikit.plot.Plot;
 public class IsingField2DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
+    Plot slice = new Plot("Slice", true);
     StructureFactor sf;
     IsingField2D ising;
 
     
 	public static void main(String[] args) {
-		new Control(new IsingField2DApp(), "Clump Model");
+		new Control(new IsingField2DApp(), "Ising Field");
 	}
 	
 	public IsingField2DApp() {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.1);
 		params.addm("dt", 0.01);
-		params.add("R", 1000);
-		params.add("L/R", 16.0);
-		params.add("dx", 125.0);
-		params.add("J", -2.0);
+		params.addm("R", 1000);
+		params.add("L/R", 8.0);
+		params.add("R/dx", 16.0);
+		params.add("J", -10.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
+		params.add("Density", 0.0);
 		params.add("Time");
 	}
 	
@@ -45,23 +47,26 @@ public class IsingField2DApp extends Simulation {
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
 		else
-			grid.setScale(-1, 1);
-        //grid.setData(ising.numColumns(), ising.numColumns(), ising.coarseGrained());
+			grid.setScale(-1.0, 1.0);
+		slice.clear();
+        for (int i=0; i<ising.Lp; i++){
+        	slice.append(0, i, ising.phi[i]);
+        }
+		//grid.setData(ising.numColumns(), ising.numColumns(), ising.coarseGrained());
 	}
 	
 	public void run() {
 		ising = new IsingField2D(params);
-		double [] tester;
-		tester = new double [ising.Lp*ising.Lp];
-		for (int i = 0; i < ising.Lp*ising.Lp; i++)
-			tester[i] = 0.0; 
-        grid.setData(ising.numColumns(), ising.numColumns(), ising.phi);
-        
+		grid.setData(ising.Lp,ising.Lp,ising.phi);
+		
         double binWidth = params.fget("kR bin-width");
         binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth);
 		sf.setBounds(0.1, 14);
         plot.setDataSet(0, sf.getAccumulator());
+        //for (int i=0; i<ising.Lp; i++){
+        //	slice.append(0, ising.phi[i],(double)i);
+        //}
         //plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
         //	public double eval(double kR) {
         //		double V = 2*j1(kR)/kR;
@@ -70,17 +75,15 @@ public class IsingField2DApp extends Simulation {
         //});
         Job.addDisplay(grid);
         Job.addDisplay(plot);
-        
+        Job.addDisplay(slice);
         boolean equilibrating = true;
         while (true) {
 			params.set("Time", ising.time());
 			ising.simulate();
-			if (equilibrating && ising.time() >= 15) {
-				equilibrating = false;
+			if (equilibrating && ising.time() >= .5) {
+			equilibrating = false;
 				sf.getAccumulator().clear();
 			}
-			for (int i = 0; i < ising.Lp*ising.Lp; i++)
-				tester[i] += (double)(i)/(ising.Lp*ising.Lp); 
 			//ising.accumulateIntoStructureFactor(sf);
 			sf.accumulate(ising.phi);
 			Job.animate();
