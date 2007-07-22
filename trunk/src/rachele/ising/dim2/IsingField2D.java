@@ -30,7 +30,8 @@ public class IsingField2D {
 	
 	Random random = new Random();
 	
-	public static final double DENSITY = -0.001;
+	//public static final double DENSITY = -0.5;
+	double DENSITY;
 	
 	public IsingField2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
@@ -39,12 +40,14 @@ public class IsingField2D {
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-		dx = params.fget("dx");
+		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
+		DENSITY = params.fget("Density");
 		
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
-		params.set("dx", dx);
+		double RoverDx = R/dx;
+		params.set("R/dx", RoverDx);
 		
 		t = 0;
 
@@ -59,6 +62,13 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++)
 			phi[i] = DENSITY;
+		//for (int i = 0; i < Lp*Lp; i++){
+		//	int x = i % Lp;
+		//	phi [i] = Math.cos(2*PI*x/(R/dx))*.1;
+		//}
+		//DENSITY = mean (phi);
+
+		
 	}
 	
 	
@@ -66,6 +76,12 @@ public class IsingField2D {
 		T = params.fget("T");
 		dt = params.fget("dt");
 		J = params.fget("J");
+		R = params.fget("R");
+		L = R*params.fget("L/R");
+		dx = R/params.fget("R/dx");
+		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		dx = L / Lp;
+		params.set("R/dx", R/dx);
 	}
 	
 	
@@ -192,12 +208,12 @@ public class IsingField2D {
 		convolveWithRange(phi, phi_bar, R);
 		
 		for (int i = 0; i < Lp*Lp; i++) {
-			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx*dx)*random.nextGaussian();
+			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
-		for (int i = 0; i < Lp; i++) {
+		for (int i = 0; i < Lp*Lp; i++) {
 			phi[i] += del_phi[i] - mu;
-			System.out.println("phi " + i + " = " + phi[i]);
+			//System.out.println("phi " + i + " = " + phi[i] + " " + ising.Lp);
 		}
 		t += dt;
 	}
