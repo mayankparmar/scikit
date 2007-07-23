@@ -50,7 +50,8 @@ class SnapshotArray {
 		}
 		double dt1 = t - time(lb);
 		double dt2 = time(ub) - t;
-		return snapshots.get((dt1 < dt2) ? lb : ub).particles(); 
+		int i = (dt1 < dt2) ? lb : ub;
+		return snapshots.get(i).particles(); 
 	}
 	
 	public ParticleContext getContext() {

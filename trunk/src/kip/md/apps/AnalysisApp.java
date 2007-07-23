@@ -29,7 +29,7 @@ public class AnalysisApp extends Simulation {
 	public AnalysisApp() {
 		params.addm("Log scale", new ChoiceValue("True", "False"));
 //		params.add("Input directory", "/Users/kbarros/Desktop/data/unary/phi=0.85");
-		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.75 B=0.1");
+		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1");
 		params.add("Particle ID", 1);
 	}
 	
@@ -57,17 +57,23 @@ public class AnalysisApp extends Simulation {
 		dx4 = new Accumulator(0.1);
 		dx4.setAveraging(true);
 		
-		for (int i = 0; i < 10; i++) {
-			double tf = snapshots.t_f - 1*i;
+		for (int i = 0; i < 100; i++) {
+			double tf = snapshots.t_f - 0.1*i;
 			for (double time = 0.1; time < 2; time += 0.1) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
-		
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 100; i++) {
+			double tf = snapshots.t_f - 1*i;
+			for (double time = 1; time < 20; time += 1) {
+				accumMoments(tf-time, tf, id, dx2, dx4);
+				Job.animate();
+			}
+		}
+		for (int i = 0; i < 50; i++) {
 			double tf = snapshots.t_f - 10*i;
-			for (double time = 1; time < 100; time += 1) {
+			for (double time = 10; time < 200; time += 10) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
