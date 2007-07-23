@@ -14,8 +14,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 	public ParticleContext pc;
 	public Pt[] particles;
 	public int N;
-	public long timeCnt;
-	public double dt;
+	private double time;
 	
 	protected boolean canonicalEnsemble = false; // microcanonical ensemble by default
 	protected double T, gamma; // temperature, and thermodynamic coupling of system to heat bath
@@ -34,8 +33,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 		this.pc = pc;
 		this.particles = particles;
 		N = particles.length;
-		timeCnt = 0;
-		this.dt = dt;
+		time = 0;
 		
 		pc.layOutParticles(rand, particles);
 		
@@ -79,11 +77,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 			p.vx = state[4*i+1];
 			p.y  = state[4*i+2];
 			p.vy = state[4*i+3];
-			pc.wrap(p);
-			
-			if (dt*max(abs(p.vx), abs(p.vy)) > pc.L/10) {
-				throw new IllegalStateException("Simulation has destablized");
-			}
+			pc.wrap(p);	
 		}
 	}
 	
@@ -93,7 +87,8 @@ public class MolecularDynamics2D<Pt extends Particle> {
 		readStateArray(phase);
 		if (canonicalEnsemble)
 			brownianNoise();
-		timeCnt += 1;
+		sanityCheck();
+		time += solver.getStepSize();
 	}
 	
 	
@@ -113,7 +108,7 @@ public class MolecularDynamics2D<Pt extends Particle> {
 	}
 	
 	public double time() {
-		return dt*timeCnt;
+		return time;
 	}
 	
 	public double potentialEnergy() {
@@ -156,6 +151,15 @@ public class MolecularDynamics2D<Pt extends Particle> {
 		calculateForces(rate);
 	}
 	
+	private void sanityCheck() {
+		for (int i = 0; i < N; i++) {
+			Pt p = particles[i];
+			double dt = solver.getStepSize();
+			if (dt*max(abs(p.vx), abs(p.vy)) > pc.L/10) {
+				throw new IllegalStateException("Simulation has destablized");
+			}
+		}
+	}
 	
 	private void calculateForces(double[] rate) {
 		Vec3 f = new Vec3(0,0,0);

@@ -25,10 +25,10 @@ public class AnimateApp extends Simulation {
 	
 	public AnimateApp() {
 		params.add("t*", 30.0);
-		params.add("r*", 1.5);
+		params.add("r*", 0);
 //		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.75 B=0.1");
 //		params.add("Input directory", "/Users/kbarros/Desktop/data/unary/phi=0.85");
-		params.add("Input directory", "/Users/kbarros/Desktop/output");
+		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1");
 		params.add("time");
 	}
 

@@ -13,7 +13,6 @@ import scikit.params.ChoiceValue;
 import scikit.util.Dump;
 import static scikit.util.Utilities.*;
 
-//import kip.geometry.VoronoiGraphics;
 import kip.md.LJParticle2D;
 import kip.md.MolecularDynamics2D;
 import kip.md.ParticleContext;
@@ -50,12 +49,7 @@ public class LennardJonesApp extends Simulation {
 		sim.setTemperature(params.fget("Temperature"), params.fget("Bath coupling"));
 		params.set("Time", format(sim.time()));
 		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
-
-//		VoronoiGraphics voronoi = new VoronoiGraphics(sim.pc.getBounds());		
-//		voronoi.construct(phase, 2, 0, NA+NB);
-
 		canvas.setDrawables(sim.pc.boundaryDw(), sim.pc.particlesDw(sim.particles));
-//		canvas.addGraphics(voronoi);
 	}
 	
 	public void clear() {
@@ -109,32 +103,52 @@ public class LennardJonesApp extends Simulation {
 		else {
 			dir = dir + File.separator;
 			Dump.dumpString(dir + "parameters.txt", params.toString());
-		
-			while (sim.timeCnt < round(2000/sim.dt)) {
+			
+			dt = sim.getStepSize();
+			while (sim.time()+dt/2 < 50) {
 				sim.step();
 				maybeAnimate();
-				if (sim.timeCnt % round(10/sim.dt) == 0)
-					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+				maybeDump(10, dir, particles);
 			}
-			while (sim.timeCnt < round(2200/sim.dt)) {
+			dt = 2*dt;
+			sim.setStepSize(dt);
+			params.set("dt", dt);
+			while (sim.time()+dt/2 < 4000) {
 				sim.step();
 				maybeAnimate();
-				if (sim.timeCnt % round(1/sim.dt) == 0)
-					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+				maybeDump(10, dir, particles);
 			}
-			while (sim.timeCnt < round(2220/sim.dt)) {
+			while (sim.time()+dt/2 < 4500) {
 				sim.step();
 				maybeAnimate();
-				if (sim.timeCnt % round(0.1/sim.dt) == 0)
-					ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);
+				maybeDump(1, dir, particles);
+			}
+			while (sim.time()+dt/2 < 4550) {
+				sim.step();
+				maybeAnimate();
+				maybeDump(0.1, dir, particles);
 			}
 		}
 	}
 	
+	double lastAnimate;
 	void maybeAnimate() {
-		if (sim.timeCnt % 10 == 0)
+		long steps = round((sim.time()-lastAnimate)/sim.getStepSize()); 
+		if (steps >= 10) {
 			Job.animate();
-		else
+			lastAnimate = sim.time();
+		}
+		else {
 			Job.yield();
+		}
+	}
+	
+	void maybeDump(double del, String dir, LJParticle2D[] particles) {
+		double dt = sim.getStepSize();
+		int a = (int) ((sim.time() - dt/2)/del);
+		int b = (int) ((sim.time() + dt/2)/del);
+		if (b > a) {
+			ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);			
+		}
 	}
 }
