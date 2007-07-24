@@ -30,7 +30,8 @@ public class GraphicsAWT implements Graphics {
 	}
 
 	public void projectOrtho2D(Bounds proj) {
-		// the internal projection is a shift and scale from the "proj" rectangle 
+		// incoming points are transformed from datBds (data coordinates) 
+		// into pixBds (pixel coordinates)
 		this.datBds = proj;
 	}
 
@@ -79,13 +80,13 @@ public class GraphicsAWT implements Graphics {
 	public void drawCircle(double x, double y, double r) {
 		int w = offsetX(2*r);
 		int h = offsetY(2*r);
-		engine.drawOval(transX(x)-w/2, transY(y)-h*3/2, w, h);
+		engine.drawOval(transX(x)-w/2, transY(y)-h/2, w, h);
 	}
 
 	public void fillCircle(double x, double y, double r) {
 		int w = offsetX(2*r);
 		int h = offsetY(2*r);
-		engine.fillOval(transX(x)-w/2, transY(y)-h*3/2, w, h);
+		engine.fillOval(transX(x)-w/2, transY(y)-h/2, w, h);
 	}
 
 	public double stringWidth(String str) {

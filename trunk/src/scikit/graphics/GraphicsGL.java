@@ -51,7 +51,8 @@ public class GraphicsGL implements Graphics {
 		(new GLU()).gluOrtho2D(0, pixBds.xmax, 0, pixBds.ymax);
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		// the internal projection is a shift and scale from the "proj" rectangle 
+		// incoming points are transformed from datBds (data coordinates) 
+		// into pixBds (pixel coordinates)
 		this.datBds = proj;
 	}
 	
