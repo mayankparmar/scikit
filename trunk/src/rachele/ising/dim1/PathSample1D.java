@@ -1,6 +1,7 @@
 package rachele.ising.dim1;
 
 	import kip.util.Random;
+	import static kip.util.MathPlus.*;
 	import scikit.numerics.fft.ComplexDoubleFFT;
 	import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 	import scikit.params.Parameters;
@@ -9,7 +10,7 @@ package rachele.ising.dim1;
 	import static java.lang.Math.rint;
 	import static java.lang.Math.sin;
 	import static java.lang.Math.sqrt;
-import static kip.util.DoubleArray.*;
+	import static kip.util.DoubleArray.*;
 
 	public class PathSample1D {
 		public int Lp;
@@ -133,10 +134,21 @@ import static kip.util.DoubleArray.*;
 					phiAtT[k] = phi [k][j];
 				convolveWithRange(phiAtT,phi_bar, R);//convolve once for every time step
 				for (int i = 0; i < Lp; i++){
-						double t8 = -phi_bar[i]/((1-phi[i][j])*(1-phi[i][j])*T);
-						atan();
-				del_phi[]
-				newphi[i][j] = ;
+					double atanhphi = atanh(phi[i][j]);
+					double phi2 = sqr(phi[i][j]);
+					double t1;
+					double t2;
+					double t3;
+					double t4;
+					double t5;
+					double t6;
+					double t7;
+					double t8 = -phi_bar[i]/((1-phi2)*T);
+					double t9 = atanhphi/(T*T*(1-phi2));
+				
+						//del_phi[i] = du*(t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9);
+						//phi[i][j] += del_phi[i][j];
+
 				}
 			}
 			//convolveWithRange(phi, phi_bar, R);
