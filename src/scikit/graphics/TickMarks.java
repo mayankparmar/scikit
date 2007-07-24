@@ -33,12 +33,12 @@ public class TickMarks implements Drawable {
 		if (!_plot._logScaleX)
 			xticks = getLinTicks(db.xmin, db.xmax, cb.getWidth()*TICKS_PER_PIXEL);
 		else
-			xticks = getLinTicks(db.xmin, db.xmax, cb.getWidth()*TICKS_PER_PIXEL);
+			xticks = getLogTicks(db.xmin, db.xmax, cb.getWidth()*TICKS_PER_PIXEL);
 		
 		if (!_plot._logScaleY)
 			yticks = getLinTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
 		else
-			yticks = getLinTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
+			yticks = getLogTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
 		
 		drawTickLines(g, xticks, yticks);
 		drawTickLabels(g, xticks, yticks);
@@ -60,12 +60,7 @@ public class TickMarks implements Drawable {
 			str.replace(i, i+1, "e");
 			if (tick == 0)
 				str = new StringBuffer("0");
-		}
-		
-		// insert an empty space in place of negative sign
-		if (tick >= 0)
-			str.insert(0, ' ');
-			
+		}			
 		return str.toString();
 	}
 	
@@ -95,8 +90,32 @@ public class TickMarks implements Drawable {
 		ArrayList<Tick> ret = new ArrayList<Tick>();
 		double mult = floor(lo / step) + 1;
 		while (mult*step < hi) {
-			ret.add(new Tick(mult*step, tickToString(mult*step, hi-lo), new Color(0.82f, 0.82f, 0.87f)));
+			ret.add(new Tick(mult*step, tickToString(mult*step, hi-lo), new Color(0.75f, 0.75f, 0.75f)));
 			mult++;
+		}
+		return ret;
+	}
+	
+	private static ArrayList<Tick> getLogTicks(double lo, double hi, double desiredTickNum) {
+		ArrayList<Tick> ret;
+		if (hi - lo < 1) {
+			ret = getLinTicks(lo, hi, desiredTickNum/2);
+			for (Tick tick : ret)
+				tick.str = "10^" + tick.str;
+		}
+		else {
+			ret = new ArrayList<Tick>();
+			int _lo = (int)ceil(lo);
+			int _hi = (int)floor(hi);
+			int orders = _hi - _lo + 1; // # of orders of magnitude in range
+			int step = (int) max(1, ceil(orders/(double)desiredTickNum));
+			for (int i = _lo; i <= _hi; i += step) {
+				ret.add(new Tick(i, "10^"+i, new Color(0.75f, 0.75f, 0.75f)));
+				for (int j = 2; j <= 9; j++)
+					ret.add(new Tick(i-1+log10(j), null, new Color(0.88f, 0.95f, 0.88f)));
+			}
+			for (int j = 2; j <= 9; j++)
+				ret.add(new Tick(_hi+log10(j), null, new Color(0.88f, 0.95f, 0.88f)));
 		}
 		return ret;
 	}
@@ -124,12 +143,15 @@ public class TickMarks implements Drawable {
 			double boundaryDistance = min(tick.v-db.xmin, db.xmax-tick.v) / widthPerPix;
 			if (tick.str != null && boundaryDistance > LABEL_CUTOFF) {
 				double y = db.ymin + MARGIN*heightPerPix;
-				g.drawString(tick.str, tick.v-g.stringWidth(" "+tick.str)/2, y);
+				tick.str = ((!_plot._logScaleX && tick.v >= 0) ? " " : "") + tick.str;
+				String prefix = (!_plot._logScaleX) ? tick.str.substring(0, 1) : "";
+				g.drawString(tick.str, tick.v-g.stringWidth(prefix+tick.str)/2, y);
 			}
 		}
 		for (Tick tick : yticks) {
 			if (tick.str != null) {
 				double x = db.xmin + MARGIN*widthPerPix;
+				tick.str = ((!_plot._logScaleY && tick.v >= 0) ? " " : "") + tick.str;
 				g.drawString(tick.str, x, tick.v-g.stringHeight(tick.str)/2);
 			}
 		}
