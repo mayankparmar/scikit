@@ -7,6 +7,7 @@ import scikit.dataset.PointSet;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.params.ChoiceValue;
 import scikit.plot.Plot;
 import rachele.ising.dim1.FieldIsing1D;
 import rachele.ising.dim1.StructureFactor1D;
@@ -23,15 +24,19 @@ public class IsingField1DApp extends Simulation{
 	}
 	
 	public IsingField1DApp(){
-		params.addm("T", 0.2);
-		params.addm("J", -2.5);
-		params.addm("dt", 0.01);
-		params.add("R", 10000);
-		params.add("L/R", 16.0);
-		params.add("dx", 125.0);
+		params.addm("Zoom", new ChoiceValue("A", "B"));
+		params.addm("T", 0.86);
+		params.addm("J", 2.0);
+		params.addm("dt", 0.1);
+		params.addm("R", 2000);
+		params.addm("H", 0.07);
+		params.add("L/R", 300.0);
+		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
+		params.add("Density", -.8);
 		params.add("Time");
+		params.add("DENSITY");
 	}
 	
 	public void animate() {

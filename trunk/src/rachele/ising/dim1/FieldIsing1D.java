@@ -1,11 +1,9 @@
 package rachele.ising.dim1;
 
-//import kip.clump.dim2.StructureFactor;
 import kip.util.Random;
 import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import scikit.params.Parameters;
-import rachele.ising.dim1.AbstractIsing1D;
 import static java.lang.Math.PI;
 import static java.lang.Math.log;
 import static java.lang.Math.rint;
@@ -13,16 +11,18 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static kip.util.DoubleArray.*;
 
-public class FieldIsing1D extends AbstractIsing1D{
+public class FieldIsing1D{
 	public int Lp;
 	public double dt, t;
 	public double[] phi;
+	double DENSITY;
 	double [] phi_bar, del_phi;
+	boolean modelA;
 	
-	public double L, R, T, J, dx;
+	public double L, R, T, J, dx, H;
 	Random random = new Random();
 	
-	public static final double DENSITY = -0;
+	//public static final double DENSITY = -0;
 	public static final double KR_SP = 4.4934102;
 	
 	ComplexDoubleFFT fft;
@@ -35,12 +35,18 @@ public class FieldIsing1D extends AbstractIsing1D{
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-		dx = params.fget("dx");
+		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		
+		DENSITY = params.fget("Density");
+		H = params.fget("H");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
-		params.set("dx", dx);
+		double RoverDx = R/dx;
+		params.set("R/dx", RoverDx);
+		if (params.sget("Zoom").equals("A"))
+			modelA = true;
+		else
+			modelA = false;
 		
 		t = 0;
 
@@ -59,6 +65,18 @@ public class FieldIsing1D extends AbstractIsing1D{
 		T = params.fget("T");
 		J = params.fget("J");
 		dt = params.fget("dt");
+		R = params.fget("R");
+		H = params.fget("H");
+		L = R*params.fget("L/R");
+		dx = R/params.fget("R/dx");
+		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		dx = L / Lp;
+		params.set("R/dx", R/dx);
+		if (params.sget("Zoom").equals("A"))
+			modelA = true;
+		else
+			modelA = false;
+		params.set("DENSITY", mean(phi));
 	}
 	
 	public double time() {
@@ -102,13 +120,22 @@ public class FieldIsing1D extends AbstractIsing1D{
 	public void simulate() {
 		convolveWithRange(phi, phi_bar, R);
 
-		for (int i = 0; i < Lp; i++) {
-			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
-		}
-		double mu = mean(del_phi)-(DENSITY-mean(phi));
-		for (int i = 0; i < Lp; i++) {
-			phi[i] += del_phi[i] - mu;
-			
+		if (modelA){
+			for (int i = 0; i < Lp; i++) {
+				del_phi[i] = - dt*(-phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+			}
+			//double mu = mean(del_phi)-(DENSITY-mean(phi));
+			for (int i = 0; i < Lp; i++) {
+				phi[i] += del_phi[i];	
+			}		
+		}else{
+			for (int i = 0; i < Lp; i++) {
+				del_phi[i] = - dt*(-phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+			}
+			double mu = mean(del_phi)-(DENSITY-mean(phi));
+			for (int i = 0; i < Lp; i++) {
+				phi[i] += del_phi[i] - mu;	
+			}			
 		}
 		t += dt;
 	}
