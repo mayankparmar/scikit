@@ -16,9 +16,9 @@ package rachele.ising.dim1;
 		public int Lp;
 		public double dt, t;
 		public int t_f;
-		public double[][] phi;
+		public double[][] phi, del_phi;
 		double DENSITY;
-		double [] phi_bar, del_phi;
+		double [] phi_bar;
 		public double L, R, T, J, dx, H;
 
 		public static final double KR_SP = 4.4934102;
@@ -57,7 +57,7 @@ package rachele.ising.dim1;
 
 			phi = new double[Lp][t_f+1];
 			phi_bar = new double[Lp];
-			del_phi = new double[Lp];
+			del_phi = new double[Lp][t_f+1];
 			
 			fftScratch = new double[2*Lp];
 			fft = new ComplexDoubleFFT_Mixed(Lp);
@@ -126,30 +126,40 @@ package rachele.ising.dim1;
 		}
 		
 		public void simulate() {
-			double [] phiAtT;
-			phiAtT = new double [Lp];
+			double [] convolver;
+			double [] lastPhiBar;
+			double dPhi_dt, atanhphi, d2Phi_dt2, dPhibar_dt, datanh_dt;
 			
-			for(int j = 1; j < t_f; j++){
-				for( int k = 0; k < Lp; k++)
-					phiAtT[k] = phi [k][j];
-				convolveWithRange(phiAtT,phi_bar, R);//convolve once for every time step
-				for (int i = 0; i < Lp; i++){
-					double atanhphi = atanh(phi[i][j]);
-					double phi2 = sqr(phi[i][j]);
-					double t1;
-					double t2;
-					double t3;
-					double t4;
-					double t5;
-					double t6;
-					double t7;
-					double t8 = -phi_bar[i]/((1-phi2)*T);
-					double t9 = atanhphi/(T*T*(1-phi2));
+			lastPhiBar = new double [Lp];
+			convolver = new double [Lp];
+			for (int i = 0; i < Lp; i++)
+				convolver[i] = phi[i][t_f];
+			convolveWithRange(convolver, lastPhiBar, R);
+			//for (int i = 0; i < Lp; i++)
+			//	lastPhiBar[i] -= atanh 
 				
-						//del_phi[i] = du*(t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9);
-						//phi[i][j] += del_phi[i][j];
-
+			for(int j = t_f-1; j > 0; j--){
+				for( int k = 0; k < Lp; k++)
+					convolver[k] = phi [k][j];
+				convolveWithRange(convolver, phi_bar, R);//convolve once for every time step
+				for (int i = 0; i < Lp; i++){
+					atanhphi = atanh(phi[i][j]);
+					dPhi_dt = (phi[i][j+1]-phi[i][j]);
+					convolver[i] = dPhi_dt + phi_bar[i] - atanhphi/T;
+				}	
+				convolveWithRange(convolver, phi_bar, R);
+				for (int i = 0; i < Lp; i++){
+					double phi2 = sqr(phi[i][j]);					
+					del_phi[i][j] = phi_bar[i]-convolver[i]/(T*T*(1-phi2));
+					d2Phi_dt2 = phi[i][j+1]-2*phi[i][j]+ phi[i][j-1];
+					del_phi[i][j] -= d2Phi_dt2; 
+					//del_phi[i][j] += -(()/());
 				}
+				
+				//del_phi[i][j] = -du*()+sqrt(2*du/(T*dx*dt))*Random.nextGaussian();
+					//phi[i][j] += del_phi[i][j];
+
+
 			}
 			//convolveWithRange(phi, phi_bar, R);
 
