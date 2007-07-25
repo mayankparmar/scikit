@@ -86,7 +86,7 @@ public class Wolff2DApp extends Simulation {
 	public Wolff2DApp() {
 		params.add("L", 512);
 		//params.addm("T", Ising.Tc);
-		params.addm("T", new DoubleValue(Ising.Tc, Ising.Tc-0.2, Ising.Tc+0.2)).enableAuxiliaryEditor();		
+		params.addm("T", new DoubleValue(Ising.Tc, Ising.Tc-0.2, Ising.Tc+0.2).withSlider());		
 	}
 	
 	public void animate() {

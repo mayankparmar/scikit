@@ -13,13 +13,13 @@ public class Parameters {
 	public String toString() {
 		StringBuilder ret = new StringBuilder();
 		for (String k : keys)
-			ret.append(k + " = " + getValue(k).get() + "\n");
+			ret.append(k + " = " + getValue(k).getValue() + "\n");
 		return ret.toString();
 	}
 	
-	public void setDefaults() {
+	public void resetValues() {
 		for (String k : keys) {
-			set(k, getValue(k).getDefault());
+			getValue(k).resetValue();
 		}
 	}
 	
@@ -52,12 +52,12 @@ public class Parameters {
 	public void set(String key, Object value) {
 		if (!getValue(key).testValidity(value.toString()))
 			throw new IllegalArgumentException("Parameter '"+key+"' is incompatible with " + value);
-		getValue(key).set(value.toString());
+		getValue(key).setValue(value.toString());
 	}
 	
 	public double fget(String key) {
 		try {
-			return Double.valueOf(getValue(key).get());
+			return Double.valueOf(getValue(key).getValue());
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not a number.");
 		}
@@ -73,7 +73,7 @@ public class Parameters {
 	
 	public int iget(String key) {
 		try {
-			return Integer.valueOf(getValue(key).get());
+			return Integer.valueOf(getValue(key).getValue());
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not an integer.");
 		}
@@ -89,7 +89,7 @@ public class Parameters {
 	
 	public String sget(String key) {
 		try {
-			return (String)(getValue(key).get());
+			return (String)(getValue(key).getValue());
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException("Parameter '"+key+"' is not of type 'string'");
 		}

@@ -3,139 +3,91 @@ package scikit.params;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
 
 
 abstract public class GuiValue {
 	private String _v, _default;
+	private boolean _lockable = true;
+	private JComponent _editor, _editorAux; 
+	// change listeners will be called whenever the value changes. they will always
+	// be run from the event dispatch thread
+	private Vector<ChangeListener> _listeners = new Vector<ChangeListener>();
 	
-	abstract public boolean testValidity(String v);
 	
 	public GuiValue(Object v) {
 		_v = _default = v.toString();
+		_editor = createEditor();
 	}
 	
-	public Object getDefault() {
-		return _default;
+	public JComponent getEditor() {
+		return _editor;
 	}
 	
-	// be careful with threads in this class because the GUI thread may try 
-	// to change a value at the same time the simulation thread is reading a
-	// value
-	synchronized protected void set(String v) {
-		if (!_v.equals(v) && testValidity(v)) {
-			_v = v;
-			notifyListeners();
-		}
+	public JComponent getAuxiliaryEditor() {
+		return _editorAux;
 	}
 	
-	synchronized protected String get() {
-		return _v;
-	}
-	
-	
-	// ----------------------------------------------- Listeners ---------------------------------------------
-	
-	// TODO: change listeners currently get fired on every minor change, for example locking and unlocking.
-	// the downside of this is that Control sets it so each parameter will call Job.wake(), even on locking
-	// events.  need to implement finer level of control.
-	// also, this invokeLater stuff seems unnecessary for most of the events..
-	// grumble grumble.
-	
-	private Vector<ChangeListener> _listeners = new Vector<ChangeListener>();
-
 	public void addChangeListener(ChangeListener listener) {
 		_listeners.add(listener);
 	}
 	
-	protected void notifyListeners() {
-        SwingUtilities.invokeLater(new Runnable() {
-           public void run() {
-                for (ChangeListener l : _listeners) {
-                    l.stateChanged(null);
-                }	           
-            } 
-        });
-	}
-	
-	
-	// ----------------------------------------------- Locks ---------------------------------------------
-	
-	protected boolean _locked = false, _lockable = true;
-
 	public void setLocked(boolean locked) {
-		_locked = _lockable && locked;
-		notifyListeners();
+		if (_lockable) {
+			if (_editor != null)
+				_editor.setEnabled(!locked);
+			if (_editorAux != null)
+				_editorAux.setEnabled(!locked);
+		}
 	}
 	
 	public void setLockable(boolean lockable) {
 		_lockable = lockable;
 	}
 	
-	
-	// ----------------------------------------------- GUI ---------------------------------------------
-	
-	final private Color lightGreen = new Color(0.85f, 1f, 0.7f);
-	final private Color lightRed   = new Color(1f, 0.7f, 0.7f);
-	protected boolean _auxiliaryEditor = false;
-	
-	
-	public void enableAuxiliaryEditor() {
-		_auxiliaryEditor = true;
+	public void resetValue() {
+		setValue(_default);
 	}
 	
-	public JComponent createAuxiliaryEditor() {
+	synchronized public void setValue(String v) {
+		if (!_v.equals(v) && testValidity(v)) {
+			_v = v;
+			invokeFromEventDispatchThread(new Runnable() {
+				public void run() {
+					for (ChangeListener l : _listeners)
+						l.stateChanged(null);
+				}
+			});
+		}
+	}
+	
+	synchronized public String getValue() {
+		return _v;
+	}
+	
+	protected void useAuxiliaryEditor() {
+		if (_editorAux == null) {
+			_editorAux = createAuxiliaryEditor();
+		}
+	}
+	
+	// -----------------------------------------------------------------------------------------
+	// to be implemented by subclass
+	
+	protected boolean testValidity(String v) {
+		return true;
+	}
+	
+	abstract protected JComponent createEditor();
+	
+	protected JComponent createAuxiliaryEditor() {
 		return null;
 	}
-
-	public JComponent createEditor() {
-		final JTextField field = new JTextField(get());
-		
-		field.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) { fieldTextEvaluated(field); }
-		});
-		
-		field.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e)  {}
-			public void focusLost(FocusEvent e) { fieldTextEvaluated(field); }
-		});
-		
-		field.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e)  {}
-			public void insertUpdate(DocumentEvent e)  { fieldTextInput(field); }
-			public void removeUpdate(DocumentEvent e) { fieldTextInput(field); }
-		});
-		
-		addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				String s = get();
-				if (!field.getText().equals(s))
-					field.setText(s);
-				field.setEnabled(!_locked);
-			}
-		});
-		
-		Dimension d = field.getPreferredSize();
-		d.width = Math.max(d.width, 80);
-		field.setPreferredSize(d);
-		field.setHorizontalAlignment(JTextField.RIGHT);
-		return field;
-	}
 	
 	
-	// called when the user has entered a final string value
-	private void fieldTextEvaluated(JTextField field) {
-		set(field.getText());
-		field.setText(get());
-		field.setBackground(Color.WHITE);	
-	}
-	
-	// called while the user is inputting the string value
-	private void fieldTextInput(JTextField field) {
-		if (field.getText().equals(get()))
-			field.setBackground(Color.WHITE);
+	private void invokeFromEventDispatchThread(Runnable r) {
+		if (SwingUtilities.isEventDispatchThread())
+			r.run();
 		else
-			field.setBackground(testValidity(field.getText()) ? lightGreen : lightRed);
+			SwingUtilities.invokeLater(r);
 	}
 }
