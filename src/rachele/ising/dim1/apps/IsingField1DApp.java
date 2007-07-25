@@ -34,7 +34,7 @@ public class IsingField1DApp extends Simulation{
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Density", -.8);
+		params.add("Density", -.3);
 		params.add("Time");
 		params.add("DENSITY");
 	}

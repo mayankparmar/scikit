@@ -10,6 +10,7 @@ package rachele.ising.dim1;
 	import static java.lang.Math.rint;
 	import static java.lang.Math.sin;
 	import static java.lang.Math.sqrt;
+	import scikit.dataset.Accumulator;
 	//import static kip.util.DoubleArray.*;
 
 	public class PathSample1D {
@@ -21,6 +22,8 @@ package rachele.ising.dim1;
 		double [] phi_bar;
 		public double L, R, T, J, dx, H, du;
 		public double u = 0.0;
+		Accumulator timeSliceAcc; 
+		Accumulator spaceSliceAcc;
 		
 		public static final double KR_SP = 4.4934102;
 		
@@ -33,29 +36,28 @@ package rachele.ising.dim1;
 		public PathSample1D(Parameters params) {
 			random.setSeed(params.iget("Random seed", 0));
 			
-			//R = params.fget("R");
-			//L = R*params.fget("L/R");
-			//T = params.fget("T");
-			//dx = R/params.fget("R/dx");
-			//dt = params.fget("dt");
-			//DENSITY = params.fget("Density");
-			//Lp = Integer.highestOneBit((int)rint((L/dx)));
-			//dx = L / Lp;
-			//double RoverDx = R/dx;
-			//params.set("R/dx", RoverDx);
-			
-			R = 3000;
-			T = .86;
-			J = 2.0;
-			dt = 0.1;
-			H = -0.07;
-			L = 600000;
-			dx = R/(16.0);
+			R = params.fget("R");
+			L = R*params.fget("L/R");
+			T = params.fget("T");
+			dx = R/params.fget("R/dx");
+			dt = params.fget("dt");
+			du = params.fget("du");
+			DENSITY = params.fget("Density");
 			Lp = Integer.highestOneBit((int)rint((L/dx)));
 			dx = L / Lp;
-			du = 0.01;
-			
-			t_f = 300;
+			double RoverDx = R/dx;
+			params.set("R/dx", RoverDx);
+			t_f = params.iget("Time Interval");
+			//R = 2000;
+			//T = .86;
+			//J = 2.0;
+			//dt = 0.1;
+			//H = 0.07;
+			//L = 600000;
+			//dx = R/(16.0);
+			//Lp = Integer.highestOneBit((int)rint((L/dx)));
+			//dx = L / Lp;
+			//t_f = 300;
 
 			phi = new double[Lp][t_f+1];
 			phi_bar = new double[Lp];
@@ -64,15 +66,25 @@ package rachele.ising.dim1;
 			fftScratch = new double[2*Lp];
 			fft = new ComplexDoubleFFT_Mixed(Lp);
 			
-			double density_i = -0.6;
+			timeSliceAcc = new Accumulator(1);
+			spaceSliceAcc = new Accumulator(dt);
+			double density_i = -0.3;
 			double density_f = 0.6;
 			double delta_density = (density_f - density_i)/t_f;
 			
 			
-			for (int i = 0; i < Lp; i++){
-				for (int j = 0; j <= t_f; j ++)
-					phi [i][j] = j*delta_density+density_i;
-			}
+			//for (int i = 0; i < Lp; i++){
+			//	for (int j = 0; j <= t_f; j ++)
+			//		phi [i][j] = j*delta_density+density_i;
+			//}
+			for (int i = 0; i < Lp; i ++){
+				for (int j = 0; j < t_f/2; j ++ )
+					phi[i][j] = density_i;
+				for (int j = t_f/2; j <= t_f; j ++)
+					phi[i][j] = density_f;
+				}
+					
+			
 		}
 		
 		//public void readParams(Parameters params) {
@@ -87,9 +99,9 @@ package rachele.ising.dim1;
 		//	params.set("R/dx", R/dx);
 		//}
 		
-		public double time() {
-			return t;
-		}
+		//public double time() {
+		//	return t;
+		//}
 		
 		void convolveWithRange(double[] src, double[] dest, double R) {
 			// write real and imaginary components into scratch
@@ -127,6 +139,22 @@ package rachele.ising.dim1;
 			return ret;
 		}
 		
+		public Accumulator getTimeSlice(){
+			timeSliceAcc.clear();
+			for (int i = 0; i < Lp; i++){
+				timeSliceAcc.accum(i, phi[i][t_f/2]);
+				//System.out.println(i + " " + phi[i][t_f/2]);
+			}
+			return timeSliceAcc;
+		}
+		
+		public Accumulator getSpaceSlice(){
+			spaceSliceAcc.clear();
+			for (int j = 0; j <= t_f; j++)
+				spaceSliceAcc.accum(j,phi[Lp/2][j]);
+			return spaceSliceAcc;
+		}
+		
 		public void simulate() {
 			double [] scratch;
 			double [] lastScratch;
@@ -143,8 +171,8 @@ package rachele.ising.dim1;
 				lastScratch[i] -= atanh(phi[i][t_f])/T; 
 				
 			for(int j = t_f-1; j > 0; j--){
-				for( int k = 0; k < Lp; k++)
-					scratch[k] = phi [k][j];
+				for( int i = 0; i < Lp; i++)
+					scratch[i] = phi [i][j];
 				convolveWithRange(scratch, phi_bar, R);
 				for (int i = 0; i < Lp; i++){
 					atanhphi = atanh(phi[i][j]);
@@ -165,7 +193,7 @@ package rachele.ising.dim1;
 					phi[i][j] += del_phi[i][j];
 				}
 			}
-			System.out.println(del_phi[Lp/2][t_f/2] + " " + phi[Lp/2][t_f/2]);
+			//System.out.println(del_phi[Lp/2][t_f/2] + " " + phi[Lp/2][t_f/2]);
 			u += du;
 		}
 	}

@@ -14,8 +14,10 @@ import scikit.plot.FieldDisplay;
 public class SaddlePoint1DApp extends Simulation{
 
 	FieldDisplay grid = new FieldDisplay("Time vs Coarse Grained Field", true);
-    Plot SFPlot = new Plot("Structure factor", true);
-    PathSample1D sim;
+    //Plot SFPlot = new Plot("Structure factor", true);
+	Plot timeSlice = new Plot("Configuration at t_f/2", true);
+	Plot spaceSlice = new Plot("Path at Lp/2", true);
+	PathSample1D sim;
     StructureFactor1D sf;
 	
 	
@@ -24,29 +26,36 @@ public class SaddlePoint1DApp extends Simulation{
 	}
 
 	public SaddlePoint1DApp(){
-		//params.addm("T", 0.2);
-		//params.addm("J", -2.5);
-		//params.addm("dt", 0.01);
-		//params.add("R", 10000);
-		//params.add("L/R", 16.0);
-		//params.add("R/dx", 125.0);
+		params.addm("T", 0.86);
+		params.addm("J", 2.0);
+		params.addm("dt", 0.1);
+		params.add("R", 2000);
+		params.addm("H", 0.07);
+		params.add("L/R", 300.0);
+		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		//params.add("Density", 0.0);
+		params.add("Density", -0.3);
+		params.addm("du", 0.01);
+		params.add("Time Interval", 500);
 		params.add("u");
 	}
 	
 	public void animate() {
 		params.set("u", format(sim.u));
+		
+		timeSlice.setDataSet(0, sim.getTimeSlice());
+		spaceSlice.setDataSet(0, sim.getSpaceSlice());
+        grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		//sim.readParams(params);
 		
 		//SFPlot.setDataSet(0, sf.getAccumulator());
 	
-		if (flags.contains("Clear S.F.")) {
-			sf.getAccumulator().clear();
-			System.out.println("clicked");
-		}
-		flags.clear();
+		//if (flags.contains("Clear S.F.")) {
+		//	sf.getAccumulator().clear();
+		//	System.out.println("clicked");
+		//}
+		//flags.clear();
 	}
 	
 	public void run(){
@@ -55,11 +64,15 @@ public class SaddlePoint1DApp extends Simulation{
 		double binWidth = KR_SP / floor(KR_SP/params.fget("kR bin-width"));
 		sf = new StructureFactor1D(sim.Lp, sim.L, sim.R, binWidth);
 		Job.addDisplay(grid);
+		Job.addDisplay(timeSlice);
+		Job.addDisplay(spaceSlice);
+		timeSlice.setDataSet(0, sim.getTimeSlice());
+		spaceSlice.setDataSet(0, sim.getSpaceSlice());
         grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		//fieldPlot.setYRange(-1, 1);
 		//Job.addDisplay(fieldPlot);
-		Job.addDisplay(SFPlot);
-		sf.getAccumulator().clear();
+		//Job.addDisplay(SFPlot);
+		//sf.getAccumulator().clear();
 		
 		while (true) {
 			sim.simulate();
