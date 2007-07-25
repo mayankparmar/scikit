@@ -115,6 +115,10 @@ public class Control {
 		GridBagLayout grid = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		JPanel panel = new JPanel(grid);
+		panel.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+				BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+		
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.ipadx = 0;
   		c.anchor = GridBagConstraints.NORTH;
@@ -157,12 +161,7 @@ public class Control {
 			c.gridy++;
 		}
 		
-		panel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));	
-		panel.setBackground(new Color(0.9f, 0.9f, 0.9f));
-		JScrollPane scrollPane = new JScrollPane(panel);
-		scrollPane.setBackground(Color.GRAY);
-		scrollPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
-		return scrollPane;		
+		return panel;
 	}
 }
 
