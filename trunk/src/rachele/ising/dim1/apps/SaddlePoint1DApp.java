@@ -1,7 +1,7 @@
 package rachele.ising.dim1.apps;
 
 import static java.lang.Math.floor;
-//import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.format;
 import rachele.ising.dim1.PathSample1D;
 import rachele.ising.dim1.StructureFactor1D;
 //import scikit.dataset.PointSet;
@@ -33,11 +33,11 @@ public class SaddlePoint1DApp extends Simulation{
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		//params.add("Density", 0.0);
-		//params.add("Time");
+		params.add("u");
 	}
 	
 	public void animate() {
-		//params.set("Time", format(sim.t));
+		params.set("u", format(sim.u));
 		//sim.readParams(params);
 		
 		//SFPlot.setDataSet(0, sf.getAccumulator());
@@ -58,8 +58,8 @@ public class SaddlePoint1DApp extends Simulation{
         grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		//fieldPlot.setYRange(-1, 1);
 		//Job.addDisplay(fieldPlot);
-		//Job.addDisplay(SFPlot);
-		//sf.getAccumulator().clear();
+		Job.addDisplay(SFPlot);
+		sf.getAccumulator().clear();
 		
 		while (true) {
 			sim.simulate();

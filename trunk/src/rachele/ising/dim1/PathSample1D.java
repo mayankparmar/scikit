@@ -6,11 +6,11 @@ package rachele.ising.dim1;
 	import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 	import scikit.params.Parameters;
 	import static java.lang.Math.PI;
-	import static java.lang.Math.log;
+	//import static java.lang.Math.log;
 	import static java.lang.Math.rint;
 	import static java.lang.Math.sin;
 	import static java.lang.Math.sqrt;
-	import static kip.util.DoubleArray.*;
+	//import static kip.util.DoubleArray.*;
 
 	public class PathSample1D {
 		public int Lp;
@@ -19,8 +19,9 @@ package rachele.ising.dim1;
 		public double[][] phi, del_phi;
 		double DENSITY;
 		double [] phi_bar;
-		public double L, R, T, J, dx, H;
-
+		public double L, R, T, J, dx, H, du;
+		public double u = 0.0;
+		
 		public static final double KR_SP = 4.4934102;
 		
 		Random random = new Random();
@@ -52,8 +53,9 @@ package rachele.ising.dim1;
 			dx = R/(16.0);
 			Lp = Integer.highestOneBit((int)rint((L/dx)));
 			dx = L / Lp;
+			du = 0.01;
 			
-			t_f = 100;
+			t_f = 50;
 
 			phi = new double[Lp][t_f+1];
 			phi_bar = new double[Lp];
@@ -62,8 +64,8 @@ package rachele.ising.dim1;
 			fftScratch = new double[2*Lp];
 			fft = new ComplexDoubleFFT_Mixed(Lp);
 			
-			double density_i = -0.8;
-			double density_f = 0.675;
+			double density_i = -0.6;
+			double density_f = 0.6;
 			double delta_density = (density_f - density_i)/t_f;
 			
 			
@@ -126,52 +128,45 @@ package rachele.ising.dim1;
 		}
 		
 		public void simulate() {
-			double [] convolver;
-			double [] lastPhiBar;
-			double dPhi_dt, atanhphi, d2Phi_dt2, dPhibar_dt, datanh_dt;
-			
-			lastPhiBar = new double [Lp];
-			convolver = new double [Lp];
+			double [] scratch;
+			double [] lastScratch;
+			double [] dPhi_dt;
+			double atanhphi, d2Phi_dt2, df_dt;
+
+			lastScratch = new double [Lp];
+			scratch = new double [Lp];
+			dPhi_dt = new double [Lp];
 			for (int i = 0; i < Lp; i++)
-				convolver[i] = phi[i][t_f];
-			convolveWithRange(convolver, lastPhiBar, R);
-			//for (int i = 0; i < Lp; i++)
-			//	lastPhiBar[i] -= atanh 
+				scratch[i] = phi[i][t_f];
+			convolveWithRange(scratch, lastScratch, R);
+			for (int i = 0; i < Lp; i++)
+				lastScratch[i] -= atanh(phi[i][t_f])/T; 
 				
 			for(int j = t_f-1; j > 0; j--){
 				for( int k = 0; k < Lp; k++)
-					convolver[k] = phi [k][j];
-				convolveWithRange(convolver, phi_bar, R);//convolve once for every time step
+					scratch[k] = phi [k][j];
+				convolveWithRange(scratch, phi_bar, R);
 				for (int i = 0; i < Lp; i++){
 					atanhphi = atanh(phi[i][j]);
-					dPhi_dt = (phi[i][j+1]-phi[i][j]);
-					convolver[i] = dPhi_dt + phi_bar[i] - atanhphi/T;
+					dPhi_dt[i] = (phi[i][j+1]-phi[i][j]);
+					scratch[i] = dPhi_dt[i] + phi_bar[i] - atanhphi/T;
 				}	
-				convolveWithRange(convolver, phi_bar, R);
+				convolveWithRange(scratch, phi_bar, R);
 				for (int i = 0; i < Lp; i++){
-					double phi2 = sqr(phi[i][j]);					
-					del_phi[i][j] = phi_bar[i]-convolver[i]/(T*T*(1-phi2));
+					double phi2 = sqr(phi[i][j]);
+					del_phi[i][j] = phi_bar[i]-scratch[i]/(T*T*(1-phi2));
+					scratch[i] -= dPhi_dt[i];
+					df_dt = scratch[i]-lastScratch[i];
+					lastScratch[i] = scratch[i];
 					d2Phi_dt2 = phi[i][j+1]-2*phi[i][j]+ phi[i][j-1];
-					del_phi[i][j] -= d2Phi_dt2; 
-					//del_phi[i][j] += -(()/());
+					del_phi[i][j] -= d2Phi_dt2 + df_dt; 
+					del_phi[i][j] *= -du;
+					del_phi[i][j] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
+					phi[i][j] += del_phi[i][j];
 				}
-				
-				//del_phi[i][j] = -du*()+sqrt(2*du/(T*dx*dt))*Random.nextGaussian();
-					//phi[i][j] += del_phi[i][j];
-
-
 			}
-			//convolveWithRange(phi, phi_bar, R);
-
-			//for (int i = 0; i < Lp; i++) {
-			//	del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
-			//}
-			////double mu = mean(del_phi)-(DENSITY-mean(phi));
-			//for (int i = 0; i < Lp; i++) {
-			//	phi[i] += del_phi[i];// - mu;
-				
-			//}
-			//t += dt;
+			System.out.println(del_phi[Lp/2][t_f/2] + " " + phi[Lp/2][t_f/2]);
+			u += du;
 		}
 	}
 
