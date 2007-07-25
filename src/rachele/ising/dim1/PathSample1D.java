@@ -44,7 +44,7 @@ package rachele.ising.dim1;
 			//double RoverDx = R/dx;
 			//params.set("R/dx", RoverDx);
 			
-			R = 2000;
+			R = 3000;
 			T = .86;
 			J = 2.0;
 			dt = 0.1;
@@ -55,7 +55,7 @@ package rachele.ising.dim1;
 			dx = L / Lp;
 			du = 0.01;
 			
-			t_f = 50;
+			t_f = 300;
 
 			phi = new double[Lp][t_f+1];
 			phi_bar = new double[Lp];
