@@ -10,14 +10,10 @@ public class ReadonlyValue extends GuiValue {
 		super("-");
 	}
 	
-	public boolean testValidity(String v) {
-		return true;
-	}
-	
-	public JComponent createEditor() {
-		final JLabel label = new JLabel(get(), SwingConstants.RIGHT);
+	protected JComponent createEditor() {
+		final JLabel label = new JLabel(getValue(), SwingConstants.RIGHT);
 		addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) { label.setText(get()); }
+			public void stateChanged(ChangeEvent e) { label.setText(getValue()); }
 		});
 		Dimension d = label.getPreferredSize();
 		d.width = Math.max(d.width, 80);

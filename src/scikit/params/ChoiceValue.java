@@ -14,24 +14,23 @@ public class ChoiceValue extends GuiValue {
 		_choices = choices;
 	}
 	
-	public boolean testValidity(String v) {
+	protected boolean testValidity(String v) {
 		return itemIndex(v) >= 0;
 	}
 	
-	public JComponent createEditor() {
+	protected JComponent createEditor() {
 		final JComboBox choice = new JComboBox(_choices);
 		
 		choice.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				set((String)choice.getSelectedItem());
+				setValue((String)choice.getSelectedItem());
 			}
 		});
 		
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (!choice.hasFocus())
-					choice.setSelectedIndex(itemIndex(get()));
-				choice.setEnabled(!_locked);
+				if (!choice.hasFocus())				// TODO necessary?
+					choice.setSelectedIndex(itemIndex(getValue()));
 			}
 		});
 		

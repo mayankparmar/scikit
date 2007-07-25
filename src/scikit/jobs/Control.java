@@ -70,7 +70,7 @@ public class Control {
 				_stepButton.setEnabled(true);
 			}
 			if (str.equals("Defaults")) {
-				_job.sim().params.setDefaults();
+				_job.sim().params.resetValues();
 			}
 		}
 	};
@@ -136,19 +136,19 @@ public class Control {
 			
 			// add primary editor for parameter
 			GuiValue v = _job.sim().params.getValue(k);
-			JComponent field = v.createEditor();
+			JComponent editor = v.getEditor();
 			c.gridx = 1;
 			c.weightx = 1;
 			c.gridwidth = GridBagConstraints.REMAINDER;
-			grid.setConstraints(field, c);
-			panel.add(field);
+			grid.setConstraints(editor, c);
+			panel.add(editor);
 			
 			// possible add auxiliary editor
-			JComponent slider = v.createAuxiliaryEditor();
-			if (slider != null) {
+			JComponent editorAux = v.getAuxiliaryEditor();
+			if (editorAux != null) {
 				c.gridy++;
-				grid.setConstraints(slider, c);
-				panel.add(slider);
+				grid.setConstraints(editorAux, c);
+				panel.add(editorAux);
 			}
 			
 			// wake job when parameter value has changed

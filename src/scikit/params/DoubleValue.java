@@ -5,7 +5,7 @@ import javax.swing.event.*;
 import static scikit.util.Utilities.*;
 
 
-public class DoubleValue extends GuiValue {
+public class DoubleValue extends StringValue {
 
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
@@ -19,7 +19,12 @@ public class DoubleValue extends GuiValue {
 		_hi = hi;
 	}
 	
-	public boolean testValidity(String v) {
+	public DoubleValue withSlider() {
+		useAuxiliaryEditor();
+		return this;
+	}
+	
+	protected boolean testValidity(String v) {
 		try {
 			double f = Double.valueOf(v);
 			return _lo <= f && f <= _hi;
@@ -29,17 +34,15 @@ public class DoubleValue extends GuiValue {
 		}
 	}
 	
-	public JComponent createAuxiliaryEditor() {
-		final double range = _hi - _lo;
-		
-		if (!_auxiliaryEditor || range == Double.POSITIVE_INFINITY)
+	protected JComponent createAuxiliaryEditor() {
+		if (_hi - _lo == Double.POSITIVE_INFINITY)
 			return null;
 		
-		final JSlider slider = new JSlider(0, 1000, toRangedInt(Double.valueOf(get())));
+		final JSlider slider = new JSlider(0, 1000, toRangedInt(Double.valueOf(getValue())));
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (slider.hasFocus()) {
-					set(fromRangedInt(slider.getValue()));
+					setValue(fromRangedInt(slider.getValue()));
 				}
 			}
 		});
@@ -47,8 +50,7 @@ public class DoubleValue extends GuiValue {
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (!slider.hasFocus())
-					slider.setValue(toRangedInt(Double.valueOf(get())));
-				slider.setEnabled(!_locked);
+					slider.setValue(toRangedInt(Double.valueOf(getValue())));
 			}
 		});
 		

@@ -1,6 +1,6 @@
 package scikit.params;
 
-public class IntValue extends GuiValue {
+public class IntValue extends StringValue {
 	private int _lo = Integer.MIN_VALUE, _hi = Integer.MAX_VALUE;
 	
 	public IntValue(int x) {
@@ -13,7 +13,7 @@ public class IntValue extends GuiValue {
 		_hi = hi;		
 	}
 	
-	public boolean testValidity(String v) {
+	protected boolean testValidity(String v) {
 		try {
 			int i = Integer.valueOf(v);
 			return _lo <= i && i <= _hi;
