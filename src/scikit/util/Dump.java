@@ -10,6 +10,31 @@ import java.awt.FileDialog;
 
 public class Dump {
 	
+	/** 
+	 * Gets an empty directory, creating it if necessary. The first choice for the
+	 * pathname is "parent/dir" but if this directory already exists and is not empty,
+	 * then a variation on the pathname will be chosen.
+	 *  
+	 * @param parent
+	 * @param dir
+	 * @return The empty directory
+	 */
+	public static File getEmptyDirectory(String parent, String dir) {
+		if (!new File(parent).isDirectory())
+			throw new IllegalArgumentException();
+		String sep = File.separator;
+		File target = new File(parent+sep+dir);
+		int cnt = 1;
+		while ((target.isDirectory() && target.list().length > 0) || target.isFile()) {
+			target = new File(parent+sep+dir+"-"+cnt);
+			cnt++;
+		}
+		if (!target.isDirectory()) {
+			target.mkdir();
+		}
+		return target;
+	}
+	
 	public static PrintWriter pwFromDialog(Component comp, String fname) throws IOException {
 		for (; comp != null; comp = comp.getParent()) {
 			if (comp instanceof Frame) {
@@ -36,15 +61,8 @@ public class Dump {
 		pw.println(dx);
 		pw.println("#name: grid\n#type: matrix");
 		pw.println("#rows: "+data.length/cols);
-		pw.println("#columns: "+cols);
-		for (int i = 0; i < data.length; i++) {
-			pw.print(data[i]);
-			if ((i+1) % cols == 0)
-				pw.println();
-			else
-				pw.print(' ');
-		}
-		pw.close();
+		pw.println("#columns: "+cols);		
+		writeColumns(pw, data, cols);
 	}
 	
 	

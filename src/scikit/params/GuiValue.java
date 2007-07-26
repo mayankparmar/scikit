@@ -16,14 +16,17 @@ abstract public class GuiValue {
 	
 	public GuiValue(Object v) {
 		_v = _default = v.toString();
-		_editor = createEditor();
 	}
 	
 	public JComponent getEditor() {
+		if (_editor == null)
+			_editor = createEditor();
 		return _editor;
 	}
 	
 	public JComponent getAuxiliaryEditor() {
+		if (_editorAux == null)
+			_editorAux = createAuxiliaryEditor();
 		return _editorAux;
 	}
 	
@@ -33,10 +36,10 @@ abstract public class GuiValue {
 	
 	public void setLocked(boolean locked) {
 		if (_lockable) {
-			if (_editor != null)
-				_editor.setEnabled(!locked);
-			if (_editorAux != null)
-				_editorAux.setEnabled(!locked);
+			if (getEditor() != null)
+				getEditor().setEnabled(!locked);
+			if (getAuxiliaryEditor() != null)
+				getAuxiliaryEditor().setEnabled(!locked);
 		}
 	}
 	
@@ -63,11 +66,12 @@ abstract public class GuiValue {
 	synchronized public String getValue() {
 		return _v;
 	}
-	
-	protected void useAuxiliaryEditor() {
-		if (_editorAux == null) {
-			_editorAux = createAuxiliaryEditor();
-		}
+		
+	private void invokeFromEventDispatchThread(Runnable r) {
+		if (SwingUtilities.isEventDispatchThread())
+			r.run();
+		else
+			SwingUtilities.invokeLater(r);
 	}
 	
 	// -----------------------------------------------------------------------------------------
@@ -82,12 +86,5 @@ abstract public class GuiValue {
 	protected JComponent createAuxiliaryEditor() {
 		return null;
 	}
-	
-	
-	private void invokeFromEventDispatchThread(Runnable r) {
-		if (SwingUtilities.isEventDispatchThread())
-			r.run();
-		else
-			SwingUtilities.invokeLater(r);
-	}
-}
+}	
+

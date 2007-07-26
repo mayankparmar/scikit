@@ -10,6 +10,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DirectoryValue;
 import scikit.util.Dump;
 import static scikit.util.Utilities.*;
 
@@ -22,9 +23,11 @@ import kip.md.ParticleTag;
 public class LennardJonesApp extends Simulation {
 	Scene2D canvas = new Scene2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
-
+	double lastAnimate;
+	
 	public LennardJonesApp() {
-		params.add("Output directory", "/Users/kbarros/Desktop/output");
+		params.add("Output directory", new DirectoryValue("/Users/kbarros/Desktop"));
+		params.add("Write files", new ChoiceValue("Yes", "No"));
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
 		params.add("Length", 70.0);
 		params.add("Area fraction A", 0.8);
@@ -92,17 +95,17 @@ public class LennardJonesApp extends Simulation {
 		}
 
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
-
-		String dir = params.sget("Output directory");
-		if (dir.equals("")) {
+		lastAnimate = 0;
+		
+		if (params.sget("Write files").equals("No")) {
 			while (true) {
 				maybeAnimate();
 				sim.step();
 			}
 		}
 		else {
-			dir = dir + File.separator;
-			Dump.dumpString(dir + "parameters.txt", params.toString());
+			File dir = Dump.getEmptyDirectory(params.sget("Output directory"), "output");
+			Dump.dumpString(dir+File.separator+"parameters.txt", params.toString());
 			
 			dt = sim.getStepSize();
 			while (sim.time()+dt/2 < 50) {
@@ -131,7 +134,6 @@ public class LennardJonesApp extends Simulation {
 		}
 	}
 	
-	double lastAnimate;
 	void maybeAnimate() {
 		long steps = round((sim.time()-lastAnimate)/sim.getStepSize()); 
 		if (steps >= 10) {
@@ -143,12 +145,12 @@ public class LennardJonesApp extends Simulation {
 		}
 	}
 	
-	void maybeDump(double del, String dir, LJParticle2D[] particles) {
+	void maybeDump(double del, File dir, LJParticle2D[] particles) {
 		double dt = sim.getStepSize();
 		int a = (int) ((sim.time() - dt/2)/del);
 		int b = (int) ((sim.time() + dt/2)/del);
 		if (b > a) {
-			ParticleContext.dumpParticles(dir+"t="+format(sim.time()), particles);			
+			ParticleContext.dumpParticles(dir+File.separator+"t="+format(sim.time()), particles);			
 		}
 	}
 }

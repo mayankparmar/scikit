@@ -151,7 +151,6 @@ public class GraphicsGL implements Graphics {
 		glut.glutBitmapString(FONT, str); 
 		gl.glPopMatrix();
 	}
-
 	
 	public static GLCanvas createComponent(final Scene scene) {
 		GLCapabilities capabilities = new GLCapabilities();

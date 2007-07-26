@@ -29,7 +29,7 @@ public class ChoiceValue extends GuiValue {
 		
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (!choice.hasFocus())				// TODO necessary?
+				if (!choice.hasFocus())
 					choice.setSelectedIndex(itemIndex(getValue()));
 			}
 		});

@@ -57,14 +57,14 @@ public class AnalysisApp extends Simulation {
 		dx4 = new Accumulator(0.1);
 		dx4.setAveraging(true);
 		
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 150; i++) {
 			double tf = snapshots.t_f - 0.1*i;
 			for (double time = 0.1; time < 2; time += 0.1) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 150; i++) {
 			double tf = snapshots.t_f - 1*i;
 			for (double time = 1; time < 20; time += 1) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
