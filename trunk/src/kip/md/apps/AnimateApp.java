@@ -10,6 +10,7 @@ import scikit.graphics.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.params.DirectoryValue;
 
 
 public class AnimateApp extends Simulation {
@@ -24,11 +25,12 @@ public class AnimateApp extends Simulation {
 	}
 	
 	public AnimateApp() {
-		params.add("t*", 30.0);
-		params.add("r*", 0);
-//		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.75 B=0.1");
-//		params.add("Input directory", "/Users/kbarros/Desktop/data/unary/phi=0.85");
-		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1");
+		params.add("Input directory", new DirectoryValue("/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1 more"));
+		params.add("t start", 4000.0);
+		params.add("t finish", 4500.0);
+		params.add("dt", 1.0);
+		params.addm("t*", 30.0);
+		params.addm("r*", 0.0);
 		params.add("time");
 	}
 
@@ -45,10 +47,14 @@ public class AnimateApp extends Simulation {
 		snapshots = new SnapshotArray(params.sget("Input directory"));
 		pc = snapshots.getContext();
 		
-		double tstar = params.fget("t*");
-		double rstar = params.fget("r*");
+		double ti = params.fget("t start");
+		double tf = params.fget("t finish");
+		double dt = params.fget("dt");
 		
-		for (time = snapshots.t_i; time < snapshots.t_f; time += 10) {
+		for (time = ti; time < tf; time += dt) {
+			double tstar = params.fget("t*");
+			double rstar = params.fget("r*");
+			
 			if (rstar == 0) {
 				particles = snapshots.get(time);
 			}

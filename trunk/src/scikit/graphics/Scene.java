@@ -22,17 +22,29 @@ public class Scene {
 	protected boolean _autoScale = false;
 	
 	public Scene() {
-		try {
-			_component = GraphicsGL.createComponent(this);
-		} catch (Throwable t) {
-			_component = GraphicsAWT.createComponent(this);
-		}
+		_component = createComponent();
 	}
 	
 	public Scene(String title) {
 		this();
 		scikit.util.Utilities.frame(_component, title);
 	}
+	
+	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
+	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
+	// we could get an uncatchable NoClassDefFoundError.
+	private Component createComponent() {
+		try {
+			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
+			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
+				c = Class.forName("scikit.graphics.GraphicsGL");
+				return (Component)c.getMethod("createComponent", Scene.class).invoke(null, this);
+			}
+		}
+		catch (Exception e) {}
+		return GraphicsAWT.createComponent(this);				
+	}
+	
 	
 	/** Removes all drawables object from the scene leaving the state of the scene (such as
 	 * view bounds) unmodified.

@@ -6,7 +6,7 @@ import static scikit.util.Utilities.*;
 
 
 public class DoubleValue extends StringValue {
-
+	private boolean _useSlider = false;
 	private double _lo = Double.NEGATIVE_INFINITY, _hi = Double.POSITIVE_INFINITY;
 	
 	public DoubleValue(double x) {
@@ -20,7 +20,7 @@ public class DoubleValue extends StringValue {
 	}
 	
 	public DoubleValue withSlider() {
-		useAuxiliaryEditor();
+		_useSlider = true;
 		return this;
 	}
 	
@@ -35,7 +35,7 @@ public class DoubleValue extends StringValue {
 	}
 	
 	protected JComponent createAuxiliaryEditor() {
-		if (_hi - _lo == Double.POSITIVE_INFINITY)
+		if (!_useSlider || _hi - _lo == Double.POSITIVE_INFINITY)
 			return null;
 		
 		final JSlider slider = new JSlider(0, 1000, toRangedInt(Double.valueOf(getValue())));

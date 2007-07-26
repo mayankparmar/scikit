@@ -10,6 +10,10 @@ public class ReadonlyValue extends GuiValue {
 		super("-");
 	}
 	
+	public void setLocked(boolean locked) {
+		// do nothing
+	}
+	
 	protected JComponent createEditor() {
 		final JLabel label = new JLabel(getValue(), SwingConstants.RIGHT);
 		addChangeListener(new ChangeListener() {
