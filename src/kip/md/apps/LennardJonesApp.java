@@ -24,6 +24,10 @@ public class LennardJonesApp extends Simulation {
 	Scene2D canvas = new Scene2D("Particles");
 	MolecularDynamics2D<LJParticle2D> sim;
 	double lastAnimate;
+
+	public static void main(String[] args) {
+		new Control(new LennardJonesApp(), "Lennard Jones Simulation");
+	}
 	
 	public LennardJonesApp() {
 		params.add("Output directory", new DirectoryValue("/Users/kbarros/Desktop"));
@@ -40,11 +44,6 @@ public class LennardJonesApp extends Simulation {
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
 		params.add("Reduced K.E.");
-	}
-
-
-	public static void main(String[] args) {
-		new Control(new LennardJonesApp(), "Particle Simulation");
 	}
 
 	public void animate() {
