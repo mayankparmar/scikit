@@ -183,28 +183,56 @@ package rachele.ising.dim1;
 			
 		}
 		
+		public void calcSymRightExp(int time, double [] rightExp, double [] parRightExp){
+			for (int i = 0; i < Lp; i++){
+				//use symmetric version of first derivative
+				double dPhi_dt = (phi[time+1][i] - phi[time-1][i])/(2*dt);
+				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T;	
+				parRightExp[i] = phiBar[i] - atanh(phi[time][i])/T;	
+			}			
+		}
+		
 		public void simulate() {
+			boolean totalSymmetric = true;
 			boolean proper2deriv = true;
 			
-			if(proper2deriv == false){
-				//find rightExp for time 0
-				calcRightExp(0, rightExp2);		
-				//first deriv in Left expression is backwards: need earlier time rightExp
-				for (int j = 1; j < t_f; j++){
-					rightExp1=rightExp2;
-					calcRightExp(j, rightExp2);
-					convolveWithRange(rightExp2, rightExpBar, R);
-					for (int i = 0; i < Lp; i++){
-						double term1 = -(rightExp2[i]-rightExp1[i])/dt;
-						double term2 = rightExpBar[i];
-						double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
-						phi[j][i] += -du*(term1 + term2 + term3)+sqrt(2*du/(dx*dt))*random.nextGaussian();
-					}
-				}	
-				u += du;
+			if(totalSymmetric = false){
+				if(proper2deriv == false){
+					//find rightExp for time 0
+					calcRightExp(0, rightExp2);		
+					//first deriv in Left expression is backwards: need earlier time rightExp
+					for (int j = 1; j < t_f; j++){
+						rightExp1=rightExp2;
+						calcRightExp(j, rightExp2);
+						convolveWithRange(rightExp2, rightExpBar, R);
+						for (int i = 0; i < Lp; i++){
+							double term1 = -(rightExp2[i]-rightExp1[i])/dt;
+							double term2 = rightExpBar[i];
+							double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+							phi[j][i] += -du*(term1 + term2 + term3)+sqrt(2*du/(dx*dt))*random.nextGaussian();
+						}
+					}	
+					u += du;
+				}
+				else{
+					calcRightExpAndPartial(0, rightExp2, parRightExp2);
+					for (int j = 1; j < t_f; j++){
+						rightExp1=rightExp2;
+						parRightExp1 = parRightExp2;
+						calcRightExp(j, rightExp2);
+						convolveWithRange(rightExp2, rightExpBar, R);
+						for (int i = 0; i < Lp; i++){
+							double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt)-(parRightExp2[i]-parRightExp1[i])/dt;
+							double term2 = rightExpBar[i];
+							double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+							phi[j][i] += -du*(term1 + term2 + term3);//+sqrt(2*du/(dx*dt))*random.nextGaussian();
+						}
+					}	
+					u += du;				
+				}
 			}
 			else{
-				calcRightExpAndPartial(0, rightExp2, parRightExp2);
+				calcSymRightExp(0, rightExp2, parRightExp2);
 				for (int j = 1; j < t_f; j++){
 					rightExp1=rightExp2;
 					parRightExp1 = parRightExp2;
