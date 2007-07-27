@@ -35,9 +35,6 @@ class SnapshotArray {
 	}
 	
 	public Particle[] get(double t) {
-		// int i = (int) ((snapshots.size()-1) * (t - t_i) / (t_f - t_i) + 0.5); 
-		// return snapshots.get(i).particles();
-		
 		// perform a binary search for snapshot at nearest time
 		int lb = 0; // lower bound
 		int ub = snapshots.size() - 1; // upper bound

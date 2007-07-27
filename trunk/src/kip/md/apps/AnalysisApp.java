@@ -13,23 +13,23 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DirectoryValue;
 
 
 public class AnalysisApp extends Simulation {
-	Plot r2plot = new Plot("Mean squared displacement");
-	Plot alpha = new Plot("Non-Gaussian parameter");
+	Plot r2plot = new Plot("Mean squared displacement versus time");
+	Plot alpha = new Plot("Non-Gaussian parameter versus time");
 	SnapshotArray snapshots;
 	ParticleContext pc;
 	Accumulator dx2, dx4;
 	
 	public static void main(String[] args) {
-		new Control(new AnalysisApp(), "Particle Analysis");
+		new Control(new AnalysisApp(), "Non-Gaussian Analysis");
 	}
 	
 	public AnalysisApp() {
+		params.add("Input directory", new DirectoryValue("/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1 more"));
 		params.addm("Log scale", new ChoiceValue("True", "False"));
-//		params.add("Input directory", "/Users/kbarros/Desktop/data/unary/phi=0.85");
-		params.add("Input directory", "/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1");
 		params.add("Particle ID", 1);
 	}
 	
