@@ -17,9 +17,9 @@ package rachele.ising.dim1;
 		public int Lp;
 		public double dt, t;
 		public int t_f;
-		public double[][] phi, del_phi;
+		public double[][] phi;
+		double [] phiBar, rightExp1, rightExp2, rightExpBar, parRightExp1, parRightExp2;
 		double DENSITY;
-		double [] phi_bar;
 		public double L, R, T, J, dx, H, du;
 		public double u = 0.0;
 		Accumulator timeSliceAcc; 
@@ -48,6 +48,13 @@ package rachele.ising.dim1;
 			double RoverDx = R/dx;
 			params.set("R/dx", RoverDx);
 			t_f = params.iget("Time Interval");
+			phi = new double [t_f+1][Lp];
+			phiBar = new double [Lp];
+			rightExp1 = new double [Lp];
+			rightExp2 = new double [Lp];
+			parRightExp1 = new double [Lp];
+			parRightExp2 = new double [Lp];
+			rightExpBar = new double [Lp];
 			//R = 2000;
 			//T = .86;
 			//J = 2.0;
@@ -58,10 +65,9 @@ package rachele.ising.dim1;
 			//Lp = Integer.highestOneBit((int)rint((L/dx)));
 			//dx = L / Lp;
 			//t_f = 300;
-
-			phi = new double[Lp][t_f+1];
-			phi_bar = new double[Lp];
-			del_phi = new double[Lp][t_f+1];
+			//phi = new double[t_f+1][Lp];
+			//phi_bar = new double[Lp];
+			//del_phi = new double[t_f+1][Lp];
 			
 			fftScratch = new double[2*Lp];
 			fft = new ComplexDoubleFFT_Mixed(Lp);
@@ -73,31 +79,32 @@ package rachele.ising.dim1;
 			double delta_density = (density_f - density_i)/t_f;
 			
 			
-			//for (int i = 0; i < Lp; i++){
-			//	for (int j = 0; j <= t_f; j ++)
-			//		phi [i][j] = j*delta_density+density_i;
-			//}
-			for (int i = 0; i < Lp; i ++){
-				for (int j = 0; j < t_f/2; j ++ )
-					phi[i][j] = density_i;
-				for (int j = t_f/2; j <= t_f; j ++)
-					phi[i][j] = density_f;
-				}
+			for (int i = 0; i < Lp; i++){
+				for (int j = 0; j <= t_f; j ++)
+					phi [j][i] = j*delta_density+density_i;
+			}
+			//for (int i = 0; i < Lp; i ++){
+			//	for (int j = 0; j < t_f/2; j ++ )
+			//		phi[j][i] = density_i;
+			//	for (int j = t_f/2; j <= t_f; j ++)
+			//		phi[j][i] = density_f;
+			//	}
 					
 			
 		}
 		
-		//public void readParams(Parameters params) {
-		//	T = params.fget("T");
-		//	J = params.fget("J");
+		public void readParams(Parameters params) {
+			T = params.fget("T");
+			J = params.fget("J");
 		//	dt = params.fget("dt");
-		//	R = params.fget("R");
-		//	L = R*params.fget("L/R");
-		//	dx = R/params.fget("R/dx");
-		//	Lp = Integer.highestOneBit((int)rint((L/dx)));
-		//	dx = L / Lp;
-		//	params.set("R/dx", R/dx);
-		//}
+			R = params.fget("R");
+			L = R*params.fget("L/R");
+			dx = R/params.fget("R/dx");
+			Lp = Integer.highestOneBit((int)rint((L/dx)));
+			dx = L / Lp;
+			params.set("R/dx", R/dx);
+			du = params.fget("du");
+		}
 		
 		//public double time() {
 		//	return t;
@@ -134,7 +141,7 @@ package rachele.ising.dim1;
 			double ret[] = new double[Lp*(t_f+1)];
 			for (int j = 0; j <= t_f; j++){
 				for (int i = 0; i < Lp; i++)
-					ret[i+j*Lp] = phi[i][j];
+					ret[i+j*Lp] = phi[j][i];
 			}
 			return ret;
 		}
@@ -142,7 +149,7 @@ package rachele.ising.dim1;
 		public Accumulator getTimeSlice(){
 			timeSliceAcc.clear();
 			for (int i = 0; i < Lp; i++){
-				timeSliceAcc.accum(i, phi[i][t_f/2]);
+				timeSliceAcc.accum(i, phi[t_f/2][i]);
 				//System.out.println(i + " " + phi[i][t_f/2]);
 			}
 			return timeSliceAcc;
@@ -151,19 +158,78 @@ package rachele.ising.dim1;
 		public Accumulator getSpaceSlice(){
 			spaceSliceAcc.clear();
 			for (int j = 0; j <= t_f; j++)
-				spaceSliceAcc.accum(j,phi[Lp/2][j]);
+				spaceSliceAcc.accum(j,phi[j][Lp/2]);
 			return spaceSliceAcc;
 		}
 		
+		public void calcRightExp(int time, double [] rightExp){
+			convolveWithRange(phi[time], phiBar, R);
+			for (int i = 0; i < Lp; i++){
+				//first deriv in rightExp is forward finite diff
+				double dPhi_dt = (phi[time+1][i] - phi[time][i])/dt;
+				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T;	
+			}
+			
+		}
+
+		public void calcRightExpAndPartial(int time, double [] rightExp, double [] parRightExp){
+			convolveWithRange(phi[time], phiBar, R);
+			for (int i = 0; i < Lp; i++){
+				//first deriv in rightExp is forward finite diff
+				double dPhi_dt = (phi[time+1][i] - phi[time][i])/dt;
+				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T;	
+				parRightExp[i] = phiBar[i] - atanh(phi[time][i])/T;	
+			}
+			
+		}
+		
 		public void simulate() {
+			boolean proper2deriv = true;
+			
+			if(proper2deriv == false){
+				//find rightExp for time 0
+				calcRightExp(0, rightExp2);		
+				//first deriv in Left expression is backwards: need earlier time rightExp
+				for (int j = 1; j < t_f; j++){
+					rightExp1=rightExp2;
+					calcRightExp(j, rightExp2);
+					convolveWithRange(rightExp2, rightExpBar, R);
+					for (int i = 0; i < Lp; i++){
+						double term1 = -(rightExp2[i]-rightExp1[i])/dt;
+						double term2 = rightExpBar[i];
+						double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+						phi[j][i] += -du*(term1 + term2 + term3)+sqrt(2*du/(dx*dt))*random.nextGaussian();
+					}
+				}	
+				u += du;
+			}
+			else{
+				calcRightExpAndPartial(0, rightExp2, parRightExp2);
+				for (int j = 1; j < t_f; j++){
+					rightExp1=rightExp2;
+					parRightExp1 = parRightExp2;
+					calcRightExp(j, rightExp2);
+					convolveWithRange(rightExp2, rightExpBar, R);
+					for (int i = 0; i < Lp; i++){
+						double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt)-(parRightExp2[i]-parRightExp1[i])/dt;
+						double term2 = rightExpBar[i];
+						double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+						phi[j][i] += -du*(term1 + term2 + term3);//+sqrt(2*du/(dx*dt))*random.nextGaussian();
+					}
+				}	
+				u += du;				
+			}
+		}
+	}
+				
+			/**	
+			double term1 = 
 			double [] scratch;
 			double [] lastScratch;
-			double [] dPhi_dt;
 			double atanhphi, d2Phi_dt2, df_dt;
 
 			lastScratch = new double [Lp];
 			scratch = new double [Lp];
-			dPhi_dt = new double [Lp];
 			for (int i = 0; i < Lp; i++)
 				scratch[i] = phi[i][t_f];
 			convolveWithRange(scratch, lastScratch, R);
@@ -194,8 +260,8 @@ package rachele.ising.dim1;
 				}
 			}
 			//System.out.println(del_phi[Lp/2][t_f/2] + " " + phi[Lp/2][t_f/2]);
-			u += du;
-		}
-	}
+			u += du;*/
+		//}
+	//}
 
 

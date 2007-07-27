@@ -37,7 +37,7 @@ public class SaddlePoint1DApp extends Simulation{
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
 		params.addm("du", 0.01);
-		params.add("Time Interval", 500);
+		params.add("Time Interval", 200);
 		params.add("u");
 	}
 	
@@ -47,7 +47,7 @@ public class SaddlePoint1DApp extends Simulation{
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
         grid.setData(sim.Lp, sim.t_f, sim.copyField());
-		//sim.readParams(params);
+		sim.readParams(params);
 		
 		//SFPlot.setDataSet(0, sf.getAccumulator());
 	
@@ -59,6 +59,7 @@ public class SaddlePoint1DApp extends Simulation{
 	}
 	
 	public void run(){
+
 		sim = new PathSample1D(params);
 		double KR_SP = PathSample1D.KR_SP;
 		double binWidth = KR_SP / floor(KR_SP/params.fget("kR bin-width"));
