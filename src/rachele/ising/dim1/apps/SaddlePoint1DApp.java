@@ -8,6 +8,7 @@ import rachele.ising.dim1.StructureFactor1D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.params.ChoiceValue;
 import scikit.plot.Plot;
 import scikit.plot.FieldDisplay;
 
@@ -26,6 +27,7 @@ public class SaddlePoint1DApp extends Simulation{
 	}
 
 	public SaddlePoint1DApp(){
+		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
 		params.addm("T", 0.86);
 		params.addm("J", 2.0);
 		params.addm("dt", 0.1);
@@ -36,8 +38,8 @@ public class SaddlePoint1DApp extends Simulation{
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
-		params.addm("du", 0.01);
-		params.add("Time Interval", 500);
+		params.addm("du", 0.005);
+		params.add("Time Interval", 100);
 		params.add("u");
 	}
 	
