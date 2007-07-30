@@ -1,6 +1,10 @@
 package rachele.ising.dim1;
 
-	import kip.util.Random;
+	import java.io.*;
+	import java.io.FileReader;
+	import java.util.*;
+	
+import kip.util.Random;
 	import static kip.util.MathPlus.*;
 	import scikit.numerics.fft.ComplexDoubleFFT;
 	import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
@@ -10,7 +14,7 @@ package rachele.ising.dim1;
 	import static java.lang.Math.rint;
 	import static java.lang.Math.sin;
 	import static java.lang.Math.sqrt;
-	import scikit.dataset.Accumulator;
+import scikit.dataset.Accumulator;
 	//import static kip.util.DoubleArray.*;
 
 	public class PathSample1D {
@@ -22,6 +26,7 @@ package rachele.ising.dim1;
 		double DENSITY;
 		public double L, R, T, J, dx, H, du;
 		public double u = 0.0;
+		boolean sampleNoise;
 		Accumulator timeSliceAcc; 
 		Accumulator spaceSliceAcc;
 		
@@ -57,19 +62,10 @@ package rachele.ising.dim1;
 			parRightExp2 = new double [Lp];
 			parRightExp3 = new double [Lp];
 			rightExpBar = new double [Lp];
-			//R = 2000;
-			//T = .86;
-			//J = 2.0;
-			//dt = 0.1;
-			//H = 0.07;
-			//L = 600000;
-			//dx = R/(16.0);
-			//Lp = Integer.highestOneBit((int)rint((L/dx)));
-			//dx = L / Lp;
-			//t_f = 300;
-			//phi = new double[t_f+1][Lp];
-			//phi_bar = new double[Lp];
-			//del_phi = new double[t_f+1][Lp];
+			if (params.sget("Sampling Noise").equals("On"))
+				sampleNoise = true;
+			else
+				sampleNoise = false;
 			
 			fftScratch = new double[2*Lp];
 			fft = new ComplexDoubleFFT_Mixed(Lp);
@@ -81,24 +77,64 @@ package rachele.ising.dim1;
 			double delta_density = (density_f - density_i)/t_f;
 			
 			
-			for (int i = 0; i < Lp; i++){
-				for (int j = 0; j <= t_f; j ++)
-					phi [j][i] = j*delta_density+density_i;
-			}
-			//for (int i = 0; i < Lp; i ++){
-			//	for (int j = 0; j < t_f/2; j ++ )
-			//		phi[j][i] = density_i;
-			//	for (int j = t_f/2; j <= t_f; j ++)
-			//		phi[j][i] = density_f;
-			//	}
+			//read in initial conditions from file
+			//must have proper dimensions of phi array
+			readInputPath();
 					
 			
+			//uncomment these lines for  constant slope
+			/*for (int i = 0; i < Lp; i++){
+				for (int j = 0; j <= t_f; j ++)
+					phi [j][i] = j*delta_density+density_i;
+			}*/
+		
+			//uncomment these lines for flat, jump, flat
+			/*for (int i = 0; i < Lp; i ++){
+				for (int j = 0; j < t_f/2; j ++ )
+					phi[j][i] = density_i;
+				for (int j = t_f/2; j <= t_f; j ++)
+					phi[j][i] = density_f;
+				}*/
+					
+			
+		}
+		
+		public void readInputPath(){
+			try{
+				File myFile = new File("inputPath.txt");
+				FileInputStream fis = new FileInputStream(myFile);
+				DataInputStream dis = new DataInputStream(fis);
+				//FileReader fileReader = new FileReader(myFile);
+				//BufferedReader reader = new BufferedReader (fileReader);
+				//String line;
+				//String [] splitLine;
+				int timeIndex, spaceIndex;
+				double phiValue;
+					
+				//while((line = reader.readLine()) != null){
+				//	System.out.println(line);
+				//}
+				for(int i = 0; i < 10 ; i++){
+					//if((line = reader. readLine()) != null){
+						//splitLine = line.split(" ");
+						timeIndex = dis.readInt();
+						dis.readChar();       // throws out the tab
+						spaceIndex =dis.readInt();
+						dis.readChar();       // throws out the tab
+						phiValue = dis.readDouble();
+						
+						System.out.println(timeIndex + " " + spaceIndex + " " + phiValue);
+					//}
+				}
+				
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		
 		public void readParams(Parameters params) {
 			T = params.fget("T");
 			J = params.fget("J");
-		//	dt = params.fget("dt");
 			R = params.fget("R");
 			L = R*params.fget("L/R");
 			dx = R/params.fget("R/dx");
@@ -106,11 +142,11 @@ package rachele.ising.dim1;
 			dx = L / Lp;
 			params.set("R/dx", R/dx);
 			du = params.fget("du");
+			if (params.sget("Sampling Noise").equals("On"))
+				sampleNoise = true;
+			else
+				sampleNoise = false;
 		}
-		
-		//public double time() {
-		//	return t;
-		//}
 		
 		void convolveWithRange(double[] src, double[] dest, double R) {
 			// write real and imaginary components into scratch
@@ -203,7 +239,9 @@ package rachele.ising.dim1;
 					double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 					double term2 = rightExpBar[i];
 					double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
-					phi[j][i] += -du*(term1 + term2 + term3 );//+sqrt(2*du/(T*dx*dt))*random.nextGaussian();
+					phi[j][i] += -du*(term1 + term2 + term3 );
+					if(sampleNoise)
+						phi[j][i] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
 				}
 			}	
 			u += du;
@@ -221,7 +259,9 @@ package rachele.ising.dim1;
 						double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 						double term2 = rightExpBar[i];
 						double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
-						phi[j][i] += -du*(term1 + term2 + term3 )+sqrt(2*du/(T*dx*dt))*random.nextGaussian();
+						phi[j][i] += -du*(term1 + term2 + term3 );
+						if(sampleNoise)
+							phi[j][i] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
 					}
 				}	
 				u += du;				
@@ -229,7 +269,7 @@ package rachele.ising.dim1;
 		}
 	}
 				
-			/**	
+			/*	
 			double term1 = 
 			double [] scratch;
 			double [] lastScratch;

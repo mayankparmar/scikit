@@ -43,6 +43,7 @@ public class FieldIsing1D{
 		dx = L / Lp;
 		double RoverDx = R/dx;
 		params.set("R/dx", RoverDx);
+		params.set("Lp", Lp);
 		if (params.sget("Zoom").equals("A"))
 			modelA = true;
 		else

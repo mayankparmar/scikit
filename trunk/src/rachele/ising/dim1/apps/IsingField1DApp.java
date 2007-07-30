@@ -11,6 +11,7 @@ import scikit.params.ChoiceValue;
 import scikit.plot.Plot;
 import rachele.ising.dim1.FieldIsing1D;
 import rachele.ising.dim1.StructureFactor1D;
+import java.io.*;
 
 public class IsingField1DApp extends Simulation{
 
@@ -18,6 +19,7 @@ public class IsingField1DApp extends Simulation{
     Plot SFPlot = new Plot("Structure factor", true);
     FieldIsing1D ising;
     StructureFactor1D sf;
+    public int timeCount;
 	
 	public static void main(String[] args) {
 		new Control(new IsingField1DApp(), "Ising Field 1D");
@@ -37,6 +39,7 @@ public class IsingField1DApp extends Simulation{
 		params.add("Density", -.3);
 		params.add("Time");
 		params.add("DENSITY");
+		params.add("Lp");
 	}
 	
 	public void animate() {
@@ -52,23 +55,43 @@ public class IsingField1DApp extends Simulation{
 		flags.clear();
 	}
 	
+
+	public void writeTestFile(){
+		try {
+			FileWriter fileWriter = new FileWriter ("inputPath.txt", true);
+			BufferedWriter writer = new BufferedWriter(fileWriter);
+			for (int i = 0; i < ising.Lp; i++){
+				writer.write(timeCount + " "+ i + " " + ising.phi[i]);
+				writer.newLine();
+			}
+			writer.close();
+		} catch (IOException ex){
+			ex.printStackTrace();
+		}
+	}
+	
 	public void run(){
+		//readAndPrintFile();
 		ising = new FieldIsing1D(params);
 		double KR_SP = FieldIsing1D.KR_SP;
 		double binWidth = KR_SP / floor(KR_SP/params.fget("kR bin-width"));
+		timeCount = -1;
 		sf = new StructureFactor1D(ising.Lp, ising.L, ising.R, binWidth);
 		fieldPlot.setYRange(-1, 1);
 		Job.addDisplay(fieldPlot);
 		Job.addDisplay(SFPlot);
+
 		//sf.getAccumulator().clear();
 		
 		while (true) {
 			ising.simulate();
+			timeCount += 1;
 			sf.accumulate(ising.phi);
 			//avStructH.accum(structure.getAccumulatorH());
 			Job.animate();
 			SFPlot.setDataSet(0, sf.getAccumulator());
 			fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
+			writeTestFile();
 		}
 	}
 	
