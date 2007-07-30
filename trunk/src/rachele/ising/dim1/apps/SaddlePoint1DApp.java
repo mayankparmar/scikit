@@ -37,7 +37,7 @@ public class SaddlePoint1DApp extends Simulation{
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
 		params.addm("du", 0.01);
-		params.add("Time Interval", 200);
+		params.add("Time Interval", 500);
 		params.add("u");
 	}
 	
