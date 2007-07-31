@@ -13,6 +13,7 @@ import rachele.ising.dim1.FieldIsing1D;
 import rachele.ising.dim1.StructureFactor1D;
 import java.io.*;
 
+
 public class IsingField1DApp extends Simulation{
 
 	Plot fieldPlot = new Plot("Coarse Grained Field", true);
@@ -26,13 +27,14 @@ public class IsingField1DApp extends Simulation{
 	}
 	
 	public IsingField1DApp(){
+//	Defoult parameters for nucleation
 		params.addm("Zoom", new ChoiceValue("A", "B"));
 		params.addm("T", 0.86);
-		params.addm("J", 2.0);
+		params.addm("J", -2.0);
 		params.addm("dt", 0.1);
-		params.addm("R", 2000);
+		params.addm("R", 3000);
 		params.addm("H", 0.07);
-		params.add("L/R", 300.0);
+		params.add("L/R", 32.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
@@ -40,6 +42,23 @@ public class IsingField1DApp extends Simulation{
 		params.add("Time");
 		params.add("DENSITY");
 		params.add("Lp");
+
+//Default Parameters for clumps
+//		params.addm("Zoom", new ChoiceValue("B", "A"));
+//		params.addm("T", 0.1);
+//		params.addm("J", 1.0);
+//		params.addm("dt", 0.1);
+//		params.addm("R", 3000);
+//		params.addm("H", 0.00);
+//		params.add("L/R", 16.0);
+//		params.add("R/dx", 16.0);
+//		params.add("kR bin-width", 0.1);
+//		params.add("Random seed", 0);
+//		params.add("Density", 0.0);
+//		params.add("Time");
+//		params.add("DENSITY");
+//		params.add("Lp");		
+		
 	}
 	
 	public void animate() {
@@ -91,7 +110,7 @@ public class IsingField1DApp extends Simulation{
 			Job.animate();
 			SFPlot.setDataSet(0, sf.getAccumulator());
 			fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
-			writeTestFile();
+			//writeTestFile();
 		}
 	}
 	

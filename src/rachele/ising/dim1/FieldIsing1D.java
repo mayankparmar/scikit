@@ -10,6 +10,9 @@ import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static kip.util.DoubleArray.*;
+//import static kip.util.MathPlus.atanh;
+
+//import java.util.*;
 
 public class FieldIsing1D{
 	public int Lp;
@@ -123,7 +126,8 @@ public class FieldIsing1D{
 
 		if (modelA){
 			for (int i = 0; i < Lp; i++) {
-				del_phi[i] = - dt*(-phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+				del_phi[i] = - dt*( phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+				//del_phi[i] = - dt*(-phi_bar[i]-H + T*atanh(phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
 			}
 			//double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp; i++) {
@@ -131,7 +135,7 @@ public class FieldIsing1D{
 			}		
 		}else{
 			for (int i = 0; i < Lp; i++) {
-				del_phi[i] = - dt*(-phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+				del_phi[i] = - dt*( phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
 			}
 			double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp; i++) {

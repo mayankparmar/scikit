@@ -29,17 +29,17 @@ public class SaddlePoint1DApp extends Simulation{
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
 		params.addm("T", 0.86);
-		params.addm("J", 2.0);
+		params.addm("J", -2.0);
 		params.addm("dt", 0.1);
 		params.add("R", 3000);
-		params.addm("H", 0.0);
+		params.addm("H", 0.07);
 		params.add("L/R", 32.0);
-		params.add("R/dx", 4.0);
+		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Density", -0.4);
+		params.add("Density", -0.3);
 		params.addm("du", 0.005);
-		params.add("Time Interval", 300);
+		params.add("Time Interval", 200);
 		params.add("u");
 	}
 	
