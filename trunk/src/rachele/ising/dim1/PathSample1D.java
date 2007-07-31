@@ -1,8 +1,8 @@
 package rachele.ising.dim1;
 
 	import java.io.*;
-	import java.io.FileReader;
-	import java.util.*;
+	//import java.io.FileReader;
+	//import java.util.*;
 	
 import kip.util.Random;
 	import static kip.util.MathPlus.*;
@@ -14,7 +14,7 @@ import kip.util.Random;
 	import static java.lang.Math.rint;
 	import static java.lang.Math.sin;
 	import static java.lang.Math.sqrt;
-import scikit.dataset.Accumulator;
+	import scikit.dataset.Accumulator;
 	//import static kip.util.DoubleArray.*;
 
 	public class PathSample1D {
@@ -74,7 +74,7 @@ import scikit.dataset.Accumulator;
 			spaceSliceAcc = new Accumulator(dt);
 			double density_i = -0.4;
 			double density_f = 0.68;
-			double delta_density = (density_f - density_i)/t_f;
+//			double delta_density = (density_f - density_i)/t_f;
 			
 			
 			//read in initial conditions from file
@@ -219,8 +219,8 @@ import scikit.dataset.Accumulator;
 			convolveWithRange(phi[time], phiBar, R);
 			for (int i = 0; i < Lp; i++){
 				double dPhi_dt = firstPhiDeriv(time, i);
-				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T ;	
-				parRightExp[i] = phiBar[i] - atanh(phi[time][i])/T ;	
+				rightExp[i] = dPhi_dt + phiBar[i] + atanh(phi[time][i])/T - H;	
+				parRightExp[i] = phiBar[i] + atanh(phi[time][i])/T - H;	
 			}
 		}
 			
@@ -239,7 +239,7 @@ import scikit.dataset.Accumulator;
 				for (int i = 0; i < Lp; i++){
 					double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 					double term2 = rightExpBar[i];
-					double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+					double term3 = rightExp2[i]/(T*(1-sqr(phi[j][i])));
 					phi[j][i] += -du*(term1 + term2 + term3 );
 					if(sampleNoise)
 						phi[j][i] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
@@ -259,7 +259,7 @@ import scikit.dataset.Accumulator;
 					for (int i = 0; i < Lp; i++){
 						double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 						double term2 = rightExpBar[i];
-						double term3 = -rightExp2[i]/(T*(1-sqr(phi[j][i])));
+						double term3 = rightExp2[i]/(T*(1-sqr(phi[j][i])));
 						phi[j][i] += -du*(term1 + term2 + term3 );
 						if(sampleNoise)
 							phi[j][i] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
