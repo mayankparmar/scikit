@@ -17,8 +17,10 @@ public class Cooperation {
 			triggered = true;
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					triggered = false;
-					pass();
+					synchronized(Cooperation.this) {
+						triggered = false;
+						pass();
+					}
 				}
 			});
 		}
@@ -27,7 +29,7 @@ public class Cooperation {
 	/**
 	 * Adds this thread to the processing loop.
 	 */
-	public void register() {
+	synchronized public void register() {
 		// make sure that this thread is being run cooperatively with the GUI thread
 		// (the GUI thread should hang while this thread is being processing)
 		triggerProcessingLoop();
