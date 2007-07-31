@@ -72,14 +72,14 @@ import scikit.dataset.Accumulator;
 			
 			timeSliceAcc = new Accumulator(1);
 			spaceSliceAcc = new Accumulator(dt);
-			double density_i = -0.3;
-			double density_f = 0.6;
+			double density_i = -0.4;
+			double density_f = 0.68;
 			double delta_density = (density_f - density_i)/t_f;
 			
 			
 			//read in initial conditions from file
 			//must have proper dimensions of phi array
-			readInputPath();
+			//readInputPath();
 					
 			
 			//uncomment these lines for  constant slope
@@ -89,12 +89,12 @@ import scikit.dataset.Accumulator;
 			}*/
 		
 			//uncomment these lines for flat, jump, flat
-			/*for (int i = 0; i < Lp; i ++){
+			for (int i = 0; i < Lp; i ++){
 				for (int j = 0; j < t_f/2; j ++ )
 					phi[j][i] = density_i;
 				for (int j = t_f/2; j <= t_f; j ++)
 					phi[j][i] = density_f;
-				}*/
+				}
 					
 			
 		}
@@ -137,6 +137,7 @@ import scikit.dataset.Accumulator;
 			J = params.fget("J");
 			R = params.fget("R");
 			L = R*params.fget("L/R");
+			H = params.fget("H");
 			dx = R/params.fget("R/dx");
 			Lp = Integer.highestOneBit((int)rint((L/dx)));
 			dx = L / Lp;
@@ -218,13 +219,13 @@ import scikit.dataset.Accumulator;
 			convolveWithRange(phi[time], phiBar, R);
 			for (int i = 0; i < Lp; i++){
 				double dPhi_dt = firstPhiDeriv(time, i);
-				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T;	
-				parRightExp[i] = phiBar[i] - atanh(phi[time][i])/T;	
+				rightExp[i] = dPhi_dt + phiBar[i] - atanh(phi[time][i])/T ;	
+				parRightExp[i] = phiBar[i] - atanh(phi[time][i])/T ;	
 			}
 		}
 			
 		public void simulate() {
-			boolean forwardInTime = false;
+			boolean forwardInTime = true;
 			if (forwardInTime){
 			calcRightExp(0, rightExp2, parRightExp2);
 			calcRightExp(1, rightExp3, parRightExp3);
