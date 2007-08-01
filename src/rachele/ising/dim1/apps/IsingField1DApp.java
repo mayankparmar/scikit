@@ -29,12 +29,12 @@ public class IsingField1DApp extends Simulation{
 	public IsingField1DApp(){
 //	Defoult parameters for nucleation
 		params.addm("Zoom", new ChoiceValue("A", "B"));
-		params.addm("T", 0.86);
+		params.addm("T", 0.785);
 		params.addm("J", -1.0);
 		params.addm("dt", 0.1);
-		params.addm("R", 3000);
+		params.addm("R", 100000);
 		params.addm("H", 0.07);
-		params.add("L/R", 32.0);
+		params.add("L/R", 16.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
