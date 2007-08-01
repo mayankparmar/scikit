@@ -5,6 +5,7 @@ import static scikit.util.Utilities.format;
 import rachele.ising.dim1.PathSample1D;
 import rachele.ising.dim1.StructureFactor1D;
 //import scikit.dataset.PointSet;
+import scikit.dataset.PointSet;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -28,17 +29,17 @@ public class SaddlePoint1DApp extends Simulation{
 
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
-		params.addm("T", 0.86);
+		params.addm("T", 0.785);
 		params.addm("J", -1.0);
-		params.addm("dt", 0.1);
-		params.add("R", 3000);
-		params.addm("H", 0.07);
-		params.add("L/R", 32.0);
-		params.add("R/dx", 16.0);
+		params.addm("dt", 0.3);
+		params.addm("R", 100000);
+		params.addm("H", -5);
+		params.add("L/R", 8.0);
+		params.add("R/dx", 8.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
-		params.addm("du", 0.005);
+		params.addm("du", 0.008);
 		params.add("Time Interval", 200);
 		params.add("u");
 	}
