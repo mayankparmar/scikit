@@ -29,7 +29,7 @@ public class SaddlePoint1DApp extends Simulation{
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
 		params.addm("T", 0.86);
-		params.addm("J", -2.0);
+		params.addm("J", -1.0);
 		params.addm("dt", 0.1);
 		params.add("R", 3000);
 		params.addm("H", 0.07);

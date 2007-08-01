@@ -72,9 +72,9 @@ import kip.util.Random;
 			
 			timeSliceAcc = new Accumulator(1);
 			spaceSliceAcc = new Accumulator(dt);
-			double density_i = -0.4;
-			double density_f = 0.68;
-//			double delta_density = (density_f - density_i)/t_f;
+			double density_i = -0.55;
+			double density_f = 0.55;
+			//double delta_density = (density_f - density_i)/t_f;
 			
 			
 			//read in initial conditions from file
@@ -83,10 +83,10 @@ import kip.util.Random;
 					
 			
 			//uncomment these lines for  constant slope
-			/*for (int i = 0; i < Lp; i++){
-				for (int j = 0; j <= t_f; j ++)
-					phi [j][i] = j*delta_density+density_i;
-			}*/
+//			for (int i = 0; i < Lp; i++){
+//				for (int j = 0; j <= t_f; j ++)
+//					phi [j][i] = j*delta_density+density_i;
+//			}
 		
 			//uncomment these lines for flat, jump, flat
 			for (int i = 0; i < Lp; i ++){
@@ -204,11 +204,11 @@ import kip.util.Random;
 		public double firstPhiDeriv(int time, int i){
 			double ret;
 			if (time == 0){
-				ret =(phi[time+1][i] - phi[time][i])/dt;
-				//System.out.println("t=0 " + i);
+				//ret =(phi[time+1][i] - phi[time][i])/dt;
+				ret = 0;
 			}else if (time == t_f){
-				ret = (phi[time][i] - phi[time-1][i])/(dt);
-				//System.out.println("t=t_f " + i);
+				//ret = (phi[time][i] - phi[time-1][i])/(dt);
+				ret = 0;
 			}else{
 				ret = (phi[time+1][i] - phi[time-1][i])/(2*dt);
 			}
@@ -219,8 +219,8 @@ import kip.util.Random;
 			convolveWithRange(phi[time], phiBar, R);
 			for (int i = 0; i < Lp; i++){
 				double dPhi_dt = firstPhiDeriv(time, i);
-				rightExp[i] = dPhi_dt + phiBar[i] + atanh(phi[time][i])/T - H;	
-				parRightExp[i] = phiBar[i] + atanh(phi[time][i])/T - H;	
+				rightExp[i] = dPhi_dt + phiBar[i] + T*atanh(phi[time][i])/T - H;	
+				parRightExp[i] = phiBar[i] + T*atanh(phi[time][i]) - H;	
 			}
 		}
 			
@@ -230,7 +230,7 @@ import kip.util.Random;
 			calcRightExp(0, rightExp2, parRightExp2);
 			calcRightExp(1, rightExp3, parRightExp3);
 			for (int j = 1; j < t_f; j++){
-				rightExp1=rightExp2;
+				//rightExp1=rightExp2;
 				parRightExp1 = parRightExp2;
 				rightExp2 = rightExp3;
 				parRightExp2 = parRightExp3;					
@@ -239,10 +239,10 @@ import kip.util.Random;
 				for (int i = 0; i < Lp; i++){
 					double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 					double term2 = rightExpBar[i];
-					double term3 = rightExp2[i]/(T*(1-sqr(phi[j][i])));
+					double term3 = rightExp2[i]*T/((1-sqr(phi[j][i])));
 					phi[j][i] += -du*(term1 + term2 + term3 );
 					if(sampleNoise)
-						phi[j][i] += sqrt(2*du/(T*dx*dt))*random.nextGaussian();
+						phi[j][i] += sqrt(2*du*T/(dx*dt))*random.nextGaussian();
 				}
 			}	
 			u += du;
