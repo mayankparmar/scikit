@@ -228,7 +228,7 @@ public class Job {
 					thread = null;
 					// display possible execution exception in full detail for debugging
 					if (errMsg != null) {
-						System.out.println(errMsg);
+						System.err.println(errMsg);
 						JOptionPane.showMessageDialog(null, errMsg, "Error Occurred in Simulation", JOptionPane.ERROR_MESSAGE);
 					}
 				}
