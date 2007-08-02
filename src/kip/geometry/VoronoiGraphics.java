@@ -1,13 +1,13 @@
 package kip.geometry;
 
-import javax.media.opengl.GL;
+import java.awt.Color;
 
 import scikit.graphics.Drawable;
-import scikit.graphics.Graphics;
+import scikit.graphics.dim2.Gfx2D;
 import scikit.util.Bounds;
 import scikit.util.Point;
 
-public class VoronoiGraphics implements Drawable {
+public class VoronoiGraphics implements Drawable<Gfx2D> {
 	private Bounds _bds;
 	private QHull _geom;
 	private Point[][] _faces;
@@ -25,13 +25,11 @@ public class VoronoiGraphics implements Drawable {
 		_faces = _geom.constructVoronoi2D(state, stride, N0, N1);
 	}
 	
-	public void draw(Graphics g) {
-		GL gl = (GL)g.engine();
+	public void draw(Gfx2D g) {
 		if (_faces == null)
 			return;
 		
-		gl.glColor3d(1, 0, 0);
-		gl.glBegin(GL.GL_LINES);
+		g.setColor(Color.RED);
 		
 		for (Point[] face : _faces) {
 			int n = face.length;
@@ -39,17 +37,13 @@ public class VoronoiGraphics implements Drawable {
 				Point v1 = face[(i+0)%n];
 				Point v2 = face[(i+1)%n];
 				if (v1 != null && v2 != null) {
-					gl.glVertex2d(v1.x, v1.y);
-					gl.glVertex2d(v2.x, v2.y);
+					g.drawLine(v1.x, v1.y, v2.x, v2.y);
 				}
 			}
 		}
-        
-        gl.glEnd();
 	}
 	
 	public Bounds getBounds() {
 		return _bds;
 	}
-
 }

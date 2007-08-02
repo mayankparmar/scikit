@@ -1,11 +1,11 @@
 package kip.md.apps;
 
 import static java.lang.Math.*;
+import static kip.util.MathPlus.*;
 import java.awt.Color;
 import java.io.File;
 
-
-import scikit.graphics.Scene2D;
+import scikit.graphics.dim2.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -30,7 +30,7 @@ public class LennardJonesApp extends Simulation {
 	}
 	
 	public LennardJonesApp() {
-		params.add("Output directory", new DirectoryValue("/Users/kbarros/Desktop"));
+		params.add("Output directory", new DirectoryValue(""));
 		params.add("Write files", new ChoiceValue("Yes", "No"));
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
 		params.add("Length", 70.0);
@@ -51,7 +51,7 @@ public class LennardJonesApp extends Simulation {
 		sim.setTemperature(params.fget("Temperature"), params.fget("Bath coupling"));
 		params.set("Time", format(sim.time()));
 		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
-		canvas.setDrawables(sim.pc.boundaryDw(), sim.pc.particlesDw(sim.particles));
+		canvas.setDrawables(asList(sim.pc.boundaryDw(), sim.pc.particlesDw(sim.particles)));
 	}
 	
 	public void clear() {

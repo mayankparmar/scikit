@@ -1,4 +1,4 @@
-package scikit.graphics;
+package scikit.graphics.dim2;
 
 import static java.lang.Math.*;
 import java.awt.Color;
@@ -7,10 +7,11 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 
 
-public class TickMarks implements Drawable {
+public class TickMarks implements Drawable<Gfx2D> {
 	private Plot _plot;
 	
 	private static double TICKS_PER_PIXEL = 1.0/60.0;
@@ -25,7 +26,7 @@ public class TickMarks implements Drawable {
 		_plot = plot;
 	}
 	
-	public void draw(Graphics g) {
+	public void draw(Gfx2D g) {
 		Bounds db = _plot.dataBounds();
 		Bounds cb = _plot.pixelBounds();
 		
@@ -120,7 +121,7 @@ public class TickMarks implements Drawable {
 		return ret;
 	}
 	
-	private void drawTickLines(Graphics g, List<Tick> xticks, List<Tick> yticks) {
+	private void drawTickLines(Gfx2D g, List<Tick> xticks, List<Tick> yticks) {
 		Bounds db = _plot.dataBounds();
 		for (Tick tick : xticks) {
 			g.setColor(tick.color);
@@ -132,7 +133,7 @@ public class TickMarks implements Drawable {
 		}
 	}
 	
-	private void drawTickLabels(Graphics g, List<Tick> xticks, List<Tick> yticks) {
+	private void drawTickLabels(Gfx2D g, List<Tick> xticks, List<Tick> yticks) {
 		Bounds db = _plot.dataBounds();
 		Bounds cb = _plot.pixelBounds();
 		double heightPerPix = db.getHeight() / cb.getHeight();

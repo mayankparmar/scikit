@@ -21,10 +21,9 @@ import java.util.TreeMap;
 
 import kip.util.Random;
 import kip.util.Vec3;
-import scikit.graphics.Graphics;
-import scikit.graphics.CircleGraphics;
 import scikit.graphics.Drawable;
-import scikit.graphics.RectangleGraphics;
+import scikit.graphics.dim2.Geom2D;
+import scikit.graphics.dim2.Gfx2D;
 import scikit.util.Bounds;
 import scikit.util.Point;
 import scikit.util.Utilities;
@@ -224,20 +223,20 @@ public class ParticleContext {
 	}
 	
 	
-	public Drawable boundaryDw() {
+	public Drawable<Gfx2D> boundaryDw() {
 		switch (type) {
 		case Disk2D:
-			return new CircleGraphics(L/2., L/2., L/2.);
+			return Geom2D.circle(L/2., L/2., L/2., Color.BLACK);
 		case Torus2D:
-			return new RectangleGraphics(0., 0., L, L);
+			return Geom2D.rectangle(new Bounds(0., L, 0., L), Color.BLACK);
 		default:
 			return null;
 		}
 	}
 	
-	public Drawable particlesDw(final Particle[] particles) {
-		return new Drawable() {
-			public void draw(Graphics g) {
+	public Drawable<Gfx2D> particlesDw(final Particle[] particles) {
+		return new Drawable<Gfx2D>() {
+			public void draw(Gfx2D g) {
 				for (Particle p : particles) {
 					g.setColor(p.tag.color);
 					g.fillCircle(p.x, p.y, p.tag.radius);

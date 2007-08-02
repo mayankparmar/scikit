@@ -1,12 +1,12 @@
 package kip.md.apps;
 
-import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.*;
 
 import java.util.ArrayList;
 
 import kip.md.Particle;
 import kip.md.ParticleContext;
-import scikit.graphics.Scene2D;
+import scikit.graphics.dim2.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -36,7 +36,7 @@ public class AnimateApp extends Simulation {
 
 	public void animate() {
 		params.set("time", format(time));
-		canvas.setDrawables(pc.particlesDw(particles), pc.boundaryDw());
+		canvas.setDrawables(asList(pc.particlesDw(particles), pc.boundaryDw()));
 	}
 	
 	public void clear() {

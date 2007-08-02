@@ -1,4 +1,4 @@
-package scikit.graphics;
+package scikit.graphics.dim2;
 
 import static java.lang.Math.*;
 import java.awt.Color;
@@ -16,6 +16,7 @@ import javax.swing.JPopupMenu;
 
 import scikit.dataset.DataSet;
 import scikit.dataset.Transformer;
+import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 import scikit.util.Point;
 
@@ -99,11 +100,11 @@ public class Plot extends Scene2D {
 		registerDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
-	protected List<Drawable> allDrawables() {
-		List<Drawable> ds = new ArrayList<Drawable>();
+	protected List<Drawable<Gfx2D>> getAllDrawables() {
+		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
 		ds.add(new TickMarks(this));
 		ds.addAll(_datas);
-		ds.addAll(super.allDrawables());
+		ds.addAll(super.getAllDrawables());
 		return ds;
 	}
 
@@ -146,7 +147,7 @@ public class Plot extends Scene2D {
 }
 
 
-class DatasetDw implements Drawable {
+class DatasetDw implements Drawable<Gfx2D> {
 	enum Style {LINES, MARKS, BARS};
 	
 	Plot _plot;
@@ -163,7 +164,7 @@ class DatasetDw implements Drawable {
 		_style = style;
 	}		
 
-	public void draw(Graphics g) {
+	public void draw(Gfx2D g) {
 		Bounds bounds = g.scene().dataBounds();
 		g.setColor(_color);
 
