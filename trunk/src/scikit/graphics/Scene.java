@@ -2,16 +2,15 @@ package scikit.graphics;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import scikit.util.Bounds;
 
 
-public class Scene {
+abstract public class Scene<T> {
 	protected Component _component;
 	protected Bounds _curBounds = new Bounds();
-	private List<Drawable> _drawables = new ArrayList<Drawable>();
+	private List<Drawable<T>> _drawables = new ArrayList<Drawable<T>>();
 	
 	// when the user zooms out (double clicks to "resetViewWindow()"), the current
 	// view bounds is set to topBounds (and then extended to fit data).
@@ -30,21 +29,7 @@ public class Scene {
 		scikit.util.Utilities.frame(_component, title);
 	}
 	
-	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
-	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
-	// we could get an uncatchable NoClassDefFoundError.
-	private Component createComponent() {
-		try {
-			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
-			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
-				c = Class.forName("scikit.graphics.GraphicsGL");
-				return (Component)c.getMethod("createComponent", Scene.class).invoke(null, this);
-			}
-		}
-		catch (Exception e) {}
-		return GraphicsAWT.createComponent(this);				
-	}
-	
+	abstract protected Component createComponent(); 
 	
 	/** Removes all drawables object from the scene leaving the state of the scene (such as
 	 * view bounds) unmodified.
@@ -55,15 +40,15 @@ public class Scene {
 	}
 	
 	/** Adds drawables objects to the scene. */
-	public void addDrawables(Drawable... drawables) {
-		_drawables.addAll(Arrays.asList(drawables));
+	public void addDrawable(Drawable<T> drawable) {
+		_drawables.add(drawable);
 		animate();
 	}
 	
 	/** Sets the scene's drawable objects to be the specified list. */
-	public void setDrawables(Drawable... drawables) {
+	public void setDrawables(List<Drawable<T>> drawables) {
 		_drawables.clear();
-		_drawables.addAll(Arrays.asList(drawables));
+		_drawables.addAll(drawables);
 		animate();
 	}
 
@@ -99,14 +84,15 @@ public class Scene {
 		return _curBounds;
 	}
 	
+	abstract protected void drawAll(T g);
 	
-	protected List<Drawable> allDrawables() {
+	protected List<Drawable<T>> getAllDrawables() {
 		return _drawables;
 	}
 	
 	protected Bounds calculateDataBounds() {
 		Bounds bounds = new Bounds();
-		for (Drawable d : allDrawables())
+		for (Drawable<T> d : getAllDrawables())
 			bounds = (Bounds)bounds.createUnion(d.getBounds());
 		
 		// extend bounds a little bit

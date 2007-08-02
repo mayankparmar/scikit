@@ -1,4 +1,4 @@
-package scikit.graphics;
+package scikit.graphics.dim2;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,23 +9,19 @@ import javax.swing.JComponent;
 import scikit.util.Bounds;
 
 
-public class GraphicsAWT implements Graphics {
+public class Gfx2DSwing implements Gfx2D {
 	private final Graphics2D engine;
-	private final Scene scene;
+	private final Scene2D scene;
 	private final Bounds pixBds;
 	private Bounds datBds;
 	
-	public GraphicsAWT(Graphics2D engine, Scene scene) {
+	public Gfx2DSwing(Graphics2D engine, Scene2D scene) {
 		this.engine = engine;
 		this.scene = scene;
 		datBds = pixBds = scene.pixelBounds();
 	}
-	
-	public Object engine() {
-		return engine;
-	}
 
-	public Scene scene() {
+	public Scene2D scene() {
 		return scene;
 	}
 
@@ -104,16 +100,14 @@ public class GraphicsAWT implements Graphics {
 		engine.drawString(str, transX(x), transY(y));
 	}
 
-	public static JComponent createComponent(final Scene scene) {
+	public static JComponent createComponent(final Scene2D scene) {
 		final JComponent component = new JComponent() {
 			private static final long serialVersionUID = 1L;
 			public void paintComponent(java.awt.Graphics engine) {
-				Graphics g = new GraphicsAWT((Graphics2D)engine, scene);
+				Gfx2D g = new Gfx2DSwing((Graphics2D)engine, scene);
 				g.setColor(Color.WHITE);
 				g.fillRect(0, 0, getWidth(), getHeight());
-				g.projectOrtho2D(scene.dataBounds());
-				for (Drawable d : scene.allDrawables())
-					d.draw(g);
+				scene.drawAll(g);
 			}
 		};
 		component.setPreferredSize(new Dimension(300, 300));

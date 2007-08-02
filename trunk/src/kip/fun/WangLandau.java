@@ -1,7 +1,7 @@
 package kip.fun;
 
 import scikit.jobs.*;
-import scikit.graphics.*;
+import scikit.graphics.dim2.Plot;
 import scikit.dataset.*;
 import java.awt.Color;
 

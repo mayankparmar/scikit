@@ -1,6 +1,7 @@
-package scikit.graphics;
+package scikit.graphics.dim2;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -9,10 +10,12 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import scikit.graphics.Drawable;
+import scikit.graphics.Scene;
 import scikit.util.*;
 
 
-public class Scene2D extends Scene {	
+public class Scene2D extends Scene<Gfx2D> {	
 	// is the mouse selection active?
 	protected boolean _selectionActive = false;
 	protected Point _selectionStart = new Point(), _selectionEnd = new Point();
@@ -21,7 +24,7 @@ public class Scene2D extends Scene {
 	public Scene2D() {
 		super();
 		_component.addMouseListener(_mouseListener);
-		_component.addMouseMotionListener(_mouseMotionListener);		
+		_component.addMouseMotionListener(_mouseMotionListener);
 	}
 	
 	public Scene2D(String title) {
@@ -29,9 +32,30 @@ public class Scene2D extends Scene {
 		scikit.util.Utilities.frame(_component, title);
 	}
 	
-	protected List<Drawable> allDrawables() {
-		List<Drawable> ds = new ArrayList<Drawable>();
-		ds.addAll(super.allDrawables());
+	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
+	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
+	// we could get an uncatchable NoClassDefFoundError.
+	protected Component createComponent() {
+		try {
+			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
+			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
+				c = Class.forName("scikit.graphics.dim2.Gfx2DGL");
+				return (Component)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
+			}
+		}
+		catch (Exception e) {}
+		return Gfx2DSwing.createComponent(this);				
+	}
+	
+	protected void drawAll(Gfx2D g) {
+		g.projectOrtho2D(dataBounds());
+		for (Drawable<Gfx2D> d : getAllDrawables())
+			d.draw(g);
+	}
+	 
+	protected List<Drawable<Gfx2D>> getAllDrawables() {
+		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
+		ds.addAll(super.getAllDrawables());
 		ds.add(_selectionGraphics);
 		return ds;
 	}
@@ -106,8 +130,8 @@ public class Scene2D extends Scene {
 		}
 	};
 	
-	private Drawable _selectionGraphics = new Drawable() {
-		public void draw(Graphics g) {
+	private Drawable<Gfx2D> _selectionGraphics = new Drawable<Gfx2D>() {
+		public void draw(Gfx2D g) {
 			if (_selectionActive) {
 				g.projectOrtho2D(g.scene().pixelBounds());
 				

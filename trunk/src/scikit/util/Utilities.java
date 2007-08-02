@@ -2,7 +2,8 @@ package scikit.util;
 
 import static java.lang.Math.abs;
 import java.text.DecimalFormat;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class Utilities {
@@ -10,10 +11,6 @@ public class Utilities {
 	static DecimalFormat df2 = new DecimalFormat("0.#######E0");
 	static public String format(double x) {
 		return (abs(x) > 0.0001 && abs(x) < 10000 || x == 0 ? df1 : df2).format(x);
-	}
-	
-	public static double sqr(double x) {
-		return x*x;
 	}
 	
 	public static double periodicOffset(double L, double dx) {
@@ -36,6 +33,23 @@ public class Utilities {
 		return ret;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> asList(T o1) {
+		return Arrays.asList(o1);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> asList(T o1, T o2) {
+		return Arrays.asList(o1, o2);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> asList(T o1, T o2, T o3) {
+		return Arrays.asList(o1, o2, o3);
+	}
+	
+	
+	/*
 	public static int[] toArray(Collection<Integer> c) {
 		Integer a[] = c.toArray(new Integer[0]);
 		int[] ret = new int[a.length];
@@ -43,6 +57,7 @@ public class Utilities {
 			ret[i] = a[i];
 		return ret;
 	}
+	*/
 	
 	// utility method for quickly viewing data.
 	private static scikit.plot.Plot debugPlot;

@@ -8,7 +8,7 @@ import kip.md.Particle;
 import kip.md.ParticleContext;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
-import scikit.graphics.Plot;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;

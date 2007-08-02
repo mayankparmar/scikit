@@ -1,13 +1,12 @@
-package scikit.graphics;
+package scikit.graphics.dim2;
 
 import java.awt.Color;
 
 import scikit.util.Bounds;
 
 
-public interface Graphics {
-	public Object engine();
-	public Scene scene();
+public interface Gfx2D {
+	public Scene2D scene();
 	public void projectOrtho2D(Bounds bds);
 	public void setColor(Color color);
 	public void drawPoint(double x, double y);

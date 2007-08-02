@@ -1,6 +1,10 @@
 package scikit.jobs;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 
 public class Job {
@@ -185,26 +189,48 @@ public class Job {
 		return current;
 	}
 	
+	private String detailedErrorMessage(Exception e) {
+		StringWriter stringWriter = new StringWriter();
+	    PrintWriter printWriter = new PrintWriter(stringWriter);
+	    e.printStackTrace(printWriter);
+	    return stringWriter.getBuffer().toString();
+	}
+	
 	private void createThread() {
 		assert (thread == null);
 		thread = new Thread(new Runnable() {
+			String errMsg = null;
 			public void run() {
 				try {
 					// registering causes the GUI thread to wait during simulation execution
 					coop.register();
-					// perform the simulation, periodically yielding to the GUI thread 
+					// perform the simulation, periodically yielding to the GUI thread. if
+					// the simulation is externally killed a thread death error will be
+					// thrown.
 					sim.run();
-					// when simulation has finished, yield control to the GUI thread, 
-					// and animate when the GUI thread requests it
+					// simulation has finished. "pass" to yield control to the GUI thread.
+					// if the GUI thread returns control, then perform an animation, and again
+					// "pass".
 					while (true) {
 						coop.pass();
 						Job.animate();
 					}
 				}
+				catch (Exception e) {
+					errMsg = detailedErrorMessage(e);
+				}
 				finally {
+					// we could reach here due to a bug in the simulation (an Exception)
+					// or because the user killed the job (ThreadDeath error). in either case,
+					// we must now return the Job to its initial state.
 					clearDisplays();
 					coop.unregister();
 					thread = null;
+					// display possible execution exception in full detail for debugging
+					if (errMsg != null) {
+						System.out.println(errMsg);
+						JOptionPane.showMessageDialog(null, errMsg, "Error Occurred in Simulation", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		});
