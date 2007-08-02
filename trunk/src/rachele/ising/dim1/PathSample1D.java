@@ -25,6 +25,7 @@ public class PathSample1D {
 	double [] phiBar, rightExp, rightExpBar, parRightExp1, parRightExp2, parRightExp3;
 	double DENSITY;
 	public double L, R, T, J, dx, H, du;
+	public double adjust1, adjust2;
 	public double u = 0.0;
 	boolean sampleNoise;
 
@@ -67,8 +68,8 @@ public class PathSample1D {
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);
 
-		double density_i = -0.5;
-		double density_f = 0.5;
+		double density_i = params.fget("init denisty");
+		double density_f = params.fget("fin density");
 		double delta_density = (density_f - density_i)/t_f;
 
 
@@ -76,20 +77,21 @@ public class PathSample1D {
 		//must have proper dimensions of phi array
 		//readInputPath();
 
-
+		if(params.sget("Init Step").equals("Off")){
 		//uncomment these lines for  constant slope
 		for (int i = 0; i < Lp; i++){
 			for (int j = 0; j <= t_f; j ++)
 				phi [j][i] = j*delta_density+density_i;
 		}
-
+		}else{
 		//uncomment these lines for flat, jump, flat
-//		for (int i = 0; i < Lp; i ++){
-//		for (int j = 0; j < t_f/2; j ++ )
-//		phi[j][i] = density_i;
-//		for (int j = t_f/2; j <= t_f; j ++)
-//		phi[j][i] = density_f;
-//		}
+		for (int i = 0; i < Lp; i ++){
+		for (int j = 0; j < t_f/2; j ++ )
+		phi[j][i] = density_i;
+		for (int j = t_f/2; j <= t_f; j ++)
+		phi[j][i] = density_f;
+		}
+		}
 
 
 	}
@@ -142,6 +144,8 @@ public class PathSample1D {
 			sampleNoise = true;
 		else
 			sampleNoise = false;
+		adjust1 = params.fget("adjust term1");
+		adjust2 = params.fget("adjust term2");
 	}
 
 	void convolveWithRange(double[] src, double[] dest, double R) {
@@ -204,14 +208,14 @@ public class PathSample1D {
 		convolveWithRange(phi[time], phiBar, R);
 		for (int i = 0; i < Lp; i++){
 			double dPhi_dt = firstPhiDeriv(time, i);
-			rightExp[i] = dPhi_dt + phiBar[i] + T*atanh(phi[time][i]) - H;	
+			rightExp[i] = dPhi_dt + phiBar[i];// + T*atanh(phi[time][i]) - H;	
 		}
 	}
 
 	public void calcParRightExp(int time, double [] parRightExp){
 		convolveWithRange(phi[time], phiBar, R);
 		for (int i = 0; i < Lp; i++){
-			parRightExp[i] = phiBar[i] + T*atanh(phi[time][i]) - H;	
+			parRightExp[i] = phiBar[i];// + T*atanh(phi[time][i]) - H;	
 		}
 	}
 
@@ -229,9 +233,11 @@ public class PathSample1D {
 			convolveWithRange(rightExp, rightExpBar, R);
 
 			for (int i = 0; i < Lp; i++){
-				double term1 = -(phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt) - (parRightExp3[i] - parRightExp1[i]) / (2*dt);
-				double term2 = rightExpBar[i];
-				double term3 = rightExp[i]*T/(1-sqr(phi[j][i]));
+				double d2phi_dt2 = (phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt);
+				double dparRight_dt = (parRightExp3[i] - parRightExp1[i]) / (2*dt);
+				double term1 = adjust1*(-d2phi_dt2 - dparRight_dt);
+				double term2 = adjust2*rightExpBar[i];
+				double term3 = 0;//rightExp[i]*T/(1-sqr(phi[j][i]));
 				delPhi[j][i] = -du*(term1 + term2 + term3 );
 				if(sampleNoise)
 					delPhi[j][i] += sqrt(2*du*T/(dx*dt))*random.nextGaussian();

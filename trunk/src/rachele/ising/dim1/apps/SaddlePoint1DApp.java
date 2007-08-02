@@ -4,8 +4,6 @@ import static java.lang.Math.floor;
 import static scikit.util.Utilities.format;
 import rachele.ising.dim1.PathSample1D;
 import rachele.ising.dim1.StructureFactor1D;
-//import scikit.dataset.PointSet;
-import scikit.dataset.PointSet;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -29,19 +27,24 @@ public class SaddlePoint1DApp extends Simulation{
 
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
+		params.addm("Init Step", new ChoiceValue("Off", "On"));
 		params.addm("T", 0.785);
 		params.addm("J", -1.0);
-		params.addm("dt", 0.3);
+		params.addm("dt", .1);
 		params.addm("R", 100000);
-		params.addm("H", -5);
+		params.addm("H", 0.0);
 		params.add("L/R", 8.0);
 		params.add("R/dx", 8.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
-		params.addm("du", 0.008);
-		params.add("Time Interval", 200);
+		params.addm("du", 0.001);
+		params.add("Time Interval", 50);
 		params.add("u");
+		params.add("init denisty", -0.5);
+		params.add("fin density", 0.5);
+		params.addm("adjust term1", 1);
+		params.addm("adjust term2", 1);
 	}
 	
 	public void animate() {
