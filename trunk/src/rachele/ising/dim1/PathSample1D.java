@@ -14,7 +14,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-//import scikit.dataset.Accumulator;
+import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 //import static kip.util.DoubleArray.*;
 
@@ -28,8 +28,9 @@ public class PathSample1D {
 	public double L, R, T, J, dx, H, du, S;
 	public double adjust1, adjust2;
 	public double u = 0.0;
+	public double timeToSlice, positionToSlice;
 	boolean sampleNoise;
-	//Accumulator action;
+	Accumulator action;
 	public static final double KR_SP = 4.4934102;
 
 	Random random = new Random();
@@ -40,8 +41,6 @@ public class PathSample1D {
 
 	public PathSample1D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
-		//action = new Accumulator(.1);
-		//action.setAveraging(true);
 		
 		R = params.fget("R");
 		L = R*params.fget("L/R");
@@ -67,7 +66,9 @@ public class PathSample1D {
 			sampleNoise = true;
 		else
 			sampleNoise = false;
-
+		action = new Accumulator(10.0*du);
+		action.setAveraging(true);
+		
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);
 
@@ -149,6 +150,8 @@ public class PathSample1D {
 			sampleNoise = false;
 		adjust1 = params.fget("adjust term1");
 		adjust2 = params.fget("adjust term2");
+		timeToSlice = params.fget("Time to slice");
+		positionToSlice = params.fget("Position to slice");
 	}
 
 	void convolveWithRange(double[] src, double[] dest, double R) {
@@ -178,9 +181,9 @@ public class PathSample1D {
 		}
 	}
 
-//	public Accumulator getAccumulator() {
-//		return action;
-//	}
+	public Accumulator getAccumulator() {
+		return action;
+	}
 
 	public double[] copyField() {
 		double ret[] = new double[Lp*(t_f+1)];
@@ -192,23 +195,26 @@ public class PathSample1D {
 	}
 
 	public PointSet getSpaceSlice(){
+		int i = (int) (positionToSlice * Lp);
 		double slice[] = new double[t_f+1];
 		for (int j = 0; j < t_f+1; j++) {
-			slice[j] = phi[j][Lp/2];
+			slice[j] = phi[j][i];
 		}
 		return new PointSet(0, dt, slice);
 	}
 
 	public PointSet getTimeSlice(){
+		int j = (int) (timeToSlice * t_f);
 		double slice[] = new double[Lp];
 		for (int i = 0; i < Lp; i++) {
-			slice[i] = phi[t_f/2][i];
+			slice[i] = phi[j][i];
 		}
 		return new PointSet(0, dx, slice);
 	}
 
 	public double firstPhiDeriv(int time, int i){
-		return (phi[time+1][i] - phi[time-1][i])/(2*dt);
+		//return (phi[time+1][i] - phi[time-1][i])/(2*dt);
+		return (phi[time+1][i] - phi[time][i])/(dt);
 	}
 
 	public void calcRightExp(int time, double [] rightExp){
@@ -242,9 +248,10 @@ public class PathSample1D {
 
 			for (int i = 0; i < Lp; i++){
 				double d2phi_dt2 = (phi[j+1][i]-2*phi[j][i]+phi[j-1][i])/sqr(dt);
-				double dparRight_dt = (parRightExp3[i] - parRightExp1[i]) / (2*dt);
+				//double dparRight_dt = (parRightExp3[i] - parRightExp1[i]) / (2*dt);
+				double dparRight_dt = (parRightExp2[i] - parRightExp1[i]) / (dt);
 				double term1 = adjust1*(-d2phi_dt2 - dparRight_dt);
-				double term2 = -adjust2*rightExpBar[i];
+				double term2 = adjust2*rightExpBar[i];
 				double term3 = rightExp[i]*T/(1-sqr(phi[j][i]));
 				delPhi[j][i] = -du*(term1 + term2 + term3 );
 				if(sampleNoise)
@@ -266,7 +273,7 @@ public class PathSample1D {
 		}
 		S /= (Lp*(t_f-1));
 		//System.out.println(u + " " + S);
-		//action.accum(u,S);
+		action.accum(u,S);
 		u += du;
 	}
 }
