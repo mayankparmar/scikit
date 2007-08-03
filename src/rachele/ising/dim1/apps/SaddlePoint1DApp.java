@@ -8,6 +8,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 import scikit.plot.Plot;
 import scikit.plot.FieldDisplay;
 
@@ -17,7 +18,7 @@ public class SaddlePoint1DApp extends Simulation{
     //Plot SFPlot = new Plot("Structure factor", true);
 	Plot timeSlice = new Plot("Configuration at t_f/2", true);
 	Plot spaceSlice = new Plot("Path at Lp/2", true);
-    //Plot actionPlot = new Plot("Action", true);
+    Plot actionPlot = new Plot("Action", true);
 	PathSample1D sim;
     StructureFactor1D sf;
 	
@@ -29,9 +30,11 @@ public class SaddlePoint1DApp extends Simulation{
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
 		params.addm("Init Step", new ChoiceValue("Off", "On"));
+		params.addm("Time to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
+		params.addm("Position to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("T", 0.785);
 		params.addm("J", -1.0);
-		params.addm("dt", .1);
+		params.addm("dt", 0.1);
 		params.addm("R", 100000);
 		params.addm("H", 0.0);
 		params.add("L/R", 8.0);
@@ -39,12 +42,12 @@ public class SaddlePoint1DApp extends Simulation{
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Density", -0.3);
-		params.addm("du", 0.001);
-		params.add("Time Interval", 50);
+		params.addm("du", 0.004);
+		params.add("Time Interval", 300);
 		params.add("u");
 		params.add("action");
-		params.add("init denisty", -0.5);
-		params.add("fin density", 0.5);
+		params.add("init denisty", -0.73);
+		params.add("fin density", 0.73);
 		params.addm("adjust term1", 1);
 		params.addm("adjust term2", 1);
 	}
@@ -55,7 +58,7 @@ public class SaddlePoint1DApp extends Simulation{
 		
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
-		//actionPlot.setDataSet(0, sim.getAccumulator());
+		actionPlot.setDataSet(0, sim.getAccumulator());
 		grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		sim.readParams(params);
 		
@@ -77,14 +80,12 @@ public class SaddlePoint1DApp extends Simulation{
 		Job.addDisplay(grid);
 		Job.addDisplay(timeSlice);
 		Job.addDisplay(spaceSlice);
-		//Job.addDisplay(actionPlot);
+		Job.addDisplay(actionPlot);
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
-		//actionPlot.setDataSet(0, sim.getAccumulator());
+		actionPlot.setDataSet(0, sim.getAccumulator());
         grid.setData(sim.Lp, sim.t_f, sim.copyField());
-		//fieldPlot.setYRange(-1, 1);
-		//Job.addDisplay(fieldPlot);
-		//Job.addDisplay(SFPlot);
+        //Job.addDisplay(SFPlot);
 		//sf.getAccumulator().clear();
 		
 		while (true) {
@@ -93,7 +94,6 @@ public class SaddlePoint1DApp extends Simulation{
 			//avStructH.accum(structure.getAccumulatorH());
 			Job.animate();
 			//SFPlot.setDataSet(0, sf.getAccumulator());
-			//fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.phi));
 		}
 	}
 	
