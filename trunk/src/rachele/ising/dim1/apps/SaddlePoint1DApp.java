@@ -17,6 +17,7 @@ public class SaddlePoint1DApp extends Simulation{
     //Plot SFPlot = new Plot("Structure factor", true);
 	Plot timeSlice = new Plot("Configuration at t_f/2", true);
 	Plot spaceSlice = new Plot("Path at Lp/2", true);
+    Plot actionPlot = new Plot("Action", true);
 	PathSample1D sim;
     StructureFactor1D sf;
 	
@@ -52,7 +53,8 @@ public class SaddlePoint1DApp extends Simulation{
 		
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
-        grid.setData(sim.Lp, sim.t_f, sim.copyField());
+		actionPlot.setDataSet(0, sim.getAccumulator());
+		grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		sim.readParams(params);
 		
 		//SFPlot.setDataSet(0, sf.getAccumulator());
@@ -73,8 +75,10 @@ public class SaddlePoint1DApp extends Simulation{
 		Job.addDisplay(grid);
 		Job.addDisplay(timeSlice);
 		Job.addDisplay(spaceSlice);
+		Job.addDisplay(actionPlot);
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
+		actionPlot.setDataSet(0, sim.getAccumulator());
         grid.setData(sim.Lp, sim.t_f, sim.copyField());
 		//fieldPlot.setYRange(-1, 1);
 		//Job.addDisplay(fieldPlot);

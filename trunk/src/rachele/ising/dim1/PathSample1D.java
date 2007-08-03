@@ -14,6 +14,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
+import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 //import static kip.util.DoubleArray.*;
 
@@ -28,7 +29,7 @@ public class PathSample1D {
 	public double adjust1, adjust2;
 	public double u = 0.0;
 	boolean sampleNoise;
-
+	Accumulator action;
 	public static final double KR_SP = 4.4934102;
 
 	Random random = new Random();
@@ -39,7 +40,9 @@ public class PathSample1D {
 
 	public PathSample1D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
-
+		action = new Accumulator(.1);
+		action.setAveraging(true);
+		
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
@@ -175,6 +178,10 @@ public class PathSample1D {
 		}
 	}
 
+	public Accumulator getAccumulator() {
+		return action;
+	}
+
 	public double[] copyField() {
 		double ret[] = new double[Lp*(t_f+1)];
 		for (int j = 0; j <= t_f; j++){
@@ -220,6 +227,7 @@ public class PathSample1D {
 	}
 
 	public void simulate() {
+				
 		calcParRightExp(0, parRightExp2);
 		calcParRightExp(1, parRightExp3);
 		for (int j = 1; j < t_f; j++){
@@ -237,7 +245,7 @@ public class PathSample1D {
 				double dparRight_dt = (parRightExp3[i] - parRightExp1[i]) / (2*dt);
 				double term1 = adjust1*(-d2phi_dt2 - dparRight_dt);
 				double term2 = adjust2*rightExpBar[i];
-				double term3 = 0;//rightExp[i]*T/(1-sqr(phi[j][i]));
+				double term3 = rightExp[i]*T/(1-sqr(phi[j][i]));
 				delPhi[j][i] = -du*(term1 + term2 + term3 );
 				if(sampleNoise)
 					delPhi[j][i] += sqrt(2*du*T/(dx*dt))*random.nextGaussian();
@@ -248,6 +256,17 @@ public class PathSample1D {
 				phi[j][i] += delPhi[j][i];
 			}
 		}
+		//measure the action
+		double S = 0;
+		for (int j = 1; j < t_f; j ++){
+			calcRightExp(j, rightExp);
+			for (int i = 0; i < Lp; i ++){
+				S += sqr(rightExp[i])/2;				
+			}
+		}
+		S /= (Lp*t_f);
+		//System.out.println(u + " " + S);
+		action.accum(u,S);
 		u += du;
 	}
 }
