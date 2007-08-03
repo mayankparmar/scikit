@@ -42,6 +42,7 @@ public class IsingField1DApp extends Simulation{
 		params.add("Time");
 		params.add("DENSITY");
 		params.add("Lp");
+		params.add("F");
 
 //Default Parameters for clumps
 //		params.addm("Zoom", new ChoiceValue("B", "A"));
@@ -57,12 +58,14 @@ public class IsingField1DApp extends Simulation{
 //		params.add("Density", 0.0);
 //		params.add("Time");
 //		params.add("DENSITY");
-//		params.add("Lp");		
+//		params.add("Lp");	
+//		params.add("F");
 		
 	}
 	
 	public void animate() {
 		params.set("Time", format(ising.t));
+		params.set("F", format(ising.F));
 		ising.readParams(params);
 		
 		SFPlot.setDataSet(0, sf.getAccumulator());

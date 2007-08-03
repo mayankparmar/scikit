@@ -22,7 +22,7 @@ public class FieldIsing1D{
 	double [] phi_bar, del_phi;
 	boolean modelA;
 	
-	public double L, R, T, J, dx, H;
+	public double L, R, T, J, dx, H, F;
 	Random random = new Random();
 	
 	//public static final double DENSITY = -0;
@@ -141,6 +141,12 @@ public class FieldIsing1D{
 			for (int i = 0; i < Lp; i++) {
 				phi[i] += del_phi[i] - mu;	
 			}			
+		}
+		convolveWithRange(phi, phi_bar, R);
+		F = 0;
+		for (int i = 0; i < Lp; i++){
+			double S = -((1.0+phi[i])*log(1.0+phi[i])+(1.0-phi[i])*log(1.0-phi[i]))/2.0;
+			F += phi[i]*phi_bar[i]/2.0 - H*phi[i] - T*S;
 		}
 		t += dt;
 	}
