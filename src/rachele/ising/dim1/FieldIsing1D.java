@@ -18,12 +18,12 @@ import static kip.util.MathPlus.atanh;
 public class FieldIsing1D{
 	public int Lp;
 	public double dt, t;
-	public double[] phi;
+	public double[] phi, F;
 	double DENSITY;
 	double [] phi_bar, del_phi;
 	boolean modelA;
 	
-	public double L, R, T, J, dx, H, F;
+	public double L, R, T, J, dx, H;
 	Random random = new Random();
 	
 	//public static final double DENSITY = -0;
@@ -60,6 +60,7 @@ public class FieldIsing1D{
 		phi = new double[Lp];
 		phi_bar = new double[Lp];
 		del_phi = new double[Lp];
+		F = new double [Lp];
 		
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);
@@ -97,14 +98,15 @@ public class FieldIsing1D{
 	
 	public void measureFreeEng(){
 		convolveWithRange(phi, phi_bar, R);
-		double F = 0;
+		freeEnergyDensity = 0;
 		for (int i = 0; i < Lp; i ++){
 			double potential = (phi[i]*phi_bar[i])/2.0;
 			double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			F += potential - H*phi[i] - T*entropy; 
-			F /= (double)Lp;
-			freeEngAcc.accum(t, F);
+			F[i] = potential - H*phi[i] - T*entropy; 
+			freeEnergyDensity += F[i];
 		}
+		freeEnergyDensity /= (double)Lp;
+		freeEngAcc.accum(t, freeEnergyDensity);
 	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
@@ -161,12 +163,6 @@ public class FieldIsing1D{
 			for (int i = 0; i < Lp; i++) {
 				phi[i] += del_phi[i] - mu;	
 			}			
-		}
-		convolveWithRange(phi, phi_bar, R);
-		F = 0;
-		for (int i = 0; i < Lp; i++){
-			double S = -((1.0+phi[i])*log(1.0+phi[i])+(1.0-phi[i])*log(1.0-phi[i]))/2.0;
-			F += phi[i]*phi_bar[i]/2.0 - H*phi[i] - T*S;
 		}
 		measureFreeEng();
 		t += dt;

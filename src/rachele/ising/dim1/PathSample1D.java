@@ -23,7 +23,7 @@ public class PathSample1D {
 	public double dt, t;
 	public int t_f;
 	public double[][] phi, delPhi;
-	double [] phiBar, rightExp, rightExpBar, parRightExp1, parRightExp2, parRightExp3;
+	double [] phiBar, rightExp, rightExpBar, parRightExp1, parRightExp2, parRightExp3, F;
 	double DENSITY;
 	public double L, R, T, J, dx, H, du, S;
 	public double adjust1, adjust2;
@@ -64,6 +64,7 @@ public class PathSample1D {
 		parRightExp2 = new double [Lp];
 		parRightExp3 = new double [Lp];
 		rightExpBar = new double [Lp];
+		F = new double [t_f + 1];
 		if (params.sget("Sampling Noise").equals("On"))
 			sampleNoise = true;
 		else
@@ -277,9 +278,8 @@ public class PathSample1D {
 		action.accum(u,S);
 	}
 
-	public PointSet measureFreeEnergy(){
-		PointSet freeEnergy;
-		double F [] = new double [t_f + 1];
+	public void measureFreeEnergy(){
+
 		for(int j = 0; j <= t_f; j ++){
 			F[j] = 0;
 			convolveWithRange(phi[j], phiBar, R);
@@ -287,10 +287,13 @@ public class PathSample1D {
 				double potential = (phi[j][i]*phiBar[i])/2.0;
 				double entropy = -((1.0 + phi[j][i])*log(1.0 + phi[j][i]) +(1.0 - phi[j][i])*log(1.0 - phi[j][i]))/2.0;
 				F[j] += potential - H*phi[j][i] - T*entropy; 
-				F[j] /= (double)Lp;
 			}
+			F[j] /= (double)Lp;
 		}
-		freeEnergy = new PointSet(0, dt, F);
+	}
+	
+	public PointSet getFreeEnergy(){
+		PointSet freeEnergy = new PointSet(0, dt, F);
 		return freeEnergy;
 	}
 	
@@ -327,7 +330,7 @@ public class PathSample1D {
 		}
 		
 		measureAction();
-		//measureFreeEnergy();
+		measureFreeEnergy();
 		u += du;
 	}
 }

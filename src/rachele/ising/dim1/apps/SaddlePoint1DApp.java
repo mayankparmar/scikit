@@ -20,8 +20,8 @@ public class SaddlePoint1DApp extends Simulation{
 
 	FieldDisplay grid = new FieldDisplay("Time vs Coarse Grained Field", true);
     //Plot SFPlot = new Plot("Structure factor", true);
-	Plot timeSlice = new Plot("Configuration at t_f/2", true);
-	Plot spaceSlice = new Plot("Path at Lp/2", true);
+	Plot timeSlice = new Plot("Configuration at Time Slice", true);
+	Plot spaceSlice = new Plot("Path at Space Slice", true);
     Plot actionPlot = new Plot("Action", true);
     Plot freeEngPlot = new Plot("Free Energy", true);
 	PathSample1D sim;
@@ -65,7 +65,7 @@ public class SaddlePoint1DApp extends Simulation{
 		
 		sim.measureAction();
 
-		freeEngPlot.setDataSet(0, sim.measureFreeEnergy());
+		freeEngPlot.setDataSet(0, sim.getFreeEnergy());
 		timeSlice.setDataSet(0, sim.getTimeSlice());
 		spaceSlice.setDataSet(0, sim.getSpaceSlice());
 		actionPlot.setDataSet(0, sim.getAccumulator());
@@ -147,10 +147,11 @@ public class SaddlePoint1DApp extends Simulation{
 		Job.addDisplay(spaceSlice);
 		Job.addDisplay(actionPlot);
 		Job.addDisplay(freeEngPlot);
-		timeSlice.setDataSet(0, sim.getTimeSlice());
-		spaceSlice.setDataSet(0, sim.getSpaceSlice());
-		actionPlot.setDataSet(0, sim.getAccumulator());
-        grid.setData(sim.Lp, sim.t_f, sim.copyField());
+		//timeSlice.setDataSet(0, sim.getTimeSlice());
+		//spaceSlice.setDataSet(0, sim.getSpaceSlice());
+		//actionPlot.setDataSet(0, sim.getAccumulator());
+        //grid.setData(sim.Lp, sim.t_f, sim.copyField());
+		//freeEngPlot.setDataSet(0, sim.getFreeEnergy());
         //Job.addDisplay(SFPlot);
 		//sf.getAccumulator().clear();
 		
