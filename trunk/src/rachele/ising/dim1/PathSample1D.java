@@ -10,7 +10,7 @@ import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import scikit.params.Parameters;
 import static java.lang.Math.PI;
-//import static java.lang.Math.log;
+import static java.lang.Math.log;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
@@ -41,19 +41,21 @@ public class PathSample1D {
 
 	public PathSample1D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
-		
+			
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		du = params.fget("du");
-		DENSITY = params.fget("Density");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		du = params.fget("du");
+		params.set("Lp", Lp);
 		dx = L / Lp;
 		double RoverDx = R/dx;
 		params.set("R/dx", RoverDx);
-		t_f = params.iget("Time Interval");
+		t_f = (int)(params.fget("Time Interval")/dt);
+		params.set("Time Allocation", t_f);
+		params.set("Time Interval", t_f*dt);
 		phi = new double [t_f+1][Lp];
 		delPhi = new double [t_f+1][Lp];
 		phiBar = new double [Lp];
@@ -68,66 +70,97 @@ public class PathSample1D {
 			sampleNoise = false;
 		action = new Accumulator(10.0*du);
 		action.setAveraging(true);
-		
+
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);
 
 		double density_i = params.fget("init denisty");
 		double density_f = params.fget("fin density");
-		double delta_density = (density_f - density_i)/t_f;
-
-
-		//read in initial conditions from file
-		//must have proper dimensions of phi array
-		//readInputPath();
-
-		if(params.sget("Init Step").equals("Off")){
-		//uncomment these lines for  constant slope
-		for (int i = 0; i < Lp; i++){
-			for (int j = 0; j <= t_f; j ++)
-				phi [j][i] = j*delta_density+density_i;
-		}
-		}else{
-		//uncomment these lines for flat, jump, flat
-		for (int i = 0; i < Lp; i ++){
-		for (int j = 0; j < t_f/2; j ++ )
-		phi[j][i] = density_i;
-		for (int j = t_f/2; j <= t_f; j ++)
-		phi[j][i] = density_f;
-		}
-		}
-
+		String initConditions= params.sget("Initial Conditions");
+		SetInitialConditions(initConditions, density_i, density_f);
+		
 
 	}
 
-	public void readInputPath(){
+	public void SetInitialConditions(String initConditions, double rho_i, double rho_f){
+
+		if(initConditions == "Constant Slope"){
+			//constant slope initial conditions
+			double delta_density = (rho_f - rho_i)/t_f;
+			for (int i = 0; i < Lp; i++){
+				for (int j = 0; j <= t_f; j ++)
+					phi [j][i] = j*delta_density+rho_i;
+			}
+		}else if(initConditions == "Step"){
+			//step initial conditions
+			for (int i = 0; i < Lp; i ++){
+				for (int j = 0; j < t_f/2; j ++ )
+					phi[j][i] = rho_i;
+				for (int j = t_f/2; j <= t_f; j ++)
+					phi[j][i] = rho_f;
+			}
+		}else if(initConditions == "Read In"){
+			//read in initial conditions from file
+			//must have proper dimensions of phi array
+			readInputPath();
+
+		}else if(initConditions == "Boundaries Only"){
+			//read in initial conditions from file
+			//must have proper dimensions of phi array
+			readBoundaries();
+		}		
+	}
+	
+	public void readBoundaries(){
 		try{
-			File myFile = new File("inputPath.txt");
-			FileInputStream fis = new FileInputStream(myFile);
-			DataInputStream dis = new DataInputStream(fis);
-			//FileReader fileReader = new FileReader(myFile);
-			//BufferedReader reader = new BufferedReader (fileReader);
-			//String line;
-			//String [] splitLine;
+			File myFile = new File("racheleDataFiles/inputPath");
+			DataInputStream dis = new DataInputStream(new FileInputStream(myFile));
 			int timeIndex, spaceIndex;
 			double phiValue;
-
-			//while((line = reader.readLine()) != null){
-			//	System.out.println(line);
-			//}
-			for(int i = 0; i < 10 ; i++){
-				//if((line = reader. readLine()) != null){
-				//splitLine = line.split(" ");
-				timeIndex = dis.readInt();
-				dis.readChar();       // throws out the tab
-				spaceIndex =dis.readInt();
-				dis.readChar();       // throws out the tab
-				phiValue = dis.readDouble();
-
-				System.out.println(timeIndex + " " + spaceIndex + " " + phiValue);
-				//}
+			try{
+				while(true){
+					timeIndex = dis.readInt();
+					dis.readChar();       // throws out the tab
+					spaceIndex =dis.readInt();
+					dis.readChar();       // throws out the tab
+					phiValue = dis.readDouble();
+					dis.readChar();
+					if(timeIndex == 0)
+						phi[timeIndex][spaceIndex] = phiValue;
+					if(timeIndex == t_f)
+						phi[timeIndex][spaceIndex] = phiValue;
+				}
+			} catch (EOFException e) {
 			}
 
+		} catch (FileNotFoundException e) {
+			System.err.println("FileStreamsTest: " + e);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}		
+	}
+	
+	public void readInputPath(){
+		try{
+			File myFile = new File("racheleDataFiles/inputPath");
+			DataInputStream dis = new DataInputStream(new FileInputStream(myFile));
+			int timeIndex, spaceIndex;
+			double phiValue;
+			try{
+				while(true){
+					timeIndex = dis.readInt();
+					dis.readChar();       // throws out the tab
+					spaceIndex =dis.readInt();
+					dis.readChar();       // throws out the tab
+					phiValue = dis.readDouble();
+					dis.readChar();
+					phi[timeIndex][spaceIndex] = phiValue;
+				}
+			} catch (EOFException e) {
+			}
+
+		} catch (FileNotFoundException e) {
+			System.err.println("FileStreamsTest: " + e);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -232,8 +265,37 @@ public class PathSample1D {
 		}
 	}
 
+	public void measureAction(){
+		S = 0;
+		for (int j = 1; j < t_f; j ++){
+			calcRightExp(j, rightExp);
+			for (int i = 0; i < Lp; i ++){
+				S += sqr(rightExp[i])/2;				
+			}
+		}
+		S /= (Lp*(t_f-1));
+		action.accum(u,S);
+	}
+
+	public PointSet measureFreeEnergy(){
+		PointSet freeEnergy;
+		double F [] = new double [t_f + 1];
+		for(int j = 0; j <= t_f; j ++){
+			F[j] = 0;
+			convolveWithRange(phi[j], phiBar, R);
+			for (int i = 0; i < Lp; i ++){
+				double potential = (phi[j][i]*phiBar[i])/2.0;
+				double entropy = -((1.0 + phi[j][i])*log(1.0 + phi[j][i]) +(1.0 - phi[j][i])*log(1.0 - phi[j][i]))/2.0;
+				F[j] += potential - H*phi[j][i] - T*entropy; 
+				F[j] /= (double)Lp;
+			}
+		}
+		freeEnergy = new PointSet(0, dt, F);
+		return freeEnergy;
+	}
+	
 	public void simulate() {
-				
+
 		calcParRightExp(0, parRightExp2);
 		calcParRightExp(1, parRightExp3);
 		for (int j = 1; j < t_f; j++){
@@ -263,17 +325,9 @@ public class PathSample1D {
 				phi[j][i] += delPhi[j][i];
 			}
 		}
-		//measure the action
-		S = 0;
-		for (int j = 1; j < t_f; j ++){
-			calcRightExp(j, rightExp);
-			for (int i = 0; i < Lp; i ++){
-				S += sqr(rightExp[i])/2;				
-			}
-		}
-		S /= (Lp*(t_f-1));
-		//System.out.println(u + " " + S);
-		action.accum(u,S);
+		
+		measureAction();
+		//measureFreeEnergy();
 		u += du;
 	}
 }
