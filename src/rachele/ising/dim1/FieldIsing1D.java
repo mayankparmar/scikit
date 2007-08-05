@@ -1,6 +1,7 @@
 package rachele.ising.dim1;
 
 import kip.util.Random;
+import scikit.dataset.Accumulator;
 import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import scikit.params.Parameters;
@@ -32,6 +33,8 @@ public class FieldIsing1D{
 	private double[] fftScratch;
 	public double freeEnergyDensity;
 	
+	Accumulator freeEngAcc;
+	
 	public FieldIsing1D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 		
@@ -60,6 +63,7 @@ public class FieldIsing1D{
 		
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);
+		freeEngAcc = new Accumulator(dt);
 		
 		for (int i = 0; i < Lp; i++)
 			phi[i] = DENSITY;
@@ -85,6 +89,22 @@ public class FieldIsing1D{
 	
 	public double time() {
 		return t;
+	}
+	
+	public Accumulator getFreeEngAcc() {
+		return freeEngAcc;
+	}
+	
+	public void measureFreeEng(){
+		convolveWithRange(phi, phi_bar, R);
+		double F = 0;
+		for (int i = 0; i < Lp; i ++){
+			double potential = (phi[i]*phi_bar[i])/2.0;
+			double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+			F += potential - H*phi[i] - T*entropy; 
+			F /= (double)Lp;
+			freeEngAcc.accum(t, F);
+		}
 	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
@@ -148,6 +168,7 @@ public class FieldIsing1D{
 			double S = -((1.0+phi[i])*log(1.0+phi[i])+(1.0-phi[i])*log(1.0-phi[i]))/2.0;
 			F += phi[i]*phi_bar[i]/2.0 - H*phi[i] - T*S;
 		}
+		measureFreeEng();
 		t += dt;
 	}
 }
