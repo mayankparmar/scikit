@@ -18,6 +18,7 @@ public class IsingField1DApp extends Simulation{
 
 	Plot fieldPlot = new Plot("Coarse Grained Field", true);
     Plot SFPlot = new Plot("Structure factor", true);
+    Plot freeEngPlot = new Plot("Free Energy", true);
     FieldIsing1D ising;
     StructureFactor1D sf;
     public int timeCount;
@@ -75,6 +76,7 @@ public class IsingField1DApp extends Simulation{
 		
 		SFPlot.setDataSet(0, sf.getAccumulator());
 		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
+		freeEngPlot.setDataSet(0, ising.getFreeEngAcc());
 		
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulator().clear();
@@ -153,8 +155,10 @@ public class IsingField1DApp extends Simulation{
 		fieldPlot.setYRange(-1, 1);
 		Job.addDisplay(fieldPlot);
 		Job.addDisplay(SFPlot);
+		Job.addDisplay(freeEngPlot);
 		SFPlot.setDataSet(0, sf.getAccumulator());
 		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
+		
 		
 		//sf.getAccumulator().clear();
 		timeCount = maxWriteCount +1;
