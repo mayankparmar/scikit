@@ -18,6 +18,7 @@ public class IsingField1DApp extends Simulation{
 
 	Plot fieldPlot = new Plot("Coarse Grained Field", true);
     Plot SFPlot = new Plot("Structure factor", true);
+    Plot freeEngDenPlot = new Plot("Free Energy Density", true);
     Plot freeEngPlot = new Plot("Free Energy", true);
     FieldIsing1D ising;
     StructureFactor1D sf;
@@ -71,12 +72,13 @@ public class IsingField1DApp extends Simulation{
 	
 	public void animate() {
 		params.set("Time", format(ising.t));
-		params.set("F", format(ising.F));
+		params.set("F", format(ising.freeEnergyDensity));
 		ising.readParams(params);
 		
 		SFPlot.setDataSet(0, sf.getAccumulator());
 		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
-		freeEngPlot.setDataSet(0, ising.getFreeEngAcc());
+		freeEngDenPlot.setDataSet(0, ising.getFreeEngAcc());
+		freeEngPlot.setDataSet(0, new PointSet(0, ising.dx, ising.F));
 		
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulator().clear();
@@ -156,6 +158,7 @@ public class IsingField1DApp extends Simulation{
 		Job.addDisplay(fieldPlot);
 		Job.addDisplay(SFPlot);
 		Job.addDisplay(freeEngPlot);
+		Job.addDisplay(freeEngDenPlot);
 		SFPlot.setDataSet(0, sf.getAccumulator());
 		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
 		
