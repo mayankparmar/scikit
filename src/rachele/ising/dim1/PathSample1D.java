@@ -323,6 +323,9 @@ public class PathSample1D {
 					delPhi[j][i] += sqrt(2*du*T/(dx*dt))*random.nextGaussian();
 			}
 		}	
+		//test line follows:
+		//for (int i = 0; i < Lp; i++)
+		//	phi[t_f][i] = phi[t_f-1][i];
 		for(int j = 1; j < t_f; j++){
 			for(int i = 0; i < Lp; i++){
 				phi[j][i] += delPhi[j][i];
