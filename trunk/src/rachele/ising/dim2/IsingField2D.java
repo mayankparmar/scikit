@@ -4,7 +4,7 @@ package rachele.ising.dim2;
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
-import static kip.util.DoubleArray.*;
+//import static kip.util.DoubleArray.*;
 import kip.util.Random;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
@@ -15,8 +15,6 @@ public class IsingField2D {
 	double dt, t;
 	public double[] phi;
 	double [] phi_bar, del_phi;
-	boolean[] onBoundary;
-	int elementsInsideBoundary;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
 	double[] fftScratch;
 	public static final double KR_SP = 5.13562230184068255630140;
@@ -54,8 +52,6 @@ public class IsingField2D {
 		phi = new double[Lp*Lp];
 		phi_bar = new double[Lp*Lp];
 		del_phi = new double[Lp*Lp];
-		onBoundary = new boolean[Lp*Lp];
-		elementsInsideBoundary = Lp*Lp;
 		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
@@ -87,9 +83,6 @@ public class IsingField2D {
 	
 	public void initializeFieldWithSeed() {
 		for (int i = 0; i < Lp*Lp; i++) {
-			if (onBoundary[i])
-				continue;
-			
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*(i/Lp - Lp/2);
 			double r = sqrt(x*x+y*y);
@@ -139,45 +132,11 @@ public class IsingField2D {
 	}
 	
 	
-	public void useFixedBoundaryConditions() {
-		int thickness = 4;
-		for (int i = 0; i < thickness; i++) {
-			int j = Lp-thickness+i;
-			for (int k = 0; k < Lp; k++) {
-				onBoundary[i*Lp+k] = onBoundary[j*Lp+k] = true;
-				onBoundary[k*Lp+i] = onBoundary[k*Lp+j] = true;
-			}
-		}
-		elementsInsideBoundary = Lp*Lp;
-		for (int i = 0; i < Lp*Lp; i++) {
-			if (onBoundary[i]) {
-				phi[i] = DENSITY;
-				elementsInsideBoundary--;
-			}
-		}
-	}
-	
-	
 	public double phiVariance() {
 		double var = 0;
 		for (int i = 0; i < Lp*Lp; i++)
 			var += sqr(phi[i]-DENSITY);
 		return var / (Lp*Lp);
-	}
-	
-	
-	public void scaleField(double scale) {
-		// phi will not be scaled above PHI_UB or below PHI_LB
-		double PHI_UB = 5;
-		double PHI_LB = 0.01;
-		double s1 = (PHI_UB-DENSITY)/(max(phi)-DENSITY+1e-10);
-		double s2 = (PHI_LB-DENSITY)/(min(phi)-DENSITY-1e-10);
-		rescaleClipped = scale > min(s1,s2);
-		if (rescaleClipped)
-			scale = min(s1,s2);
-		for (int i = 0; i < Lp*Lp; i++) {
-			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
-		}
 	}
 	
 	
@@ -189,18 +148,16 @@ public class IsingField2D {
 	double mean(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
 				sum += a[i];
-		return sum/elementsInsideBoundary; 
+		return sum/(Lp*Lp); 
 	}
 	
 	
 	double meanSquared(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
 				sum += a[i]*a[i];
-		return sum/elementsInsideBoundary;
+		return sum/(Lp*Lp);
 	}
 	
 	

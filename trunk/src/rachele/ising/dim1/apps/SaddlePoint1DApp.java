@@ -34,27 +34,27 @@ public class SaddlePoint1DApp extends Simulation{
 
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
-		params.addm("Initial Conditions", new ChoiceValue("Read In", "Boundaries Only", "Step", "Constant Slope"));
+		params.addm("Initial Conditions", new ChoiceValue("Artificial Droplett", "Read In", "Boundaries Only", "Step", "Constant Slope"));
 		params.addm("Time to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Position to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("du", 0.004);
-		params.addm("T", 0.785);
+		params.addm("T", 0.85);
 		params.addm("J", -1.0);
 		params.addm("H", 0.0);
 		params.addm("R", 100000.0);
 		params.add("L/R", 8.0);
-		params.add("R/dx", 8.0);
+		params.add("R/dx", 4.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		//params.add("Density", -0.3);
 		params.add("dt", 0.1);
-		params.add("Time Interval", 30.0);
+		params.add("Time Interval", 60.0);
 		params.add("Time Allocation");
 		params.add("Lp");
 		params.add("u");
 		params.add("action");
-		params.add("init denisty", -0.73);
-		params.add("fin density", 0.73);
+		params.add("init denisty", -0.63);
+		params.add("fin density", 0.63);
 		params.addm("adjust term1", 1);
 		params.addm("adjust term2", 1);
 	}

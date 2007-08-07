@@ -109,7 +109,19 @@ public class PathSample1D {
 			//read in initial conditions from file
 			//must have proper dimensions of phi array
 			readBoundaries();
-		}		
+			
+		}else if(initConditions == "Artificial Droplett"){
+			for (int i = 0; i < Lp; i ++){
+				phi[0][i] = rho_i;
+				phi[t_f][i] = rho_f;
+			}
+			for (int j = 1; j < t_f; j ++){
+				for (int i = 0; i < Lp/2; i++)
+					phi[j][i] = rho_i;
+				for (int i = Lp/2; i < Lp; i++)
+					phi[j][i] = rho_f;
+			} 
+		}
 	}
 	
 	public void readBoundaries(){

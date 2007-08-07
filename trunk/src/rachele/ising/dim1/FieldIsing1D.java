@@ -21,7 +21,7 @@ public class FieldIsing1D{
 	public double[] phi, F;
 	double DENSITY;
 	double [] phi_bar, del_phi;
-	boolean modelA;
+	boolean modelA, noise;
 	
 	public double L, R, T, J, dx, H;
 	Random random = new Random();
@@ -86,6 +86,10 @@ public class FieldIsing1D{
 		else
 			modelA = false;
 		params.set("DENSITY", mean(phi));
+		if (params.sget("Noise").equals("On"))
+			noise = true;
+		else
+			noise = false;		
 	}
 	
 	public double time() {
@@ -149,7 +153,9 @@ public class FieldIsing1D{
 		if (modelA){
 			for (int i = 0; i < Lp; i++) {
 				//del_phi[i] = - dt*( phi_bar[i]-H-T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0) + sqrt(dt*2*T/dx)*random.nextGaussian();
-				del_phi[i] = - dt*( phi_bar[i]-H + T*atanh(phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+				del_phi[i] = - dt*( phi_bar[i]-H + T*atanh(phi[i]));
+				if(noise)
+					del_phi[i] += sqrt(dt*2*T/dx)*random.nextGaussian();
 			}
 			//double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp; i++) {
@@ -157,7 +163,9 @@ public class FieldIsing1D{
 			}		
 		}else{
 			for (int i = 0; i < Lp; i++) {
-				del_phi[i] = - dt*( phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+				del_phi[i] = - dt*( phi_bar[i]-H-T*log(1.0-phi[i])+T*log(1.0+phi[i]));
+				if(noise)
+					del_phi[i] += sqrt(dt*2*T/dx)*random.nextGaussian();
 			}
 			double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp; i++) {
