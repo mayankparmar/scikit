@@ -220,10 +220,12 @@ public class Job {
 					errMsg = detailedErrorMessage(e);
 				}
 				finally {
+					System.out.println("finishing");
 					// we could reach here due to a bug in the simulation (an Exception)
 					// or because the user killed the job (ThreadDeath error). in either case,
 					// we must now return the Job to its initial state.
 					clearDisplays();
+					System.out.println("unregistering");
 					coop.unregister();
 					thread = null;
 					// display possible execution exception in full detail for debugging

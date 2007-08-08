@@ -6,6 +6,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 import static scikit.util.Utilities.format;
@@ -20,6 +21,8 @@ public class IsingLRStructApp extends Simulation {
 	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component", true);
 	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component", true);
 	Plot circleStructureDisplay = new Plot("Structure Factor - Circle Average", true);
+    //Plot hSlice = new Plot("Horizontal Slice", true);
+    //Plot vSlice = new Plot("Vertical Slice", true);
 
 	int dx;
 	StructureFactor structure;
@@ -28,6 +31,8 @@ public class IsingLRStructApp extends Simulation {
 	public IsingLRStructApp() {
 		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
 		params.addm("Scale colors", new ChoiceValue("False", "True"));
+		//params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
+		//params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.add("Random seed", 0);
 		params.add("L", 1<<8);
 		params.add("R", 1<<4);
@@ -60,6 +65,7 @@ public class IsingLRStructApp extends Simulation {
 		structureDisplayH.setDataSet(1, structure.getAccumulatorHA());
 		circleStructureDisplay.setDataSet(2, structure.getAccumulatorC());	
 		circleStructureDisplay.setDataSet(3, structure.getAccumulatorCA());	
+
 	
 		if (flags.contains("Clear S.F.")) {
 			structure.getAccumulatorCA().clear();

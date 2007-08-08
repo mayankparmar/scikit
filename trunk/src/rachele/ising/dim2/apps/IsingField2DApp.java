@@ -12,6 +12,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 
@@ -19,7 +20,8 @@ import scikit.plot.Plot;
 public class IsingField2DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Grid", true);
     Plot plot = new Plot("Structure factor", true);
-    Plot slice = new Plot("Slice", true);
+    Plot hSlice = new Plot("Horizontal Slice", true);
+    Plot vSlice = new Plot("Vertical Slice", true);
     StructureFactor sf;
     IsingField2D ising;
 
@@ -30,6 +32,9 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
+		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
+		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("T", 0.1);
 		params.addm("dt", 0.01);
 		params.addm("R", 1000);
@@ -40,6 +45,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("Random seed", 0);
 		params.add("Density", 0.0);
 		params.add("Time");
+		params.add("Mean Phi");
 	}
 	
 	public void animate() {
@@ -48,10 +54,13 @@ public class IsingField2DApp extends Simulation {
 			grid.setAutoScale();
 		else
 			grid.setScale(-1.0, 1.0);
-		slice.clear();
-        for (int i=0; i<ising.Lp; i++){
-        	slice.append(0, i, ising.phi[i]);
-        }
+		hSlice.clear();
+		vSlice.clear();
+		hSlice.setDataSet(0, ising.getHslice());
+		vSlice.setDataSet(0, ising.getVslice());
+		//for (int i=0; i<ising.Lp; i++){
+        //	slice.append(0, i, ising.phi[i]);
+        //}
 		//grid.setData(ising.numColumns(), ising.numColumns(), ising.coarseGrained());
 	}
 	
@@ -75,10 +84,12 @@ public class IsingField2DApp extends Simulation {
         //});
         Job.addDisplay(grid);
         Job.addDisplay(plot);
-        Job.addDisplay(slice);
+        Job.addDisplay(hSlice);
+        Job.addDisplay(vSlice);
         boolean equilibrating = true;
         while (true) {
 			params.set("Time", ising.time());
+			params.set("Mean Phi", ising.mean(ising.phi));
 			ising.simulate();
 			if (equilibrating && ising.time() >= .5) {
 			equilibrating = false;

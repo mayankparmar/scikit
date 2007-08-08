@@ -124,6 +124,27 @@ public class PathSample1D {
 		}
 	}
 	
+	public void readParams(Parameters params) {
+		T = params.fget("T");
+		J = params.fget("J");
+		R = params.fget("R");
+		L = R*params.fget("L/R");
+		H = params.fget("H");
+		dx = R/params.fget("R/dx");
+		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		dx = L / Lp;
+		params.set("R/dx", R/dx);
+		du = params.fget("du");
+		if (params.sget("Sampling Noise").equals("On"))
+			sampleNoise = true;
+		else
+			sampleNoise = false;
+		adjust1 = params.fget("adjust term1");
+		adjust2 = params.fget("adjust term2");
+		timeToSlice = params.fget("Time to slice");
+		positionToSlice = params.fget("Position to slice");
+	}
+	
 	public void readBoundaries(){
 		try{
 			File myFile = new File("racheleDataFiles/inputPath");
@@ -177,27 +198,6 @@ public class PathSample1D {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-	}
-
-	public void readParams(Parameters params) {
-		T = params.fget("T");
-		J = params.fget("J");
-		R = params.fget("R");
-		L = R*params.fget("L/R");
-		H = params.fget("H");
-		dx = R/params.fget("R/dx");
-		Lp = Integer.highestOneBit((int)rint((L/dx)));
-		dx = L / Lp;
-		params.set("R/dx", R/dx);
-		du = params.fget("du");
-		if (params.sget("Sampling Noise").equals("On"))
-			sampleNoise = true;
-		else
-			sampleNoise = false;
-		adjust1 = params.fget("adjust term1");
-		adjust2 = params.fget("adjust term2");
-		timeToSlice = params.fget("Time to slice");
-		positionToSlice = params.fget("Position to slice");
 	}
 
 	void convolveWithRange(double[] src, double[] dest, double R) {

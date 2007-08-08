@@ -18,7 +18,6 @@ public class IsingLR extends RewindableDynamics {
 	public double T, J, h;
 	public Random random = new Random();
 
-	
 	public IsingLR(Parameters params) {
 		L = Integer.highestOneBit(params.iget("L"));
 		params.set("L", L);
@@ -29,7 +28,6 @@ public class IsingLR extends RewindableDynamics {
 		random.setSeed(params.iget("Random seed"));
 		setParameters(params);
 	}
-	
 	
 	public void setParameters(Parameters params) {
 		String dyn = params.sget("Dynamics", "Ising Glauber");

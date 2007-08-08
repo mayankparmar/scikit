@@ -4,8 +4,8 @@ package rachele.ising.dim2;
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
-//import static kip.util.DoubleArray.*;
 import kip.util.Random;
+import scikit.dataset.PointSet;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
 
@@ -15,6 +15,8 @@ public class IsingField2D {
 	double dt, t;
 	public double[] phi;
 	double [] phi_bar, del_phi;
+	double horizontalSlice;
+	double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
 	double[] fftScratch;
 	public static final double KR_SP = 5.13562230184068255630140;
@@ -22,6 +24,7 @@ public class IsingField2D {
 	
 	boolean unstableDynamics = false;
 	boolean noiselessDynamics = false;
+	boolean circleInteraction = true;
 	public boolean rescaleClipped = false;
 	public double rms_dF_dphi;
 	public double freeEnergyDensity;
@@ -41,6 +44,16 @@ public class IsingField2D {
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
 		DENSITY = params.fget("Density");
+		
+		horizontalSlice = params.fget("Horizontal Slice");
+		verticalSlice = params.fget("Vertical Slice");
+		
+		if(params.sget("Interaction") == "Circle"){
+			circleInteraction = true;
+		}else{
+			circleInteraction = false;
+		}
+			
 		
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
@@ -78,6 +91,11 @@ public class IsingField2D {
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		params.set("R/dx", R/dx);
+		if(params.sget("Interaction") == "Circle"){
+			circleInteraction = true;
+		}else{
+			circleInteraction = false;
+		}
 	}
 	
 	
@@ -104,6 +122,7 @@ public class IsingField2D {
 	
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
+		double V;
 		for (int i = 0; i < Lp*Lp; i++) {
 			fftScratch[2*i] = src[i];
 			fftScratch[2*i+1] = 0;
@@ -112,9 +131,16 @@ public class IsingField2D {
 		fft.transform(fftScratch);
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
-				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
 				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				double V = (kR == 0 ? 1 : 2*j1(kR)/kR);
+				if(circleInteraction == true){
+					double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
+					V = (kR == 0 ? 1 : 2*j1(kR)/kR);
+				}else{
+					double k_xR = (2*PI*x/L)*R;
+					double k_yR =(2*PI*y/L)*R;
+					V = (k_xR == 0 ? 1 : sin(k_xR)/k_xR);
+					V *= (k_yR == 0 ? 1 : sin(k_yR)/k_yR);
+				}
 				fftScratch[2*i] *= V*J;
 				fftScratch[2*i+1] *= V*J;
 			}
@@ -145,7 +171,7 @@ public class IsingField2D {
 	}
 
 	
-	double mean(double[] a) {
+	public double mean(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp; i++)
 				sum += a[i];
@@ -165,13 +191,14 @@ public class IsingField2D {
 		convolveWithRange(phi, phi_bar, R);
 		
 		for (int i = 0; i < Lp*Lp; i++) {
-			del_phi[i] = - dt*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T/dx)*random.nextGaussian();
+			del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*random.nextGaussian();
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp*Lp; i++) {
 			phi[i] += del_phi[i] - mu;
 			//System.out.println("phi " + i + " = " + phi[i] + " " + ising.Lp);
 		}
+		System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
 		t += dt;
 	}
 	
@@ -201,4 +228,24 @@ public class IsingField2D {
 	public double time() {
 		return t;
 	}
+	
+	public PointSet getHslice(){
+		int y = (int) (horizontalSlice * Lp);
+		double slice[] = new double[Lp];
+		for (int x = 0; x < Lp; x++) {
+			slice[x] = phi[Lp*y + x];
+		}
+		return new PointSet(0, dx, slice);
+	}
+
+	public PointSet getVslice(){
+		int x = (int) (verticalSlice * Lp);
+		double slice[] = new double[Lp];
+		for (int y = 0; y < Lp; y++) {
+			slice[y] = phi[Lp*y + x];
+		}
+		return new PointSet(0, dx, slice);
+	}
+	
+
 }
