@@ -96,6 +96,8 @@ public class IsingField2D {
 		}else{
 			circleInteraction = false;
 		}
+		horizontalSlice = params.fget("Horizontal Slice");
+		verticalSlice = params.fget("Vertical Slice");
 	}
 	
 	
