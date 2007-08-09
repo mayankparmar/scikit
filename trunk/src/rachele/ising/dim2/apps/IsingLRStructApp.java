@@ -6,7 +6,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.params.DoubleValue;
+//import scikit.params.DoubleValue;
 import scikit.plot.FieldDisplay;
 import scikit.plot.Plot;
 import static scikit.util.Utilities.format;

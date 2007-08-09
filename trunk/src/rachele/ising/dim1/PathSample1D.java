@@ -116,9 +116,9 @@ public class PathSample1D {
 				phi[t_f][i] = rho_f;
 			}
 			for (int j = 1; j < t_f; j ++){
-				for (int i = 0; i < Lp/2; i++)
+				for (int i = 0; i < 3*Lp/4; i++)
 					phi[j][i] = rho_i;
-				for (int i = Lp/2; i < Lp; i++)
+				for (int i = 3*Lp/4; i < Lp; i++)
 					phi[j][i] = rho_f;
 			} 
 		}
