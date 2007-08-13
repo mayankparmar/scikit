@@ -4,16 +4,18 @@ import javax.swing.SwingUtilities;
 
 
 public class Cooperation {
-	private volatile boolean triggered = false;
+	private boolean triggered = false;
+	private int numThreadsRegistered = 0;
 	
 	/**
 	 * Schedules the GUI thread to call pass(). This signals the beginning of the
 	 * processing loop. The GUI thread will resume control upon completion of the
 	 * processing loop.
-	 * In the case that this event has already been triggered, does nothing.
+	 * In the case that this event has already been triggered, or there are no
+	 * current processing threads, this method does nothing.
 	 */
 	synchronized public void triggerProcessingLoop() {
-		if (!triggered) {
+		if (!triggered && numThreadsRegistered > 0) {
 			triggered = true;
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -30,8 +32,8 @@ public class Cooperation {
 	 * Adds this thread to the processing loop.
 	 */
 	synchronized public void register() {
-		// make sure that this thread is being run cooperatively with the GUI thread
-		// (the GUI thread should hang while this thread is being processing)
+		numThreadsRegistered++;
+		// force the GUI thread to hang while this thread is processing
 		triggerProcessingLoop();
 		pass();
 	}
@@ -40,6 +42,7 @@ public class Cooperation {
 	 * Removes this thread from the processing loop.
 	 */
 	synchronized public void unregister() {
+		numThreadsRegistered--;
 		notify();
 	}
 	
