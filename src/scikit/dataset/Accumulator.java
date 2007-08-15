@@ -92,7 +92,8 @@ public class Accumulator extends DataSet {
 	}
 	
 	private static double key(double x, double bw) {
-		return bw * rint(x/bw); // each binning cell is labeled by its center coordinate, key().
+		double k = bw * rint(x/bw); // each binning cell is labeled by its center coordinate, key().
+		return k == -0 ? +0 : k;    // +-0 have different representations.  choose +0. 
 	}
 	
 	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {

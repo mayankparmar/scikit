@@ -17,7 +17,7 @@ abstract public class Scene<T> {
 	protected Bounds _topBounds = new Bounds();
 	// is the view zoomed in?  this will disable autoscale
 	protected boolean _zoomed = false;
-	// should the view autoscale in and out?
+	// if false, bounds will zoom out to fit data; if true, will zoom both in and out
 	protected boolean _autoScale = false;
 	
 	public Scene() {
@@ -94,7 +94,7 @@ abstract public class Scene<T> {
 		Bounds bounds = new Bounds();
 		for (Drawable<T> d : getAllDrawables())
 			bounds = (Bounds)bounds.createUnion(d.getBounds());
-		
+
 		// extend bounds a little bit
 		double w = bounds.xmax - bounds.xmin;
 		double h = bounds.ymax - bounds.ymin;
