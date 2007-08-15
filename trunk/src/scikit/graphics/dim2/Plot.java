@@ -15,10 +15,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import scikit.dataset.DataSet;
-import scikit.dataset.Transformer;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
-import scikit.util.Point;
 
 
 public class Plot extends Scene2D {
@@ -168,39 +166,51 @@ class DatasetDw implements Drawable<Gfx2D> {
 		Bounds bounds = g.scene().dataBounds();
 		g.setColor(_color);
 
-		double pts[] = transformedData().copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
-
+		double pts[] = _data.copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
+		
 		for (int i = 0; i < pts.length; i += 2) {
+			if (_plot._logScaleX)
+				pts[i+0] = log10(pts[i+0]);
+			if (_plot._logScaleY)
+				pts[i+1] = log10(pts[i+1]);
+			
 			switch (_style) {
 			case MARKS:
-				g.drawPoint(pts[i], pts[i+1]);
+				g.drawPoint(pts[i+0], pts[i+1]);
 				break;
 			case LINES:
 				if (i >= 2)
-					g.drawLine(pts[i-2], pts[i-1], pts[i], pts[i+1]);
+					g.drawLine(pts[i-2], pts[i-1], pts[i+0], pts[i+1]);
 				break;
 			case BARS:
-				g.drawLine(pts[i], pts[i+1], pts[i], 0);
+				g.drawLine(pts[i+0], pts[i+1], pts[i+0], 0);
 				break;
 			}
 		}
 	}
-
-	private DataSet transformedData() {
-		return new Transformer(_data) {
-			public void transform(Point p) {
-				if (_plot._logScaleX) p.x = log10(p.x);
-				if (_plot._logScaleY) p.y = log10(p.y);
-			}
-		};
-	}
 	
 	public Bounds getBounds() {
-		double[] bds = transformedData().getBounds();
+		double inf= Double.POSITIVE_INFINITY;
+		double[] bds = _data.getBounds();
+		
+		// convert bounds to log scale if necessary.  the bounds (xmin = +inf, xmax = -inf)
+		// are shorthand for no bounds, and this must be preserved explicitly in the
+		// mapping
+		if (_plot._logScaleX) {
+			bds[0] = bds[0] == inf ? inf : log10(bds[0]);
+			bds[1] = bds[1] == -inf ? -inf : log10(bds[1]);
+		}
+		if (_plot._logScaleY) {
+			bds[2] = bds[2] == inf ? inf : log10(bds[2]);
+			bds[3] = bds[3] == -inf ? -inf : log10(bds[3]);
+		}
+		
 		if (_style == Style.BARS) {
 			bds[2] = min(bds[2], 0);
 			bds[3] = max(bds[3], 0);
 		}
+		if (_plot._logScaleY && _style == Style.BARS)
+			throw new IllegalArgumentException("Can't draw bars with vertical logscale.");
 		return new Bounds(bds[0], bds[1], bds[2], bds[3]);
 	}
 

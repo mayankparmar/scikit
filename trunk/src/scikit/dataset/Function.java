@@ -6,6 +6,14 @@ abstract public class Function extends DataSet {
 	double xmin, xmax, ymin, ymax;
 	int N = 1024;
 	
+	/** Creates a new function which has no bounds of its own. */
+	public Function() {
+		xmin = ymin = Double.POSITIVE_INFINITY;
+		xmax = ymax = Double.NEGATIVE_INFINITY;
+	}
+	
+	/** Creates a new function with given x-bounds. The y-bounds will be determined
+	 * at construction time by evaluating x values in the range provided. */
 	public Function(double _xmin, double _xmax) {
 		xmin = _xmin;
 		xmax = _xmax;
@@ -25,8 +33,6 @@ abstract public class Function extends DataSet {
 	}
 	
 	public double[] copyPartial(int N, double xmin, double xmax, double ymin, double ymax) {
-		xmin = max(xmin, this.xmin);
-		xmax = min(xmax, this.xmax);
 		double[] ret = new double[2*N];
 		for (int i = 0; i < N; i++) {
 			double x = (xmax - xmin) * i / (N-1) + xmin;

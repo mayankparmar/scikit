@@ -2,9 +2,14 @@ package kip.fun;
 
 
 import static java.lang.Math.*;
+
+import java.awt.Color;
+
 import scikit.params.DoubleValue;
 import scikit.params.IntValue;
-import scikit.plot.*;
+import scikit.graphics.dim2.Plot;
+import scikit.dataset.Accumulator;
+import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
@@ -15,10 +20,11 @@ public class PistonApp extends Simulation {
 	}
 	
 	double[] pistonLine = new double[2];
-	Plot particles = new Plot("Particles", true);
-	Plot enthalpy = new Plot("Enthalpy: U + PV", true);
-	Plot idealGas = new Plot("PV / NkT", true);
-	Histogram distrib = new Histogram("Velocity distribution", 0.1, true);
+	Plot particles = new Plot("Particles");
+	Plot enthalpy = new Plot("Enthalpy: U + PV");
+	Plot idealGas = new Plot("PV / NkT");
+	Plot distrib = new Plot("Velocity distribution"); // 0.01
+	Accumulator idealGasAcc, kineticAcc, workAcc, energyAcc;
 	
 	int N;			// number of particles
 	double T;		// kinetic energy
@@ -46,28 +52,35 @@ public class PistonApp extends Simulation {
 		pm  = params.fget("Piston mass");
 		pa	= params.fget("Piston acceleration");
 		dt	= params.fget("dt");
-		
+
 		pistonLine[0] = pistonLine[1] = px;
-		idealGas.append(0, t, force()*px / (N * kT()));
-		enthalpy.append(0, t, kineticEnergy());
-		enthalpy.append(1, t, force()*px);
-		enthalpy.append(2, t, kineticEnergy() + force()*px);
+		particles.registerPoints("Points", new PointSet(0, 1, x), Color.BLACK);
+		particles.registerLines("", new PointSet(-0.1, N-0.8, pistonLine), Color.BLUE);
 		
-		double dv = params.fget("Bin width");
-		double maxV = Double.NEGATIVE_INFINITY;
-		double minV = Double.POSITIVE_INFINITY;
-		distrib.clear();
-		distrib.setBinWidth(2, dv);
-		for (double vi : v) {
-			distrib.accum(2, vi);
-			maxV = max(maxV, vi);
-			minV = min(minV, vi);
-		}
-		for (double vi = minV; vi < maxV; vi += dv/4) {
-			distrib.append(0, vi, N*velocityProbability(vi, dv));
-		}
+		idealGas.registerLines("Ideal gas", idealGasAcc, Color.BLACK);
+		
+		enthalpy.registerLines("Kinetic", kineticAcc, Color.BLACK);
+		enthalpy.registerLines("Work", workAcc, Color.BLUE);
+		enthalpy.registerLines("Energy", energyAcc, Color.RED);
+		
+		Accumulator velocities = new Accumulator(params.fget("Bin width"));
+		velocities.setNormalizing(true);
+		for (double vi : v)
+			velocities.accum(vi);
+		distrib.registerBars("Velocity distribution", velocities, Color.RED);
+		distrib.registerLines("Gaussian distribution", new Function() {
+			public double eval(double v) {
+				return velocityProbability(v);
+			}
+		}, Color.BLACK);
 	}
 	
+	public void clear() {
+		particles.clear();
+		idealGas.clear();
+		enthalpy.clear();
+		distrib.clear();
+	}
 	
 	public void run() {		
 		N = params.iget("# of particles");
@@ -77,6 +90,16 @@ public class PistonApp extends Simulation {
 		pa	= params.fget("Piston acceleration");
 		dt	= params.fget("dt");
 		
+		double bw = 5000*dt;
+		idealGasAcc = new Accumulator(bw);
+		kineticAcc = new Accumulator(bw);
+		workAcc = new Accumulator(bw);
+		energyAcc = new Accumulator(bw);
+		idealGasAcc.setAveraging(true);
+		kineticAcc.setAveraging(true);
+		workAcc.setAveraging(true);
+		energyAcc.setAveraging(true);
+		
 		t = 0;
 		v = new double[N];
 		x = new double[N];
@@ -85,17 +108,14 @@ public class PistonApp extends Simulation {
 			v[i] = 0.001 * (2*random() - 1);
 		}
 		
-		particles.setStyle(0, Plot.Style.MARKS);
-		particles.setDataSet(0, new PointSet(0, 1, x));
-		particles.setDataSet(1, new PointSet(-0.1, N-0.8, pistonLine));
-		
-		Job.addDisplay(particles);
-		Job.addDisplay(enthalpy);
-		Job.addDisplay(idealGas);
-		Job.addDisplay(distrib);
-		
 		while (true) {
 			simulationStep();
+			
+			idealGasAcc.accum(t, force()*px / (N * kT()));
+			kineticAcc.accum(t, kineticEnergy());
+			workAcc.accum(t, force()*px);
+			energyAcc.accum(t, kineticEnergy() + force()*px);
+
 			Job.animate();
 		}
 	}
@@ -128,7 +148,6 @@ public class PistonApp extends Simulation {
 		t += dt;
 	}
 	
-	
 	// F = ma
 	private double force() {
 		return pa*pm;
@@ -146,11 +165,11 @@ public class PistonApp extends Simulation {
 		return sum/2;
 	}
 	
-	// Probability particle velocity lies within [v, v+dv]
+	// Probability density P particle velocity lies within [v, v+dv]
 	// Boltzmann velocity distribution: P*dv ~ e^(beta*m*v^2 / 2)
 	// Normalize by integral[P*dv, v=-inf..inf] = sqrt(2*pi / beta*m)
-	private double velocityProbability(double v, double dv) {
+	private double velocityProbability(double v) {
 		double beta = 1 / kT();
-		return dv*sqrt(beta*m/(2*PI))*exp(-beta*m*v*v/2);
+		return sqrt(beta*m/(2*PI))*exp(-beta*m*v*v/2);
 	}
 }
