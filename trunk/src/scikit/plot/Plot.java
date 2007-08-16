@@ -7,6 +7,7 @@ import javax.swing.JMenuItem;
 import scikit.dataset.DataSet;
 import scikit.dataset.DynamicArray;
 import scikit.jobs.Display;
+import scikit.util.Bounds;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -130,7 +131,8 @@ public class Plot extends EmptyPlot implements Display {
 		// grow bounds to include all data
 		for (DataSet dataSet : _dataSets) {
 			if (dataSet == null) continue;
-			double[] test = dataSet.getBounds();
+			Bounds bds = dataSet.getBounds();
+			double[] test = {bds.xmin, bds.xmax, bds.ymin, bds.ymax};
 			if (bounds == null)
 				bounds = test;
 			else

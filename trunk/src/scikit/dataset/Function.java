@@ -1,6 +1,7 @@
 package scikit.dataset;
 
 import static java.lang.Math.*;
+import scikit.util.Bounds;
 
 abstract public class Function extends DataSet {
 	double xmin, xmax, ymin, ymax;
@@ -14,6 +15,7 @@ abstract public class Function extends DataSet {
 	
 	/** Creates a new function with given x-bounds. The y-bounds will be determined
 	 * at construction time by evaluating x values in the range provided. */
+	// TODO remove
 	public Function(double _xmin, double _xmax) {
 		xmin = _xmin;
 		xmax = _xmax;
@@ -24,8 +26,8 @@ abstract public class Function extends DataSet {
         }
 	}
     
-    public double[] getBounds() {
-        return new double[] {xmin, xmax, ymin, ymax};
+    public Bounds getBounds() {
+        return new Bounds(xmin, xmax, ymin, ymax);
     }
     
 	public double[] copyData() {

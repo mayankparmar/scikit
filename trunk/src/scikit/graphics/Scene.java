@@ -81,7 +81,7 @@ abstract public class Scene<T> {
 	}
 	
 	public Bounds dataBounds() {
-		return _curBounds;
+		return _curBounds.clone();
 	}
 	
 	abstract protected void drawAll(T g);

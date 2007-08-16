@@ -163,10 +163,9 @@ class DatasetDw implements Drawable<Gfx2D> {
 	}		
 
 	public void draw(Gfx2D g) {
-		Bounds bounds = g.scene().dataBounds();
+		Bounds bds = expBounds(g.scene().dataBounds());
+		double pts[] = _data.copyPartial(1000, bds.xmin, bds.xmax, bds.ymin, bds.ymax);
 		g.setColor(_color);
-
-		double pts[] = _data.copyPartial(1000, bounds.xmin, bounds.xmax, bounds.ymin, bounds.ymax);
 		
 		for (int i = 0; i < pts.length; i += 2) {
 			if (_plot._logScaleX)
@@ -190,30 +189,16 @@ class DatasetDw implements Drawable<Gfx2D> {
 	}
 	
 	public Bounds getBounds() {
-		double inf= Double.POSITIVE_INFINITY;
-		double[] bds = _data.getBounds();
-		
-		// convert bounds to log scale if necessary.  the bounds (xmin = +inf, xmax = -inf)
-		// are shorthand for no bounds, and this must be preserved explicitly in the
-		// mapping
-		if (_plot._logScaleX) {
-			bds[0] = bds[0] == inf ? inf : log10(bds[0]);
-			bds[1] = bds[1] == -inf ? -inf : log10(bds[1]);
-		}
-		if (_plot._logScaleY) {
-			bds[2] = bds[2] == inf ? inf : log10(bds[2]);
-			bds[3] = bds[3] == -inf ? -inf : log10(bds[3]);
-		}
-		
+		Bounds bds = logBounds(_data.getBounds());
 		if (_style == Style.BARS) {
-			bds[2] = min(bds[2], 0);
-			bds[3] = max(bds[3], 0);
+			bds.ymin = min(bds.ymin, 0);
+			bds.ymax = max(bds.ymax, 0);
 		}
 		if (_plot._logScaleY && _style == Style.BARS)
 			throw new IllegalArgumentException("Can't draw bars with vertical logscale.");
-		return new Bounds(bds[0], bds[1], bds[2], bds[3]);
+		return bds;
 	}
-
+	
 	// implement a special form of equality: two "dataset drawables" are equal
 	// when their names are equal.
 	public boolean equals(Object data) {
@@ -221,6 +206,22 @@ class DatasetDw implements Drawable<Gfx2D> {
 			return _name.equals(((DatasetDw)data)._name);
 		else
 			return false;
+	}
+
+	private Bounds expBounds(Bounds in) {
+		double xmin = _plot._logScaleX ? pow(10, in.xmin) : in.xmin;
+		double xmax = _plot._logScaleX ? pow(10, in.xmax) : in.xmax;
+		double ymin = _plot._logScaleY ? pow(10, in.ymin) : in.ymin;
+		double ymax = _plot._logScaleY ? pow(10, in.ymax) : in.ymax;
+		return new Bounds(xmin, xmax, ymin, ymax);
+	}
+	
+	private Bounds logBounds(Bounds in) {
+		double xmin = _plot._logScaleX ? log10(max(in.xmin,0)) : in.xmin;
+		double xmax = _plot._logScaleX ? log10(max(in.xmax,0)) : in.xmax;
+		double ymin = _plot._logScaleY ? log10(max(in.ymin,0)) : in.ymin;
+		double ymax = _plot._logScaleY ? log10(max(in.ymax,0)) : in.ymax;
+		return new Bounds(xmin, xmax, ymin, ymax);		
 	}
 }
 
