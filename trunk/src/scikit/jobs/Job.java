@@ -40,7 +40,7 @@ public class Job {
 		if (thread == null)
 			createThread();
 		else
-			coop.triggerProcessingLoop();
+			wake();
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public class Job {
 		if (thread == null)
 			createThread();
 		else
-			coop.triggerProcessingLoop();
+			wake();
 	}
 	
 	/**
@@ -69,8 +69,7 @@ public class Job {
 	 */
 	public void kill() {
 		state = State.KILL;
-		if (thread != null)
-			coop.triggerProcessingLoop();
+		wake();
 	}
 	
 	/**
@@ -167,8 +166,13 @@ public class Job {
 			throw new IllegalThreadStateException("Job.yield() must be called from simulation thread.");
 		}
 		if (System.currentTimeMillis() - lastYield > yieldDelay) {
-			coop.triggerProcessingLoop();
-			coop.pass();
+			// give the GUI thread a chance to run.  an alternative to sleep(0) is the sequence
+			//    coop.triggerProcessingLoop();
+			//    coop.pass();
+			// but this exhibited bugs on the Linux and Windows platforms: certain operations
+			// (such as graphical window updates) do not get a chance to run. using sleep(0)
+			// seems to be a cross platform solution (with maybe a slight performance penalty).
+			coop.sleep(0);
 			lastYield = System.currentTimeMillis();
 		}
 	}
