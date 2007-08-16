@@ -36,6 +36,7 @@ public class IsingLRApp extends Simulation {
 	
 	public void animate() {
 		params.set("time", format(sim.time()));
+		//System.out.println("time " + sim.time());
 		params.set("magnetization", format(sim.magnetization()));
 		sim.setParameters(params);
 		
