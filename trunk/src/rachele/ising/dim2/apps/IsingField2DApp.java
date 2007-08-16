@@ -16,12 +16,16 @@ import scikit.plot.Plot;
 
 
 public class IsingField2DApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Grid", true);
+    FieldDisplay grid = new FieldDisplay("Phi(x)", true);
+    FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
 	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component", true);
 	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component", true);
 	Plot structureDisplayC = new Plot("Structure Factor - Circle Average", true);
+	Plot structurePeak = new Plot("Structure Peak vs Time", true);
+	Plot freeEnergy = new Plot("Free Energy Density", true);
+	Plot maxMinPlot = new Plot("Max Min Phi Values", true);
     StructureFactor sf;
     IsingField2D ising;
 
@@ -33,39 +37,57 @@ public class IsingField2DApp extends Simulation {
 	public IsingField2DApp() {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
+		params.addm("Noise", new ChoiceValue("On","Off"));
+		params.addm("Approx", new ChoiceValue("Exact", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("T", 0.1);
-		params.addm("dt", 0.01);
-		params.addm("R", 1000);
+		params.addm("dt", 0.1);
+		params.addm("R", 1000000);
 		params.add("L/R", 8.0);
-		params.add("R/dx", 16.0);
-		params.add("J", -10.0);
+		params.add("R/dx", 8.0);
+		params.add("J", -1.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Density", 0.0);
+		params.add("Magnetization", 0.0);
 		params.add("Time");
 		params.add("Mean Phi");
+		params.add("Lp");
 		
 		flags.add("Clear S.F.");
 	}
 	
 	public void animate() {
+		
 		ising.readParams(params);
+		
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
 		else
 			grid.setScale(-1.0, 1.0);
+
+		sfGrid.setAutoScale();
+				
 		hSlice.clear();
 		vSlice.clear();
+		
 		hSlice.setDataSet(0, ising.getHslice());
 		vSlice.setDataSet(0, ising.getVslice());
-        structureDisplayV.setDataSet(0, sf.getAccumulatorV());		
-        structureDisplayH.setDataSet(0, sf.getAccumulatorH());
-        structureDisplayC.setDataSet(0, sf.getAccumulatorC());
-        structureDisplayV.setDataSet(1, sf.getAccumulatorVA());
-        structureDisplayH.setDataSet(1, sf.getAccumulatorHA());
-        structureDisplayC.setDataSet(1, sf.getAccumulatorCA());
+        structureDisplayV.setDataSet(3, sf.getAccumulatorV());		
+        structureDisplayH.setDataSet(4, sf.getAccumulatorH());
+        structureDisplayC.setDataSet(5, sf.getAccumulatorC());
+        structureDisplayV.setDataSet(0, sf.getAccumulatorVA());
+        structureDisplayH.setDataSet(0, sf.getAccumulatorHA());
+        structureDisplayC.setDataSet(0, sf.getAccumulatorCA());
+        
+        structurePeak.setDataSet(3, sf.getPeakV());
+        structurePeak.setDataSet(4, sf.getPeakH());
+        structurePeak.setDataSet(5, sf.getPeakC());
+        freeEnergy.setDataSet(0,ising.getFreeEnergyAcc());
+        
+        maxMinPlot.setDataSet(0, ising.getMaxPhiAcc());
+        maxMinPlot.setDataSet(1, ising.getMinPhiAcc());
+        
         
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulatorCA().clear();
@@ -78,30 +100,25 @@ public class IsingField2DApp extends Simulation {
 	
 	public void run() {
 		Job.addDisplay(grid);
+		Job.addDisplay(sfGrid);
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
 		Job.addDisplay(structureDisplayV);
 		Job.addDisplay(structureDisplayH);
 		Job.addDisplay(structureDisplayC);
+		Job.addDisplay(freeEnergy);
+		Job.addDisplay(structurePeak);
+		Job.addDisplay(maxMinPlot);
 
 		ising = new IsingField2D(params);
-		grid.setData(ising.Lp,ising.Lp,ising.phi);
-
 		double binWidth = params.fget("kR bin-width");
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
-        sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth);
+        sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
-        //plot.setDataSet(0, sf.getAccumulator());
-        //for (int i=0; i<ising.Lp; i++){
-        //	slice.append(0, ising.phi[i],(double)i);
-        //}
-        //plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
-        //	public double eval(double kR) {
-        //		double V = 2*j1(kR)/kR;
-        //		return 1/(V/ising.T+1);
-        //	}
-        //});
- 
+		
+		grid.setData(ising.Lp,ising.Lp,ising.phi);
+		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
+		
         boolean equilibrating = true;
         while (true) {
 			params.set("Time", ising.time());
@@ -119,7 +136,9 @@ public class IsingField2DApp extends Simulation {
 			sf.getAccumulatorH().clear();
 			sf.getAccumulatorV().clear();			
 			sf.getAccumulatorC().clear();
-			sf.accumulateAll(ising.coarseGrained());
+			sf.accumulateAll(ising.time(), ising.coarseGrained());
+			//ising.accumFreeEnergy();
+			//sf.accumPeaks();
 			Job.animate();
 		}
  	}

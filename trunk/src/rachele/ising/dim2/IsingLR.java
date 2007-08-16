@@ -46,6 +46,7 @@ public class IsingLR extends RewindableDynamics {
 		T  = params.fget("T");
 		J  = params.fget("J", 1);
 		h  = params.fget("h", 0.0);
+
 	}
 	
 	
@@ -142,4 +143,9 @@ public class IsingLR extends RewindableDynamics {
 			scikit.jobs.Job.yield();
 		}
 	}
+	
+	public double dTime(){
+		return dt;
+	}
+	
 }

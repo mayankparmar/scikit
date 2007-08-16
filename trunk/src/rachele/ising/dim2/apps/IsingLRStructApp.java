@@ -1,7 +1,8 @@
 package rachele.ising.dim2.apps;
 
 import rachele.ising.dim2.StructureFactor;
-import kip.ising.dim2.IsingLR;
+import rachele.ising.dim2.IsingLR;
+//import kip.ising.dim2.IsingLR;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -41,9 +42,10 @@ public class IsingLRStructApp extends Simulation {
 		params.addm("J", -1.0);
 		params.addm("h", 0.0);
 		params.addm("dt", 1.0);
-		params.addm("init time", 50);
+		params.addm("init time", 0);
 		params.add("time");
 		params.add("magnetization");
+		params.add("Lp");
 		
 		flags.add("Clear S.F.");
 	}
@@ -52,7 +54,9 @@ public class IsingLRStructApp extends Simulation {
 	public void animate() {
 		params.set("time", format(sim.time()));
 		params.set("magnetization", format(sim.magnetization()));
+		params.set("Lp", sim.L/dx);
 		sim.setParameters(params);
+	
 		
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
 		if (params.sget("Scale colors").equals("False"))
@@ -86,7 +90,7 @@ public class IsingLRStructApp extends Simulation {
 		sim = new IsingLR(params);
 		sim.setField(params.fget("Initial magnetization"));
 		dx = Math.max(Integer.highestOneBit(sim.R)/8, 1);
-		structure = new StructureFactor(sim.L/dx, sim.L, sim.R, 0.1);
+		structure = new StructureFactor(sim.L/dx, sim.L, sim.R, 0.1, sim.dTime());
 		//avStructH = new Accumulator(sim.L/dx);
 		//avStructV = new Accumulator(sim.L/dx);
 		//avStructC = new Accumulator(sim.L/dx);
@@ -95,23 +99,23 @@ public class IsingLRStructApp extends Simulation {
 		//avStructC.setAveraging(true);
 		
 		System.out.println("equilibrating");
-		while (sim.time() < params.fget("init time")) {
-			sim.step();
-			Job.animate();
-		}
+		//while (sim.time() < params.fget("init time")) {
+		//	sim.step();
+		//	Job.animate();
+		//}
 		
 		System.out.println("running");
-		double lastUpdate = 0;
+		//double lastUpdate = 0;
 		while (true) {
-			while (sim.time() - lastUpdate < 2) {
+			//while (sim.time() - lastUpdate < 2) {
 				sim.step();
-				Job.animate();
-			}
-			lastUpdate = sim.time();
+				//Job.animate();
+			//}
+			//lastUpdate = sim.time();
 			structure.getAccumulatorH().clear();
 			structure.getAccumulatorV().clear();			
 			structure.getAccumulatorC().clear();
-			structure.accumulateAll(sim.getField(dx));
+			structure.accumulateAll(sim.time(), sim.getField(dx));
 			//avStructH.accum(structure.getAccumulatorH());
 			Job.animate();
 		}

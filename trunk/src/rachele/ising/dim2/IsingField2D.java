@@ -5,6 +5,7 @@ package rachele.ising.dim2;
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
 import kip.util.Random;
+import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
@@ -12,7 +13,7 @@ import scikit.params.Parameters;
 public class IsingField2D {
 	public double L, R, T, dx, J;
 	public int Lp;
-	double dt, t;
+	public double dt, t;
 	public double[] phi;
 	double [] phi_bar, del_phi;
 	double horizontalSlice;
@@ -22,12 +23,13 @@ public class IsingField2D {
 	public static final double KR_SP = 5.13562230184068255630140;
 	public static final double T_SP = 0.132279487396100031736846;	
 	
-	boolean unstableDynamics = false;
+	Accumulator accFreeEnergy;
+	Accumulator accMaxPhi;
+	Accumulator accMinPhi;
+	
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = true;
-	public boolean rescaleClipped = false;
-	public double rms_dF_dphi;
-	public double freeEnergyDensity;
+	boolean phi4 = false;
 	
 	Random random = new Random();
 	
@@ -43,7 +45,15 @@ public class IsingField2D {
 		T = params.fget("T");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		DENSITY = params.fget("Density");
+		DENSITY = params.fget("Magnetization");
+
+		
+		accFreeEnergy = new Accumulator(dt);
+		accFreeEnergy.setAveraging(true);
+		accMaxPhi = new Accumulator(dt);
+		accMaxPhi.setAveraging(true);		
+		accMinPhi = new Accumulator(dt);
+		accMinPhi.setAveraging(true);
 		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
@@ -53,12 +63,24 @@ public class IsingField2D {
 		}else{
 			circleInteraction = false;
 		}
-			
+
+		if(params.sget("Noise") == "Off"){
+			noiselessDynamics = true;
+		}else{
+			noiselessDynamics = false;
+		}
+		
+		if(params.sget("Approx") == "Phi4"){
+			phi4 = true;
+		}else{
+			phi4 = false;
+		}
 		
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		double RoverDx = R/dx;
 		params.set("R/dx", RoverDx);
+		params.set("Lp", Lp);
 		
 		t = 0;
 
@@ -69,17 +91,24 @@ public class IsingField2D {
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
-		for (int i = 0; i < Lp*Lp; i++)
-			phi[i] = DENSITY;
+		randomizeField(DENSITY);
+		
+		//for (int i = 0; i < Lp*Lp; i++)
+		//	phi[i] = (random.nextGaussian()/5.0 - 0.1) + DENSITY;
+		//initializeFieldWithSeed();
 		//for (int i = 0; i < Lp*Lp; i++){
 		//	int x = i % Lp;
 		//	phi [i] = Math.cos(2*PI*x/(R/dx))*.1;
 		//}
 		//DENSITY = mean (phi);
 
-		
+		//System.out.println("read dt " + dt);
 	}
 	
+	public void randomizeField(double m) {
+		for (int i = 0; i < Lp*Lp; i++)
+			phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+	}
 	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
@@ -90,12 +119,28 @@ public class IsingField2D {
 		dx = R/params.fget("R/dx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
+		
 		params.set("R/dx", R/dx);
+		params.set("Lp", Lp);
+		
 		if(params.sget("Interaction") == "Circle"){
 			circleInteraction = true;
 		}else{
 			circleInteraction = false;
 		}
+
+		if(params.sget("Noise") == "Off"){
+			noiselessDynamics = true;
+		}else{
+			noiselessDynamics = false;
+		}
+
+		if(params.sget("Approx") == "Phi4"){
+			phi4 = true;
+		}else{
+			phi4 = false;
+		}
+		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
 	}
@@ -153,7 +198,19 @@ public class IsingField2D {
 			dest[i] = fftScratch[2*i] / (Lp*Lp);
 		}		
 	}
-	
+
+	public Accumulator getFreeEnergyAcc() {
+		return accFreeEnergy;
+	}
+
+	public Accumulator getMaxPhiAcc() {
+		return accMaxPhi;
+	}
+
+	public Accumulator getMinPhiAcc() {
+		return accMinPhi;
+	}
+
 	
 	public void useNoiselessDynamics() {
 		noiselessDynamics = true;
@@ -190,18 +247,34 @@ public class IsingField2D {
 	
 	
 	public void simulate() {
+		double freeEnergy = 0;  //free energy is calculated for previous time step
+		
 		convolveWithRange(phi, phi_bar, R);
 		
 		for (int i = 0; i < Lp*Lp; i++) {
-			del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*random.nextGaussian();
+			double potential = -(phi[i]*phi_bar[i])/2.0;
+			if(phi4 == false){
+				double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+				freeEnergy += potential  - T*entropy; // - H*phi[i];
+				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+			}else{
+				double entropy = -(3.0*sqr(phi[i])+5.0*sqr(sqr(phi[i]))/12.0)/2.0;
+				freeEnergy += potential  - T*entropy; // - H*phi[i];
+				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]+T*(3*phi[i]+5.0*phi[i]*sqr(phi[i])/6)) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+			}
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp*Lp; i++) {
 			phi[i] += del_phi[i] - mu;
-			//System.out.println("phi " + i + " = " + phi[i] + " " + ising.Lp);
 		}
-		System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
+		//System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
+
+		freeEnergy /= (Lp*Lp) ;
+		accFreeEnergy.accum(t,freeEnergy);
 		t += dt;
+		
+		accMinPhi.accum(t, kip.util.DoubleArray.min(phi));
+		accMaxPhi.accum(t, kip.util.DoubleArray.max(phi));
 	}
 	
 	

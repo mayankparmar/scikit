@@ -34,7 +34,7 @@ public class SaddlePoint1DApp extends Simulation{
 
 	public SaddlePoint1DApp(){
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
-		params.addm("Initial Conditions", new ChoiceValue("Artificial Droplett", "Read In", "Boundaries Only", "Step", "Constant Slope"));
+		params.addm("Initial Conditions", new ChoiceValue("Noisy", "Artificial Droplett", "Read In", "Boundaries Only", "Step", "Constant Slope"));
 		params.addm("Time to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Position to slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("du", 0.004);

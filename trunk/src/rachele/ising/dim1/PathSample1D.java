@@ -121,6 +121,19 @@ public class PathSample1D {
 				for (int i = 3*Lp/4; i < Lp; i++)
 					phi[j][i] = rho_f;
 			} 
+		}else if(initConditions == "Noisy"){
+			for (int i = 0; i < Lp; i ++){
+				phi[0][i] = rho_i;
+				phi[t_f][i] = rho_f;
+			}
+			for (int j = 1; j < t_f; j ++){
+				for (int i = 0; i < Lp; i++){
+					//choose a sign
+					int sign = 2*random.nextInt(2)-1;
+					phi[j][i] = sign*random.nextGaussian();		
+					System.out.println(phi[j][i]);
+				}
+			}			
 		}
 	}
 	
