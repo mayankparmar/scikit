@@ -1,8 +1,10 @@
 package kip.ising.dim1.apps;
 
+import java.awt.Color;
+
 import scikit.params.ChoiceValue;
 import static scikit.util.Utilities.format;
-import scikit.plot.*;
+import scikit.graphics.dim2.Plot;
 import scikit.dataset.*;
 import scikit.jobs.*;
 import kip.ising.dim1.AbstractIsing;
@@ -75,26 +77,27 @@ class Structure {
 	}
 	
 	
-	public void theory(AbstractIsing sim, Accumulator acc) {
+	public Accumulator coarseGrainedTheory(AbstractIsing sim, double binWidth) {
+		Accumulator ret = new Accumulator(binWidth);
+		ret.setAveraging(true);
 		for (int i = 0; i < Lp/2; i++) {
 			double kR = 2*PI*i*R/L;
 			if (kR >= kRmin && kR <= kRmax)
-				acc.accum(kR, theory(sim, kR));
+				ret.accum(kR, theory(sim, kR));
 		}
+		return ret;
 	}
 }
 
 
 public class OrderingApp extends Simulation {
-	Plot fieldPlot = new Plot("Fields", true);
-	Plot structurePlot = new Plot("Structure", true);
+	Plot structurePlot = new Plot("Structure");
 	AbstractIsing sim;
 	Structure structure;
-	
-	Accumulator[] structSim;
-	Accumulator structTheory;
-	
+	double binWidth;
+	Accumulator[] structData;
 	double[] field;
+	int stepCnt; 
 	int numSteps = 10;
 	
 	public static void main(String[] args) {
@@ -118,49 +121,40 @@ public class OrderingApp extends Simulation {
 	
 	public void animate() {
 		params.set("time", format(sim.time()));
-		fieldPlot.setDataSet(0, new PointSet(0, sim.dx, sim.copyField()));
+		Accumulator structTheory = structure.coarseGrainedTheory(sim, binWidth);
+		structurePlot.registerLines("Structure data", structData[stepCnt], Color.BLACK);
+		structurePlot.registerLines("Structure theory", structTheory, Color.BLUE);
+//		structurePlot.registerLines("Comparison", new Function() {
+//			public double eval(double kR) {
+//				return (structTheory.eval(kR)-structData[stepCnt].eval(kR))*sqrt(sim.R);
+//			}
+//		}, Color.RED);
 	}
 	
-	private Accumulator makeStructureAccumulator() {
-		Accumulator ret = new Accumulator(params.fget("kR bin width"));
-		ret.setAveraging(true);
-		return ret;
+	public void clear() {
+		structurePlot.clear();
 	}
 	
 	public void run() {
 		String type = params.sget("Simulation type");
 		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
-		
-		fieldPlot.setYRange(-1, 1);
-		Job.addDisplay(fieldPlot);
-		Job.addDisplay(structurePlot);
-		
 		structure = new Structure(sim.N/sim.dx, sim.N, sim.R);
 		structure.setBounds(0, params.fget("kR maximum"));
-		structSim = new Accumulator[numSteps];
-		for (int i = 0; i < numSteps; i++)
-			structSim[i] = makeStructureAccumulator();
-		structTheory = makeStructureAccumulator();
+		structData = new Accumulator[numSteps];
+		binWidth = params.fget("kR bin width");
+		for (int i = 0; i < numSteps; i++) {
+			structData[i] = new Accumulator(binWidth);
+			structData[i].setAveraging(true);
+		}
 		
 		while (true) {
 			sim.initialize(params);
 			sim.randomizeField(0);
 //			sim.setField(0);
 			
-			for (int i = 0; i < numSteps; i++) {
+			for (stepCnt = 0; stepCnt < numSteps; stepCnt++) {
 				sim.step();
-				structTheory.clear();
-				structure.theory(sim, structTheory);
-				structure.accumulate(sim.copyField(), structSim[i]);
-				structurePlot.setDataSet(0, structSim[i]);
-				structurePlot.setDataSet(1, structTheory);
-//				final int ip = i;
-//				structurePlot.setDataSet(2, new DiscreteFunction(structTheory.copyData(), 2) {
-//					public double eval(double kR) {
-//						return (structTheory.eval(kR)-structSim[ip].eval(kR))*sqrt(sim.R);
-//					}
-//				});
-				
+				structure.accumulate(sim.copyField(), structData[stepCnt]);				
 				Job.animate();
 			}
 			

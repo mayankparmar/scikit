@@ -2,21 +2,24 @@ package kip.clump.dim2.apps;
 
 import static kip.util.MathPlus.*;
 import static scikit.util.Utilities.*;
+
+import java.awt.Color;
+
 import kip.clump.dim2.Clump2D;
 import kip.clump.dim2.StructureFactor;
 import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
+import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 
 
 public class ClumpCollectionApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Grid", true);
-    Plot plot = new Plot("Structure factor", true);
+    Grid grid = new Grid("Grid");
+    Plot plot = new Plot("Structure factor");
     StructureFactor sf;
-	
+	Clump2D clump;
 	
 	public static void main(String[] args) {
 		new Control(new ClumpCollectionApp(), "Clump Model -- S(k) Collection");
@@ -39,33 +42,38 @@ public class ClumpCollectionApp extends Simulation {
 		params.add("Time");
 	}
 	
+	public void animate() {
+    	params.set("Time", clump.time());
+        grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+        plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
+        plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
+        	public double eval(double kR) {
+        		double V = 2*j1(kR)/kR;
+        		return 1/(V/clump.T+1);
+        	}
+        }, Color.RED);
+	}
+	
+	public void clear() {
+		grid.clear();
+		plot.clear();
+	}
+	
 	public void run() {
-        Job.addDisplay(grid);
-        Job.addDisplay(plot);
-        
         int iters = params.iget("T iterations");
         double dT = (params.fget("T max") - params.fget("T min")) / iters;
         params.set("T", params.fget("T min"));
         
         for (int i = 0; i < iters; i++) {
             params.set("Random seed", params.iget("Random seed")+1);
-    		final Clump2D clump = new Clump2D(params);
-            grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+    		clump = new Clump2D(params);
             
             sf = clump.newStructureFactor(params.fget("kR bin-width"));
     		sf.setBounds(0.1, 14);
-            plot.setDataSet(0, sf.getAccumulator());
-            plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
-            	public double eval(double kR) {
-            		double V = 2*j1(kR)/kR;
-            		return 1/(V/clump.T+1);
-            	}
-            });
             
             double eqTime = params.fget("Equilibration time");
             while (clump.time() < eqTime) {
             	clump.accumulateIntoStructureFactor(sf);
-            	params.set("Time", clump.time());
             	clump.simulate();
         		Job.animate();
             }
@@ -73,7 +81,6 @@ public class ClumpCollectionApp extends Simulation {
             double stopTime = params.fget("Stop time");
             while (clump.time() < stopTime) {
             	clump.accumulateIntoStructureFactor(sf);
-            	params.set("Time", clump.time());
             	clump.simulate();
         		Job.animate();
             }

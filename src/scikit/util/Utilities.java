@@ -1,9 +1,13 @@
 package scikit.util;
 
 import static java.lang.Math.abs;
+
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
+
+import scikit.graphics.dim2.Plot;
 
 
 public class Utilities {
@@ -60,14 +64,12 @@ public class Utilities {
 	*/
 	
 	// utility method for quickly viewing data.
-	private static scikit.plot.Plot debugPlot;
-	public static void plot(int i, double[] data) {
+	private static Plot debugPlot;
+	public static void plot(double[] data) {
 		if (debugPlot == null) {
-			debugPlot = new scikit.plot.Plot("Debug plot", true);
+			debugPlot = new Plot("Debug plot");
 		}
-		debugPlot.setDataSet(i, new scikit.dataset.PointSet(0, 1, data));
-		// try to force an immediate repaint
-		debugPlot.animate();
+		debugPlot.registerPoints("", new scikit.dataset.PointSet(0, 1, data), Color.BLACK);
 		Thread.yield();
 	}
 	

@@ -1,6 +1,7 @@
 package kip.clump.dim3;
 import static java.lang.Math.*;
 import kip.util.Random;
+import scikit.jobs.Job;
 import scikit.params.Parameters;
 
 
@@ -98,8 +99,10 @@ public class Clump3D {
 	}
 	
 	public void simulate() {
-		for (int i = 0; i < numPts*dt; i++)
+		for (int i = 0; i < numPts*dt; i++) {
 			mcsTrial();
+			Job.yield();
+		}
 	}
 	
 	public StructureFactor3D newStructureFactor(double binWidth) {

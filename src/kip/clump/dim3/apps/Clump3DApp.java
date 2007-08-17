@@ -1,5 +1,7 @@
 package kip.clump.dim3.apps;
 
+import java.awt.Color;
+
 import kip.clump.dim3.Clump3D;
 import kip.clump.dim3.StructureFactor3D;
 import scikit.dataset.Function;
@@ -7,13 +9,13 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
+import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 
 
 public class Clump3DApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Grid", true);
-    Plot plot = new Plot("Structure factor", true);
+    Grid grid = new Grid("Grid");
+    Plot plot = new Plot("Structure factor");
     StructureFactor3D sf;
     Clump3D clump;
  	
@@ -35,28 +37,31 @@ public class Clump3DApp extends Simulation {
 	
 	public void animate() {
 		clump.readParams(params);
+		
+		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
+		plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
+        	public double eval(double kR) {
+        		return 1/(clump.potential(kR)/clump.T+1);
+	        }
+		}, Color.BLUE);
+		
+		// one 2D slice is presented in field display
 		if (params.sget("Zoom").equals("Yes"))
-			grid.setAutoScale();
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.setScale(0, 2);
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+	}
+	
+	public void clear() {
+		plot.clear();
+		grid.clear();
 	}
 	
 	public void run() {
 		clump = new Clump3D(params);
-		
-		// one 2D slice is presented in field display
-        grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
         
         sf = clump.newStructureFactor(params.fget("kR bin-width"));
 		sf.setBounds(0.1, 14);
-		plot.setDataSet(0, sf.getAccumulator());
-		plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
-        	public double eval(double kR) {
-        		return 1/(clump.potential(kR)/clump.T+1);
-	        }
-		});
-        Job.addDisplay(grid);
-        Job.addDisplay(plot);
         
         boolean equilibrating = true;
         while (true) {
