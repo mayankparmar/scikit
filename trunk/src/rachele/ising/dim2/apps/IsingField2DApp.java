@@ -21,6 +21,7 @@ public class IsingField2DApp extends Simulation {
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
 	Plot structurePeak = new Plot("Structure Peak vs Time", true);
+	Plot circleSF = new Plot("Circle Structure factor", true);
     StructureFactor sf;
     IsingField2D ising;
 
@@ -33,15 +34,16 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Approx", new ChoiceValue("Linear", "Exact", "Phi4"));
+		params.addm("Approx", new ChoiceValue("Exact", "Exact SemiStable", "Exact Stable", "Linear", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.03);
-		params.addm("dt", 1.0);
+		params.addm("T", 0.06);
+		params.addm("dt", 0.1);
+		params.addm("H", 0.0);
+		params.addm("J", -1.0);
 		params.addm("R", 1000000);
 		params.add("L/R", 8.0);
 		params.add("R/dx", 8.0);
-		params.add("J", -1.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Magnetization", 0.0);
@@ -61,17 +63,27 @@ public class IsingField2DApp extends Simulation {
 		else
 			grid.setScale(-1.0, 1.0);
 
-		sfGrid.setAutoScale();
+		if (params.sget("Zoom").equals("Yes"))
+			sfGrid.setAutoScale();
+		else
+			sfGrid.setScale(-1.0, 1.0);
+		
+		//sfGrid.setAutoScale();
 				
 		hSlice.clear();
 		vSlice.clear();
 		
 		hSlice.setDataSet(0, ising.getHslice());
 		vSlice.setDataSet(0, ising.getVslice());
+		circleSF.setDataSet(5, sf.getAccumulatorC());
 
-        structurePeak.setDataSet(3, sf.getPeakV());
-        structurePeak.setDataSet(4, sf.getPeakH());
-        structurePeak.setDataSet(5, sf.getPeakC());
+		if (ising.circleInt() == true)
+	        structurePeak.setDataSet(5, sf.getPeakC());
+		else{
+			structurePeak.setDataSet(3, sf.getPeakV());
+			structurePeak.setDataSet(4, sf.getPeakH());
+		}
+
         
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulatorCA().clear();
@@ -88,6 +100,7 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
 		Job.addDisplay(structurePeak);
+		Job.addDisplay(circleSF);
 
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
