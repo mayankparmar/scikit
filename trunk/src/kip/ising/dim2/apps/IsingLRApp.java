@@ -5,7 +5,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.FieldDisplay;
+import scikit.graphics.dim2.Grid;
 import static scikit.util.Utilities.format;
 
 
@@ -14,7 +14,7 @@ public class IsingLRApp extends Simulation {
 		new Control(new IsingLRApp(), "Ising Model");
 	}
 	
-	FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
+	Grid grid = new Grid("Coarse Grained Display");
 	int dx;
 	IsingLR sim;
 	
@@ -39,17 +39,17 @@ public class IsingLRApp extends Simulation {
 		params.set("magnetization", format(sim.magnetization()));
 		sim.setParameters(params);
 		
-		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
 		if (params.sget("Scale colors").equals("False"))
-			fieldDisplay.setScale(-1, 1);
+			grid.registerColorScaleData(sim.L/dx, sim.L/dx, sim.getField(dx), -1, 1);
 		else
-			fieldDisplay.setAutoScale();
+			grid.registerColorScaleData(sim.L/dx, sim.L/dx, sim.getField(dx));
 	}
 	
+	public void clear() {
+		grid.clear();
+	}
 	
 	public void run() {
-		Job.addDisplay(fieldDisplay);
-		
 		sim = new IsingLR(params);
 		sim.setField(params.fget("Initial magnetization"));
 		dx = Math.max(Integer.highestOneBit(sim.R)/8, 1);

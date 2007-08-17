@@ -1,5 +1,6 @@
 package kip.ising.dim1;
 
+import scikit.jobs.Job;
 import scikit.params.Parameters;
 import kip.util.Random;
 import static java.lang.Math.*;
@@ -58,6 +59,7 @@ abstract public class Dynamics1D implements Cloneable {
 			old = clone();
 			old.old.old = null; // cut off history to avoid memory leaks
 		}
+		Job.yield();
 	}
 	
 	

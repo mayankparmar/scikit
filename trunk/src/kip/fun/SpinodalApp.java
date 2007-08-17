@@ -1,13 +1,12 @@
 package kip.fun;
 
-import scikit.plot.*;
+import scikit.graphics.dim2.Grid;
 import scikit.jobs.*;
 import static java.lang.Math.*;
 
 
 public class SpinodalApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Grid", true);
-    
+    Grid grid = new Grid("Grid");
     int L;
     double[] data;
     double beta, J;
@@ -24,9 +23,13 @@ public class SpinodalApp extends Simulation {
     
     public void animate() {
         beta = 1 / params.fget("Temperature");
-        J = params.fget("Interaction");    
+        J = params.fget("Interaction");   
+        grid.registerColorScaleData(L, L, data, 0, 16);
     }
     
+    public void clear() {
+    	grid.clear();
+    }
     
     private double sumNeighbors(int i) {
         int N = L*L;
@@ -56,18 +59,11 @@ public class SpinodalApp extends Simulation {
     
     public void run() {
         L = params.iget("Size");
-
         data = new double[L*L];
-        
-        grid.setData(L, L, data);
-        grid.setScale(0, 16);
-        
-        Job.addDisplay(grid);
         
         while (true) {
             for (int i = 0; i < L*L; i++)
                 data[i] = 0;
-                
             Job.animate();
             
             while (true) {

@@ -5,11 +5,11 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.FieldDisplay;
+import scikit.graphics.dim2.Grid;
 
 
 public class SaddleApp extends Simulation {
-	FieldDisplay grid = new FieldDisplay("Grid", true);
+	Grid grid = new Grid("Grid");
 	FieldClump2D clump;
 
 	public static void main(String[] args) {
@@ -32,13 +32,16 @@ public class SaddleApp extends Simulation {
 	public void animate() {
 		clump.readParams(params);
 		if (params.sget("Zoom").equals("Yes"))
-			grid.setAutoScale();
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.setScale(0, 2);
-		
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
 		params.set("Time", clump.time());
 		params.set("dF/dphi", clump.rms_dF_dphi);
 		params.set("Valid profile", !clump.rescaleClipped);
+	}
+	
+	public void clear() {
+		grid.clear();
 	}
 	
 	public void run() {
@@ -46,21 +49,14 @@ public class SaddleApp extends Simulation {
 		clump.useNoiselessDynamics();
 		clump.useFixedBoundaryConditions();
 		clump.initializeFieldWithSeed();
-		
-		grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
-		grid.setScale(0.0, 2);
-		grid.setDeltaX(clump.dx/clump.R);
-		Job.addDisplay(grid);
 		Job.animate();
 		
 		while (true) {
-			
 			double var1 = clump.phiVariance();
 			clump.simulate();
 			double var2 = clump.phiVariance();
 			double scale = var1/var2;
 			clump.scaleField(scale);
-			
 			Job.animate();
 		}
 	}

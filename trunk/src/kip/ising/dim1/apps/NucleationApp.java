@@ -2,18 +2,26 @@ package kip.ising.dim1.apps;
 
 
 import static java.lang.Math.*;
+import static scikit.util.Utilities.*;
+
+import java.awt.Color;
+
 import kip.ising.dim1.Dynamics1D;
 import kip.ising.dim1.PhiFourth;
 import scikit.params.ChoiceValue;
-import scikit.plot.*;
+import scikit.graphics.dim2.Geom2D;
+import scikit.graphics.dim2.Plot;
+import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
 
 public class NucleationApp extends Simulation {
-	Plot fieldPlot = new Plot("Fields", true);
-    Histogram profilePlot = new Histogram("Average Droplet Profile", 0.0, true);
-	Histogram nucTimes = new Histogram("Nucleation Times", 0.1, true);
+	Plot fieldPlot = new Plot("Fields");
+	Plot profilePlot = new Plot("Average Droplet Profile");
+	Plot nucTimes = new Plot("Nucleation Times"); // bw 0.1
+    Accumulator nucTimesAcc, droplet;
+    Function saddleProfile;
     
 	boolean phifour = true;
 	Dynamics1D sim;
@@ -49,17 +57,33 @@ public class NucleationApp extends Simulation {
 	}
 	
 	public void animate() {
-		fieldPlot.setDataSet(0, new PointSet(0, (double)sim.dx/sim.R, sim.copyField()));
-		nucTimes.setBinWidth(2, params.fget("Bin width"));
 		sim.setParameters(params);
+		
+		nucTimesAcc.setBinWidth(params.fget("Bin width"));
+		nucTimes.registerBars("Nucleation times", nucTimesAcc, Color.RED);
+        
+		double N_R = (double)sim.N/sim.R;
+		fieldPlot.setXRange(0, N_R);
+		fieldPlot.setYRange(-0.8, 0.1);
+		fieldPlot.registerLines("Field", new PointSet(0, (double)sim.dx/sim.R, sim.copyField()), Color.BLACK);
+		fieldPlot.setDrawables(asList(Geom2D.line(0., 0., N_R, 0., Color.BLUE)));
+        
+		profilePlot.registerLines("Data", droplet, Color.RED);
+        profilePlot.registerLines("Theory", saddleProfile, Color.BLUE);
 	}
     
+	public void clear() {
+		nucTimes.clear();
+		fieldPlot.clear();
+		profilePlot.clear();
+	}
+	
     void accumulateDroplet(double[] field, double pos) {
         int j = (int)round(pos/sim.dx);
         int c = sim.N/sim.dx;
         for (int i = 0; i < field.length; i++) {
 			double x = (double)(i-field.length/2)*sim.dx/sim.R;
-            profilePlot.accum(0, x, field[(i+j+c/2)%c]);
+            droplet.accum(x, field[(i+j+c/2)%c]);
         }
     }
     
@@ -95,7 +119,7 @@ public class NucleationApp extends Simulation {
                 double[] drop = sim.nucleationTimeAndLocation(overshootEstimate);
                 accumulateDroplet(sim.simulationAtTime(drop[0]).copyField(), drop[1]);
             }
-            nucTimes.accum(2, sim.time());
+            nucTimesAcc.accum(sim.time());
             params.set("Profile count", params.iget("Profile count")+1);            
         }
 	}
@@ -106,23 +130,12 @@ public class NucleationApp extends Simulation {
 			sim = new PhiFourth(params);
 		}
 		sim.initialize(params);
-        
-        nucTimes.setNormalizing(2, true);
-        
-		double N_R = (double)sim.N/sim.R;
-		fieldPlot.setXRange(0, N_R);
-		fieldPlot.setYRange(-0.7, 0.1);
-        fieldPlot.setDataSet(1, new Function(0, N_R) {
-            public double eval(double x) { return 0; }
-        });
-        
-        profilePlot.setBinWidth(0, (double)sim.dx/sim.R);
-        profilePlot.setAveraging(0, true);
-        profilePlot.setDataSet(1, sim.saddleProfile());
-        
-		Job.addDisplay(fieldPlot);
-		Job.addDisplay(nucTimes);
-		Job.addDisplay(profilePlot);
+		saddleProfile = sim.clone().saddleProfile();
+		
+		nucTimesAcc = new Accumulator(params.fget("Bin width"));
+        nucTimesAcc.setNormalizing(true);
+        droplet = new Accumulator((double)sim.dx/sim.R);
+        droplet.setAveraging(true);
         
 		while (params.iget("Profile count") < params.iget("Max count")) {
             sim.initialize(params);

@@ -1,5 +1,6 @@
 package kip.ising.dim1;
 
+import scikit.jobs.Job;
 import scikit.params.Parameters;
 import kip.ising.spinblock.SpinBlocks1D;
 import static java.lang.Math.*;
@@ -42,6 +43,7 @@ public class Ising extends AbstractIsing {
 				// p(s = +-1) = (1 +- m) / 2
 				int s = (random.nextDouble() < (1+m)/2) ? 1 : -1;
 				spins.set(i, s);
+				Job.yield();
 			}
 		}
 	}

@@ -1,18 +1,23 @@
 package kip.ising.dim1.apps;
 
+import static java.lang.Math.*;
+import static scikit.util.Utilities.*;
+
+import java.awt.Color;
+
 import scikit.params.ChoiceValue;
 import scikit.dataset.*;
-import scikit.plot.*;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.*;
 import kip.ising.dim1.AbstractIsing;
 import kip.ising.dim1.FieldIsing;
 import kip.ising.dim1.Ising;
-import static java.lang.Math.*;
 
 
 public class RelaxationApp extends Simulation {
-	Histogram magnetHist = new Histogram("Magnetization", 0, true);
-	Plot magnetDeriv = new Plot("dM/dt", true);
+	Plot magnetPlot = new Plot("Magnetization");
+	Plot derivPlot = new Plot("dM/dt");
+	Accumulator magnetization;
 	
 	AbstractIsing sim;
 	int numSteps = 100;
@@ -37,22 +42,14 @@ public class RelaxationApp extends Simulation {
 	
 	public void animate() {
 		sim.setParameters(params);
-		params.set("time", sim.time());
-	}
-	
-	
-	public void run() {
-		String type = params.sget("Simulation type");
-		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
+		params.set("time", format(sim.time()));
 		
-		magnetHist.setBinWidth(0, sim.dt);
-		magnetHist.setAveraging(0, true);
-		Job.addDisplay(magnetHist);
+		magnetPlot.registerLines("m", magnetization, Color.BLACK);
 		
-		Derivative deriv = new Derivative(magnetHist.getAccumulator(0));
+		Derivative deriv = new Derivative(magnetization);
 		deriv.invertDependentParameter = true;
-		magnetDeriv.setDataSet(0, deriv);
-		magnetDeriv.setDataSet(1, new Function(0, 0.95) {
+		derivPlot.registerLines("deriv data", deriv, Color.BLACK);
+		derivPlot.registerLines("deriv theory", new Function(0, 0.95) {
 			public double eval(double m) {
 				double bm = m/sim.T;
 				switch (sim.dynamics) {
@@ -64,8 +61,20 @@ public class RelaxationApp extends Simulation {
 					return Double.NaN;
 				}
 			}
-		});
-		Job.addDisplay(magnetDeriv);
+		}, Color.BLUE);
+	}
+	
+	public void clear() {
+		magnetPlot.clear();
+		derivPlot.clear();
+	}
+	
+	public void run() {
+		String type = params.sget("Simulation type");
+		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
+		
+		magnetization = new Accumulator(sim.dt);
+		magnetization.setAveraging(true);
 		
 		params.set("cnt", 0);
 		for (int cnt = 0; cnt < 2000; cnt++) {
@@ -73,7 +82,7 @@ public class RelaxationApp extends Simulation {
 			sim.randomizeField(params.fget("Initial magnetization"));
 			
 			for (int i = 0; i < numSteps; i++) {
-				magnetHist.accum(0, sim.time(), sim.magnetization());
+				magnetization.accum(sim.time(), sim.magnetization());
 				Job.animate();
 				sim.step();
 			}
