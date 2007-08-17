@@ -3,6 +3,7 @@ package scikit.graphics.dim2;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.swing.JComponent;
 
@@ -20,7 +21,11 @@ public class Gfx2DSwing implements Gfx2D {
 		this.scene = scene;
 		datBds = pixBds = scene.pixelBounds();
 	}
-
+	
+	public Graphics2D engine() {
+		return engine;
+	}
+	
 	public Scene2D scene() {
 		return scene;
 	}
@@ -31,20 +36,23 @@ public class Gfx2DSwing implements Gfx2D {
 		this.datBds = proj;
 	}
 
-	private int transX(double x) {
+	int transX(double x) {
 		return (int) (pixBds.xmax * (x - datBds.xmin) / datBds.getWidth());
 	}
 	
-	private int transY(double y) {
+	int transY(double y) {
 		return (int) (pixBds.getHeight() - pixBds.ymax * (y - datBds.ymin) / datBds.getHeight());
 	}
 	
-	private int offsetX(double w) {
+	int offsetX(double w) {
 		return (int) (w * pixBds.getWidth() / datBds.getWidth());
 	}
 	
-	private int offsetY(double h) {
+	int offsetY(double h) {
 		return (int) (h * pixBds.getHeight() / datBds.getHeight());
+	}
+	
+	public void setLineSmoothing(boolean b) {
 	}
 	
 	public void setColor(Color color) {
@@ -104,10 +112,13 @@ public class Gfx2DSwing implements Gfx2D {
 		final JComponent component = new JComponent() {
 			private static final long serialVersionUID = 1L;
 			public void paintComponent(java.awt.Graphics engine) {
-				Gfx2D g = new Gfx2DSwing((Graphics2D)engine, scene);
-				g.setColor(Color.WHITE);
-				g.fillRect(0, 0, getWidth(), getHeight());
-				scene.drawAll(g);
+				// when drawing images (for example Grid), keep scaled pixel boundaries
+				// crisp.  on some platforms (e.g. OS X), this hint must be applied
+				// before all drawing.
+				((Graphics2D)engine).setRenderingHint(
+						RenderingHints.KEY_INTERPOLATION,
+						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+				scene.drawAll(new Gfx2DSwing((Graphics2D)engine, scene));
 			}
 		};
 		component.setPreferredSize(new Dimension(300, 300));

@@ -135,10 +135,8 @@ public class Job {
 			_yield();
 			break;
 		}
-		
 		// during sleep() or yield() the user might have stopped the simulation. therefore
 		// we enter a new switch statement.
-		
 		switch (state) {
 		case STEP:
 		case STOP:
@@ -148,6 +146,9 @@ public class Job {
 				coop.pass();
 			} while (state == State.STOP);
 			break;
+		}
+		// during pass() the user might have reset the simulation.
+		switch (state) {
 		case KILL:
 			throw new ThreadDeath();
 		}

@@ -41,8 +41,10 @@ public class TickMarks implements Drawable<Gfx2D> {
 		else
 			yticks = getLogTicks(db.ymin, db.ymax, cb.getHeight()*TICKS_PER_PIXEL);
 		
+		g.setLineSmoothing(false);
 		drawTickLines(g, xticks, yticks);
 		drawTickLabels(g, xticks, yticks);
+		g.setLineSmoothing(true);
 	}
 
 	public Bounds getBounds() {
