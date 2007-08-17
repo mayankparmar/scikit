@@ -98,6 +98,18 @@ public class Plot extends Scene2D {
 		registerDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
+	protected Bounds calculateDataBounds() {
+		// extend bounds a little bit
+		Bounds bounds = super.calculateDataBounds();
+		double w = bounds.xmax - bounds.xmin;
+		double h = bounds.ymax - bounds.ymin;
+		bounds.xmin -= w/16;
+		bounds.xmax += w/16;
+		bounds.ymin -= h/16;
+		bounds.ymax += h/16;
+		return bounds;
+	}
+	
 	protected List<Drawable<Gfx2D>> getAllDrawables() {
 		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
 		ds.add(new TickMarks(this));

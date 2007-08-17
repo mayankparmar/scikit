@@ -47,7 +47,13 @@ public class Scene2D extends Scene<Gfx2D> {
 		return Gfx2DSwing.createComponent(this);				
 	}
 	
+	protected void drawBackground(Gfx2D g) {
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, _component.getWidth(), _component.getHeight());
+	}
+	
 	protected void drawAll(Gfx2D g) {
+		drawBackground(g);
 		g.projectOrtho2D(dataBounds());
 		for (Drawable<Gfx2D> d : getAllDrawables())
 			d.draw(g);
@@ -133,15 +139,17 @@ public class Scene2D extends Scene<Gfx2D> {
 	private Drawable<Gfx2D> _selectionGraphics = new Drawable<Gfx2D>() {
 		public void draw(Gfx2D g) {
 			if (_selectionActive) {
+				g.setLineSmoothing(false);
 				g.projectOrtho2D(g.scene().pixelBounds());
 				
 				Bounds sel = new Bounds(_selectionStart, _selectionEnd);
-				g.setColor(new Color(0.3f, 0.6f, 0.5f, 0.2f));
+				g.setColor(new Color(0.6f, 0.9f, 0.8f, 0.25f));
 				g.fillRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
-				g.setColor(new Color(0.2f, 0.2f, 0.2f, 0.7f));
+				g.setColor(new Color(0f, 0f, 0f, 0.25f));
 				g.drawRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
 				
 				g.projectOrtho2D(g.scene().dataBounds());
+				g.setLineSmoothing(true);
 			}
 		}
 		public Bounds getBounds() {

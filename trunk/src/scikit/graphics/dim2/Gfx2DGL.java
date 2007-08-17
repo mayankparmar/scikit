@@ -62,6 +62,13 @@ public class Gfx2DGL implements Gfx2D {
 		gl.glVertex2d(transX(x), transY(y));
 	}
 	
+	public void setLineSmoothing(boolean b) {
+		if (b)
+			gl.glEnable(GL.GL_LINE_SMOOTH);
+		else
+			gl.glDisable(GL.GL_LINE_SMOOTH);
+	}
+	
 	public void setColor(Color color) {
 		gl.glColor4fv(color.getComponents(null), 0);
 	}

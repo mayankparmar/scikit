@@ -1,19 +1,22 @@
 package kip.clump.dim2.apps;
 
 import static kip.util.MathPlus.j1;
+
+import java.awt.Color;
+
 import kip.clump.dim2.*;
 import scikit.dataset.Function;
+import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
 
 
 public class Clump2DApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Grid", true);
-    Plot plot = new Plot("Structure factor", true);
+    Grid grid = new Grid("Grid");
+    Plot plot = new Plot("Structure factor");
     StructureFactor sf;
     AbstractClump2D clump;
     boolean fieldDynamics = false;
@@ -43,10 +46,24 @@ public class Clump2DApp extends Simulation {
 	
 	public void animate() {
 		clump.readParams(params);
+		
 		if (params.sget("Zoom").equals("Yes"))
-			grid.setAutoScale();
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.setScale(0, 2);
+			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+		
+        plot.registerLines("Structure Data", sf.getAccumulator(), Color.BLACK);
+        plot.registerLines("Structure Theory", new Function(sf.kRmin(), sf.kRmax()) {
+        	public double eval(double kR) {
+        		double V = 2*j1(kR)/kR;
+        		return 1/(V/clump.T+1);
+        	}
+        }, Color.BLUE);
+	}
+	
+	public void clear() {
+		grid.clear();
+		plot.clear();
 	}
 	
 	public void run() {
@@ -55,19 +72,8 @@ public class Clump2DApp extends Simulation {
 		else
 			clump = new Clump2D(params);
 		
-        grid.setData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
-        
         sf = clump.newStructureFactor(params.fget("kR bin-width"));
 		sf.setBounds(0.1, 14);
-        plot.setDataSet(0, sf.getAccumulator());
-        plot.setDataSet(1, new Function(sf.kRmin(), sf.kRmax()) {
-        	public double eval(double kR) {
-        		double V = 2*j1(kR)/kR;
-        		return 1/(V/clump.T+1);
-        	}
-        });
-        Job.addDisplay(grid);
-        Job.addDisplay(plot);
         
         boolean equilibrating = true;
         while (true) {

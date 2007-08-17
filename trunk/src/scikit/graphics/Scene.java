@@ -94,14 +94,6 @@ abstract public class Scene<T> {
 		Bounds bounds = new Bounds();
 		for (Drawable<T> d : getAllDrawables())
 			bounds = (Bounds)bounds.createUnion(d.getBounds());
-
-		// extend bounds a little bit
-		double w = bounds.xmax - bounds.xmin;
-		double h = bounds.ymax - bounds.ymin;
-		bounds.xmin -= w/16;
-		bounds.xmax += w/16;
-		bounds.ymin -= h/16;
-		bounds.ymax += h/16;
 		return bounds;
 	}
 }
