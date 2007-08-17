@@ -20,12 +20,7 @@ public class IsingField2DApp extends Simulation {
     FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
-	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component", true);
-	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component", true);
-	Plot structureDisplayC = new Plot("Structure Factor - Circle Average", true);
 	Plot structurePeak = new Plot("Structure Peak vs Time", true);
-	Plot freeEnergy = new Plot("Free Energy Density", true);
-	Plot maxMinPlot = new Plot("Max Min Phi Values", true);
     StructureFactor sf;
     IsingField2D ising;
 
@@ -73,21 +68,10 @@ public class IsingField2DApp extends Simulation {
 		
 		hSlice.setDataSet(0, ising.getHslice());
 		vSlice.setDataSet(0, ising.getVslice());
-        structureDisplayV.setDataSet(3, sf.getAccumulatorV());		
-        structureDisplayH.setDataSet(4, sf.getAccumulatorH());
-        structureDisplayC.setDataSet(5, sf.getAccumulatorC());
-        structureDisplayV.setDataSet(0, sf.getAccumulatorVA());
-        structureDisplayH.setDataSet(0, sf.getAccumulatorHA());
-        structureDisplayC.setDataSet(0, sf.getAccumulatorCA());
-        
+
         structurePeak.setDataSet(3, sf.getPeakV());
         structurePeak.setDataSet(4, sf.getPeakH());
         structurePeak.setDataSet(5, sf.getPeakC());
-        freeEnergy.setDataSet(0,ising.getFreeEnergyAcc());
-        
-        maxMinPlot.setDataSet(0, ising.getMaxPhiAcc());
-        maxMinPlot.setDataSet(1, ising.getMinPhiAcc());
-        
         
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulatorCA().clear();
@@ -103,12 +87,7 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(sfGrid);
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
-		Job.addDisplay(structureDisplayV);
-		Job.addDisplay(structureDisplayH);
-		Job.addDisplay(structureDisplayC);
-		Job.addDisplay(freeEnergy);
 		Job.addDisplay(structurePeak);
-		Job.addDisplay(maxMinPlot);
 
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
@@ -126,19 +105,8 @@ public class IsingField2DApp extends Simulation {
 			ising.simulate();
 			if (equilibrating && ising.time() >= .5) {
 			equilibrating = false;
-				sf.getAccumulatorC().clear();
-				sf.getAccumulatorH().clear();
-				sf.getAccumulatorV().clear();
-				sf.getAccumulatorVA().clear();
-				sf.getAccumulatorHA().clear();
-				sf.getAccumulatorCA().clear();
 			}
-			sf.getAccumulatorH().clear();
-			sf.getAccumulatorV().clear();			
-			sf.getAccumulatorC().clear();
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
-			//ising.accumFreeEnergy();
-			//sf.accumPeaks();
 			Job.animate();
 		}
  	}

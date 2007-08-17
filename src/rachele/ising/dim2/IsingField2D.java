@@ -254,7 +254,6 @@ public class IsingField2D {
 				freeEnergy += potential  - T*entropy; // - H*phi[i];
 				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]+T*(-phi[i]-phi[i]*sqr(phi[i])/2.0)) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
 			}else if(theory == "Linear"){
-				System.out.println("Linear");
 				double entropy = (sqr(phi[i]))/2.0;
 				freeEnergy += potential  - T*entropy; // - H*phi[i];
 				del_phi[i] = - dt*(-phi_bar[i] - T*phi[i]) + sqrt((dt*2*T)/dx)*noise();
