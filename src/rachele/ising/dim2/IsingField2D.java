@@ -1,6 +1,6 @@
 package rachele.ising.dim2;
 
-/* This is a slight modification of kip.clump.dim2.FiledClump2D.java  */
+/* This is a slight modification of kip.clump.dim2.FieldClump2D.java  */
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
@@ -29,7 +29,7 @@ public class IsingField2D {
 	
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = true;
-	boolean phi4 = false;
+	String theory;
 	
 	Random random = new Random();
 	
@@ -69,13 +69,9 @@ public class IsingField2D {
 		}else{
 			noiselessDynamics = false;
 		}
-		
-		if(params.sget("Approx") == "Phi4"){
-			phi4 = true;
-		}else{
-			phi4 = false;
-		}
-		
+	
+		theory = params.sget("Approx");
+				
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		double RoverDx = R/dx;
@@ -135,11 +131,7 @@ public class IsingField2D {
 			noiselessDynamics = false;
 		}
 
-		if(params.sget("Approx") == "Phi4"){
-			phi4 = true;
-		}else{
-			phi4 = false;
-		}
+		theory = params.sget("Approx");
 		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
@@ -253,14 +245,19 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double potential = -(phi[i]*phi_bar[i])/2.0;
-			if(phi4 == false){
+			if(theory == "Exact"){
 				double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 				freeEnergy += potential  - T*entropy; // - H*phi[i];
 				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
-			}else{
-				double entropy = -(3.0*sqr(phi[i])+5.0*sqr(sqr(phi[i]))/12.0)/2.0;
+			}else if(theory == "Phi4"){
+				double entropy = (sqr(phi[i]) + sqr(sqr(phi[i]))/4.0)/2.0;
 				freeEnergy += potential  - T*entropy; // - H*phi[i];
-				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]+T*(3*phi[i]+5.0*phi[i]*sqr(phi[i])/6)) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]+T*(-phi[i]-phi[i]*sqr(phi[i])/2.0)) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+			}else if(theory == "Linear"){
+				System.out.println("Linear");
+				double entropy = (sqr(phi[i]))/2.0;
+				freeEnergy += potential  - T*entropy; // - H*phi[i];
+				del_phi[i] = - dt*(-phi_bar[i] - T*phi[i]) + sqrt((dt*2*T)/dx)*noise();
 			}
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
