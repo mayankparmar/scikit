@@ -215,13 +215,16 @@ public class StructureFactor {
 					count += 1;
 					if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
 						accPeakC.accum(t, sFactor[i]);
-						System.out.println(t + " " + kR);
+						//System.out.println(t + " " + kR);
 					}
 				}
 			}
 		}
 		
 		//accPeakC.accum(t, kip.util.DoubleArray.max(sfValues));
+		
+		//set k=0 mode = 0
+		sFactor[0] = 0;
 		
 		//shift sfactor so that origin is in center
 		double [] temp = new double [Lp*Lp];

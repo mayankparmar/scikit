@@ -11,11 +11,11 @@ import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
 
 public class IsingField2D {
-	public double L, R, T, dx, J;
+	public double L, R, T, dx, J, H;
 	public int Lp;
 	public double dt, t;
 	public double[] phi;
-	double [] phi_bar, del_phi;
+	double [] phi_bar, del_phi, Lambda;
 	double horizontalSlice;
 	double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
@@ -33,7 +33,6 @@ public class IsingField2D {
 	
 	Random random = new Random();
 	
-	//public static final double DENSITY = -0.5;
 	double DENSITY;
 	
 	public IsingField2D(Parameters params) {
@@ -43,6 +42,7 @@ public class IsingField2D {
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
+		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
 		DENSITY = params.fget("Magnetization");
@@ -83,22 +83,12 @@ public class IsingField2D {
 		phi = new double[Lp*Lp];
 		phi_bar = new double[Lp*Lp];
 		del_phi = new double[Lp*Lp];
+		Lambda = new double [Lp*Lp];
 		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
 		randomizeField(DENSITY);
-		
-		//for (int i = 0; i < Lp*Lp; i++)
-		//	phi[i] = (random.nextGaussian()/5.0 - 0.1) + DENSITY;
-		//initializeFieldWithSeed();
-		//for (int i = 0; i < Lp*Lp; i++){
-		//	int x = i % Lp;
-		//	phi [i] = Math.cos(2*PI*x/(R/dx))*.1;
-		//}
-		//DENSITY = mean (phi);
-
-		//System.out.println("read dt " + dt);
 	}
 	
 	public void randomizeField(double m) {
@@ -109,6 +99,7 @@ public class IsingField2D {
 	public void readParams(Parameters params) {
 		T = params.fget("T");
 		dt = params.fget("dt");
+		H = params.fget("H");
 		J = params.fget("J");
 		R = params.fget("R");
 		L = R*params.fget("L/R");
@@ -241,29 +232,46 @@ public class IsingField2D {
 	public void simulate() {
 		double freeEnergy = 0;  //free energy is calculated for previous time step
 		
+		
 		convolveWithRange(phi, phi_bar, R);
 		
+		double meanLambda = 0;
+		
 		for (int i = 0; i < Lp*Lp; i++) {
-			double potential = -(phi[i]*phi_bar[i])/2.0;
+			double dF_dPhi = 0, entropy = 0;
 			if(theory == "Exact"){
-				double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-				freeEnergy += potential  - T*entropy; // - H*phi[i];
-				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i])) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				Lambda[i] = 1;
+				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+			}else if(theory == "Exact Semi-Stable"){
+				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				Lambda[i] = (1 - phi[i]*phi[i]);
+				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+			}else if(theory == "Exact Stable"){
+				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Phi4"){
-				double entropy = (sqr(phi[i]) + sqr(sqr(phi[i]))/4.0)/2.0;
-				freeEnergy += potential  - T*entropy; // - H*phi[i];
-				del_phi[i] = - dt*sqr(1-sqr(phi[i]))*(-phi_bar[i]+T*(-phi[i]-phi[i]*sqr(phi[i])/2.0)) + sqrt(dt*2*T*sqr(1-sqr(phi[i]))/dx)*noise();
+				dF_dPhi = -phi_bar[i]+T*(-phi[i]-phi[i]*sqr(phi[i])/2.0) - H;
+				Lambda[i] = sqr(1 - phi[i]*phi[i]);
+				entropy = (sqr(phi[i]) + sqr(sqr(phi[i]))/4.0)/2.0;
 			}else if(theory == "Linear"){
-				double entropy = (sqr(phi[i]))/2.0;
-				freeEnergy += potential  - T*entropy; // - H*phi[i];
-				del_phi[i] = - dt*(-phi_bar[i] - T*phi[i]) + sqrt((dt*2*T)/dx)*noise();
+				dF_dPhi = -phi_bar[i] - T*phi[i] -H;
+				Lambda[i] = sqr(1 - phi[i]*phi[i]);
+				entropy = (sqr(phi[i]))/2.0;
 			}
+			del_phi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+			meanLambda += Lambda[i];
+			
+			double potential = -(phi[i]*phi_bar[i])/2.0;
+			freeEnergy += potential - T*entropy - H*phi[i];
 		}
-		double mu = mean(del_phi)-(DENSITY-mean(phi));
+		
+		meanLambda /= Lp*Lp;
+		double mu = 0;//(mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
 		for (int i = 0; i < Lp*Lp; i++) {
-			phi[i] += del_phi[i] - mu;
+			phi[i] += del_phi[i]-Lambda[i]*mu;
 		}
-		//System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
 
 		freeEnergy /= (Lp*Lp) ;
 		accFreeEnergy.accum(t,freeEnergy);
@@ -272,19 +280,7 @@ public class IsingField2D {
 		accMinPhi.accum(t, kip.util.DoubleArray.min(phi));
 		accMaxPhi.accum(t, kip.util.DoubleArray.max(phi));
 	}
-	
-	
-	//public StructureFactor newStructureFactor(double binWidth) {
-	//	// round binwidth down so that it divides KR_SP without remainder.
-	//	binWidth = KR_SP / floor(KR_SP/binWidth);
-	//	return new StructureFactor(Lp, L, R, binWidth);
-	//}
-	
-	
-	//public void accumulateIntoStructureFactor(StructureFactor sf) {
-	//	sf.accumulate(phi);
-	//}
-	
+
 	
 	public double[] coarseGrained() {
 		return phi;
@@ -298,6 +294,10 @@ public class IsingField2D {
 	
 	public double time() {
 		return t;
+	}
+	
+	public boolean circleInt(){
+		return circleInteraction;
 	}
 	
 	public PointSet getHslice(){
