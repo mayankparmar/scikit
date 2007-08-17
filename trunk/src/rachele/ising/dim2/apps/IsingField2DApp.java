@@ -36,13 +36,13 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
-		params.addm("Noise", new ChoiceValue("On","Off"));
-		params.addm("Approx", new ChoiceValue("Exact", "Phi4"));
+		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Noise", new ChoiceValue("Off","On"));
+		params.addm("Approx", new ChoiceValue("Linear", "Exact", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.1);
-		params.addm("dt", 0.1);
+		params.addm("T", 0.03);
+		params.addm("dt", 1.0);
 		params.addm("R", 1000000);
 		params.add("L/R", 8.0);
 		params.add("R/dx", 8.0);

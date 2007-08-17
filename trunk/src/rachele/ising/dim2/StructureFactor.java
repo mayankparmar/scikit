@@ -215,7 +215,7 @@ public class StructureFactor {
 					count += 1;
 					if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
 						accPeakC.accum(t, sFactor[i]);
-						//System.out.println(t + " " + kR);
+						System.out.println(t + " " + kR);
 					}
 				}
 			}
