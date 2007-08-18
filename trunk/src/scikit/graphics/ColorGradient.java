@@ -3,7 +3,7 @@ package scikit.graphics;
 import java.awt.Color;
 import static java.lang.Math.*;
 
-public class ColorScale implements ColorChooser {
+public class ColorGradient implements ColorChooser {
 	private double _lo = 0, _hi = 1;
 	private static double _colors[][] = {
 			{1-1.0,     0, 0, 0},
@@ -33,7 +33,7 @@ public class ColorScale implements ColorChooser {
         }
     }
 	
-	public ColorScale(double lo, double hi) {
+	public ColorGradient(double lo, double hi) {
 		_lo = lo;
 		_hi = hi;
 	}

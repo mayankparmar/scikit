@@ -44,7 +44,7 @@ public class ClumpCollection3DApp extends Simulation {
 	
 	public void animate() {
        	params.set("Time", clump.time());
-       	grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+       	grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
         plot.registerLines("Structure factor", sf.getAccumulator(), Color.BLACK);
         plot.registerLines("Structure data", new Function(sf.kRmin(), sf.kRmax()) {
         	public double eval(double kR) {

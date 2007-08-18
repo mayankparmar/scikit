@@ -47,9 +47,9 @@ public class Clump3DApp extends Simulation {
 		
 		// one 2D slice is presented in field display
 		if (params.sget("Zoom").equals("Yes"))
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
 	}
 	
 	public void clear() {
