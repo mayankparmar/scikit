@@ -32,9 +32,9 @@ public class SaddleApp extends Simulation {
 	public void animate() {
 		clump.readParams(params);
 		if (params.sget("Zoom").equals("Yes"))
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
 		params.set("Time", clump.time());
 		params.set("dF/dphi", clump.rms_dF_dphi);
 		params.set("Valid profile", !clump.rescaleClipped);

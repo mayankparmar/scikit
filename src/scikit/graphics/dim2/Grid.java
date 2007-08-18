@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import scikit.graphics.ColorChooser;
-import scikit.graphics.ColorScale;
+import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 
@@ -46,28 +46,39 @@ public class Grid extends Scene2D {
 		return ds;
 	}
 	
-	public void registerColorScaleData(int w, int h, double[] data) {
+	public void registerData(int w, int h, double[] data) {
 		double lo = Double.POSITIVE_INFINITY;
 		double hi = Double.NEGATIVE_INFINITY;
 		for (double v : data) {
 			lo = min(lo, v);
 			hi = max(hi, v);
 		}
-		registerColorScaleData(w, h, data, lo, hi);
+		registerData(w, h, data, lo, hi);
 	}
 	
-	public void registerColorScaleData(int w, int h, double[] data, double lo, double hi) {
-		registerData(w, h, data, new ColorScale(lo, hi));
+	public void registerData(int w, int h, double[] data, double lo, double hi) {
+		registerData(w, h, data, new ColorGradient(lo, hi));
 	}
 	
 	public void registerData(int w, int h, double[] data, ColorChooser cc) {
-		setSize(w, h);
+		setSize(w, h, data.length);
 		System.arraycopy(data, 0, _data, 0, w*h);
 		rasterizeImage(cc);
 		animate();
     }
 	
-	private void setSize(int w, int h) {
+	public void registerData(int w, int h, int[] data, ColorChooser cc) {
+		setSize(w, h, data.length);
+		for (int i = 0; i < data.length; i++)
+			_data[i] = data[i];
+		rasterizeImage(cc);
+		animate();
+	}
+	
+	private void setSize(int w, int h, int expectedSize) {
+		if (w*h != expectedSize)
+			throw new IllegalArgumentException("Array length " + expectedSize
+					+ " does not match specified shape (" + w + "*" + h + ")");
 		if (w != _w || h != _h) {
     		_w = w;
     		_h = h;

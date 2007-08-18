@@ -48,9 +48,9 @@ public class Clump2DApp extends Simulation {
 		clump.readParams(params);
 		
 		if (params.sget("Zoom").equals("Yes"))
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
-			grid.registerColorScaleData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
 		
         plot.registerLines("Structure Data", sf.getAccumulator(), Color.BLACK);
         plot.registerLines("Structure Theory", new Function(sf.kRmin(), sf.kRmax()) {

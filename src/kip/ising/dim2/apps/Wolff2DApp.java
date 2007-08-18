@@ -1,10 +1,13 @@
 package kip.ising.dim2.apps;
 
+import java.awt.Color;
+
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.DoubleValue;
-import scikit.plot.GridDisplay;
+import scikit.graphics.ColorPalette;
+import scikit.graphics.dim2.Grid;
 import kip.util.Complex;
 
 class Ising {
@@ -75,9 +78,11 @@ class Ising {
 }
 
 public class Wolff2DApp extends Simulation {
-    GridDisplay grid = new GridDisplay("Ising spins", true);
-    GridDisplay grid2 = new GridDisplay("Conformal mapping", true);    
+    Grid grid = new Grid("Ising spins");
+    Grid grid2 = new Grid("Conformal mapping");    
 	Ising sim;
+	int L, Lc;
+	int original[], conformal[];
 	
 	public static void main(String[] args) {
 		new Control(new Wolff2DApp(), "Clump Model");
@@ -90,65 +95,63 @@ public class Wolff2DApp extends Simulation {
 	}
 	
 	public void animate() {
-		sim.T = params.fget("T");
+		sim.T = params.fget("T");	
+		ColorPalette palette = new ColorPalette();
+		palette.setColor(0, new Color(80, 80, 80)); // background
+		palette.setColor(-1, Color.BLACK); // spin down
+		palette.setColor(1, Color.WHITE); // spin up
+		palette.setColor(2, new Color(130, 200, 200)); // spin up (alternate)
+		palette.setColor(4, new Color(0, 100, 0)); // branch cut
+		grid.registerData(L, L, original, palette);
+		grid2.registerData(Lc, Lc, conformal, palette);
+	}
+	
+	public void clear() {
+		grid.clear();
+		grid2.clear();
 	}
 	
 	public void run() {
 		sim = new Ising(params.iget("L"), params.fget("T"));	
-    	int L = sim.L;
-    	int Lc = L/2;
-         
-        int[] original  = new int[L*L];
-		int[] conformal = new int[Lc*Lc];
-		grid.setData(L, L, original);
-        grid2.setData(Lc, Lc, conformal);
-        
-        grid.setColor(-1, 0, 0, 0); // spin down
-        grid.setColor(1, 255, 255, 255); // spin up
-        grid.setColor(2, 130, 200, 200); // spin up (alternate)
-        
-        grid2.setColor(0, 80, 80, 80); // background
-        grid2.setColor(-1, 0, 0, 0); // spin down
-        grid2.setColor(1, 255, 255, 255); // spin up
-        grid2.setColor(2, 130, 200, 200); // spin up (alternate)
-        grid2.setColor(4, 0, 100, 0); // branch cut
-
-        Job.addDisplay(grid);
-        Job.addDisplay(grid2);
-        
+    	L = sim.L;
+    	Lc = L/2;
+        original  = new int[L*L];
+		conformal = new int[Lc*Lc];
+		
         while (true) {
         	sim.step();
-	        for (int y = 0; y < L; y++) {
-	        	for (int x = 0; x < L; x++) {
-	        		original[y*L+x] = sim.spin[y*L+x];
+    		
+            for (int y = 0; y < L; y++) {
+            	for (int x = 0; x < L; x++) {
+            		original[y*L+x] = sim.spin[y*L+x];
         			if ((x/32+y/32)%2 == 0) {
         				if (original[y*L+x] == 1)
         					original[y*L+x] = 2;
         			}
-	        	}
-	        }
-	        for (int yc = 0; yc < Lc; yc++) {
-	        	for (int xc = 0; xc < Lc; xc++) {
-	        		Complex c = new Complex(xc-Lc/2,yc-Lc/2);
-	        		c = c.sqrt().times(new Complex(1.01*L/Math.sqrt(Lc),0));
-	        		int x = (int)c.re() + L/2;
-	        		int y = (int)c.im() + L/2;
-	        		if (x >= 0 && x < L && y >= 0 && y < L) {
-	        			conformal[yc*Lc+xc+Lc/4] = original[y*L+x];
-	        			if (xc-Lc/2 < 0 && yc-Lc/2 > -2 && yc-Lc/2 < 2)
-	        				conformal[yc*Lc+xc+Lc/4] = 4; // branch cut
-	        		}
-	        		x = -(int)c.re() + L/2;
-	        		y = -(int)c.im() + L/2;
-	        		if (x >= 0 && x < L && y >= 0 && y < L) {
-	        			conformal[yc*Lc+xc-Lc/4] = original[y*L+x];
-	        			if (xc-Lc/2 < 0 && yc-Lc/2 > -2 && yc-Lc/2 < 2)
-	        				conformal[yc*Lc+xc-Lc/4] = 4; // branch cut
-	        		}
-	        		
-	        	}
-	       	}
-        	
+            	}
+            }
+            for (int yc = 0; yc < Lc; yc++) {
+            	for (int xc = 0; xc < Lc; xc++) {
+            		Complex c = new Complex(xc-Lc/2,yc-Lc/2);
+            		c = c.sqrt().times(new Complex(1.01*L/Math.sqrt(Lc),0));
+            		int x = (int)c.re() + L/2;
+            		int y = (int)c.im() + L/2;
+            		if (x >= 0 && x < L && y >= 0 && y < L) {
+            			conformal[yc*Lc+xc+Lc/4] = original[y*L+x];
+            			if (xc-Lc/2 < 0 && yc-Lc/2 > -2 && yc-Lc/2 < 2)
+            				conformal[yc*Lc+xc+Lc/4] = 4; // branch cut
+            		}
+            		x = -(int)c.re() + L/2;
+            		y = -(int)c.im() + L/2;
+            		if (x >= 0 && x < L && y >= 0 && y < L) {
+            			conformal[yc*Lc+xc-Lc/4] = original[y*L+x];
+            			if (xc-Lc/2 < 0 && yc-Lc/2 > -2 && yc-Lc/2 < 2)
+            				conformal[yc*Lc+xc-Lc/4] = 4; // branch cut
+            		}
+            		
+            	}
+           	}
+            
         	Job.animate();
         }
 	}
