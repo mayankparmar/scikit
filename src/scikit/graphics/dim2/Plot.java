@@ -4,15 +4,12 @@ import static java.lang.Math.*;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
 import scikit.dataset.DataSet;
 import scikit.graphics.Drawable;
@@ -22,15 +19,11 @@ import scikit.util.Bounds;
 public class Plot extends Scene2D {
 	ArrayList<DatasetDw> _datas = new ArrayList<DatasetDw>();
 	boolean _logScaleX = false, _logScaleY = false;
-	protected JPopupMenu _popup = new JPopupMenu();
 	
 	
 	public Plot() {
 		super();
-		_component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
-			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
-		});
+		_visibleBoundsBufferPercentage = 5;
 	}
 	
 	public Plot(String title) {
@@ -39,6 +32,7 @@ public class Plot extends Scene2D {
 	}
 	
 	public void clear() {
+		// remove data sets first because super.clear() will cause a drawAll() operation
 		_datas.clear();
 		super.clear();
 	}
@@ -51,6 +45,10 @@ public class Plot extends Scene2D {
 	 * @param logScaleY True if the y coordinate should be displayed on a logarithmic scale
 	 */
 	public void setLogScale(boolean logScaleX, boolean logScaleY) {
+		// if using log scale, then do not include drawables besides registered data,
+		// because we can't handle log-scale warping of geometric primitives 
+		_suppressDrawables = (logScaleX || logScaleY);
+		// if changing log scale, then reset current view bounds and animate
 		if (logScaleX != _logScaleX || logScaleY != _logScaleY) {
 			_logScaleX = logScaleX;
 			_logScaleY = logScaleY;
@@ -98,18 +96,6 @@ public class Plot extends Scene2D {
 		registerDataset(name, data, color, DatasetDw.Style.BARS);
 	}
 	
-	protected Bounds calculateDataBounds() {
-		// extend bounds a little bit
-		Bounds bounds = super.calculateDataBounds();
-		double w = bounds.xmax - bounds.xmin;
-		double h = bounds.ymax - bounds.ymin;
-		bounds.xmin -= w/16;
-		bounds.xmax += w/16;
-		bounds.ymin -= h/16;
-		bounds.ymax += h/16;
-		return bounds;
-	}
-	
 	protected List<Drawable<Gfx2D>> getAllDrawables() {
 		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
 		ds.add(new TickMarks(this));
@@ -117,7 +103,42 @@ public class Plot extends Scene2D {
 		ds.addAll(super.getAllDrawables());
 		return ds;
 	}
-
+	
+	protected List<JMenuItem> getAllPopupMenuItems() {
+		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
+		
+		// add log/linear scale menu items
+		JMenuItem itemX = new JMenuItem(_logScaleX ? "Set Linear in X" : "Set Logarithmic in X");
+		JMenuItem itemY = new JMenuItem(_logScaleY ? "Set Linear in Y" : "Set Logarithmic in Y");
+		itemX.setEnabled(_logScaleX || calculateDataBounds().xmin > 0);
+		itemY.setEnabled(_logScaleY || calculateDataBounds().ymin > 0);
+		itemX.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setLogScale(!_logScaleX, _logScaleY);
+			}
+		});
+		itemY.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setLogScale(_logScaleX, !_logScaleY);
+			}
+		});
+		ret.add(itemX);
+		ret.add(itemY);
+		
+		// add save dataset menu items
+		for (final DatasetDw d : _datas) {
+			JMenuItem menuItem = new JMenuItem("Save '" + d._name + "' ...");
+			menuItem.setForeground(d._color);
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveDataset(d._data, d._name);
+				}
+			});
+			ret.add(menuItem);
+		}
+		return ret;
+	}
+	
 	private void registerDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
 		DatasetDw dw = new DatasetDw(this, name, data, color, style);
 		// if the list contains an element with the same name as 'dataset',
@@ -137,25 +158,7 @@ public class Plot extends Scene2D {
 			scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
 		} catch (IOException e) {}
 	}
-	
-	private void maybeShowPopup(MouseEvent e) {
-		if (e.isPopupTrigger() && _datas.size() > 0) {
-			_popup.removeAll();
-			for (final DatasetDw d : _datas) {
-				JMenuItem menuItem = new JMenuItem("Save '" + d._name + "' ...");
-				menuItem.setForeground(d._color);
-				menuItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						saveDataset(d._data, d._name);
-					}
-				});
-				_popup.add(menuItem);
-			}
-			_popup.show(e.getComponent(), e.getX(), e.getY());
-		}
-	}
 }
-
 
 class DatasetDw implements Drawable<Gfx2D> {
 	enum Style {LINES, MARKS, BARS};

@@ -6,10 +6,16 @@ import static java.lang.Math.min;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JMenuItem;
 
 import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
@@ -17,9 +23,9 @@ import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 
 public class Grid extends Scene2D {
-	private BufferedImage _image;
-	private int _w, _h;
-	private double[] _data;
+	private BufferedImage _image = null;
+	private int _w = 0, _h = 0;
+	private double[] _data = null;
     private int[] _pixelArray;
     
 	public Grid() {
@@ -30,7 +36,15 @@ public class Grid extends Scene2D {
 		this();
 		scikit.util.Utilities.frame(_component, title);
 	}
-
+	
+	public void clear() {
+		// remove data first because super.clear() will cause a drawAll() operation
+		_w = _h = 0;
+		_image = null;
+		_data = null;
+		super.clear();
+	}
+	
 	protected Component createComponent() {
 		return Gfx2DSwing.createComponent(this);
 	}
@@ -44,6 +58,20 @@ public class Grid extends Scene2D {
 		ds.add(_gridDrawable);
 		ds.addAll(super.getAllDrawables());
 		return ds;
+	}
+		
+	protected List<JMenuItem> getAllPopupMenuItems() {
+		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
+		if (_data != null) {
+			JMenuItem menuItem = new JMenuItem("Save grid data ...");
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveData("grid.txt");
+				}
+			});
+			ret.add(menuItem);
+		}
+		return ret;
 	}
 	
 	public void registerData(int w, int h, double[] data) {
@@ -76,9 +104,11 @@ public class Grid extends Scene2D {
 	}
 	
 	private void setSize(int w, int h, int expectedSize) {
-		if (w*h != expectedSize)
+		if (w*h == 0)
+			throw new IllegalArgumentException("Illegal specified shape (" + w + "*" + h + ")");
+		if (w*h > expectedSize)
 			throw new IllegalArgumentException("Array length " + expectedSize
-					+ " does not match specified shape (" + w + "*" + h + ")");
+					+ " does not fit specified shape (" + w + "*" + h + ")");
 		if (w != _w || h != _h) {
     		_w = w;
     		_h = h;
@@ -122,4 +152,11 @@ public class Grid extends Scene2D {
 			return new Bounds(0, 1, 0, 1);
 		}
 	};
+	
+	private void saveData(String str) {
+		try {
+			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
+			scikit.util.Dump.writeOctaveGrid(pw, _data, _w, 1);
+		} catch (IOException e) {}
+	}
 }
