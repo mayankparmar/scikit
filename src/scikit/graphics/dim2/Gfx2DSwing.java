@@ -126,11 +126,11 @@ public class Gfx2DSwing implements Gfx2D {
 		return component;
 	}
 	
-	public void renderImage(BufferedImage image, double x1, double y1, double x2, double y2) {
-    	int x1p = transX(0);
-    	int y1p = transY(0);
-    	int x2p = transX(1);
-    	int y2p = transY(1);
+	public void drawImage(BufferedImage image, double x1, double y1, double x2, double y2) {
+    	int x1p = transX(x1);
+    	int y1p = transY(y1);
+    	int x2p = transX(x2);
+    	int y2p = transY(y2);
 		int w = image.getWidth();
 		int h = image.getHeight();
         engine.drawImage(image, x1p, y1p, x2p, y2p, 0, 0, w, h, null);

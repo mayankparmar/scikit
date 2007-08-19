@@ -134,7 +134,7 @@ public class Grid extends Scene2D {
 	private Drawable<Gfx2D> _gridDrawable = new Drawable<Gfx2D>() {
 		public void draw(Gfx2D g) {
 	        if (_image != null) {
-	        	((Gfx2DSwing)g).renderImage(_image, 0, 0, 1, 1);
+	        	((Gfx2DSwing)g).drawImage(_image, 0, 0, 1, 1);
 	        }
 		}
 		public Bounds getBounds() {
