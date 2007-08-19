@@ -41,7 +41,9 @@ public class Dump {
 				FileDialog d = new FileDialog((Frame)comp, "Save", FileDialog.SAVE);
 				d.setFile(fname);
 				d.setVisible(true);
-				return pwFromString(d.getDirectory()+d.getFile());
+				String file = d.getFile();
+				String dir = d.getDirectory();
+				return file == null ? null : pwFromString(dir+file);
 			}
 		}
 		throw new IOException();
