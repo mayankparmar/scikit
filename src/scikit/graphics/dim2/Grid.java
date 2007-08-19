@@ -156,7 +156,8 @@ public class Grid extends Scene2D {
 	private void saveData(String str) {
 		try {
 			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
-			scikit.util.Dump.writeOctaveGrid(pw, _data, _w, 1);
+			if (pw != null)
+				scikit.util.Dump.writeOctaveGrid(pw, _data, _w, 1);
 		} catch (IOException e) {}
 	}
 }

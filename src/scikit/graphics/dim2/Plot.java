@@ -177,7 +177,8 @@ public class Plot extends Scene2D {
 	private void saveDataset(DataSet data, String str) {
 		try {
 			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
-			scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
+			if (pw != null)
+				scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
 		} catch (IOException e) {}
 	}
 }
