@@ -63,13 +63,11 @@ public class NucleationApp extends Simulation {
 		nucTimes.registerBars("Nucleation times", nucTimesAcc, Color.RED);
         
 		double N_R = (double)sim.N/sim.R;
-		fieldPlot.setXRange(0, N_R);
-		fieldPlot.setYRange(-0.8, 0.1);
 		fieldPlot.registerLines("Field", new PointSet(0, (double)sim.dx/sim.R, sim.copyField()), Color.BLACK);
 		fieldPlot.setDrawables(asList(Geom2D.line(0., 0., N_R, 0., Color.BLUE)));
         
 		profilePlot.registerLines("Data", droplet, Color.RED);
-        profilePlot.registerLines("Theory", saddleProfile, Color.BLUE);
+		profilePlot.registerLines("Theory", saddleProfile, Color.BLUE);
 	}
     
 	public void clear() {

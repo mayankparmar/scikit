@@ -27,7 +27,7 @@ public class TickMarks implements Drawable<Gfx2D> {
 	}
 	
 	public void draw(Gfx2D g) {
-		Bounds db = _plot.dataBounds();
+		Bounds db = _plot.viewBounds();
 		Bounds cb = _plot.pixelBounds();
 		
 		List<Tick> xticks, yticks;
@@ -124,7 +124,7 @@ public class TickMarks implements Drawable<Gfx2D> {
 	}
 	
 	private void drawTickLines(Gfx2D g, List<Tick> xticks, List<Tick> yticks) {
-		Bounds db = _plot.dataBounds();
+		Bounds db = _plot.viewBounds();
 		for (Tick tick : xticks) {
 			g.setColor(tick.color);
 			g.drawLine(tick.v, db.ymin, tick.v, db.ymax);
@@ -136,7 +136,7 @@ public class TickMarks implements Drawable<Gfx2D> {
 	}
 	
 	private void drawTickLabels(Gfx2D g, List<Tick> xticks, List<Tick> yticks) {
-		Bounds db = _plot.dataBounds();
+		Bounds db = _plot.viewBounds();
 		Bounds cb = _plot.pixelBounds();
 		double heightPerPix = db.getHeight() / cb.getHeight();
 		double widthPerPix = db.getWidth() / cb.getWidth();

@@ -22,9 +22,6 @@ abstract public class Scene<T> {
 	protected boolean _suppressDrawables = false;
 	// additional buffer viewing area, as percentage of the width
 	protected double _visibleBoundsBufferPercentage = 0;
-	// when the user zooms out (double clicks to "resetViewWindow()"), the current
-	// view bounds is set to topBounds (and then extended to fit data).
-	protected Bounds _topBounds = new Bounds();
 	// is the view zoomed in?  this will disable autoscale
 	protected boolean _zoomed = false;
 	// if false, bounds will zoom out to fit data; if true, will zoom both in and out
@@ -82,7 +79,7 @@ abstract public class Scene<T> {
 	 * resetting the view bounds. */
 	public void clear() {
 		_drawables.clear();
-		_curBounds = _topBounds.clone();
+		_curBounds = new Bounds();
 		_zoomed = false;
 		_component.repaint();
 	}
@@ -95,7 +92,7 @@ abstract public class Scene<T> {
 		return new Bounds(0, _component.getWidth(), 0, _component.getHeight());
 	}
 	
-	public Bounds dataBounds() {
+	public Bounds viewBounds() {
 		return _curBounds.clone();
 	}
 	
