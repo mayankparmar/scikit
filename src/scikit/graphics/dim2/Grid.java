@@ -5,7 +5,6 @@ import static java.lang.Math.min;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -135,17 +134,7 @@ public class Grid extends Scene2D {
 	private Drawable<Gfx2D> _gridDrawable = new Drawable<Gfx2D>() {
 		public void draw(Gfx2D g) {
 	        if (_image != null) {
-	        	Gfx2DSwing g2 = (Gfx2DSwing)g;
-	        	int x1 = g2.transX(0);
-	        	int y1 = g2.transY(0);
-	        	int x2 = g2.transX(1);
-	        	int y2 = g2.transY(1);
-				int w = _image.getWidth();
-				int h = _image.getHeight();
-				g2.engine().setRenderingHint(
-						RenderingHints.KEY_INTERPOLATION,
-						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-	            g2.engine().drawImage(_image, x1, y1, x2, y2, 0, 0, w, h, null);
+	        	((Gfx2DSwing)g).renderImage(_image, 0, 0, 1, 1);
 	        }
 		}
 		public Bounds getBounds() {

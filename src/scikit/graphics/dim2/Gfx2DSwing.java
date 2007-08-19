@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
 
@@ -36,19 +37,19 @@ public class Gfx2DSwing implements Gfx2D {
 		this.datBds = proj;
 	}
 
-	int transX(double x) {
+	private int transX(double x) {
 		return (int) (pixBds.xmax * (x - datBds.xmin) / datBds.getWidth());
 	}
 	
-	int transY(double y) {
+	private int transY(double y) {
 		return (int) (pixBds.getHeight() - pixBds.ymax * (y - datBds.ymin) / datBds.getHeight());
 	}
 	
-	int offsetX(double w) {
+	private int offsetX(double w) {
 		return (int) (w * pixBds.getWidth() / datBds.getWidth());
 	}
 	
-	int offsetY(double h) {
+	private int offsetY(double h) {
 		return (int) (h * pixBds.getHeight() / datBds.getHeight());
 	}
 	
@@ -112,9 +113,9 @@ public class Gfx2DSwing implements Gfx2D {
 		final JComponent component = new JComponent() {
 			private static final long serialVersionUID = 1L;
 			public void paintComponent(java.awt.Graphics engine) {
-				// when drawing images (for example Grid), keep scaled pixel boundaries
+				// when drawing images (e.g. renderImage()), keep scaled pixel boundaries
 				// crisp.  on some platforms (e.g. OS X), this hint must be applied
-				// before all drawing.
+				// before any drawing occurs
 				((Graphics2D)engine).setRenderingHint(
 						RenderingHints.KEY_INTERPOLATION,
 						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -123,5 +124,15 @@ public class Gfx2DSwing implements Gfx2D {
 		};
 		component.setPreferredSize(new Dimension(300, 300));
 		return component;
+	}
+	
+	public void renderImage(BufferedImage image, double x1, double y1, double x2, double y2) {
+    	int x1p = transX(0);
+    	int y1p = transY(0);
+    	int x2p = transX(1);
+    	int y2p = transY(1);
+		int w = image.getWidth();
+		int h = image.getHeight();
+        engine.drawImage(image, x1p, y1p, x2p, y2p, 0, 0, w, h, null);
 	}
 }
