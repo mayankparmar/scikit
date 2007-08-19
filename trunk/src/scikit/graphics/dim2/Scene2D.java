@@ -2,13 +2,15 @@ package scikit.graphics.dim2;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.MouseAdapter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JMenuItem;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
 
 import scikit.graphics.Drawable;
 import scikit.graphics.Scene;
@@ -24,12 +26,24 @@ public class Scene2D extends Scene<Gfx2D> {
 	public Scene2D() {
 		super();
 		_component.addMouseListener(_mouseListener);
-		_component.addMouseMotionListener(_mouseMotionListener);
+		_component.addMouseMotionListener(_mouseListener);
 	}
 	
 	public Scene2D(String title) {
 		this();
 		scikit.util.Utilities.frame(_component, title);
+	}
+	
+	public void setXRange(double xmin, double xmax) {
+		_topBounds.xmin = _curBounds.xmin = xmin;
+		_topBounds.xmax = _curBounds.xmax = xmax;
+		_zoomed = false;
+	}
+	
+	public void setYRange(double ymin, double ymax) {
+		_topBounds.ymin = _curBounds.ymin = ymin;
+		_topBounds.ymax = _curBounds.ymax = ymax;
+		_zoomed = false;
 	}
 	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
@@ -70,18 +84,6 @@ public class Scene2D extends Scene<Gfx2D> {
 		_autoScale = autoScale;
 	}
 	
-	public void setXRange(double xmin, double xmax) {
-		_topBounds.xmin = _curBounds.xmin = xmin;
-		_topBounds.xmax = _curBounds.xmax = xmax;
-		_zoomed = false;
-	}
-	
-	public void setYRange(double ymin, double ymax) {
-		_topBounds.ymin = _curBounds.ymin = ymin;
-		_topBounds.ymax = _curBounds.ymax = ymax;
-		_zoomed = false;
-	}
-	
 	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
 		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _component.getWidth();
@@ -96,24 +98,48 @@ public class Scene2D extends Scene<Gfx2D> {
 		return new Point(x, y);		
 	}
 	
+	protected List<JMenuItem> getAllPopupMenuItems() {
+		List<JMenuItem> ret = super.getAllPopupMenuItems();
+		JMenuItem item = new JMenuItem("Zoom out");
+		item.setEnabled(boundsIsValid() && _zoomed);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				zoomToFitData();
+				_component.repaint();
+			}
+		});
+		ret.add(item);
+		return ret;
+	}
+	
+	private boolean boundsIsValid() {
+		return _curBounds.getWidth() > 0 && _curBounds.getHeight() > 0;
+	}
+	
+	private void zoomToFitData() {
+		_zoomed = false;
+		_curBounds = _topBounds.createUnion(calculateVisibleBounds());
+	}
+	
 	private Point eventToPix(MouseEvent event) {
 		return new Point(event.getX()-1, _component.getHeight()-event.getY()+1);
 	}
 	
-	private MouseListener _mouseListener = new MouseAdapter() {
+	private MouseInputListener _mouseListener = new MouseInputAdapter() {
 		public void mouseClicked(MouseEvent event) {
-			if (event.getClickCount() > 1) {
-				_zoomed = false;
+			if (boundsIsValid() && event.getClickCount() > 1) {
 				_selectionActive = false;
-				_curBounds = _topBounds.createUnion(calculateDataBounds());
+				zoomToFitData();
 				_component.repaint();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
-			_selectionStart = eventToPix(event);
-			_selectionEnd = eventToPix(event);
-			_selectionActive = true;
-			_component.repaint();
+			if (boundsIsValid() && !event.isPopupTrigger()) {
+				_selectionStart = eventToPix(event);
+				_selectionEnd = eventToPix(event);
+				_selectionActive = true;
+				_component.repaint();
+			}
 		}
 		public void mouseReleased(MouseEvent event) {
 			if (_selectionActive) {
@@ -127,9 +153,6 @@ public class Scene2D extends Scene<Gfx2D> {
 				_component.repaint();
 			}
 		}
-	};
-	
-	private MouseMotionListener _mouseMotionListener = new MouseMotionAdapter() {
 		public void mouseDragged(MouseEvent event) {
 			_selectionEnd = eventToPix(event);
 			_component.repaint();
