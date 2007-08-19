@@ -34,18 +34,6 @@ public class Scene2D extends Scene<Gfx2D> {
 		scikit.util.Utilities.frame(_component, title);
 	}
 	
-	public void setXRange(double xmin, double xmax) {
-		_topBounds.xmin = _curBounds.xmin = xmin;
-		_topBounds.xmax = _curBounds.xmax = xmax;
-		_zoomed = false;
-	}
-	
-	public void setYRange(double ymin, double ymax) {
-		_topBounds.ymin = _curBounds.ymin = ymin;
-		_topBounds.ymax = _curBounds.ymax = ymax;
-		_zoomed = false;
-	}
-	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
 	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
 	// we could get an uncatchable NoClassDefFoundError.
@@ -68,7 +56,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	protected void drawAll(Gfx2D g) {
 		drawBackground(g);
-		g.projectOrtho2D(dataBounds());
+		g.projectOrtho2D(viewBounds());
 		for (Drawable<Gfx2D> d : getAllDrawables())
 			d.draw(g);
 	}
@@ -105,7 +93,6 @@ public class Scene2D extends Scene<Gfx2D> {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				zoomToFitData();
-				_component.repaint();
 			}
 		});
 		ret.add(item);
@@ -118,7 +105,8 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	private void zoomToFitData() {
 		_zoomed = false;
-		_curBounds = _topBounds.createUnion(calculateVisibleBounds());
+		_curBounds = new Bounds();
+		animate();
 	}
 	
 	private Point eventToPix(MouseEvent event) {
@@ -130,7 +118,6 @@ public class Scene2D extends Scene<Gfx2D> {
 			if (boundsIsValid() && event.getClickCount() > 1) {
 				_selectionActive = false;
 				zoomToFitData();
-				_component.repaint();
 			}
 		}
 		public void mousePressed(MouseEvent event) {
@@ -171,7 +158,7 @@ public class Scene2D extends Scene<Gfx2D> {
 				g.setColor(new Color(0f, 0f, 0f, 0.25f));
 				g.drawRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
 				
-				g.projectOrtho2D(g.scene().dataBounds());
+				g.projectOrtho2D(g.scene().viewBounds());
 				g.setLineSmoothing(true);
 			}
 		}

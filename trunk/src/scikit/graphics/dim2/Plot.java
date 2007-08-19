@@ -17,9 +17,14 @@ import scikit.util.Bounds;
 
 
 public class Plot extends Scene2D {
-	ArrayList<DatasetDw> _datas = new ArrayList<DatasetDw>();
+	ArrayList<RegisteredData> _datas = new ArrayList<RegisteredData>();
+	// log-scale drawing is handled as follows:
+	//  - all registered Datasets are reinterpreted (x,y)->(log x,log y)
+	//  - the viewbounds are recalculated in log space
+	//  - the TickMarks Drawable changes its mode
+	//  - Drawables which are not Datasets are hidden, since non-linear warping
+	//    can't be accurately represented
 	boolean _logScaleX = false, _logScaleY = false;
-	
 	
 	public Plot() {
 		super();
@@ -29,6 +34,25 @@ public class Plot extends Scene2D {
 	public Plot(String title) {
 		this();
 		scikit.util.Utilities.frame(_component, title);
+	}
+	
+	public void animate() {
+		// if it is invalid to display the system on a log scale then use a linear scale.
+		// in this case, clear current view bounds so that super.animate() can start fresh.
+		Bounds bds = calculateDataBounds();
+		if (bds.xmin == Double.NEGATIVE_INFINITY) {
+			_logScaleX = false;
+			_curBounds = new Bounds();
+		}
+		if (bds.ymin == Double.NEGATIVE_INFINITY) {
+			_logScaleY = false;
+			_curBounds = new Bounds();
+		}
+		// do not draw geometric primitives on a log scale, since they won't be correctly
+		// transformed
+		_suppressDrawables = _logScaleX || _logScaleY;
+		// ready to go!
+		super.animate();
 	}
 	
 	public void clear() {
@@ -45,14 +69,12 @@ public class Plot extends Scene2D {
 	 * @param logScaleY True if the y coordinate should be displayed on a logarithmic scale
 	 */
 	public void setLogScale(boolean logScaleX, boolean logScaleY) {
-		// if using log scale, then do not include drawables besides registered data,
-		// because we can't handle log-scale warping of geometric primitives 
-		_suppressDrawables = (logScaleX || logScaleY);
-		// if changing log scale, then reset current view bounds and animate
 		if (logScaleX != _logScaleX || logScaleY != _logScaleY) {
 			_logScaleX = logScaleX;
 			_logScaleY = logScaleY;
-			_curBounds = _topBounds.clone();
+			// clear current view bounds
+			_curBounds = new Bounds();
+			// calculate new view bounds and redisplay
 			animate();
 		}
 	}
@@ -67,7 +89,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerPoints(String name, DataSet data, Color color) {
-		registerDataset(name, data, color, DatasetDw.Style.MARKS);
+		registerDataset(name, data, color, RegisteredData.Style.MARKS);
 	}
 
 	/**
@@ -80,7 +102,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerLines(String name, DataSet data, Color color) {
-		registerDataset(name, data, color, DatasetDw.Style.LINES);
+		registerDataset(name, data, color, RegisteredData.Style.LINES);
 	}
 	
 	/**
@@ -93,7 +115,7 @@ public class Plot extends Scene2D {
 	 * @param color The color of the dataset
 	 */
 	public void registerBars(String name, DataSet data, Color color) {
-		registerDataset(name, data, color, DatasetDw.Style.BARS);
+		registerDataset(name, data, color, RegisteredData.Style.BARS);
 	}
 	
 	protected List<Drawable<Gfx2D>> getAllDrawables() {
@@ -126,7 +148,7 @@ public class Plot extends Scene2D {
 		ret.add(itemY);
 		
 		// add save dataset menu items
-		for (final DatasetDw d : _datas) {
+		for (final RegisteredData d : _datas) {
 			JMenuItem menuItem = new JMenuItem("Save '" + d._name + "' ...");
 			menuItem.setForeground(d._color);
 			menuItem.addActionListener(new ActionListener() {
@@ -139,8 +161,8 @@ public class Plot extends Scene2D {
 		return ret;
 	}
 	
-	private void registerDataset(String name, DataSet data, Color color, DatasetDw.Style style) {
-		DatasetDw dw = new DatasetDw(this, name, data, color, style);
+	private void registerDataset(String name, DataSet data, Color color, RegisteredData.Style style) {
+		RegisteredData dw = new RegisteredData(this, name, data, color, style);
 		// if the list contains an element with the same name as 'dataset',
 		// replace that element with 'dataset'
 		if (_datas.contains(dw))
@@ -160,7 +182,7 @@ public class Plot extends Scene2D {
 	}
 }
 
-class DatasetDw implements Drawable<Gfx2D> {
+class RegisteredData implements Drawable<Gfx2D> {
 	enum Style {LINES, MARKS, BARS};
 	
 	Plot _plot;
@@ -169,16 +191,16 @@ class DatasetDw implements Drawable<Gfx2D> {
 	Color _color;
 	Style _style;
 
-	public DatasetDw(Plot plot, String name, DataSet data, Color color, Style style) {
+	public RegisteredData(Plot plot, String name, DataSet data, Color color, Style style) {
 		_plot = plot;
 		_name = name;
 		_data = data;
 		_color = color;
 		_style = style;
-	}		
+	}
 
 	public void draw(Gfx2D g) {
-		Bounds bds = expBounds(g.scene().dataBounds());
+		Bounds bds = expBounds(g.scene().viewBounds());
 		double pts[] = _data.copyPartial(1000, bds.xmin, bds.xmax, bds.ymin, bds.ymax);
 		g.setColor(_color);
 		
@@ -217,8 +239,8 @@ class DatasetDw implements Drawable<Gfx2D> {
 	// implement a special form of equality: two "dataset drawables" are equal
 	// when their names are equal.
 	public boolean equals(Object data) {
-		if (data instanceof DatasetDw)
-			return _name.equals(((DatasetDw)data)._name);
+		if (data instanceof RegisteredData)
+			return _name.equals(((RegisteredData)data)._name);
 		else
 			return false;
 	}
@@ -232,6 +254,9 @@ class DatasetDw implements Drawable<Gfx2D> {
 	}
 	
 	private Bounds logBounds(Bounds in) {
+		// we use (xmin,xmax == +inf,-inf) to represent the absence of bounds;
+		// taking, e.g., max(_,0) preserves this convention in log space.
+		// furthermore, using max(_,0) guarantees bounds will not be NaN.
 		double xmin = _plot._logScaleX ? log10(max(in.xmin,0)) : in.xmin;
 		double xmax = _plot._logScaleX ? log10(max(in.xmax,0)) : in.xmax;
 		double ymin = _plot._logScaleY ? log10(max(in.ymin,0)) : in.ymin;
