@@ -119,6 +119,12 @@ public class Gfx2DSwing implements Gfx2D {
 				((Graphics2D)engine).setRenderingHint(
 						RenderingHints.KEY_INTERPOLATION,
 						RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+				// line anti-aliasing could be enabled here, but it doesn't look
+				// that great on Windows/Linux.  on OS X, high quality anti-aliasing
+				// is already on by default.
+				// ((Graphics2D)engine).setRenderingHint(
+				//		RenderingHints.KEY_ANTIALIASING,
+                //		RenderingHints.VALUE_ANTIALIAS_ON);
 				scene.drawAll(new Gfx2DSwing((Graphics2D)engine, scene));
 			}
 		};
