@@ -268,7 +268,7 @@ public class IsingField2D {
 		}
 		
 		meanLambda /= Lp*Lp;
-		double mu = 0;//(mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
+		double mu = (mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
 		for (int i = 0; i < Lp*Lp; i++) {
 			phi[i] += del_phi[i]-Lambda[i]*mu;
 		}
