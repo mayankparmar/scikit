@@ -4,11 +4,19 @@ package rachele.ising.dim2;
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
+
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import kip.util.Random;
 import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
+//import java.io.*;
 
 public class IsingField2D {
 	public double L, R, T, dx, J, H;
@@ -88,8 +96,40 @@ public class IsingField2D {
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
-		randomizeField(DENSITY);
+		if(params.sget("Init Conditions") == "Random Gaussian")
+			randomizeField(DENSITY);
+		else if ("Init Conditions" == "Constant"){
+			for (int i = 0; i < Lp*Lp; i ++)
+				phi[i] = DENSITY;
+		}else if(params.sget("Init Conditions") == "Read From File")
+			readInitialConfiguration();
 	}
+	
+	public void readInitialConfiguration(){
+		try{
+			File myFile = new File("../../../research/javaData/configs/inputConfig");
+			DataInputStream dis = new DataInputStream(new FileInputStream(myFile));
+			int spaceIndex;
+			double phiValue;
+			try{
+				while(true){
+					spaceIndex =dis.readInt();
+					dis.readChar();       // throws out the tab
+					phiValue = dis.readDouble();
+					dis.readChar();
+					phi[spaceIndex] = phiValue;
+				}
+			} catch (EOFException e) {
+			}
+
+		} catch (FileNotFoundException e) {
+			System.err.println("FileStreamsTest: " + e);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+
 	
 	public void randomizeField(double m) {
 		for (int i = 0; i < Lp*Lp; i++)
