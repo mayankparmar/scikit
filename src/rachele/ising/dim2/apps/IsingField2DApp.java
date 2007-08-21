@@ -29,6 +29,7 @@ public class IsingField2DApp extends Simulation {
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
 	Plot structurePeak = new Plot("Structure Peak vs Time", true);
+	Plot freeEnergyPlot = new Plot("Free Energy", true);
 	//Plot circleSF = new Plot("Circle Structure factor", true);
 	Plot sfPlot = new Plot("Structure Factor", true);
     StructureFactor sf;
@@ -60,9 +61,10 @@ public class IsingField2DApp extends Simulation {
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
+		params.add("dF_dt");
 
 		flags.add("Write Config");
-		//flags.add("Clear S.F.");
+		flags.add("Clear S.F.");
 
 	}
 	
@@ -88,6 +90,8 @@ public class IsingField2DApp extends Simulation {
 		hSlice.setDataSet(0, ising.getHslice());
 		vSlice.setDataSet(0, ising.getVslice());
 
+		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
+		
 		if (ising.circleInt() == true){
 			sfPlot.setDataSet(5, sf.getAccumulatorC());
 			structurePeak.setDataSet(5, sf.getPeakC());
@@ -99,13 +103,14 @@ public class IsingField2DApp extends Simulation {
 		}
 
         
-//		if (flags.contains("Clear S.F.")) {
+		if (flags.contains("Clear S.F.")) {
+			ising.getFreeEnergyAcc().clear();
 //			sf.getAccumulatorCA().clear();
 //			sf.getAccumulatorHA().clear();
 //			sf.getAccumulatorVA().clear();
-//			System.out.println("clicked");
-//		}
-//		flags.clear();
+			System.out.println("clicked");
+		}
+		flags.clear();
 	}
 	
 	public void run() {
@@ -117,7 +122,7 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
 		Job.addDisplay(structurePeak);
-		//Job.addDisplay(circleSF);
+		Job.addDisplay(freeEnergyPlot);
 		Job.addDisplay(sfPlot);
 
 		ising = new IsingField2D(params);

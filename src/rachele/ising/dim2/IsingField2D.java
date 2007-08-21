@@ -23,6 +23,7 @@ public class IsingField2D {
 	public int Lp;
 	public double dt, t;
 	public double[] phi;
+	public double freeEnergy_i, dF_dt;
 	double [] phi_bar, del_phi, Lambda;
 	double horizontalSlice;
 	double verticalSlice;
@@ -149,6 +150,7 @@ public class IsingField2D {
 		
 		params.set("R/dx", R/dx);
 		params.set("Lp", Lp);
+		params.set("dF_dt", dF_dt);
 		
 		if(params.sget("Interaction") == "Circle"){
 			circleInteraction = true;
@@ -315,6 +317,9 @@ public class IsingField2D {
 
 		freeEnergy /= (Lp*Lp) ;
 		accFreeEnergy.accum(t,freeEnergy);
+		dF_dt = (freeEnergy - freeEnergy_i)/dt;
+		freeEnergy_i = freeEnergy;
+		//System.out.println("dF_dt " + freeEnergy + " " + freeEnergy_i + " " + dF_dt);
 		t += dt;
 		
 		accMinPhi.accum(t, kip.util.DoubleArray.min(phi));
