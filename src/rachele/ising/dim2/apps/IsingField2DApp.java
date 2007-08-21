@@ -29,10 +29,10 @@ public class IsingField2DApp extends Simulation {
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
 	Plot structurePeak = new Plot("Structure Peak vs Time", true);
-	Plot freeEnergyPlot = new Plot("Free Energy", true);
-	//Plot circleSF = new Plot("Circle Structure factor", true);
+	Plot sfHorPlot = new Plot("Hor Structure factor", true);
 	Plot sfPlot = new Plot("Structure Factor", true);
-    StructureFactor sf;
+	Plot freeEnergyPlot = new Plot("Free Energy", true);
+	StructureFactor sf;
     IsingField2D ising;
 
     
@@ -42,13 +42,14 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Read From File", "Constant"));
+		params.add("Init Conditions", new ChoiceValue( "Read From File","Random Gaussian", "Constant"));
 		params.addm("Approx", new ChoiceValue("Exact", "Exact SemiStable", "Exact Stable", "Linear", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("T", 0.06);
+		params.addm("dT", 0.01);
 		params.addm("dt", 0.1);
 		params.addm("H", 0.0);
 		params.addm("J", -1.0);
@@ -61,10 +62,10 @@ public class IsingField2DApp extends Simulation {
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
-		params.add("dF_dt");
+		params.add("F_ave");
 
 		flags.add("Write Config");
-		flags.add("Clear S.F.");
+		flags.add("Clear");
 
 	}
 	
@@ -97,14 +98,18 @@ public class IsingField2DApp extends Simulation {
 			structurePeak.setDataSet(5, sf.getPeakC());
 		}else{
 			structurePeak.setDataSet(3, sf.getPeakV());
-			structurePeak.setDataSet(4, sf.getPeakH());
+			sfHorPlot.setDataSet(4, sf.getPeakH());
 			sfPlot.setDataSet(3, sf.getAccumulatorV());
 			sfPlot.setDataSet(4, sf.getAccumulatorH());
 		}
 
         
-		if (flags.contains("Clear S.F.")) {
+		if (flags.contains("Clear")) {
 			ising.getFreeEnergyAcc().clear();
+			sf.getPeakH().clear();
+			sf.getPeakV().clear();
+			ising.aveCount = 0;
+			ising.F_ave=0;
 //			sf.getAccumulatorCA().clear();
 //			sf.getAccumulatorHA().clear();
 //			sf.getAccumulatorVA().clear();
@@ -122,9 +127,10 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
 		Job.addDisplay(structurePeak);
-		Job.addDisplay(freeEnergyPlot);
 		Job.addDisplay(sfPlot);
-
+		Job.addDisplay(sfHorPlot);
+		Job.addDisplay(freeEnergyPlot);
+		
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);

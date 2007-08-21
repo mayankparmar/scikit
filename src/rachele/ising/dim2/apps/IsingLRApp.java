@@ -31,6 +31,7 @@ public class IsingLRApp extends Simulation {
 		params.addm("dt", 0.1);
 		params.add("time");
 		params.add("magnetization");
+		params.add("Lp");
 	}
 	
 	
@@ -39,6 +40,7 @@ public class IsingLRApp extends Simulation {
 		//System.out.println("time " + sim.time());
 		params.set("magnetization", format(sim.magnetization()));
 		sim.setParameters(params);
+		params.set("Lp", sim.L/dx);
 		
 		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
 		if (params.sget("Scale colors").equals("False"))
