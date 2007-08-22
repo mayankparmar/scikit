@@ -3,6 +3,8 @@ package scikit.util;
 import static java.lang.Math.abs;
 
 import java.awt.Color;
+import java.io.DataInput;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -30,11 +32,30 @@ public class Utilities {
 		return ret;
 	}
 	
-	public static int sumArray(int[] n) {
-		int ret = 0;
-		for (int i = 0; i < n.length; i++)
-			ret += n[i];
-		return ret;
+	public static double readDoubleLittleEndian(DataInput dis) throws IOException {
+		long accum = 0;
+		for (int shiftBy=0; shiftBy<64; shiftBy+=8) {
+			// must cast to long or shift done modulo 32
+			accum |= ((long)(dis.readByte() & 0xff)) << shiftBy;
+		}
+		return Double.longBitsToDouble(accum);
+	}
+	
+	public static float readFloatLittleEndian(DataInput dis) throws IOException {
+		int accum = 0;
+		for (int shiftBy=0; shiftBy<32; shiftBy+=8) {
+			// must cast to long or shift done modulo 32
+			accum |= (dis.readByte() & 0xff ) << shiftBy;
+		}
+		return Float.intBitsToFloat(accum);
+	}
+	
+	public static int readIntLittleEndian(DataInput dis) throws IOException {
+		return Integer.reverseBytes(dis.readInt());
+	}
+	
+	public static long readLongLittleEndian(DataInput dis) throws IOException {
+		return Long.reverseBytes(dis.readLong());
 	}
 	
 	@SuppressWarnings("unchecked")

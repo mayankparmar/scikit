@@ -8,11 +8,11 @@ import kip.md.Particle;
 import kip.md.ParticleContext;
 
 
-class SnapshotArray {
-	ArrayList<Snapshot> snapshots;
-	double t_i, t_f;
+class SimulationTrajectory implements AbstractTrajectory {
+	private ArrayList<Snapshot> snapshots;
+	private double t_i, t_f;
 	
-	public SnapshotArray(String dir) {
+	public SimulationTrajectory(String dir) {
 		String[] fs = (new File(dir)).list();
 		if (fs == null)
 			System.err.println("Directory '" + dir + "' doesn't exist.");
@@ -30,8 +30,12 @@ class SnapshotArray {
 	    t_f = snapshots.get(snapshots.size()-1).time;
 	}
 	
-	private double time(int i) {
-		return snapshots.get(i).time();
+	public double startTime() {
+		return t_i;
+	}
+	
+	public double endTime() {
+		return t_f;
 	}
 	
 	public Particle[] get(double t) {
@@ -55,6 +59,9 @@ class SnapshotArray {
 		return snapshots.get(0).particles()[0].tag.pc;
 	}
 	
+	private double time(int i) {
+		return snapshots.get(i).time();
+	}
 	
 	class Snapshot implements Comparable<Snapshot> {
 		private double time;

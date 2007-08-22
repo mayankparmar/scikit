@@ -19,7 +19,7 @@ import scikit.params.DirectoryValue;
 public class AnalysisApp extends Simulation {
 	Plot r2plot = new Plot("Mean squared displacement versus time");
 	Plot alpha = new Plot("Non-Gaussian parameter versus time");
-	SnapshotArray snapshots;
+	SimulationTrajectory snapshots;
 	ParticleContext pc;
 	Accumulator dx2, dx4;
 	
@@ -48,7 +48,7 @@ public class AnalysisApp extends Simulation {
 	}
 	
 	public void run() {
-		snapshots = new SnapshotArray(params.sget("Input directory"));
+		snapshots = new SimulationTrajectory(params.sget("Input directory"));
 		pc = snapshots.getContext();
 		int id = params.iget("Particle ID");
 		
@@ -58,21 +58,21 @@ public class AnalysisApp extends Simulation {
 		dx4.setAveraging(true);
 		
 		for (int i = 0; i < 150; i++) {
-			double tf = snapshots.t_f - 0.1*i;
+			double tf = snapshots.endTime() - 0.1*i;
 			for (double time = 0.1; time < 2; time += 0.1) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
 		for (int i = 0; i < 150; i++) {
-			double tf = snapshots.t_f - 1*i;
+			double tf = snapshots.endTime() - 1*i;
 			for (double time = 1; time < 20; time += 1) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();
 			}
 		}
 		for (int i = 0; i < 50; i++) {
-			double tf = snapshots.t_f - 10*i;
+			double tf = snapshots.endTime() - 10*i;
 			for (double time = 10; time < 200; time += 10) {
 				accumMoments(tf-time, tf, id, dx2, dx4);
 				Job.animate();

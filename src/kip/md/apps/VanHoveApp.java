@@ -16,7 +16,7 @@ import scikit.params.DirectoryValue;
 
 public class VanHoveApp extends Simulation {
 	Plot dist = new Plot("2*pi*r*G(r) versus r");
-	SnapshotArray snapshots;
+	SimulationTrajectory snapshots;
 	ParticleContext pc;
 	Accumulator acc;
 	
@@ -47,7 +47,7 @@ public class VanHoveApp extends Simulation {
 	}
 
 	public void run() {
-		snapshots = new SnapshotArray(params.sget("Input directory"));
+		snapshots = new SimulationTrajectory(params.sget("Input directory"));
 		pc = snapshots.getContext();
 		int id = params.iget("Particle ID");
 		double tstar = params.fget("t*");
@@ -57,7 +57,7 @@ public class VanHoveApp extends Simulation {
 		acc.setNormalizing(true);
 
 		for (int i = 0; i < 150; i++) {
-			double t2 = snapshots.t_f - 1*i;
+			double t2 = snapshots.endTime() - 1*i;
 			double t1 = t2 - tstar;
 			Particle[] ps1 = snapshots.get(t1);
 			Particle[] ps2 = snapshots.get(t2);
