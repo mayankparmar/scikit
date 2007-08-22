@@ -24,7 +24,7 @@ public class IsingField2D {
 	public double dt, t;
 	public double lastMu;
 	public double[] phi;
-	public double F_ave;
+	public double F_ave, lastFreeEnergy, dF_dt;
 	public int aveCount;
 	double [] phi_bar, del_phi, Lambda;
 	double horizontalSlice;
@@ -35,7 +35,7 @@ public class IsingField2D {
 	public static final double T_SP = 0.132279487396100031736846;	
 	
 	Accumulator accFreeEnergy;
-	Accumulator accAveFreeEnergy;
+	Accumulator dF_dtAcc;
 	Accumulator accMaxPhi;
 	Accumulator accMinPhi;
 	
@@ -57,14 +57,14 @@ public class IsingField2D {
 		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		double dT = params.fget("dT");
+		//double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
 
 		
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
-		accAveFreeEnergy = new Accumulator(dT);
-		accAveFreeEnergy.setAveraging(true);
+		dF_dtAcc = new Accumulator(dt);
+		dF_dtAcc.setAveraging(true);
 		accMaxPhi = new Accumulator(dt);
 		accMaxPhi.setAveraging(true);		
 		accMinPhi = new Accumulator(dt);
@@ -156,7 +156,7 @@ public class IsingField2D {
 		
 		params.set("R/dx", R/dx);
 		params.set("Lp", Lp);
-		params.set("F_ave", F_ave);
+		params.set("dF_dt", dF_dt);
 		
 		if(params.sget("Interaction") == "Circle"){
 			circleInteraction = true;
@@ -242,6 +242,9 @@ public class IsingField2D {
 		return accMinPhi;
 	}
 
+	public Accumulator getDF_dtAcc(){
+		return dF_dtAcc;
+	}
 	
 	public void useNoiselessDynamics() {
 		noiselessDynamics = true;
@@ -289,15 +292,15 @@ public class IsingField2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
 			if(theory == "Exact"){
-				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0;// - H;
 				Lambda[i] = 1;
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Exact Semi-Stable"){
-				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				Lambda[i] = (1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Exact Stable"){
-				dF_dPhi = -phi_bar[i]-T*log(1.0-phi[i])+T*log(1.0+phi[i]) - H;
+				dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Phi4"){
@@ -309,13 +312,13 @@ public class IsingField2D {
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);
 				entropy = (sqr(phi[i]))/2.0;
 			}
-			del_phi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+			del_phi[i] = - dt*Lambda[i]*dF_dPhi;// + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 			meanLambda += Lambda[i];
 			
 			double potential = -(phi[i]*phi_bar[i])/2.0;
 			potAccum += potential;
 			entAccum -= T*entropy;
-			freeEnergy += potential - T*entropy - H*phi[i];//+lastMu*phi[i];
+			freeEnergy += potential - T*entropy;// - H*phi[i];//+lastMu*phi[i];
 		}
 		
 		meanLambda /= Lp*Lp;
@@ -331,18 +334,16 @@ public class IsingField2D {
 		//System.out.println( freeEnergy);
 		freeEnergy /= (Lp*Lp) ;
 		accFreeEnergy.accum(t,freeEnergy);
-		//aveCount += aveCount;
-		//F_ave = (F_ave*aveCount + freeEnergy)/(aveCount+1.0); 
-		//System.out.println(freeEnergy + " " + F_ave);
-		//accAveFreeEnergy.accum(T,freeEnergy);
+		dF_dtAcc.accum(t,dF_dt);
 		//System.out.println(accAveFreeEnergy);
-		//dF_dt = (freeEnergy - freeEnergy_i)/dt;
+		dF_dt = (freeEnergy - lastFreeEnergy)/dt;
 		//freeEnergy_i = freeEnergy;
 		//System.out.println("dF_dt " + freeEnergy + " " + freeEnergy_i + " " + dF_dt);
 		t += dt;
 		
 		accMinPhi.accum(t, kip.util.DoubleArray.min(phi));
 		accMaxPhi.accum(t, kip.util.DoubleArray.max(phi));
+		//System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
 	}
 
 	

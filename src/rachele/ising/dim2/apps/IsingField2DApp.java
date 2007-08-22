@@ -48,7 +48,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Approx", new ChoiceValue("Exact", "Exact SemiStable", "Exact Stable", "Linear", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.06);
+		params.addm("T", 0.11);
 		params.addm("dT", 0.01);
 		params.addm("dt", 0.1);
 		params.addm("H", 0.0);
@@ -62,7 +62,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
-		params.add("F_ave");
+		params.add("dF_dt");
 
 		flags.add("Write Config");
 		flags.add("Clear");
@@ -72,6 +72,7 @@ public class IsingField2DApp extends Simulation {
 	public void animate() {
 		
 		ising.readParams(params);
+		//params.set("dF_dt", ising.dF_dt);
 		
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
@@ -92,6 +93,7 @@ public class IsingField2DApp extends Simulation {
 		vSlice.setDataSet(0, ising.getVslice());
 
 		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
+		freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
 		
 		if (ising.circleInt() == true){
 			sfPlot.setDataSet(5, sf.getAccumulatorC());
@@ -106,6 +108,7 @@ public class IsingField2DApp extends Simulation {
         
 		if (flags.contains("Clear")) {
 			ising.getFreeEnergyAcc().clear();
+			ising.getDF_dtAcc().clear();
 			sf.getPeakH().clear();
 			sf.getPeakV().clear();
 			ising.aveCount = 0;
