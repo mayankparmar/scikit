@@ -10,12 +10,13 @@ import scikit.graphics.dim2.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.DirectoryValue;
+import scikit.params.ChoiceValue;
+import scikit.params.FileValue;
 
 
 public class AnimateApp extends Simulation {
 	Scene2D canvas = new Scene2D("Particles");
-	SnapshotArray snapshots;
+	AbstractTrajectory snapshots;
 	ParticleContext pc;
 	double time;
 	Particle[] particles;
@@ -25,7 +26,8 @@ public class AnimateApp extends Simulation {
 	}
 	
 	public AnimateApp() {
-		params.add("Input directory", new DirectoryValue("/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1 more"));
+		params.add("Input file or directory", new FileValue("/Users/kbarros/Desktop/_c001s000100tracks.gdf"));
+		params.add("Data type", new ChoiceValue("Experiment", "Simulation"));
 		params.add("t start", 4000.0);
 		params.add("t finish", 4500.0);
 		params.add("dt", 1.0);
@@ -44,7 +46,9 @@ public class AnimateApp extends Simulation {
 	}
 	
 	public void run() {
-		snapshots = new SnapshotArray(params.sget("Input directory"));
+		String filename = params.sget("Input file or directory");
+		boolean isExperiment = params.sget("Data type").equals("Experiment");
+		snapshots = isExperiment ? new ExperimentTrajectory(filename) : new SimulationTrajectory(filename);
 		pc = snapshots.getContext();
 		
 		double ti = params.fget("t start");
