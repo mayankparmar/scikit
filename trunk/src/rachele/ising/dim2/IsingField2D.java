@@ -161,6 +161,7 @@ public class IsingField2D {
 		params.set("R/dx", R/dx);
 		params.set("Lp", Lp);
 		params.set("dF_dt", dF_dt);
+		params.set("Free Energy", freeEnergy);
 		
 		if(params.sget("Interaction") == "Circle"){
 			circleInteraction = true;
@@ -246,15 +247,18 @@ public class IsingField2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
 			if(theory == "Exact"){
-				dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0 - H;
+				//dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0 - H;
+				dF_dPhi = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
 				Lambda[i] = 1;
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Exact Semi-Stable"){
-				dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
 				Lambda[i] = (1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Exact Stable"){
-				dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Phi4"){
