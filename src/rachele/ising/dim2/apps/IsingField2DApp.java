@@ -49,8 +49,9 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Approx", new ChoiceValue("Exact", "Exact SemiStable", "Exact Stable", "Linear", "Phi4"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.11);
-		params.addm("dT", 0.01);
+		params.addm("T", 0.09);
+		params.addm("dT", 0.002);
+		params.addm("tolerance", 0.0001);
 		params.addm("dt", 0.1);
 		params.addm("H", 0.0);
 		params.addm("J", -1.0);
@@ -63,10 +64,12 @@ public class IsingField2DApp extends Simulation {
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
+		params.add("Free Energy");
 		params.add("dF_dt");
 
 		flags.add("Write Config");
 		flags.add("Clear");
+		flags.add("Accept F");
 
 	}
 	
@@ -94,8 +97,8 @@ public class IsingField2DApp extends Simulation {
 		vSlice.setDataSet(0, ising.getVslice());
 
 		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
-		freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
-		freeEnergyTempPlot.setDataSet(7, ising.getAccFEvT());
+		//freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
+		freeEnergyTempPlot.setDataSet(6, ising.getAccFEvT());
 		
 		if (ising.circleInt() == true){
 			sfPlot.setDataSet(5, sf.getAccumulatorC());
@@ -107,6 +110,15 @@ public class IsingField2DApp extends Simulation {
 			sfPlot.setDataSet(4, sf.getAccumulatorH());
 		}
  
+		if (flags.contains("Accept F")){
+			ising.accumFreeEnergy();
+			System.out.println("accum free energy T = " + ising.T);
+			//double temp = params.fget("T");
+			//temp += params.fget("dT");
+			//params.set("T", temp);			
+		}
+
+		
 		if (flags.contains("Clear")) {
 			ising.getFreeEnergyAcc().clear();
 			ising.getDF_dtAcc().clear();
@@ -158,13 +170,13 @@ public class IsingField2DApp extends Simulation {
 			}
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
 			//System.out.println(Math.abs(ising.dF_dt));
-			if(Math.abs(ising.dF_dt) < 0.001){
-				System.out.println("input FE");
-				ising.accumFreeEnergy();
-				double temp = params.fget("T");
-				temp += params.fget("dT");
-				params.set("T", temp);
-			}
+//			if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
+//				System.out.println("input FE");
+//				ising.accumFreeEnergy();
+//				double temp = params.fget("T");
+//				temp += params.fget("dT");
+//				params.set("T", temp);
+//			}
 			Job.animate();
 		}
  	}
