@@ -24,7 +24,7 @@ public class IsingField2D {
 	public double dt, t;
 	public double lastMu;
 	public double[] phi;
-	public double F_ave, lastFreeEnergy, dF_dt;
+	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
 	public int aveCount;
 	double [] phi_bar, del_phi, Lambda;
 	double horizontalSlice;
@@ -38,6 +38,7 @@ public class IsingField2D {
 	Accumulator dF_dtAcc;
 	Accumulator accMaxPhi;
 	Accumulator accMinPhi;
+	Accumulator accFEvT;
 	
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = true;
@@ -57,18 +58,21 @@ public class IsingField2D {
 		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		//double dT = params.fget("dT");
+		double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
 
 		
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
+		accFEvT = new Accumulator(dT);
+		accFEvT.setAveraging(true);
 		dF_dtAcc = new Accumulator(dt);
 		dF_dtAcc.setAveraging(true);
 		accMaxPhi = new Accumulator(dt);
 		accMaxPhi.setAveraging(true);		
 		accMinPhi = new Accumulator(dt);
 		accMinPhi.setAveraging(true);
+		
 		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
@@ -229,61 +233,11 @@ public class IsingField2D {
 			dest[i] = fftScratch[2*i] / (Lp*Lp);
 		}		
 	}
-
-	public Accumulator getFreeEnergyAcc() {
-		return accFreeEnergy;
-	}
-
-	public Accumulator getMaxPhiAcc() {
-		return accMaxPhi;
-	}
-
-	public Accumulator getMinPhiAcc() {
-		return accMinPhi;
-	}
-
-	public Accumulator getDF_dtAcc(){
-		return dF_dtAcc;
-	}
-	
-	public void useNoiselessDynamics() {
-		noiselessDynamics = true;
-	}
-	
-	
-	public double phiVariance() {
-		double var = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-			var += sqr(phi[i]-DENSITY);
-		return var / (Lp*Lp);
-	}
-	
-	
-	double noise() {
-		return noiselessDynamics ? 0 : random.nextGaussian();
-	}
-
-	
-	public double mean(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-				sum += a[i];
-		return sum/(Lp*Lp); 
-	}
-	
-	
-	double meanSquared(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-				sum += a[i]*a[i];
-		return sum/(Lp*Lp);
-	}
-	
 	
 	public void simulate() {
-		double freeEnergy = 0;  //free energy is calculated for previous time step
-		double potAccum = 0;
-		double entAccum = 0;
+		freeEnergy = 0;  //free energy is calculated for previous time step
+		//double potAccum = 0;
+		//double entAccum = 0;
 		
 		convolveWithRange(phi, phi_bar, R);
 		
@@ -292,7 +246,7 @@ public class IsingField2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
 			if(theory == "Exact"){
-				dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0;// - H;
+				dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0 - H;
 				Lambda[i] = 1;
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Exact Semi-Stable"){
@@ -316,28 +270,24 @@ public class IsingField2D {
 			meanLambda += Lambda[i];
 			
 			double potential = -(phi[i]*phi_bar[i])/2.0;
-			potAccum += potential;
-			entAccum -= T*entropy;
-			freeEnergy += potential - T*entropy;// - H*phi[i];//+lastMu*phi[i];
+			//potAccum += potential;
+			//entAccum -= T*entropy;
+
+			freeEnergy += potential - T*entropy - H*phi[i];
+
 		}
 		
 		meanLambda /= Lp*Lp;
 		double mu = (mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
-		//lastMu = mu;
-		//potAccum /= Lp*Lp;
-		//entAccum /= Lp*Lp;
-		//System.out.println("pot = " + potAccum + " ent = " + entAccum);
 		for (int i = 0; i < Lp*Lp; i++) {
-			//freeEnergy +=  -mu*phi[i];
+			freeEnergy +=  -mu*phi[i];
 			phi[i] += del_phi[i]-Lambda[i]*mu;
 		}
-		//System.out.println( freeEnergy);
 		freeEnergy /= (Lp*Lp) ;
 		accFreeEnergy.accum(t,freeEnergy);
 		dF_dtAcc.accum(t,dF_dt);
-		//System.out.println(accAveFreeEnergy);
 		dF_dt = (freeEnergy - lastFreeEnergy)/dt;
-		//freeEnergy_i = freeEnergy;
+		lastFreeEnergy = freeEnergy;
 		//System.out.println("dF_dt " + freeEnergy + " " + freeEnergy_i + " " + dF_dt);
 		t += dt;
 		
@@ -345,17 +295,14 @@ public class IsingField2D {
 		accMaxPhi.accum(t, kip.util.DoubleArray.max(phi));
 		//System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
 	}
-
 	
 	public double[] coarseGrained() {
 		return phi;
 	}
 	
-	
 	public int numColumns() {
 		return Lp;
 	}
-	
 	
 	public double time() {
 		return t;
@@ -382,6 +329,58 @@ public class IsingField2D {
 		}
 		return new PointSet(0, dx, slice);
 	}
-	
 
+	public Accumulator getFreeEnergyAcc() {
+		return accFreeEnergy;
+	}
+
+	public Accumulator getMaxPhiAcc() {
+		return accMaxPhi;
+	}
+
+	public Accumulator getMinPhiAcc() {
+		return accMinPhi;
+	}
+
+	public Accumulator getDF_dtAcc(){
+		return dF_dtAcc;
+	}
+
+	public Accumulator getAccFEvT(){
+		return accFEvT;
+	}
+	
+	public void accumFreeEnergy(){
+		accFEvT.accum(T, freeEnergy);
+	}
+	
+	public void useNoiselessDynamics() {
+		noiselessDynamics = true;
+	}	
+	
+	public double phiVariance() {
+		double var = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+			var += sqr(phi[i]-DENSITY);
+		return var / (Lp*Lp);
+	}
+	
+	double noise() {
+		return noiselessDynamics ? 0 : random.nextGaussian();
+	}
+	
+	public double mean(double[] a) {
+		double sum = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+				sum += a[i];
+		return sum/(Lp*Lp); 
+	}
+		
+	double meanSquared(double[] a) {
+		double sum = 0;
+		for (int i = 0; i < Lp*Lp; i++)
+				sum += a[i]*a[i];
+		return sum/(Lp*Lp);
+	}
+	
 }
