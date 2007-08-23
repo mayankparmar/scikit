@@ -32,6 +32,7 @@ public class IsingField2DApp extends Simulation {
 	Plot sfHorPlot = new Plot("Hor Structure factor", true);
 	Plot sfPlot = new Plot("Structure Factor", true);
 	Plot freeEnergyPlot = new Plot("Free Energy", true);
+	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp", true);
 	StructureFactor sf;
     IsingField2D ising;
 
@@ -70,7 +71,7 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public void animate() {
-		
+
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
@@ -94,6 +95,7 @@ public class IsingField2DApp extends Simulation {
 
 		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
 		freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
+		freeEnergyTempPlot.setDataSet(7, ising.getAccFEvT());
 		
 		if (ising.circleInt() == true){
 			sfPlot.setDataSet(5, sf.getAccumulatorC());
@@ -104,8 +106,7 @@ public class IsingField2DApp extends Simulation {
 			sfPlot.setDataSet(3, sf.getAccumulatorV());
 			sfPlot.setDataSet(4, sf.getAccumulatorH());
 		}
-
-        
+ 
 		if (flags.contains("Clear")) {
 			ising.getFreeEnergyAcc().clear();
 			ising.getDF_dtAcc().clear();
@@ -133,6 +134,7 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(sfPlot);
 		Job.addDisplay(sfHorPlot);
 		Job.addDisplay(freeEnergyPlot);
+		Job.addDisplay(freeEnergyTempPlot);
 		
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
@@ -152,9 +154,17 @@ public class IsingField2DApp extends Simulation {
 			params.set("Mean Phi", ising.mean(ising.phi));
 			ising.simulate();
 			if (equilibrating && ising.time() >= .5) {
-			equilibrating = false;
+				equilibrating = false;
 			}
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
+			//System.out.println(Math.abs(ising.dF_dt));
+			if(Math.abs(ising.dF_dt) < 0.001){
+				System.out.println("input FE");
+				ising.accumFreeEnergy();
+				double temp = params.fget("T");
+				temp += params.fget("dT");
+				params.set("T", temp);
+			}
 			Job.animate();
 		}
  	}
