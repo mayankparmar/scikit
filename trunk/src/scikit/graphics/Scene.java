@@ -20,8 +20,8 @@ abstract public class Scene<T> {
 	
 	// if true, suppress inclusion of _drawables in the return value of getAllDrawables()
 	protected boolean _suppressDrawables = false;
-	// additional buffer viewing area, as percentage of the width
-	protected double _visibleBoundsBufferPercentage = 0;
+	// view bounds can be scaled to include additional buffer space
+	protected double _visibleBoundsBufferScale = 1;
 	// is the view zoomed in?  this will disable autoscale
 	protected boolean _zoomed = false;
 	// if false, bounds will zoom out to fit data; if true, will zoom both in and out
@@ -67,10 +67,7 @@ abstract public class Scene<T> {
 	/** Animates the scene by updating the view bounds and repainting the canvas component. */
 	public void animate() {
 		if (!_zoomed) {
-			if (_autoScale)
-				_curBounds = calculateVisibleBounds();
-			else
-				_curBounds = _curBounds.createUnion(calculateVisibleBounds());
+			_curBounds = calculateVisibleBounds(_autoScale ? new Bounds() : _curBounds);
 		}
 		_component.repaint();
 	}
@@ -109,28 +106,22 @@ abstract public class Scene<T> {
 	protected Bounds calculateDataBounds() {
 		Bounds bounds = new Bounds();
 		for (Drawable<T> d : getAllDrawables())
-			bounds = (Bounds)bounds.createUnion(d.getBounds());
-		return bounds;
-	}
-	
-	/**
-	 * Calculates the visible bounds for the scene. These bounds are big enough
-	 * to contain all data in the scene, as well as possibly some buffer space.
-	 * @return
-	 */
-	protected Bounds calculateVisibleBounds() {
-		Bounds bounds = calculateDataBounds();
-		double w = bounds.xmax - bounds.xmin;
-		double h = bounds.ymax - bounds.ymin;
-		bounds.xmin -= w*(_visibleBoundsBufferPercentage/100);
-		bounds.xmax += w*(_visibleBoundsBufferPercentage/100);
-		bounds.ymin -= h*(_visibleBoundsBufferPercentage/100);
-		bounds.ymax += h*(_visibleBoundsBufferPercentage/100);
+			bounds = (Bounds)bounds.union(d.getBounds());
 		return bounds;
 	}
 	
 	protected List<JMenuItem> getAllPopupMenuItems() {
 		return new ArrayList<JMenuItem>();
+	}
+	
+	/* Calculates the visible bounds for the scene. These bounds are big enough
+	 * to contain all data in the scene, as well as possibly some buffer space.
+	 */
+	private Bounds calculateVisibleBounds(Bounds oldBds) {
+		Bounds datBds = calculateDataBounds();
+		double eps = 0.001;
+		double s = _visibleBoundsBufferScale;
+		return oldBds.scale(1/(s+eps)).union(datBds).scale(s).union(oldBds);
 	}
 	
 	private void maybeShowPopup(MouseEvent e) {

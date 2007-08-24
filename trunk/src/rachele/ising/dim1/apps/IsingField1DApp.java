@@ -8,18 +8,20 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.Plot;
+import scikit.graphics.dim2.Plot;
 import rachele.ising.dim1.FieldIsing1D;
 import rachele.ising.dim1.StructureFactor1D;
+
+import java.awt.Color;
 import java.io.*;
 
 
 public class IsingField1DApp extends Simulation{
 
-	Plot fieldPlot = new Plot("Coarse Grained Field", true);
-    Plot SFPlot = new Plot("Structure factor", true);
-    Plot freeEngDenPlot = new Plot("Free Energy Density", true);
-    Plot freeEngPlot = new Plot("Free Energy", true);
+	Plot fieldPlot = new Plot("Coarse Grained Field");
+    Plot SFPlot = new Plot("Structure factor");
+    Plot freeEngDenPlot = new Plot("Free Energy Density");
+    Plot freeEngPlot = new Plot("Free Energy");
     FieldIsing1D ising;
     StructureFactor1D sf;
     public int timeCount;
@@ -76,16 +78,23 @@ public class IsingField1DApp extends Simulation{
 		params.set("F", format(ising.freeEnergyDensity));
 		ising.readParams(params);
 		
-		SFPlot.setDataSet(0, sf.getAccumulator());
-		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
-		freeEngDenPlot.setDataSet(0, ising.getFreeEngAcc());
-		freeEngPlot.setDataSet(0, new PointSet(0, ising.dx, ising.F));
+		SFPlot.registerLines("Structure factor", sf.getAccumulator(), Color.BLACK);
+		fieldPlot.registerLines("Field", new PointSet(0, ising.dx, ising.phi), Color.BLACK);
+		freeEngDenPlot.registerLines("F.E. density", ising.getFreeEngAcc(), Color.BLACK);
+		freeEngPlot.registerLines("Free energy", new PointSet(0, ising.dx, ising.F), Color.BLACK);
 		
 		if (flags.contains("Clear S.F.")) {
 			sf.getAccumulator().clear();
 			System.out.println("clicked");
 		}
 		flags.clear();
+	}
+	
+	public void clear() {
+		fieldPlot.clear();
+		SFPlot.clear();
+		freeEngDenPlot.clear();
+		freeEngPlot.clear();
 	}
 	
 	public void deleteFile(String fileName){
@@ -155,14 +164,7 @@ public class IsingField1DApp extends Simulation{
 		double binWidth = KR_SP / floor(KR_SP/params.fget("kR bin-width"));
 
 		sf = new StructureFactor1D(ising.Lp, ising.L, ising.R, binWidth);
-		fieldPlot.setYRange(-1, 1);
-		Job.addDisplay(fieldPlot);
-		Job.addDisplay(SFPlot);
-		Job.addDisplay(freeEngPlot);
-		Job.addDisplay(freeEngDenPlot);
-		SFPlot.setDataSet(0, sf.getAccumulator());
-		fieldPlot.setDataSet(0, new PointSet(0, ising.dx, ising.phi));
-		
+		Job.animate();
 		
 		//sf.getAccumulator().clear();
 		timeCount = maxWriteCount +1;
