@@ -42,7 +42,7 @@ public class Bounds {
 		return "["+xmin+"::"+xmax+" , "+ymin+"::"+ymax+" , "+zmin+"::"+zmax+"]";
 	}
 	
-	public Bounds createUnion(Bounds... bs) {
+	public Bounds union(Bounds... bs) {
 		Bounds ret = clone();
 		for (Bounds b : bs) {
 			ret.xmin = min(ret.xmin, b.xmin);
@@ -54,7 +54,20 @@ public class Bounds {
 		}
 		return ret;
 	}
-
+	
+	/**
+	 * Creates a new Bounds with width and height scaled by factor
+	 * @param factor
+	 * @return Scaled bounds
+	 */
+	public Bounds scale(double factor) {
+		double s = (factor-1)/2;
+		double w = max(getWidth(), 0);
+		double h = max(getHeight(), 0);
+		double d = max(getDepth(), 0);
+		return new Bounds(xmin-w*s, xmax+w*s, ymin-h*s, ymax+h*s, zmin-d*s, zmax+d*s);
+	}
+	
 	public double getWidth() {
 		return xmax - xmin;
 	}

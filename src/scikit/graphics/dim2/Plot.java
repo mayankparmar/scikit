@@ -28,7 +28,7 @@ public class Plot extends Scene2D {
 	
 	public Plot() {
 		super();
-		_visibleBoundsBufferPercentage = 5;
+		_visibleBoundsBufferScale = 1.1;
 	}
 	
 	public Plot(String title) {
