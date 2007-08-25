@@ -1,6 +1,7 @@
 package kip.md.apps;
 
 import static java.lang.Math.*;
+import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
@@ -25,6 +26,7 @@ public class VanHoveApp extends Simulation {
 	}
 
 	public VanHoveApp() {
+		frame(dist);
 		params.add("Input directory", new DirectoryValue("/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1 more"));
 		params.add("Diffusion coef.", 0.1);
 		params.add("t*", 5);

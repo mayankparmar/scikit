@@ -1,5 +1,7 @@
 package kip.md.apps;
 
+import static scikit.util.Utilities.frame;
+
 import java.awt.Color;
 
 import kip.md.Particle;
@@ -28,6 +30,7 @@ public class AnalysisApp extends Simulation {
 	}
 	
 	public AnalysisApp() {
+		frame(r2plot, alpha);		
 		params.add("Input directory", new DirectoryValue("/Users/kbarros/Desktop/data/binary/A=0.8 B=0.1 more"));
 		params.addm("Log scale", new ChoiceValue("True", "False"));
 		params.add("Particle ID", 1);

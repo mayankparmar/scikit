@@ -49,6 +49,8 @@ public class IsingLRApp extends Simulation {
 			fieldDisplay.setAutoScale();
 	}
 	
+	public void clear() {
+	}
 	
 	public void run() {
 		Job.addDisplay(fieldDisplay);

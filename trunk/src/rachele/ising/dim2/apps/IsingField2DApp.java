@@ -140,6 +140,9 @@ public class IsingField2DApp extends Simulation {
 		flags.clear();
 	}
 	
+	public void clear() {
+	}
+	
 	public void run() {
 		
 		if(params.sget("Init Conditions") == "Read From File")

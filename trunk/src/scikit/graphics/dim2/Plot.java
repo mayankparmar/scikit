@@ -26,14 +26,9 @@ public class Plot extends Scene2D {
 	//    can't be accurately represented
 	boolean _logScaleX = false, _logScaleY = false;
 	
-	public Plot() {
-		super();
-		_visibleBoundsBufferScale = 1.1;
-	}
-	
 	public Plot(String title) {
-		this();
-		scikit.util.Utilities.frame(_component, title);
+		super(title);
+		_visibleBoundsBufferScale = 1.1;
 	}
 	
 	public void animate() {

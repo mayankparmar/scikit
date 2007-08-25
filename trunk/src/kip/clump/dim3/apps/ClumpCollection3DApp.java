@@ -1,6 +1,7 @@
 package kip.clump.dim3.apps;
 
 import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
@@ -26,6 +27,7 @@ public class ClumpCollection3DApp extends Simulation {
 	}
 
 	public ClumpCollection3DApp() {
+		frame(grid, plot);
 		params.add("Output directory", "/Users/kbarros/Desktop/output/");
 		params.add("R", 6.0);
 		params.add("L/R", 6.0);

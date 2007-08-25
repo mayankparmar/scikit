@@ -22,16 +22,10 @@ public class Scene2D extends Scene<Gfx2D> {
 	protected boolean _selectionActive = false;
 	protected Point _selectionStart = new Point(), _selectionEnd = new Point();
 	
-	
-	public Scene2D() {
-		super();
+	public Scene2D(String title) {
+		super(title);
 		_component.addMouseListener(_mouseListener);
 		_component.addMouseMotionListener(_mouseListener);
-	}
-	
-	public Scene2D(String title) {
-		this();
-		scikit.util.Utilities.frame(_component, title);
 	}
 	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
@@ -88,8 +82,8 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	protected List<JMenuItem> getAllPopupMenuItems() {
 		List<JMenuItem> ret = super.getAllPopupMenuItems();
-		JMenuItem item = new JMenuItem("Zoom out");
-		item.setEnabled(boundsIsValid() && _zoomed);
+		JMenuItem item = new JMenuItem("Zoom to Fit");
+		item.setEnabled(boundsIsValid());
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				zoomToFitData();

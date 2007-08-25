@@ -30,6 +30,7 @@ public class LennardJonesApp extends Simulation {
 	}
 	
 	public LennardJonesApp() {
+		frame(canvas);
 		params.add("Output directory", new DirectoryValue(""));
 		params.add("Write files", new ChoiceValue("Yes", "No"));
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));

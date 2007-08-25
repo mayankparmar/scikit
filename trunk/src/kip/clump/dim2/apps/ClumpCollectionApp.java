@@ -26,6 +26,7 @@ public class ClumpCollectionApp extends Simulation {
 	}
 
 	public ClumpCollectionApp() {
+		frame(grid, plot);
 		params.add("Output directory", "/Users/kbarros/Desktop/output/");
 		params.add("R", 12.0);
 		params.add("L/R", 16);

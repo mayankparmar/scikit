@@ -7,6 +7,7 @@ import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.graphics.dim2.Grid;
 import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frame;
 
 
 public class IsingLRApp extends Simulation {
@@ -19,6 +20,7 @@ public class IsingLRApp extends Simulation {
 	IsingLR sim;
 	
 	public IsingLRApp() {
+		frame(grid);
 		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
 		params.addm("Scale colors", new ChoiceValue("False", "True"));
 		params.add("Random seed", 0);

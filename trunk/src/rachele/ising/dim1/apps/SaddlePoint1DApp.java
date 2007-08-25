@@ -1,13 +1,14 @@
 package rachele.ising.dim1.apps;
 
-import static java.lang.Math.floor;
-import static scikit.util.Utilities.format;
+import static java.lang.Math.*;
+import static scikit.util.Utilities.*;
 
 import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import rachele.ising.dim1.PathSample1D;
 import rachele.ising.dim1.StructureFactor1D;
 import scikit.jobs.Control;
@@ -18,10 +19,8 @@ import scikit.params.DoubleValue;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Geom2D;
-import static scikit.util.Utilities.*;
 
 public class SaddlePoint1DApp extends Simulation{
-
 	Grid grid = new Grid("Time vs Coarse Grained Field");
     //Plot SFPlot = new Plot("Structure factor", true);
 	Plot timeSlice = new Plot("Configuration at Time Slice");
@@ -37,8 +36,10 @@ public class SaddlePoint1DApp extends Simulation{
 	}
 
 	public SaddlePoint1DApp(){
+		frame(grid);
+		frameTogether("Plots", timeSlice, spaceSlice, actionPlot, freeEngPlot);
 		params.addm("Sampling Noise", new ChoiceValue("On", "Off"));
-		params.addm("Initial Conditions", new ChoiceValue("Noisy", "Artificial Droplett", "Read In", "Boundaries Only", "Step", "Constant Slope"));
+		params.addm("Initial Conditions", new ChoiceValue("Step", "Noisy", "Artificial Droplett", "Read In", "Boundaries Only", "Constant Slope"));
 		params.addm("Time to slice", new DoubleValue(0.5, 0.01, 0.99).withSlider());
 		params.addm("Position to slice", new DoubleValue(0.5, 0.01, 0.99).withSlider());
 		params.addm("du", 0.004);

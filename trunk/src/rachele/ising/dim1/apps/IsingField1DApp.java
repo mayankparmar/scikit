@@ -3,6 +3,7 @@ package rachele.ising.dim1.apps;
 
 import static java.lang.Math.floor;
 import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frameTogether;
 import scikit.dataset.PointSet;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -31,6 +32,7 @@ public class IsingField1DApp extends Simulation{
 	}
 	
 	public IsingField1DApp(){
+		frameTogether("Displays", fieldPlot, freeEngPlot, freeEngDenPlot, SFPlot);
 //	Defoult parameters for nucleation
 		params.addm("Zoom", new ChoiceValue("A", "B"));
 		params.addm("Noise", new ChoiceValue("On", "Off"));
