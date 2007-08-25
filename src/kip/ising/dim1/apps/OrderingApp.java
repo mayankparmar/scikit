@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import scikit.params.ChoiceValue;
 import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frame;
 import scikit.graphics.dim2.Plot;
 import scikit.dataset.*;
 import scikit.jobs.*;
@@ -105,6 +106,7 @@ public class OrderingApp extends Simulation {
 	}
 
 	public OrderingApp() {
+		frame(structurePlot);
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis", "Kawasaki Glauber", "Kawasaki Metropolis"));
 		params.add("Simulation type", new ChoiceValue("Ising", "Langevin"));
 		params.add("kR maximum", 20.0);

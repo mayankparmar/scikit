@@ -11,13 +11,8 @@ import scikit.graphics.GLHelper;
 import scikit.graphics.Scene;
 
 public class Scene3D extends Scene<Gfx3D> {
-	public Scene3D() {
-		super();
-	}
-	
 	public Scene3D(String title) {
-		this();
-		scikit.util.Utilities.frame(_component, title);
+		super(title);
 	}
 	
 	protected Component createComponent() {

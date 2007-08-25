@@ -1,15 +1,23 @@
 package scikit.util;
 
-import static java.lang.Math.abs;
-
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.io.DataInput;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
 import scikit.graphics.dim2.Plot;
+
+import static java.lang.Math.*;
 
 
 public class Utilities {
@@ -72,18 +80,7 @@ public class Utilities {
 	public static <T> List<T> asList(T o1, T o2, T o3) {
 		return Arrays.asList(o1, o2, o3);
 	}
-	
-	
-	/*
-	public static int[] toArray(Collection<Integer> c) {
-		Integer a[] = c.toArray(new Integer[0]);
-		int[] ret = new int[a.length];
-		for (int i = 0; i < a.length; i++)
-			ret[i] = a[i];
-		return ret;
-	}
-	*/
-	
+		
 	// utility method for quickly viewing data.
 	private static Plot debugPlot;
 	public static void plot(double[] data) {
@@ -95,16 +92,46 @@ public class Utilities {
 	}
 	
 	
-	static int _frameStagger = 100;	
-	public static javax.swing.JFrame frame(java.awt.Component comp, String title) {
-		javax.swing.JFrame frame = new javax.swing.JFrame(title);
+	static int _frameStagger = 100;
+	
+	public static JFrame frame(Component comp, String title) {
+		JFrame frame = new JFrame(title);
 		frame.getContentPane().add(comp);
 		frame.setLocation(_frameStagger, _frameStagger);		
-		frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.pack();
 		frame.setVisible(true);
 		_frameStagger += 60;		
 		return frame;
+	}
+	
+	public static void frame(Frameable... fs) {
+		for (Frameable f : fs) {
+			JPanel item = new JPanel(new BorderLayout());
+			item.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(4, 4, 4, 4),
+					BorderFactory.createLineBorder(Color.GRAY)));
+			item.add(f.getComponent());
+			frame(item, f.getTitle());
+		}
+	}
+	
+	public static JFrame frameTogether(String title, Frameable... fs) {
+		int n = fs.length;
+		int cols = (int)ceil(sqrt(n));
+		int rows = (int)ceil((double)n/cols);
+		int hgap = 2, vgap = 2;
+		JPanel panel = new JPanel(new GridLayout(rows, cols, hgap, vgap));
+		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		for (Frameable f : fs) {
+			JPanel item = new JPanel(new BorderLayout());
+			item.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createTitledBorder(f.getTitle()),
+					BorderFactory.createLineBorder(Color.GRAY)));
+			item.add(f.getComponent());
+			panel.add(item);
+		}
+		return frame(panel, title);
 	}
 
 }

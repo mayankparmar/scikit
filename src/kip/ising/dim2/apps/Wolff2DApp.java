@@ -1,5 +1,7 @@
 package kip.ising.dim2.apps;
 
+import static scikit.util.Utilities.frameTogether;
+
 import java.awt.Color;
 
 import scikit.jobs.Control;
@@ -89,6 +91,7 @@ public class Wolff2DApp extends Simulation {
 	}
 
 	public Wolff2DApp() {
+		frameTogether("Spins", grid, grid2);
 		params.add("L", 512);
 		//params.addm("T", Ising.Tc);
 		params.addm("T", new DoubleValue(Ising.Tc, Ising.Tc-0.2, Ising.Tc+0.2).withSlider());		

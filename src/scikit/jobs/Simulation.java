@@ -22,8 +22,8 @@ public abstract class Simulation implements Display {
 	
 	// called periodically to output visual data to the user and read simulation
 	// parameters
-	public void animate() {}
+	abstract public void animate();
 	
 	// called after thread has been killed
-	public void clear() {}
+	abstract public void clear();
 }

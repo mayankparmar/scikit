@@ -3,6 +3,7 @@ package kip.fun;
 import scikit.graphics.dim2.Grid;
 import scikit.jobs.*;
 import static java.lang.Math.*;
+import static scikit.util.Utilities.frame;
 
 
 public class SpinodalApp extends Simulation {
@@ -16,6 +17,7 @@ public class SpinodalApp extends Simulation {
 	}
     
     public SpinodalApp() {
+		frame(grid);
         params.add("Size", 128);
         params.addm("Temperature", 2.0);
         params.addm("Interaction", 0.5);

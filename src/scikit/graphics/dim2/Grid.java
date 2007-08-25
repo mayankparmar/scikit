@@ -27,13 +27,8 @@ public class Grid extends Scene2D {
 	private double[] _data = null;
     private int[] _pixelArray;
     
-	public Grid() {
-		super();
-	}
-	
 	public Grid(String title) {
-		this();
-		scikit.util.Utilities.frame(_component, title);
+		super(title);
 	}
 	
 	public void clear() {
@@ -49,7 +44,7 @@ public class Grid extends Scene2D {
 	}
 	
 	protected void drawBackground(Gfx2D g) {
-		// do not draw background for possible performance benefit
+		// looks better without background
 	}
 	
 	protected List<Drawable<Gfx2D>> getAllDrawables() {

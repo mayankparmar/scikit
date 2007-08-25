@@ -35,16 +35,14 @@ public class NucleationApp extends Simulation {
 	}
 	
 	public NucleationApp() {
+		frame(fieldPlot, profilePlot, nucTimes);
 		params.add("Memory time", 20.0);
         params.add("Profile type", new ChoiceValue("None", "Early", "Late"));
 		params.add("Data path", "");
-		
         params.add("Profile count", 0);
 		params.addm("Max count", 50000);
-        
 		params.addm("Random seed", 0);
 		params.addm("Bin width", 0.5);
-		
 		if (phifour) {
 			double eps = -1;
 			params.add("N/R", 300.0);

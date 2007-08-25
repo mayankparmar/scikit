@@ -4,7 +4,7 @@ import scikit.jobs.*;
 import scikit.graphics.dim2.Plot;
 import scikit.dataset.*;
 import java.awt.Color;
-
+import static scikit.util.Utilities.frame;
 
 public class WangLandau extends Simulation {
 	Plot histogramPlot = new Plot("Histogram vs. Energy");
@@ -27,6 +27,7 @@ public class WangLandau extends Simulation {
 	}
 
 	public WangLandau() {
+		frame(histogramPlot, densityPlot, heatPlot);
 		params.add("L", 16);
 		params.add("Impurity density", 0.2);
 		params.add("mcs");

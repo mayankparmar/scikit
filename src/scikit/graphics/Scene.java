@@ -10,9 +10,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import scikit.util.Bounds;
+import scikit.util.Frameable;
 
 
-abstract public class Scene<T> {
+abstract public class Scene<T> implements Frameable {
 	protected Component _component;
 	protected Bounds _curBounds = new Bounds();
 	protected List<Drawable<T>> _drawables = new ArrayList<Drawable<T>>();
@@ -26,22 +27,25 @@ abstract public class Scene<T> {
 	protected boolean _zoomed = false;
 	// if false, bounds will zoom out to fit data; if true, will zoom both in and out
 	protected boolean _autoScale = false;
+
+	private String _title;
 	
-	
-	public Scene() {
+	public Scene(String title) {
 		_component = createComponent();
 		_component.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
 			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
 		});
+		_title = title;
 	}
 	
-	public Scene(String title) {
-		this();
-		scikit.util.Utilities.frame(_component, title);
+	public String getTitle() {
+		return _title;
 	}
-	
-	abstract protected Component createComponent(); 
+
+	public Component getComponent() {
+		return _component;
+	}
 	
 	/** Removes all drawables object from the scene leaving the state of the scene (such as
 	 * view bounds) unmodified.
@@ -94,6 +98,8 @@ abstract public class Scene<T> {
 	}
 	
 	abstract protected void drawAll(T g);
+	
+	abstract protected Component createComponent(); 
 	
 	protected List<Drawable<T>> getAllDrawables() {
 		return _suppressDrawables ? new ArrayList<Drawable<T>>() : _drawables;

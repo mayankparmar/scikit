@@ -81,6 +81,10 @@ public class IsingLRStructApp extends Simulation {
 	}
 	
 	
+	public void clear() {
+	}
+	
+	
 	public void run() {
 		Job.addDisplay(fieldDisplay);
 		Job.addDisplay(structureDisplayV);

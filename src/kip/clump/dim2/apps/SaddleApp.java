@@ -1,5 +1,6 @@
 package kip.clump.dim2.apps;
 
+import static scikit.util.Utilities.frame;
 import kip.clump.dim2.*;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -17,6 +18,7 @@ public class SaddleApp extends Simulation {
 	}
 
 	public SaddleApp() {
+		frame(grid);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.135);
 		params.addm("dt", 1.0);

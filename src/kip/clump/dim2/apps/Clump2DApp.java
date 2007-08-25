@@ -1,6 +1,7 @@
 package kip.clump.dim2.apps;
 
 import static kip.util.MathPlus.j1;
+import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
@@ -26,6 +27,7 @@ public class Clump2DApp extends Simulation {
 	}
 	
 	public Clump2DApp() {
+		frame(grid, plot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.15);
 		params.addm("dt", 1.0);

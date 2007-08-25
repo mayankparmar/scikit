@@ -2,6 +2,7 @@ package kip.fun;
 
 
 import static java.lang.Math.*;
+import static scikit.util.Utilities.frameTogether;
 
 import java.awt.Color;
 
@@ -38,6 +39,7 @@ public class PistonApp extends Simulation {
 	
 	
 	public PistonApp() {
+		frameTogether("Plots", particles, enthalpy, idealGas, distrib);
 		params.add("Initial piston position", new DoubleValue(10.0, 0, 100));
 		params.add("Initial piston velocity", new DoubleValue(0.0, -1, 1));
 		params.add("# of particles", new IntValue(1000, 1, 5000));

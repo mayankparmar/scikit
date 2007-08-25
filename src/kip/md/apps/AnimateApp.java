@@ -26,6 +26,7 @@ public class AnimateApp extends Simulation {
 	}
 	
 	public AnimateApp() {
+		frame(canvas);
 		params.add("Input file or directory", new FileValue("/Users/kbarros/Desktop/_c001s000100tracks.gdf"));
 		params.add("Data type", new ChoiceValue("Experiment", "Simulation"));
 		params.add("t start", 4000.0);

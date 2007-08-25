@@ -27,6 +27,7 @@ public class RelaxationApp extends Simulation {
 	}
 
 	public RelaxationApp() {
+		frame(magnetPlot, derivPlot);
 		params.add("Dynamics", new ChoiceValue("Ising Glauber", "Ising Metropolis"));
 		params.add("Simulation type", new ChoiceValue("Ising", "Langevin"));
 		params.add("Random seed", 0);
