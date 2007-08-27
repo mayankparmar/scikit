@@ -61,14 +61,14 @@ public class IsingField2D {
 		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		double dT = params.fget("dT");
+		//double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
 
 		
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
-		accFEvT = new Accumulator(dT);
-		accFEvT.setAveraging(true);
+		//accFEvT = new Accumulator(dT);
+		//accFEvT.setAveraging(true);
 		dF_dtAcc = new Accumulator(dt);
 		dF_dtAcc.setAveraging(true);
 		accMaxPhi = new Accumulator(dt);
@@ -79,7 +79,9 @@ public class IsingField2D {
 		accPotential.setAveraging(true);
 		accEntropy = new Accumulator(dt);
 		accEntropy.setAveraging(true);
-				
+		accFEvT = new Accumulator(dt);
+		accFEvT.setAveraging(true);
+		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
 		
@@ -119,13 +121,37 @@ public class IsingField2D {
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
-		if(params.sget("Init Conditions") == "Random Gaussian")
+		String init = params.sget("Init Conditions");
+		if(init == "Random Gaussian"){
 			randomizeField(DENSITY);
-		else if ("Init Conditions" == "Constant"){
+			System.out.println("Random Gaussian");
+		}else if (init == "Constant"){
+			System.out.println("Constant");
 			for (int i = 0; i < Lp*Lp; i ++)
 				phi[i] = DENSITY;
-		}else if(params.sget("Init Conditions") == "Read From File")
+		}else if(init == "Read From File"){
 			readInitialConfiguration();
+			System.out.println("Read From File");
+		}else if(init == "Artificial Stripe 3"){
+			System.out.println("Artificial Stripe 3");
+			int stripeLoc = (int)(Lp/3.0);
+			randomizeField(DENSITY);
+			double m = DENSITY + (1.0-DENSITY)*.0001;
+			for (int i = 0; i < Lp*Lp; i ++){
+				int x = i%Lp;
+				if (x == stripeLoc)
+					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+				if (x == stripeLoc*2)
+					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+				if (x == stripeLoc*3)
+					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+				if (phi[i] > 1.0){
+					System.out.println(i + " " + phi[i]);
+				}
+			}
+			
+		}else
+			System.out.println("no init conditions");
 	}
 	
 	public void readInitialConfiguration(){
@@ -297,11 +323,12 @@ public class IsingField2D {
 		
 		meanLambda /= Lp*Lp;
 		double mu = (mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
+		mu /= dt;
 		if (magConservation == false)
 			mu = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			freeEnergy +=  -mu*phi[i];
-			phi[i] += del_phi[i]-Lambda[i]*mu;
+			phi[i] += del_phi[i]-Lambda[i]*mu*dt;
 			del_phiSquared += phi[i]*phi[i];
 		}
 		
