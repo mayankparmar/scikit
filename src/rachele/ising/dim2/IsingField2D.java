@@ -23,7 +23,7 @@ public class IsingField2D {
 	public int Lp;
 	public double dt, t;
 	public double lastMu;
-	public double[] phi;
+	public double[] phi, del_phiSq;
 	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
 	public int aveCount;
 	double [] phi_bar, del_phi, Lambda;
@@ -117,6 +117,7 @@ public class IsingField2D {
 		phi_bar = new double[Lp*Lp];
 		del_phi = new double[Lp*Lp];
 		Lambda = new double [Lp*Lp];
+		del_phiSq = new double[Lp*Lp];
 		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
@@ -311,6 +312,7 @@ public class IsingField2D {
 				entropy = (sqr(phi[i]))/2.0;
 			}
 			del_phi[i] = - dt*Lambda[i]*dF_dPhi;// + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+			del_phiSq[i] = del_phi[i]*del_phi[i];
 			meanLambda += Lambda[i];
 			
 			double potential = -(phi[i]*phi_bar[i])/2.0;

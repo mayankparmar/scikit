@@ -21,7 +21,7 @@ public class StructureFactor {
 	static double circlePeakValue = 5.135622302;
 	int squarePeakInt, circlePeakInt;
 	double lastHpeak, lastVpeak, lastCpeak;
-	
+		
 	Accumulator accCircle;
 	Accumulator accHorizontal;
 	Accumulator accVertical;
@@ -181,8 +181,8 @@ public class StructureFactor {
 		// compute fourier transform
 		fft.transform(fftData);
 		fftData = fft.toWraparoundOrder(fftData);
-		//double dP_dt;
-
+		double dP_dt;
+		
 		for (int i=0; i < Lp*Lp; i++){
 			double re = fftData[2*i];
 			double im = fftData[2*i+1];
@@ -194,6 +194,7 @@ public class StructureFactor {
 
 		//vertical component
 		for (int y = -Lp/2; y < Lp/2; y++) {
+			
 			int x=0;
 			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
 			if (kR >= kRmin && kR <= kRmax) {
@@ -202,9 +203,9 @@ public class StructureFactor {
 				accAvV.accum(kR, sFactor[i]);
 				if(abs(y) == squarePeakInt){
 					accPeakV.accum(t, sFactor[i]);
-					//dP_dt = (sFactor[i] - lastVpeak)/dt;
+					dP_dt = (sFactor[i] - lastVpeak)/dt;
 					lastVpeak = sFactor[i];
-					
+					accPeakVslope.accum(t, dP_dt);
 				}
 			}
 		}
@@ -222,6 +223,9 @@ public class StructureFactor {
 				accAvH.accum(kR, sFactor[i]);
 				if(abs(x) == squarePeakInt){
 					accPeakH.accum(t, sFactor[i]);
+					dP_dt = (sFactor[i] - lastHpeak)/dt;
+					lastHpeak = sFactor[i];
+					accPeakHslope.accum(t, dP_dt);
 				}
 			}
 		}		
@@ -243,15 +247,14 @@ public class StructureFactor {
 					count += 1;
 					if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
 						accPeakC.accum(t, sFactor[i]);
-						//System.out.println(t + " " + kR);
+						dP_dt = (sFactor[i] - lastCpeak)/dt;
+						lastCpeak = sFactor[i];
+						accPeakCslope.accum(t, dP_dt);
 					}
 				}
 			}
 		}
 		
-		//accPeakC.accum(t, kip.util.DoubleArray.max(sfValues));
-		
-		//set k=0 mode = 0
 		sFactor[0] = 0;
 		
 		//shift sfactor so that origin is in center
@@ -268,7 +271,6 @@ public class StructureFactor {
 			sFactor[i] = temp[i];
 		
 	}
-	
 		
 	public void accumulateAux() {
 		// compute fourier transform

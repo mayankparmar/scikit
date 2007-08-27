@@ -26,6 +26,7 @@ import scikit.plot.Plot;
 public class IsingField2DApp extends Simulation {
     FieldDisplay grid = new FieldDisplay("Phi(x)", true);
     FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
+    FieldDisplay delPhiGrid = new FieldDisplay("Del_Phi", true);
     Plot hSlice = new Plot("Horizontal Slice", true);
     Plot vSlice = new Plot("Vertical Slice", true);
 	Plot structurePeak = new Plot("Structure Peak vs Time", true);
@@ -34,6 +35,7 @@ public class IsingField2DApp extends Simulation {
 	Plot sfHPlot = new Plot("Structure Factor Hor", true);
 	Plot freeEnergyPlot = new Plot("Free Energy", true);
 	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp", true);
+	Plot sfSlopePlot = new Plot("SF peak slope", true);
 	StructureFactor sf;
     IsingField2D ising;
 
@@ -47,15 +49,15 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
 		params.addm("Conserve M", new ChoiceValue("On", "Off"));
-		params.add("Init Conditions", new ChoiceValue("Artificial Stripe 3", "Random Gaussian", "Read From File", "Constant" ));
+		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable", "Exact SemiStable", "Exact", "Linear", "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.0);
+		params.addm("T", 0.1);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
-		params.addm("dt", 0.1);
+		params.addm("dt", 1.0);
 		params.addm("H", 0.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
@@ -63,7 +65,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.7);
+		params.add("Magnetization", 0.6);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -81,10 +83,13 @@ public class IsingField2DApp extends Simulation {
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
-		if (params.sget("Zoom").equals("Yes"))
+		if (params.sget("Zoom").equals("Yes")){
 			grid.setAutoScale();
-		else
+			delPhiGrid.setAutoScale();
+		}else{
 			grid.setScale(-1.0, 1.0);
+			delPhiGrid.setAutoScale();
+		}
 
 		if (params.sget("Zoom").equals("Yes"))
 			sfGrid.setAutoScale();
@@ -113,6 +118,8 @@ public class IsingField2DApp extends Simulation {
 			sfHorPlot.setDataSet(4, sf.getPeakH());
 			sfPlot.setDataSet(3, sf.getAccumulatorV());
 			sfHPlot.setDataSet(4, sf.getAccumulatorH());
+			sfSlopePlot.setDataSet(3, sf.getPeakVslope());
+			sfSlopePlot.setDataSet(4, sf.getPeakHslope());
 		}
  
 		if (flags.contains("Accept F")){
@@ -131,6 +138,8 @@ public class IsingField2DApp extends Simulation {
 			ising.getAccPotential().clear();
 			sf.getPeakH().clear();
 			sf.getPeakV().clear();
+			sf.getPeakHslope().clear();
+			sf.getPeakVslope().clear();
 			ising.aveCount = 0;
 			ising.F_ave=0;
 //			sf.getAccumulatorCA().clear();
@@ -150,6 +159,7 @@ public class IsingField2DApp extends Simulation {
 			readInputParams("../../../research/javaData/configs/inputParams");
 		Job.addDisplay(grid);
 		Job.addDisplay(sfGrid);
+		Job.addDisplay(delPhiGrid);
 		Job.addDisplay(hSlice);
 		Job.addDisplay(vSlice);
 		Job.addDisplay(structurePeak);
@@ -158,6 +168,7 @@ public class IsingField2DApp extends Simulation {
 		Job.addDisplay(sfHPlot);
 		Job.addDisplay(freeEnergyPlot);
 		Job.addDisplay(freeEnergyTempPlot);
+		Job.addDisplay(sfSlopePlot);
 				
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
@@ -166,6 +177,7 @@ public class IsingField2DApp extends Simulation {
 		sf.setBounds(0.1, 14);
 		
 		grid.setData(ising.Lp,ising.Lp,ising.phi);
+		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
 		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
 		
         boolean equilibrating = true;
