@@ -15,10 +15,12 @@ public class StructureFactor {
 	int Lp;                 // # elements per side
 	double L;               // the actual system length, L = Lp*dx, where dx is lattice spacing
 	double R;               // characteristic length.  x-axis is k*R.
+	double dt;
 	double kRmin, kRmax;
 	static double squarePeakValue = 4.4934092;
 	static double circlePeakValue = 5.135622302;
 	int squarePeakInt, circlePeakInt;
+	double lastHpeak, lastVpeak, lastCpeak;
 	
 	Accumulator accCircle;
 	Accumulator accHorizontal;
@@ -29,11 +31,15 @@ public class StructureFactor {
 	Accumulator accPeakH;
 	Accumulator accPeakV;
 	Accumulator accPeakC;
+	Accumulator accPeakHslope;
+	Accumulator accPeakVslope;
+	Accumulator accPeakCslope;
 	
 	public StructureFactor(int Lp, double L, double R, double kRbinWidth, double dt) {
 		this.Lp = Lp;
 		this.L = L;
 		this.R = R;
+		this.dt = dt;
 		
 		sFactor = new double [Lp*Lp];
 		
@@ -59,6 +65,9 @@ public class StructureFactor {
 		accPeakH = new Accumulator(dt);
 		accPeakV = new Accumulator(dt);
 		accPeakC = new Accumulator(dt);
+		accPeakHslope = new Accumulator(dt);
+		accPeakVslope = new Accumulator(dt);
+		accPeakCslope = new Accumulator(dt);
 		
 		accAvH.setAveraging(true);		
 		accAvV.setAveraging(true);
@@ -69,7 +78,10 @@ public class StructureFactor {
 		accPeakH.setAveraging(true);
 		accPeakV.setAveraging(true);
 		accPeakC.setAveraging(true);
-		
+		accPeakHslope.setAveraging(true);
+		accPeakVslope.setAveraging(true);
+		accPeakCslope.setAveraging(true);
+				
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		fftData = new double[2*Lp*Lp];
 	}
@@ -85,7 +97,19 @@ public class StructureFactor {
 	public Accumulator getPeakC() {
 		return accPeakC;
 	}
+
+	public Accumulator getPeakVslope() {
+		return accPeakCslope;
+	}
 	
+	public Accumulator getPeakHslope() {
+		return accPeakCslope;
+	}
+	
+	public Accumulator getPeakCslope() {
+		return accPeakCslope;
+	}
+
 	public Accumulator getAccumulatorC() {
 		return accCircle;
 	}
@@ -157,6 +181,7 @@ public class StructureFactor {
 		// compute fourier transform
 		fft.transform(fftData);
 		fftData = fft.toWraparoundOrder(fftData);
+		//double dP_dt;
 
 		for (int i=0; i < Lp*Lp; i++){
 			double re = fftData[2*i];
@@ -177,6 +202,9 @@ public class StructureFactor {
 				accAvV.accum(kR, sFactor[i]);
 				if(abs(y) == squarePeakInt){
 					accPeakV.accum(t, sFactor[i]);
+					//dP_dt = (sFactor[i] - lastVpeak)/dt;
+					lastVpeak = sFactor[i];
+					
 				}
 			}
 		}

@@ -46,23 +46,24 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Conserve M", new ChoiceValue("Off", "On"));
-		params.add("Init Conditions", new ChoiceValue( "Read From File","Random Gaussian", "Constant"));
-		params.addm("Approx", new ChoiceValue("Exact", "Exact SemiStable", "Exact Stable", "Linear", "Phi4"));
+		params.addm("Conserve M", new ChoiceValue("On", "Off"));
+		params.add("Init Conditions", new ChoiceValue("Artificial Stripe 3", "Random Gaussian", "Read From File", "Constant" ));
+		params.addm("Approx", new ChoiceValue("Exact Stable", "Exact SemiStable", "Exact", "Linear", "Phi4"));
+		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.1);
-		params.addm("dT", 0.002);
+		params.addm("T", 0.0);
+		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 0.1);
-		params.addm("H", 0.6);
+		params.addm("H", 0.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
-		params.add("L/R", 8.0);
-		params.add("R/dx", 8.0);
+		params.add("L/R", 4.0);
+		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.0);
+		params.add("Magnetization", 0.7);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -180,13 +181,16 @@ public class IsingField2DApp extends Simulation {
 			}
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
 			//System.out.println(Math.abs(ising.dF_dt));
-//			if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
-//				System.out.println("input FE");
-//				ising.accumFreeEnergy();
-//				double temp = params.fget("T");
-//				temp += params.fget("dT");
-//				params.set("T", temp);
-//			}
+			if(params.sget("Plot FEvT") == "On"){
+				if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
+					System.out.println("input FE");
+					ising.accumFreeEnergy();
+					double temp = params.fget("T");
+					temp += params.fget("dT");
+					params.set("T", temp);
+				}				
+			}
+
 			Job.animate();
 		}
  	}
@@ -222,6 +226,11 @@ public class IsingField2DApp extends Simulation {
 			params.set("R/dx", readData);
 			dis.readChar();	
 
+//			readData = dis.readDouble();
+//			System.out.println(readData);
+//			params.set("Magnetization", readData);
+//			dis.readChar();	
+			
 			System.out.println("input read");
 		}catch(IOException ex){
 			ex.printStackTrace();
@@ -268,6 +277,8 @@ public class IsingField2DApp extends Simulation {
 			dos.writeChar('\t');
 			dos.writeDouble(params.fget("R/dx"));
 			dos.writeChar('\t');
+//			dos.writeDouble(params.fget("Magnetization"));
+//			dos.writeChar('\t');			
 			dos.writeChar('\n');
 			dos.close();
 		}catch(IOException ex){
