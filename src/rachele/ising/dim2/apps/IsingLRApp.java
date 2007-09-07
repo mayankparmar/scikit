@@ -1,12 +1,14 @@
 package rachele.ising.dim2.apps;
 
 import kip.ising.dim2.IsingLR;
+import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.plot.FieldDisplay;
+//import scikit.plot.FieldDisplay;
 import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frame;
 
 
 public class IsingLRApp extends Simulation {
@@ -14,13 +16,15 @@ public class IsingLRApp extends Simulation {
 		new Control(new IsingLRApp(), "Ising Model");
 	}
 	
-	FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
+	//FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
+	Grid grid = new Grid("Coarse Grained Field");
 	int dx;
 	IsingLR sim;
 	
 	public IsingLRApp() {
+		frame(grid);
 		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
-		params.addm("Scale colors", new ChoiceValue("False", "True"));
+		//params.addm("Scale colors", new ChoiceValue("False", "True"));
 		params.add("Random seed", 0);
 		params.add("L", 1<<8);
 		params.add("R", 1<<4);
@@ -42,18 +46,20 @@ public class IsingLRApp extends Simulation {
 		sim.setParameters(params);
 		params.set("Lp", sim.L/dx);
 		
-		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
-		if (params.sget("Scale colors").equals("False"))
-			fieldDisplay.setScale(-1, 1);
-		else
-			fieldDisplay.setAutoScale();
+//		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
+//		if (params.sget("Scale colors").equals("False"))
+//			fieldDisplay.setScale(-1, 1);
+//		else
+//			fieldDisplay.setAutoScale();
+//		
+		grid.registerData(sim.L/dx, sim.L/dx, sim.getField(dx));
 	}
 	
 	public void clear() {
 	}
 	
 	public void run() {
-		Job.addDisplay(fieldDisplay);
+		//Job.addDisplay(fieldDisplay);
 		
 		sim = new IsingLR(params);
 		sim.setField(params.fget("Initial magnetization"));

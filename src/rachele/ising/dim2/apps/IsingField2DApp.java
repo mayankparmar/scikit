@@ -5,7 +5,9 @@ package rachele.ising.dim2.apps;
 //import static kip.util.MathPlus.j1;
 
 import static java.lang.Math.*;
+import static scikit.util.Utilities.frameTogether;
 
+import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -19,23 +21,29 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
-import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
+//import scikit.plot.FieldDisplay;
+import scikit.graphics.dim2.Plot;
+import scikit.graphics.dim2.Grid;
+//import scikit.util.Utilities.*;
+//import scikit.plot.Plot;
 
 
 public class IsingField2DApp extends Simulation {
-    FieldDisplay grid = new FieldDisplay("Phi(x)", true);
-    FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
-    FieldDisplay delPhiGrid = new FieldDisplay("Del_Phi", true);
-    Plot hSlice = new Plot("Horizontal Slice", true);
-    Plot vSlice = new Plot("Vertical Slice", true);
-	Plot structurePeak = new Plot("Structure Peak vs Time", true);
-	Plot sfHorPlot = new Plot("Hor Structure factor", true);
-	Plot sfPlot = new Plot("Structure Factor", true);
-	Plot sfHPlot = new Plot("Structure Factor Hor", true);
-	Plot freeEnergyPlot = new Plot("Free Energy", true);
-	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp", true);
-	Plot sfSlopePlot = new Plot("SF peak slope", true);
+    //FieldDisplay grid = new FieldDisplay("Phi(x)", true);
+    //FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
+    //FieldDisplay delPhiGrid = new FieldDisplay("Del_Phi", true);
+    Grid grid = new Grid("Phi(x)");
+    Grid sfGrid = new Grid("S(k)");
+    Grid delPhiGrid = new Grid("DelPhi");
+	Plot hSlice = new Plot("Horizontal Slice");
+    Plot vSlice = new Plot("Vertical Slice");
+	Plot structurePeak = new Plot("Structure Peak vs Time");
+	Plot sfHorPlot = new Plot("Hor Structure factor");
+	Plot sfPlot = new Plot("Structure Factor");
+	Plot sfHPlot = new Plot("Structure Factor Hor");
+	Plot freeEnergyPlot = new Plot("Free Energy");
+	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp");
+	Plot sfSlopePlot = new Plot("SF peak slope");
 	StructureFactor sf;
     IsingField2D ising;
 
@@ -45,6 +53,8 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
+		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
+		frameTogether("Plots", vSlice, sfPlot, structurePeak, hSlice, sfHPlot, sfHorPlot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
@@ -83,44 +93,69 @@ public class IsingField2DApp extends Simulation {
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
-		if (params.sget("Zoom").equals("Yes")){
-			grid.setAutoScale();
-			delPhiGrid.setAutoScale();
-		}else{
-			grid.setScale(-1.0, 1.0);
-			delPhiGrid.setAutoScale();
-		}
-
-		if (params.sget("Zoom").equals("Yes"))
-			sfGrid.setAutoScale();
-		else
-			sfGrid.setScale(-1.0, 1.0);
+//		if (params.sget("Zoom").equals("Yes")){
+//			grid.setAutoScale();
+//			delPhiGrid.setAutoScale();
+//		}else{
+//			grid.setScale(-1.0, 1.0);
+//			delPhiGrid.setAutoScale();
+//		}
+//
+//		if (params.sget("Zoom").equals("Yes"))
+//			sfGrid.setAutoScale();
+//		else
+//			sfGrid.setScale(-1.0, 1.0);
 		
 		//sfGrid.setAutoScale();
-				
+
+//		grid.setData(ising.Lp,ising.Lp,ising.phi);
+//		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
+//		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
+		
+		grid.registerData(ising.Lp, ising.Lp, ising.phi);
+		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
+		delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+		
 		hSlice.clear();
 		vSlice.clear();
 		
-		hSlice.setDataSet(0, ising.getHslice());
-		vSlice.setDataSet(0, ising.getVslice());
+		//hSlice.setDataSet(0, ising.getHslice());
+		//vSlice.setDataSet(0, ising.getVslice());
 
-		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
-		//freeEnergyPlot.setDataSet(0, ising.getAccPotential());
-		//freeEnergyPlot.setDataSet(1, ising.getAccEntropy());
-		//freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
-		freeEnergyTempPlot.setDataSet(6, ising.getAccFEvT());
-			
-		if (ising.circleInt() == true){
-			sfPlot.setDataSet(5, sf.getAccumulatorC());
-			structurePeak.setDataSet(5, sf.getPeakC());
+		hSlice.registerLines("Slice", ising.getHslice(), Color.BLACK);
+		vSlice.registerLines("Slice", ising.getVslice(), Color.BLACK);
+		
+		freeEnergyPlot.registerLines("Free Energy", ising.getFreeEnergyAcc(), Color.MAGENTA);
+		
+		if(ising.circleInt() == true){
+			sfPlot.registerLines("Structure Function", sf.getAccumulatorC(), Color.YELLOW);
+			structurePeak.registerLines("Peak Value", sf.getPeakC(), Color.YELLOW);
 		}else{
-			structurePeak.setDataSet(3, sf.getPeakV());
-			sfHorPlot.setDataSet(4, sf.getPeakH());
-			sfPlot.setDataSet(3, sf.getAccumulatorV());
-			sfHPlot.setDataSet(4, sf.getAccumulatorH());
-			sfSlopePlot.setDataSet(3, sf.getPeakVslope());
-			sfSlopePlot.setDataSet(4, sf.getPeakHslope());
-		}
+			structurePeak.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
+			sfHorPlot.registerLines("Structure Fucntion", sf.getPeakH(), Color.ORANGE);
+			sfPlot.registerLines("Vertical SF", sf.getAccumulatorV(), Color.CYAN);
+			sfHPlot.registerLines("Horizontal SF", sf.getAccumulatorH(), Color.ORANGE);
+			sfSlopePlot.registerLines("Vertical Slope", sf.getPeakVslope(), Color.CYAN);
+			sfSlopePlot.registerLines("Horizontal Slope", sf.getPeakHslope(), Color.ORANGE);			
+		}	
+		
+//		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
+//		//freeEnergyPlot.setDataSet(0, ising.getAccPotential());
+//		//freeEnergyPlot.setDataSet(1, ising.getAccEntropy());
+//		//freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
+//		freeEnergyTempPlot.setDataSet(6, ising.getAccFEvT());
+//			
+//		if (ising.circleInt() == true){
+//			sfPlot.setDataSet(5, sf.getAccumulatorC());
+//			structurePeak.setDataSet(5, sf.getPeakC());
+//		}else{
+//			structurePeak.setDataSet(3, sf.getPeakV());
+//			sfHorPlot.setDataSet(4, sf.getPeakH());
+//			sfPlot.setDataSet(3, sf.getAccumulatorV());
+//			sfHPlot.setDataSet(4, sf.getAccumulatorH());
+//			sfSlopePlot.setDataSet(3, sf.getPeakVslope());
+//			sfSlopePlot.setDataSet(4, sf.getPeakHslope());
+//		}
  
 		if (flags.contains("Accept F")){
 			ising.accumFreeEnergy();
@@ -157,18 +192,18 @@ public class IsingField2DApp extends Simulation {
 		
 		if(params.sget("Init Conditions") == "Read From File")
 			readInputParams("../../../research/javaData/configs/inputParams");
-		Job.addDisplay(grid);
-		Job.addDisplay(sfGrid);
-		Job.addDisplay(delPhiGrid);
-		Job.addDisplay(hSlice);
-		Job.addDisplay(vSlice);
-		Job.addDisplay(structurePeak);
-		Job.addDisplay(sfPlot);
-		Job.addDisplay(sfHorPlot);
-		Job.addDisplay(sfHPlot);
-		Job.addDisplay(freeEnergyPlot);
-		Job.addDisplay(freeEnergyTempPlot);
-		Job.addDisplay(sfSlopePlot);
+//		Job.addDisplay(grid);
+//		Job.addDisplay(sfGrid);
+//		Job.addDisplay(delPhiGrid);
+//		Job.addDisplay(hSlice);
+//		Job.addDisplay(vSlice);
+//		Job.addDisplay(structurePeak);
+//		Job.addDisplay(sfPlot);
+//		Job.addDisplay(sfHorPlot);
+//		Job.addDisplay(sfHPlot);
+//		Job.addDisplay(freeEnergyPlot);
+//		Job.addDisplay(freeEnergyTempPlot);
+//		Job.addDisplay(sfSlopePlot);
 				
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
@@ -176,9 +211,9 @@ public class IsingField2DApp extends Simulation {
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
 		
-		grid.setData(ising.Lp,ising.Lp,ising.phi);
-		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
-		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
+//		grid.setData(ising.Lp,ising.Lp,ising.phi);
+//		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
+//		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
 		
         boolean equilibrating = true;
         while (true) {
