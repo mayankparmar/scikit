@@ -37,8 +37,8 @@ public class IsingField2DApp extends Simulation {
     Grid delPhiGrid = new Grid("DelPhi");
 	Plot hSlice = new Plot("Horizontal Slice");
     Plot vSlice = new Plot("Vertical Slice");
-	Plot structurePeak = new Plot("Structure Peak vs Time");
-	Plot sfHorPlot = new Plot("Hor Structure factor");
+	Plot structurePeakV = new Plot("Ver Structure Factor");
+	Plot structurePeakH = new Plot("Hor Structure factor");
 	Plot sfPlot = new Plot("Structure Factor");
 	Plot sfHPlot = new Plot("Structure Factor Hor");
 	Plot freeEnergyPlot = new Plot("Free Energy");
@@ -54,7 +54,7 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
-		frameTogether("Plots", vSlice, sfPlot, structurePeak, hSlice, sfHPlot, sfHorPlot);
+		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
@@ -129,10 +129,10 @@ public class IsingField2DApp extends Simulation {
 		
 		if(ising.circleInt() == true){
 			sfPlot.registerLines("Structure Function", sf.getAccumulatorC(), Color.YELLOW);
-			structurePeak.registerLines("Peak Value", sf.getPeakC(), Color.YELLOW);
+			structurePeakV.registerLines("Peak Value", sf.getPeakC(), Color.YELLOW);
 		}else{
-			structurePeak.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
-			sfHorPlot.registerLines("Structure Fucntion", sf.getPeakH(), Color.ORANGE);
+			structurePeakV.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
+			structurePeakH.registerLines("Structure Fucntion", sf.getPeakH(), Color.ORANGE);
 			sfPlot.registerLines("Vertical SF", sf.getAccumulatorV(), Color.CYAN);
 			sfHPlot.registerLines("Horizontal SF", sf.getAccumulatorH(), Color.ORANGE);
 			sfSlopePlot.registerLines("Vertical Slope", sf.getPeakVslope(), Color.CYAN);
