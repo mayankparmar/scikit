@@ -6,7 +6,6 @@ package rachele.ising.dim2.apps;
 
 import static java.lang.Math.*;
 import static scikit.util.Utilities.frameTogether;
-
 import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,24 +13,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import rachele.ising.dim2.*;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
-//import scikit.plot.FieldDisplay;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim2.Grid;
-//import scikit.util.Utilities.*;
-//import scikit.plot.Plot;
-
 
 public class IsingField2DApp extends Simulation {
-    //FieldDisplay grid = new FieldDisplay("Phi(x)", true);
-    //FieldDisplay sfGrid = new FieldDisplay("S(k)", true);
-    //FieldDisplay delPhiGrid = new FieldDisplay("Del_Phi", true);
     Grid grid = new Grid("Phi(x)");
     Grid sfGrid = new Grid("S(k)");
     Grid delPhiGrid = new Grid("DelPhi");
@@ -93,25 +84,6 @@ public class IsingField2DApp extends Simulation {
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
-//		if (params.sget("Zoom").equals("Yes")){
-//			grid.setAutoScale();
-//			delPhiGrid.setAutoScale();
-//		}else{
-//			grid.setScale(-1.0, 1.0);
-//			delPhiGrid.setAutoScale();
-//		}
-//
-//		if (params.sget("Zoom").equals("Yes"))
-//			sfGrid.setAutoScale();
-//		else
-//			sfGrid.setScale(-1.0, 1.0);
-		
-		//sfGrid.setAutoScale();
-
-//		grid.setData(ising.Lp,ising.Lp,ising.phi);
-//		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
-//		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
-		
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
@@ -119,9 +91,6 @@ public class IsingField2DApp extends Simulation {
 		hSlice.clear();
 		vSlice.clear();
 		
-		//hSlice.setDataSet(0, ising.getHslice());
-		//vSlice.setDataSet(0, ising.getVslice());
-
 		hSlice.registerLines("Slice", ising.getHslice(), Color.BLACK);
 		vSlice.registerLines("Slice", ising.getVslice(), Color.BLACK);
 		
@@ -138,24 +107,6 @@ public class IsingField2DApp extends Simulation {
 			sfSlopePlot.registerLines("Vertical Slope", sf.getPeakVslope(), Color.CYAN);
 			sfSlopePlot.registerLines("Horizontal Slope", sf.getPeakHslope(), Color.ORANGE);			
 		}	
-		
-//		freeEnergyPlot.setDataSet(6, ising.getFreeEnergyAcc());
-//		//freeEnergyPlot.setDataSet(0, ising.getAccPotential());
-//		//freeEnergyPlot.setDataSet(1, ising.getAccEntropy());
-//		//freeEnergyPlot.setDataSet(7, ising.getDF_dtAcc());
-//		freeEnergyTempPlot.setDataSet(6, ising.getAccFEvT());
-//			
-//		if (ising.circleInt() == true){
-//			sfPlot.setDataSet(5, sf.getAccumulatorC());
-//			structurePeak.setDataSet(5, sf.getPeakC());
-//		}else{
-//			structurePeak.setDataSet(3, sf.getPeakV());
-//			sfHorPlot.setDataSet(4, sf.getPeakH());
-//			sfPlot.setDataSet(3, sf.getAccumulatorV());
-//			sfHPlot.setDataSet(4, sf.getAccumulatorH());
-//			sfSlopePlot.setDataSet(3, sf.getPeakVslope());
-//			sfSlopePlot.setDataSet(4, sf.getPeakHslope());
-//		}
  
 		if (flags.contains("Accept F")){
 			ising.accumFreeEnergy();
@@ -192,28 +143,12 @@ public class IsingField2DApp extends Simulation {
 		
 		if(params.sget("Init Conditions") == "Read From File")
 			readInputParams("../../../research/javaData/configs/inputParams");
-//		Job.addDisplay(grid);
-//		Job.addDisplay(sfGrid);
-//		Job.addDisplay(delPhiGrid);
-//		Job.addDisplay(hSlice);
-//		Job.addDisplay(vSlice);
-//		Job.addDisplay(structurePeak);
-//		Job.addDisplay(sfPlot);
-//		Job.addDisplay(sfHorPlot);
-//		Job.addDisplay(sfHPlot);
-//		Job.addDisplay(freeEnergyPlot);
-//		Job.addDisplay(freeEnergyTempPlot);
-//		Job.addDisplay(sfSlopePlot);
-				
+			
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
-		
-//		grid.setData(ising.Lp,ising.Lp,ising.phi);
-//		delPhiGrid.setData(ising.Lp, ising.Lp, ising.del_phiSq);
-//		sfGrid.setData(ising.Lp, ising.Lp,sf.sFactor);
 		
         boolean equilibrating = true;
         while (true) {
@@ -343,3 +278,4 @@ public class IsingField2DApp extends Simulation {
 	}
 
 }
+ 
