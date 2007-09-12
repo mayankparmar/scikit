@@ -9,7 +9,7 @@ public class ParticleTag {
 	public Color color;
 	public ParticleContext pc;
 	
-	public ParticleTag(int tag) {
-		this.id = tag;
+	public ParticleTag(int id) {
+		this.id = id;
 	}
 }

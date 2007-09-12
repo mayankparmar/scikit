@@ -1,4 +1,4 @@
-package kip.md.apps;
+package kip.md.apps.shaker;
 
 import static java.lang.Math.*;
 import static scikit.util.Utilities.frame;

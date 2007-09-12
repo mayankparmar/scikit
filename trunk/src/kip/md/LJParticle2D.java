@@ -19,7 +19,7 @@ public class LJParticle2D extends Particle {
 		return _potential(tag.pc.boundaryDistance(this), tag.radius);
 	}
 
-	private double _potential(Vec3 d, double sigma) {
+	protected double _potential(Vec3 d, double sigma) {
 		if (d == null) {
 			return 0;
 		}
@@ -36,19 +36,23 @@ public class LJParticle2D extends Particle {
 		}
 	}
 	
-	private void _force(Vec3 d, double sigma, Vec3 f) {
+	protected void _force(Vec3 d, double sigma, Vec3 f) {
 		if (d == null) {
 			f.x = f.y = f.z = 0;
 		}
 		else {
 			double r = d.norm();
-			double a = sigma/r;
-			double a6 = a*a*a*a*a*a;
-			double a12 = a6*a6;
-			double fmag = -(12/r)*4*epsilon*(a12 - a6);
+			double fmag = ljForce(r, sigma);
 			f.x = fmag*d.x/r;
 			f.y = fmag*d.y/r;
 			f.z = fmag*d.z/r;
 		}
+	}
+	
+	protected double ljForce(double r, double sigma) {
+		double a = sigma/r;
+		double a6 = a*a*a*a*a*a;
+		double a12 = a6*a6;
+		return -(12/r)*4*epsilon*(a12 - a6);
 	}
 }

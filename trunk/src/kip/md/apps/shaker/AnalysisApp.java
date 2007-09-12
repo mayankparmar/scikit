@@ -1,4 +1,4 @@
-package kip.md.apps;
+package kip.md.apps.shaker;
 
 import static scikit.util.Utilities.frame;
 
