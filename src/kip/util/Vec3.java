@@ -3,12 +3,20 @@ package kip.util;
 import static java.lang.Math.*;
 
 
-public class Vec3 {
+public class Vec3 implements Cloneable {
 	public double x, y, z;
 	public Vec3(double x, double y, double z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+	
+	public Vec3 clone(Vec3 that) {
+		try {
+			return (Vec3)super.clone();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	public double dot(Vec3 that) {

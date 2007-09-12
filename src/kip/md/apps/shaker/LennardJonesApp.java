@@ -1,4 +1,4 @@
-package kip.md.apps;
+package kip.md.apps.shaker;
 
 import static java.lang.Math.*;
 import static kip.util.MathPlus.*;
@@ -93,7 +93,8 @@ public class LennardJonesApp extends Simulation {
 			particles[NA+i] = new LJParticle2D();
 			particles[NA+i].tag = tagB;
 		}
-
+		
+		pc.layOutParticles(particles);
 		sim = new MolecularDynamics2D<LJParticle2D>(dt, pc, particles);
 		lastAnimate = 0;
 		

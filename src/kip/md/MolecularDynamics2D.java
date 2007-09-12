@@ -4,13 +4,11 @@ import static java.lang.Math.*;
 
 import java.util.ArrayList;
 
-import kip.util.Random;
 import kip.util.Vec3;
 import scikit.numerics.ode.*;
 
 
 public class MolecularDynamics2D<Pt extends Particle> {
-	public Random rand = new Random(0);
 	public ParticleContext pc;
 	public Pt[] particles;
 	public int N;
@@ -27,15 +25,13 @@ public class MolecularDynamics2D<Pt extends Particle> {
 	protected ODESolver solver;
 	// grid for finding neighbors quickly
 	PointGrid2D<Pt> grid;
-
+	
 	
 	public MolecularDynamics2D(double dt, ParticleContext pc, Pt[] particles) {
 		this.pc = pc;
 		this.particles = particles;
 		N = particles.length;
 		time = 0;
-		
-		pc.layOutParticles(rand, particles);
 		
 		// initialize phase space array and ODE solver
 		phase = new double[4*N];
@@ -198,8 +194,8 @@ public class MolecularDynamics2D<Pt extends Particle> {
 			// dp/dt = - gamma 2p/2m + sqrt(2 gamma T) eta
 			// dv/dt = - (gamma v + sqrt(2 gamma T) eta) / m
 			double dt = solver.getStepSize();
-			p.vx += (-dt*gamma*p.vx + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
-			p.vy += (-dt*gamma*p.vy + sqrt(2*dt*gamma*T)*rand.nextGaussian())/M;
+			p.vx += (-dt*gamma*p.vx + sqrt(2*dt*gamma*T)*pc.rand.nextGaussian())/M;
+			p.vy += (-dt*gamma*p.vy + sqrt(2*dt*gamma*T)*pc.rand.nextGaussian())/M;
 		}
 	}
 }

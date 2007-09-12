@@ -1,4 +1,4 @@
-package kip.md.apps;
+package kip.md.apps.shaker;
 
 //import java.awt.Color;
 //import java.io.DataInput;
@@ -18,7 +18,6 @@ import kip.md.ParticleContext;
 //import kip.md.apps.SimulationTrajectory.Snapshot;
 
 import static scikit.util.Utilities.*;
-
 
 public class ExperimentTrajectory implements AbstractTrajectory {
 	double t_i, t_f;
@@ -40,14 +39,16 @@ public class ExperimentTrajectory implements AbstractTrajectory {
 		    assert(prec == 4);
 		    assert(size == m*n);
 		    
-		    for (int i = 0; i < 200; i++) {
+		    System.out.println("m " + m);
+		    for (int i = 0; i < m; i++) {
 		    	double x = readFloatLittleEndian(dis);
 		    	double y = readFloatLittleEndian(dis);
-//		    	double brightness = readFloatLittleEndian(dis);
-//		    	double radius = readFloatLittleEndian(dis);
-		    	double id = readFloatLittleEndian(dis);
+		    	double brightness = readFloatLittleEndian(dis);
+		    	double radius = readFloatLittleEndian(dis);
 		    	double time = readFloatLittleEndian(dis);
-		    	System.out.println(x + " " + y + " " + id + " "+ time);
+		    	double id = readFloatLittleEndian(dis);
+		    	x += y+brightness+radius+time+id;
+//		    	System.out.println(time + " "+ id);
 		    }
 		    
 		    // read context
