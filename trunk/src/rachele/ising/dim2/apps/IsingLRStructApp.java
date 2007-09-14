@@ -2,26 +2,25 @@ package rachele.ising.dim2.apps;
 
 import rachele.ising.dim2.StructureFactor;
 import rachele.ising.dim2.IsingLR;
-//import kip.ising.dim2.IsingLR;
+import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-//import scikit.params.DoubleValue;
-import scikit.plot.FieldDisplay;
-import scikit.plot.Plot;
-import static scikit.util.Utilities.format;
-
+import scikit.graphics.dim2.Plot;
+import java.awt.Color;
+import static scikit.util.Utilities.*;
 
 public class IsingLRStructApp extends Simulation {
 	public static void main(String[] args) {
 		new Control(new IsingLRStructApp(), "Ising Model");
 	}
 	
-	FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
-	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component", true);
-	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component", true);
-	Plot circleStructureDisplay = new Plot("Structure Factor - Circle Average", true);
+	Grid fieldDisplay = new Grid("Coarse Grained Display");
+	//FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
+	Plot structureDisplayH = new Plot("Structure Factor - Vertical Component");
+	Plot structureDisplayV = new Plot("Structure Factor - Horizontal Component");
+	Plot circleStructureDisplay = new Plot("Structure Factor - Circle Average");
     //Plot hSlice = new Plot("Horizontal Slice", true);
     //Plot vSlice = new Plot("Vertical Slice", true);
 
@@ -30,6 +29,7 @@ public class IsingLRStructApp extends Simulation {
 	IsingLR sim;
 	
 	public IsingLRStructApp() {
+		frameTogether("Plots", fieldDisplay, structureDisplayH, structureDisplayV, circleStructureDisplay);
 		params.addm("Dynamics", new ChoiceValue("Kawasaki Glauber", "Kawasaki Metropolis", "Ising Glauber", "Ising Metropolis"));
 		params.addm("Scale colors", new ChoiceValue("False", "True"));
 		//params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
@@ -58,17 +58,18 @@ public class IsingLRStructApp extends Simulation {
 		sim.setParameters(params);
 	
 		
-		fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
-		if (params.sget("Scale colors").equals("False"))
-			fieldDisplay.setScale(-1, 1);
-		else
-			fieldDisplay.setAutoScale();
-		structureDisplayV.setDataSet(0, structure.getAccumulatorV());
-		structureDisplayH.setDataSet(0, structure.getAccumulatorH());
-		structureDisplayV.setDataSet(1, structure.getAccumulatorVA());	
-		structureDisplayH.setDataSet(1, structure.getAccumulatorHA());
-		circleStructureDisplay.setDataSet(2, structure.getAccumulatorC());	
-		circleStructureDisplay.setDataSet(3, structure.getAccumulatorCA());	
+		//fieldDisplay.setData(sim.L/dx, sim.L/dx, sim.getField(dx));
+		fieldDisplay.registerData(sim.L/dx, sim.L/dx, sim.getField(dx));
+		//if (params.sget("Scale colors").equals("False"))
+		//	fieldDisplay.setScale(-1, 1);
+		//else
+		//	fieldDisplay.setAutoScale();
+		structureDisplayV.registerLines("vertical", structure.getAccumulatorV(), Color.BLACK);
+		structureDisplayH.registerLines("horizontal", structure.getAccumulatorH(), Color.BLACK);
+		structureDisplayV.registerLines("vertical ave", structure.getAccumulatorVA(), Color.BLUE);	
+		structureDisplayH.registerLines("horizontal ave", structure.getAccumulatorHA(), Color.BLUE);
+		circleStructureDisplay.registerLines("circle", structure.getAccumulatorC(), Color.RED);	
+		circleStructureDisplay.registerLines("circle ave", structure.getAccumulatorCA(), Color.YELLOW);	
 
 	
 		if (flags.contains("Clear S.F.")) {
@@ -86,21 +87,10 @@ public class IsingLRStructApp extends Simulation {
 	
 	
 	public void run() {
-		Job.addDisplay(fieldDisplay);
-		Job.addDisplay(structureDisplayV);
-		Job.addDisplay(structureDisplayH);
-		Job.addDisplay(circleStructureDisplay);
-		
 		sim = new IsingLR(params);
 		sim.setField(params.fget("Initial magnetization"));
 		dx = Math.max(Integer.highestOneBit(sim.R)/8, 1);
 		structure = new StructureFactor(sim.L/dx, sim.L, sim.R, 0.1, sim.dTime());
-		//avStructH = new Accumulator(sim.L/dx);
-		//avStructV = new Accumulator(sim.L/dx);
-		//avStructC = new Accumulator(sim.L/dx);
-		//avStructH.setAveraging(true);
-		//avStructV.setAveraging(true);
-		//avStructC.setAveraging(true);
 		
 		System.out.println("equilibrating");
 		//while (sim.time() < params.fget("init time")) {

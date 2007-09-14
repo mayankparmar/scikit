@@ -27,8 +27,8 @@ public class IsingField2D {
 	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
 	public int aveCount;
 	double [] phi_bar, del_phi, Lambda;
-	double horizontalSlice;
-	double verticalSlice;
+	public double horizontalSlice;
+	public double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
 	double[] fftScratch;
 	public static final double KR_SP = 5.13562230184068255630140;
