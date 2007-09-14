@@ -13,11 +13,14 @@ import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
+import scikit.graphics.dim3.Scene3D;
 
 
 public class Clump3DApp extends Simulation {
     Grid grid = new Grid("Grid");
     Plot plot = new Plot("Structure factor");
+    Scene3D scene = new Scene3D("test");
+    
     StructureFactor3D sf;
     Clump3D clump;
  	
@@ -26,7 +29,7 @@ public class Clump3DApp extends Simulation {
 	}
 	
 	public Clump3DApp() {
-		frame(grid, plot);
+		frame(grid, plot, scene);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.15);
 		params.addm("dt", 1.0);
@@ -58,6 +61,7 @@ public class Clump3DApp extends Simulation {
 	public void clear() {
 		plot.clear();
 		grid.clear();
+		scene.clear();
 	}
 	
 	public void run() {
