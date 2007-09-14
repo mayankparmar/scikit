@@ -5,6 +5,7 @@ package rachele.ising.dim2.apps;
 //import static kip.util.MathPlus.j1;
 
 import static java.lang.Math.*;
+import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frameTogether;
 import java.awt.Color;
 import java.io.DataInputStream;
@@ -19,6 +20,7 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
+import scikit.graphics.dim2.Geom2D;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim2.Grid;
 
@@ -84,12 +86,23 @@ public class IsingField2DApp extends Simulation {
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
-		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
-		delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+		if (params.sget("Zoom").equals("Yes")) {
+			grid.registerData(ising.Lp, ising.Lp, ising.phi);
+			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+		}
+		else {
+			grid.registerData(ising.Lp, ising.Lp, ising.phi, -1, 1);
+			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq, 0, 1);
+		}
 		
-		hSlice.clear();
-		vSlice.clear();
+		grid.setDrawables(asList(
+				Geom2D.line(0, ising.horizontalSlice, 1, ising.horizontalSlice, Color.GREEN),
+				Geom2D.line(ising.verticalSlice, 0, ising.verticalSlice, 1, Color.BLUE)));
+
+		delPhiGrid.setDrawables(asList(
+				Geom2D.line(0, ising.horizontalSlice, 1, ising.horizontalSlice, Color.GREEN),
+				Geom2D.line(ising.verticalSlice, 0, ising.verticalSlice, 1, Color.BLUE)));
 		
 		hSlice.registerLines("Slice", ising.getHslice(), Color.BLACK);
 		vSlice.registerLines("Slice", ising.getVslice(), Color.BLACK);
