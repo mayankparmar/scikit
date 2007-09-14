@@ -53,7 +53,7 @@ public class PolymerApp extends Simulation {
 		sim.setTemperature(params.fget("Temperature"), params.fget("Bath coupling"));
 		params.set("Time", format(sim.time()));
 		params.set("Reduced K.E.", format(sim.reducedKineticEnergy()));
-		canvas.setDrawables(asList(sim.pc.boundaryDw(), sim.pc.particlesDw(sim.particles)));
+		canvas.setDrawables(asList(sim.pc.boundaryDw(), sim.pc.particlesLinkedDw(sim.particles)));
 	}
 	
 	public void clear() {
