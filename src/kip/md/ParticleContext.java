@@ -259,4 +259,30 @@ public class ParticleContext {
 			}			
 		};
 	}
+	
+	public Drawable<Gfx2D> particlesLinkedDw(final Particle[] particles) {
+		return new Drawable<Gfx2D>() {
+			public void draw(Gfx2D g) {
+				for (Particle p : particles) {
+					g.setColor(p.tag.color);
+					g.fillCircle(p.x, p.y, p.tag.radius);
+				}
+				g.setColor(Color.WHITE);
+				for (int i = 0; i < particles.length-1; i++) {
+					double x1 = particles[i+0].x;
+					double y1 = particles[i+0].y;
+					double x2 = particles[i+1].x;
+					double y2 = particles[i+1].y;
+					double dx = x2-x1;
+					double dy = y2-y1;
+					if (dx*dx + dy*dy < (L/2.)*(L/2.))
+						g.drawLine(x1, y1, x2, y2);
+				}
+			}
+			public Bounds getBounds() {
+				return new Bounds(0, L, 0, L);
+			}			
+		};
+	}
+	
 }
