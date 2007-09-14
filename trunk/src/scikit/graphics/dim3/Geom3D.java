@@ -3,15 +3,14 @@ package scikit.graphics.dim3;
 import java.awt.Color;
 
 import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
 
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 
 public class Geom3D {
-	public static Drawable<GLAutoDrawable> cube(final Bounds bds, final Color color) {
-		return new Drawable<GLAutoDrawable>() {
-			public void draw(GLAutoDrawable gd) {
+	public static Drawable<Gfx3D> cube(final Bounds bds, final Color color) {
+		return new Drawable<Gfx3D>() {
+			public void draw(Gfx3D gd) {
 				GL gl = gd.getGL();
 				gl.glColor4fv(color.getComponents(null), 0);
 				gl.glBegin(GL.GL_LINES);

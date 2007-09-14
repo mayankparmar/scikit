@@ -1,18 +1,26 @@
 package scikit.graphics.dim3;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.glu.GLU;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
 
 import scikit.graphics.Drawable;
 import scikit.graphics.GLHelper;
 import scikit.graphics.Scene;
+import scikit.util.Bounds;
 
 public class Scene3D extends Scene<Gfx3D> {
 	public Scene3D(String title) {
 		super(title);
+		_component.addMouseListener(_mouseListener);
+		_component.addMouseMotionListener(_mouseListener);
 	}
 	
 	protected Component createComponent() {
@@ -25,6 +33,7 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	protected void drawAll(Gfx3D gd) {
 		setProjection(gd);
+		Geom3D.cube(new Bounds(-1, 1, -1, 1, -1, 1), Color.RED).draw(gd);
 		for (Drawable<Gfx3D> d : getAllDrawables())
 			d.draw(gd);
 	}
@@ -43,4 +52,21 @@ public class Scene3D extends Scene<Gfx3D> {
 		gl.glLoadIdentity();
 		gl.glTranslatef(0f, 0f, -6f);
 	}
+	
+	Point _lastClick;
+	
+	private MouseInputListener _mouseListener = new MouseInputAdapter() {
+		public void mousePressed(MouseEvent event) {
+			_lastClick = event.getPoint();
+		}
+		
+		public void mouseReleased(MouseEvent event) {
+			_lastClick = null;
+		}
+		public void mouseDragged(MouseEvent event) {
+//			double dx = _lastClick.x - event.getX();
+//			double dy = _lastClick.y - event.getY();
+			_component.repaint();
+		}
+	};
 }
