@@ -37,9 +37,9 @@ public class PolymerApp extends Simulation {
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
 		params.add("Length", 30.0);
 		params.add("Particles", 120);
-		params.addm("Radius", new DoubleValue(1, 0.8, 1.2).withSlider());
+		params.addm("Radius", new DoubleValue(1, 0.6, 1.4).withSlider());
 		params.addm("Temperature", new DoubleValue(5, 0, 10).withSlider());
-		params.addm("dt", 0.01);
+		params.addm("dt", 0.005);
 		params.addm("Bath coupling", 0.2);
 		params.add("Time");
 		params.add("Reduced K.E.");
