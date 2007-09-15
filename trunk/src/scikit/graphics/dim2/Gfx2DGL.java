@@ -155,6 +155,8 @@ public class Gfx2DGL implements Gfx2D {
 	
 	public static GLCanvas createComponent(final Scene2D scene) {
 		return GLHelper.createComponent(new GLHelper.DisplayListener() {
+			public void init(GLAutoDrawable drawable) {
+			}
 			public void display(GLAutoDrawable drawable) {
 				scene.drawAll(new Gfx2DGL(drawable.getGL(), scene));
 			}

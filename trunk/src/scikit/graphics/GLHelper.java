@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 
 public class GLHelper {
 	public interface DisplayListener {
+		public void init(GLAutoDrawable gl);
 		public void display(GLAutoDrawable gl);
 	}
 
@@ -40,7 +41,7 @@ public class GLHelper {
 				});
 			}
 		};
-
+		
 		canvas.addGLEventListener(new GLEventListener() {
 			public void display(GLAutoDrawable glDrawable) {
 				GL gl = glDrawable.getGL();
@@ -59,9 +60,9 @@ public class GLHelper {
 				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 				gl.glEnable(GL.GL_LINE_SMOOTH);
 				// gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
-				// gl.glEnable(GL.GL_DEPTH_TEST);
 				gl.glLineWidth(1.0f);
 				gl.glPointSize(4.0f);
+				listener.init(glDrawable);
 			}
 
 			public void reshape(GLAutoDrawable glDrawable, int x, int y, int width, int height) {

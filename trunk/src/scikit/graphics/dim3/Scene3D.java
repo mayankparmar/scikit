@@ -17,6 +17,8 @@ import scikit.graphics.Scene;
 import scikit.util.Bounds;
 
 public class Scene3D extends Scene<Gfx3D> {
+	Quaternion _rotation = new Quaternion();
+	
 	public Scene3D(String title) {
 		super(title);
 		_component.addMouseListener(_mouseListener);
@@ -25,6 +27,9 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	protected Component createComponent() {
 		return GLHelper.createComponent(new GLHelper.DisplayListener() {
+			public void init(GLAutoDrawable gd) {
+				gd.getGL().glEnable(GL.GL_DEPTH_TEST);
+			}
 			public void display(GLAutoDrawable gd) {
 				drawAll(new Gfx3D(gd.getGL()));
 			}
@@ -39,33 +44,43 @@ public class Scene3D extends Scene<Gfx3D> {
 	}
 	
 	private void setProjection(Gfx3D gd) {
-		double fovY = 35;
-		double aspect = _component.getWidth() / _component.getHeight();
-		double zNear = 0.1;
-		double zFar = 10;
-
 		GL gl = gd.getGL();
+		
 		gl.glMatrixMode(GL.GL_PROJECTION);
 		gl.glLoadIdentity();
+		double fovY = 35;
+		double aspect = (double)_component.getWidth() / _component.getHeight();
+		double zNear = 0.1;
+		double zFar = 10;
 		(new GLU()).gluPerspective(fovY, aspect, zNear, zFar);
+		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
 		gl.glTranslatef(0f, 0f, -6f);
+		gl.glMultMatrixd(_rotation.getRotationMatrix(), 0);
 	}
 	
-	Point _lastClick;
-	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
+		Point _lastDrag;
 		public void mousePressed(MouseEvent event) {
-			_lastClick = event.getPoint();
+			_lastDrag = event.getPoint();
 		}
 		
 		public void mouseReleased(MouseEvent event) {
-			_lastClick = null;
+			_lastDrag = null;
 		}
+		
 		public void mouseDragged(MouseEvent event) {
-//			double dx = _lastClick.x - event.getX();
-//			double dy = _lastClick.y - event.getY();
+			double dx = event.getX() - _lastDrag.x;
+			double dy = event.getY() - _lastDrag.y;
+			_lastDrag = event.getPoint();
+			
+			double radPerPixel = 0.01;
+			Quaternion q = new Quaternion();
+			q.setFromRotationVector(radPerPixel*dy, radPerPixel*dx, 0);
+			q.mul(_rotation);
+			q.normalize();
+			_rotation = q;
 			_component.repaint();
 		}
 	};
