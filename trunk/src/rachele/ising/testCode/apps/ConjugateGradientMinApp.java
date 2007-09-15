@@ -15,7 +15,8 @@ import static scikit.util.Utilities.frame;
 public class ConjugateGradientMinApp extends Simulation{
 	Grid function = new Grid ("Function");
 	Accumulator acc = new Accumulator(1.0);
-	ConjugateGradientMin conjugateGrad;
+	ConjugateGradientMin cjMin;
+	public int size = 21;
 	public double conjGradOutput [] = new double [4];
 
 	public ConjugateGradientMinApp() {
@@ -30,56 +31,38 @@ public class ConjugateGradientMinApp extends Simulation{
 
 	public void animate() {
 		//plot the function:
-		//function.registerLines("function", acc, Color.BLACK);
 		double [] point = new double [2];
 		double [] funcData = new double [21*21];
 		int index;
-		for (int x = 0; x <= 20; x++){
-			for(int y = 0; y <= 20; y++){
+		for (int x = 0; x < size; x++){
+			for(int y = 0; y < size; y++){
 				point[0] = x;
 				point[1] = y;
-				index = 21*(y)+(x);
-				funcData[index] = conjugateGrad.functionMultiDim(point);
+				index = size*(y)+(x);
+				funcData[index] = cjMin.functionMultiDim(point);
 			}
 		}
-		function.registerData(21, 21, funcData);
+		function.registerData(size, size, funcData);
 		acc.clear();
-		System.out.println(conjugateGrad.initPoint[0] + " " + conjugateGrad.initPoint[1] + " " + conjugateGrad.finPoint[0] + " " + conjugateGrad.finPoint[1]);
-		double x1 = conjugateGrad.initPoint[0]/21;
-		double y1 = conjugateGrad.initPoint[1]/21;
-		double x2 = conjugateGrad.finPoint[0]/21;
-		double y2 = conjugateGrad.finPoint[1]/21;
-		function.addDrawable(Geom2D.line(x1, y1, x2, y2, Color.GREEN));
-	}
+		
+		for (int i = 0; i < cjMin.conjIterations; i++){
+			function.addDrawable(Geom2D.line(cjMin.drawablePoints[i*cjMin.N]/size, cjMin.drawablePoints[i*cjMin.N+1]/size, cjMin.drawablePoints[(i+1)*cjMin.N]/size, cjMin.drawablePoints[(i+1)*cjMin.N+1]/size, Color.GREEN));
+		}
+	}	
 
 	public void clear() {
 	}
 
 	public void run() {
-		conjugateGrad = new ConjugateGradientMin();
-		System.out.println(conjugateGrad.function(1.0));
-
-		
-		
-		//minSearchInput = conjugateGrad.initialBracket(-1000,-996);
-		//System.out.println(minSearchInput[0] + " " + minSearchInput[1] + " " + minSearchInput[2]);
-		//minSearchOutput = conjugateGrad.goldenMin(minSearchInput, 1e-16);
-		//minSearchOutput = conjugateGrad.brent(minSearchInput, 1e-16);
-		//System.out.println("min = " + minSearchOutput[1] + " at " + minSearchOutput[0]);
-		
+		cjMin = new ConjugateGradientMin();
+		System.out.println(cjMin.function(1.0));
 		
 		// Give some initial point for the conjugate grad minimization
-		// Take (0,0) for the 2 D example
-		double [] initialPoint = new double[conjugateGrad.N];
-		//double [] minPoint = new double[conjugateGrad.N];
-		for(int i = 0; i < conjugateGrad.N; i++)
-			initialPoint[i] = 0;
-		conjugateGrad.conjuageGradMin(initialPoint);
-		//conjugateGrad.steepestDecent(initialPoint);
-		//System.out.println("min = " + min);
-		//for (int i = 0; i < conjugateGrad.N; i++){
-		//System.out.println("min " + i + " = " + minPoint[i]);
-		//}
+		double [] initialPoint = new double[cjMin.N];
+		for(int i = 0; i < cjMin.N; i++)
+			initialPoint[i] = size*.3;
+		cjMin.conjuageGradMin(initialPoint);
+		//cjMin.steepestDecent(initialPoint);
 		Job.animate();
 		acc.clear();
 	}
