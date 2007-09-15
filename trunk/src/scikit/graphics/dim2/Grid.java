@@ -78,6 +78,8 @@ public class Grid extends Scene2D {
 		registerData(w, h, data, lo, hi);
 	}
 	
+	// TODO split out ColorChooser to a separate method
+	
 	public void registerData(int w, int h, double[] data, double lo, double hi) {
 		registerData(w, h, data, new ColorGradient(lo, hi));
 	}
