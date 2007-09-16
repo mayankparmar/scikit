@@ -2,39 +2,34 @@ package scikit.graphics.dim3;
 
 import java.awt.Color;
 
-import javax.media.opengl.GL;
-
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
+import scikit.util.Point;
 
 public class Geom3D {
-	public static Drawable<Gfx3D> cube(final Bounds bds, final Color color) {
+	public static Drawable<Gfx3D> cuboid(final Bounds bds, final Color color) {
 		return new Drawable<Gfx3D>() {
-			public void draw(Gfx3D gd) {
-				GL gl = gd.getGL();
-				gl.glColor4fv(color.getComponents(null), 0);
-				gl.glBegin(GL.GL_LINES);
-				double[] xs = {bds.xmin, bds.xmax};
-				double[] ys = {bds.ymin, bds.ymax};
-				double[] zs = {bds.zmin, bds.zmax};
-				for (int i = 0; i < 2; i++) {
-					for (int j = 0; j < 2; j++) {
-						for (int k = 0; k < 2; k++) {
-							if ((i + j + k) % 2 == 0) {
-								gl.glVertex3d(xs[i],   ys[j],   zs[k]);
-								gl.glVertex3d(xs[1-i], ys[j],   zs[k]);
-								gl.glVertex3d(xs[i],   ys[j],   zs[k]);
-								gl.glVertex3d(xs[i],   ys[1-j], zs[k]);
-								gl.glVertex3d(xs[i],   ys[j],   zs[k]);
-								gl.glVertex3d(xs[i],   ys[j],   zs[1-k]);
-							}
-						}
-					}
-				}
-				gl.glEnd();
+			public void draw(Gfx3D g) {
+				g.setColor(color);
+				g.drawCuboid(bds);
 			}
 			public Bounds getBounds() {
 				return bds;
+			}
+		};
+	}
+	
+	public static Drawable<Gfx3D> sphere(final Point center, final double radius, final Color color) {
+		return new Drawable<Gfx3D>() {
+			public void draw(Gfx3D g) {
+				g.setColor(color);
+				g.drawSphere(center, radius);
+			}
+			public Bounds getBounds() {
+				return new Bounds(
+						center.x-radius, center.x+radius,
+						center.y-radius, center.y+radius,
+						center.z-radius, center.z+radius);
 			}
 		};
 	}

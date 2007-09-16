@@ -56,7 +56,7 @@ public class Bounds {
 	}
 	
 	/**
-	 * Creates a new Bounds with width and height scaled by factor
+	 * Creates a new Bounds with width and height scaled by factor.
 	 * @param factor
 	 * @return Scaled bounds
 	 */
@@ -68,14 +68,43 @@ public class Bounds {
 		return new Bounds(xmin-w*s, xmax+w*s, ymin-h*s, ymax+h*s, zmin-d*s, zmax+d*s);
 	}
 	
+	/**
+	 * Returns the center of bounds, obtained by averaging the min and max values
+	 * in each dimension.
+	 * @return the bounds center
+	 */
+	public Point getCenter() {
+		return new Point((xmin+xmax)/2., (ymin+ymax)/2., (zmin+zmax)/2.);
+	}
+	
+	/**
+	 * Returns the volume of the bounds.
+	 * @return the bounds volume
+	 */
+	public double getVolume() {
+		return getWidth() * getHeight() * getDepth();
+	}
+	
+	/**
+	 * Returns the bounds width (xmax - xmin).
+	 * @return the bounds width
+	 */
 	public double getWidth() {
 		return xmax - xmin;
 	}
 	
+	/**
+	 * Returns the bounds height (ymax - ymin).
+	 * @return the bounds height
+	 */
 	public double getHeight() {
 		return ymax - ymin;
 	}
 	
+	/**
+	 * Returns the bounds depth (zmax - zmin).
+	 * @return the bounds depth
+	 */
 	public double getDepth() {
 		return zmax - zmin;
 	}
