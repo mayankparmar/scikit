@@ -1,5 +1,6 @@
 package kip.clump.dim3.apps;
 
+import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
@@ -7,13 +8,15 @@ import java.awt.Color;
 import kip.clump.dim3.Clump3D;
 import kip.clump.dim3.StructureFactor3D;
 import scikit.dataset.Function;
+import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
+import scikit.graphics.dim3.Geom3D;
+import scikit.graphics.dim3.Scene3D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.graphics.dim2.Grid;
-import scikit.graphics.dim2.Plot;
-import scikit.graphics.dim3.Scene3D;
+import scikit.util.Point;
 
 
 public class Clump3DApp extends Simulation {
@@ -43,6 +46,10 @@ public class Clump3DApp extends Simulation {
 	
 	public void animate() {
 		clump.readParams(params);
+		
+		scene.setDrawables(asList(
+				Geom3D.sphere(new Point(-10, 0, 0), 1, Color.BLUE),
+				Geom3D.sphere(new Point(10, 0, 0), 1, Color.RED)));
 		
 		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
 		plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {

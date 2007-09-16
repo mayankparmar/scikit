@@ -7,6 +7,7 @@ import java.awt.Color;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
+import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 
 import com.sun.opengl.util.GLUT;
@@ -154,11 +155,27 @@ public class Gfx2DGL implements Gfx2D {
 	}
 	
 	public static GLCanvas createComponent(final Scene2D scene) {
-		return GLHelper.createComponent(new GLHelper.DisplayListener() {
-			public void init(GLAutoDrawable drawable) {
+		return GLHelper.createComponent(new GLEventListener() {
+			public void display(GLAutoDrawable glDrawable) {
+				GL gl = glDrawable.getGL();
+				gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+				scene.drawAll(new Gfx2DGL(gl, scene));
 			}
-			public void display(GLAutoDrawable drawable) {
-				scene.drawAll(new Gfx2DGL(drawable.getGL(), scene));
+			public void displayChanged(GLAutoDrawable gLDrawable, boolean modeChanged, boolean deviceChanged) {
+			}
+			public void init(GLAutoDrawable glDrawable) {
+				GL gl = glDrawable.getGL();
+				gl.glClearColor(1f, 1f, 1f, 0.0f);
+				gl.glEnable(GL.GL_BLEND);
+				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+				gl.glEnable(GL.GL_LINE_SMOOTH);
+				// gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+				gl.glLineWidth(1.0f);
+				gl.glPointSize(4.0f);
+			}
+			public void reshape(GLAutoDrawable glDrawable, int x, int y, int width, int height) {
+				GL gl = glDrawable.getGL();
+				gl.glViewport(0, 0, width, height);
 			}
 		});
 	}

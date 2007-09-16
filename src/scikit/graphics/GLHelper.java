@@ -2,24 +2,18 @@ package scikit.graphics;
 
 import java.awt.Dimension;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.swing.SwingUtilities;
 
 public class GLHelper {
-	public interface DisplayListener {
-		public void init(GLAutoDrawable gl);
-		public void display(GLAutoDrawable gl);
-	}
-
-	public static GLCanvas createComponent(final DisplayListener listener) {
+	public static GLCanvas createComponent(GLEventListener listener) {
 		GLCapabilities capabilities = new GLCapabilities();
 		
 		// For some unknown reason, enabling GL "sample buffers" actually make anti-aliased lines
-		// look much worse on OS X. I guess it disables custom anti-aliasing code.
+		// look much worse on OS X. I guess it disables custom anti-aliasing code. It's better
+		// to use only glEnable(GL.GL_LINE_SMOOTH).
 		//
 		// capabilities.setSampleBuffers(true);
 		// capabilities.setNumSamples(4);
@@ -42,35 +36,7 @@ public class GLHelper {
 			}
 		};
 		
-		canvas.addGLEventListener(new GLEventListener() {
-			public void display(GLAutoDrawable glDrawable) {
-				GL gl = glDrawable.getGL();
-				gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-				listener.display(glDrawable);
-			}
-
-			public void displayChanged(GLAutoDrawable gLDrawable, boolean modeChanged, boolean deviceChanged) {
-				// do nothing
-			}
-
-			public void init(GLAutoDrawable glDrawable) {
-				GL gl = glDrawable.getGL();
-				gl.glClearColor(1f, 1f, 1f, 0.0f);
-				gl.glEnable(GL.GL_BLEND);
-				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-				gl.glEnable(GL.GL_LINE_SMOOTH);
-				// gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
-				gl.glLineWidth(1.0f);
-				gl.glPointSize(4.0f);
-				listener.init(glDrawable);
-			}
-
-			public void reshape(GLAutoDrawable glDrawable, int x, int y, int width, int height) {
-				GL gl = glDrawable.getGL();
-				gl.glViewport(0, 0, width, height);
-			}
-		});
-
+		canvas.addGLEventListener(listener);
 		canvas.setPreferredSize(new Dimension(300, 300));
 		return canvas;
 	}
