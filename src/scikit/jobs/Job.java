@@ -2,7 +2,6 @@ package scikit.jobs;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
@@ -20,14 +19,11 @@ public class Job {
 	private long lastYield, yieldDelay = 10;
 	private long lastAnimate, animateDelay = 50;	
 	private boolean throttleAnimation = false;
-	
-	private Vector<Display> displays = new Vector<Display>();
 
 	
 	public Job(Simulation sim) {
 		this.sim = sim;
 		current = this;
-		addDisplay(sim);
 	}
 	
 	/**
@@ -97,16 +93,6 @@ public class Job {
 		return sim;
 	}
 	
-	
-	public static void addDisplay(Display disp) {
-		current()._addDisplay(disp);
-	}
-	private void _addDisplay(Display disp) {
-		if (!displays.contains(disp)) {
-			displays.add(disp);
-		}
-	}
-	
 	/**
 	 * To be called from the simulation thread. Registers that the simulation thread has
 	 * completed a step. Calls the <code>animate</code> method of the simulation.
@@ -129,7 +115,7 @@ public class Job {
 				coop.sleep(timeUntilAnimate);
 			}
 			if (throttleAnimation || timeUntilAnimate < 0) {
-				animateDisplays();
+				sim.animate();
 				lastAnimate = System.currentTimeMillis();
 			}
 			_yield();
@@ -142,7 +128,7 @@ public class Job {
 		case STOP:
 			state = State.STOP;
 			do {
-				animateDisplays();
+				sim.animate();
 				coop.pass();
 			} while (state == State.STOP);
 			break;
@@ -175,18 +161,6 @@ public class Job {
 			// seems to be a cross platform solution (with maybe a slight performance penalty).
 			coop.sleep(0);
 			lastYield = System.currentTimeMillis();
-		}
-	}
-
-	private void animateDisplays() {
-		for (Display disp : displays) {
-			disp.animate();
-		}
-	}
-	
-	private void clearDisplays() {
-		for (Display disp : displays) {
-			disp.clear();
 		}
 	}
 
@@ -228,7 +202,7 @@ public class Job {
 					// we could reach here due to a bug in the simulation (an Exception)
 					// or because the user killed the job (ThreadDeath error). in either case,
 					// we must now return the Job to its initial state.
-					clearDisplays();
+					sim.clear();
 					coop.unregister();
 					thread = null;
 					// display possible execution exception in full detail for debugging
