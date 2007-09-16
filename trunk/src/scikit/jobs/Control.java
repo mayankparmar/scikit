@@ -77,10 +77,11 @@ public class Control {
 	
 	
 	private JPanel createButtonPanel() {
-		JPanel buttonPanel = new JPanel();
+		JPanel buttonPanel = new JPanel(new BorderLayout());
 		buttonPanel.setBorder(BorderFactory.createRaisedBevelBorder());
-		buttonPanel.setLayout(new FlowLayout());
 		
+		// add primary simulation execution buttons
+		JPanel subPanel = new JPanel();
 		JButton b1, b2, b3;
 		b1 = new JButton("Start");
 		b2 = new JButton("Step");
@@ -88,24 +89,30 @@ public class Control {
 		b1.addActionListener(_actionListener);
 		b2.addActionListener(_actionListener);
 		b3.addActionListener(_actionListener);
-		buttonPanel.add(b1);
-		buttonPanel.add(b2);
-		buttonPanel.add(b3);
+		subPanel.add(b1);
+		subPanel.add(b2);
+		subPanel.add(b3);
 		_startStopButton = b1;
 		_stepButton = b2;
 		_resetButton = b3;
+		buttonPanel.add(subPanel, BorderLayout.CENTER);
 		
-		for (final String s : _job.sim().flags) {
-			JButton b = new JButton(s);
-			b.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					_job.sim().flags.add(s);
-					_job.wake();
-				}
-			});
-			buttonPanel.add(b);
+		// add buttons corresponding to user defined flags 
+		if (_job.sim().flags.size() > 0) {
+			subPanel = new JPanel();
+			for (final String s : _job.sim().flags) {
+				JButton b = new JButton(s);
+				b.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent event) {
+						_job.sim().flags.add(s);
+						_job.wake();
+					}
+				});
+				subPanel.add(b);
+			}
+			buttonPanel.add(subPanel, BorderLayout.SOUTH);
+			_job.sim().flags.clear();
 		}
-		_job.sim().flags.clear();
 		
 		return buttonPanel;
 	}
@@ -161,7 +168,9 @@ public class Control {
 			c.gridy++;
 		}
 		
-		return panel;
+		// if the control is too large to fit on the screen, it is useful to have
+		// a scroll pane. the disadvantage is that you don't always want the scroll
+		// pane to appear when minimizing the control
+		return new JScrollPane(panel);
 	}
 }
-
