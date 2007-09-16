@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import scikit.params.Parameters;
 
-public abstract class Simulation implements Display {
+public abstract class Simulation {
 	// parameters to be read and written by simulation
 	public Parameters params = new Parameters();
 	
