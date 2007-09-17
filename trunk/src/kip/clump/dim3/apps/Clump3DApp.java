@@ -1,6 +1,5 @@
 package kip.clump.dim3.apps;
 
-import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
@@ -8,21 +7,21 @@ import java.awt.Color;
 import kip.clump.dim3.Clump3D;
 import kip.clump.dim3.StructureFactor3D;
 import scikit.dataset.Function;
+import scikit.graphics.ColorChooser;
+import scikit.graphics.ColorGradient;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
-import scikit.graphics.dim3.Geom3D;
-import scikit.graphics.dim3.Scene3D;
+import scikit.graphics.dim3.Grid3D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.util.Point;
 
 
 public class Clump3DApp extends Simulation {
     Grid grid = new Grid("Grid");
     Plot plot = new Plot("Structure factor");
-    Scene3D scene = new Scene3D("test");
+    Grid3D scene = new Grid3D("test");
     
     StructureFactor3D sf;
     Clump3D clump;
@@ -46,10 +45,14 @@ public class Clump3DApp extends Simulation {
 	
 	public void animate() {
 		clump.readParams(params);
-		
-		scene.setDrawables(asList(
-				Geom3D.sphere(new Point(-10, 0, 0), 1, Color.BLUE),
-				Geom3D.sphere(new Point(10, 0, 0), 1, Color.RED)));
+
+		int nc = clump.numColumns();
+		ColorChooser cc = new ColorGradient(0, 2) {
+			public Color getColor(double x) {
+				return x < 1.5 ? null : super.getColor(x);
+			}
+		};
+		scene.registerData(nc, nc, nc, clump.coarseGrained(), cc);
 		
 		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
 		plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
