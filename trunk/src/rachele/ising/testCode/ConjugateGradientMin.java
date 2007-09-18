@@ -2,22 +2,25 @@ package rachele.ising.testCode;
 
 public class ConjugateGradientMin {
 	public int N = 2;
-//	public double [] initPoint = new double[N];
-//	public double [] finPoint = new double[N];
 	public double [] drawablePoints= new double [1000];
 	public int conjIterations;
 	static double GOLD = 1.618034;
 	static double GOLDR = 0.61803399;
 	static double GOLDC = 1-GOLDR;
 	static double maxIterations = 1000;
-	static double tolerance = 1e-10;
+	static double tolerance = 1e-16;
 	static double EPS = 1e-16;
+	public boolean checked = false;
+	public double lambda;
+	static double delta = 1e-10;
+	public double switchD = 1;
 	static double ZEPS = 0.0000000001;  //small number that protects against
 	//trying to achieve fractional accuracy for a minimum that happens to be
 	// exactly zero
 		
-	public double [] minReferencePoint = new double [2];
-	public double [] minReferenceDirection = new double [2];
+	public double [] minReferencePoint = new double [N];
+	public double [] minReferenceDirection = new double [N];
+	public double [] xi = new double [N];
 	
 	public ConjugateGradientMin(){
 		
@@ -91,21 +94,44 @@ public class ConjugateGradientMin {
 			minReferenceDirection[i] = direction[i];			
 		}
 
+		//make sure bx is positive
+		
+		bx = Math.abs(bx)*switchD;
+		
 		double f_b = f1dim(bx);
 		double f_a = f1dim(ax);
 		double u, f_u;
 		
 		//Check to see if f(ax) has a higher value than f(bx)
-		//If not, switch roles of ax and bx so that we can 
-		//go downhill in the direction from ax to bx
-		if (f_b > f_a){
-			double tempA = f_a;
-			f_a = f_b;
-			f_b = tempA;
-			tempA = ax;
-			ax = bx;
-			bx = tempA;
+		//If not, make bx smaller and smaller until it does
+		
+		while (f_b > f_a){
+			bx = .5*bx;
+			f_b = f1dim(bx);
+			if(bx < tolerance){
+				System.out.print("bx less than tolerence");
+			}
 		}
+		System.out.println("bx = " + bx);
+		
+		//If not, switch the sign of bx and check
+		
+//		if (f_b > f_a){
+//			bx = -bx;
+//			f_b = f1dim(bx);
+//		}
+//		
+//		//Check to see if f(ax) has a higher value than f(bx)
+//		//If not, switch roles of ax and bx so that we can 
+//		//go downhill in the direction from ax to bx
+//		if (f_b > f_a){
+//			double tempA = f_a;
+//			f_a = f_b;
+//			f_b = tempA;
+//			tempA = ax;
+//			ax = bx;
+//			bx = tempA;
+//		}
 		
 		//First guess for midpoint
 		double cx =	bx + GOLD*(bx-ax);
@@ -228,8 +254,11 @@ public class ConjugateGradientMin {
 		double f_2 = f1dim(x2);
 		
 		int iteration = 0;
-		while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))){
+		while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
 			iteration ++;
+//			System.out.println(x1 + " " + x2 + " " + x3);
+//			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
+			
 			if(f_2 < f_1){
 				// choose new triplet as x1, x2, x3
 				// shift variables x0, x1, x2 (new test point
@@ -271,8 +300,9 @@ public class ConjugateGradientMin {
 		for(int i = 0; i < N; i ++){
 			minReferencePoint[i] = minReferencePoint[i] + xmin*minReferenceDirection[i];
 		}
-		System.out.println("golden min = " + minReferencePoint[0] + " " + minReferencePoint[1]);
+		System.out.println("golden min = " + minReferencePoint[0] + " " + minReferencePoint[1] + " lambda = " + xmin);
 		minReferenceDirection = dFunctionMultiDim(minReferencePoint);
+		lambda = xmin;
 		return minValue;
 	}
 	
@@ -390,12 +420,13 @@ public class ConjugateGradientMin {
     public double linemin(double point[], double direction[]){
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
-    	initBracket = initialBracketMultiDim(501.0, 123.0, point, direction);
+    	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
+    	initBracket = initialBracketMultiDim(0, 100.0, point, direction);
     	//Find the min with golden
     	double minValue = goldenMinMultiDim(initBracket);
     	return minValue;
     }
-    	
+    
     public double freeEnergyCalc(double point){
     	//define 
 		//freeEnergy += potential - T*entropy - H*phi[i];
@@ -404,15 +435,26 @@ public class ConjugateGradientMin {
     }
     
     public double functionMultiDim(double point[]){
-    	double value = 0;
-     	value = Math.pow(point[0]-13.5, 2) + 10*Math.pow(point[1]-5.2, 2);
+    	
+    	double x = point[0] - 10.0;
+    	double y = point[1] - 3.5;
+    	double value = -100*x*x+ Math.pow(x,4) + y*y;
+    	//double value = Math.pow(x, 2) + 10*Math.pow(y, 2);
+    	//double value = 1*Math.pow(Math.sin((x-1.0)*(y-5.0)),2);
      	return value;
     }
     
     public double [] dFunctionMultiDim(double point[]){
     	double [] direction = new double [N];
-     	direction[0] = 2*(point[0]-13.5);
-    	direction[1] = 20*(point[1]-5.2);
+    	double x = point[0] - 10.0;
+    	double y = point[1] - 3.50;
+    	direction[0] = -200*x + 4*x*x*x;
+    	direction [1] = 2*y;
+    	//direction[0] = 2*(x);
+    	//direction[1] = 20*(y);
+    	//direction[0] = 2*Math.sin((x-1)*(y-5))*Math.cos((x-1)*(y-5))*(y-5);
+    	//direction[1] = 2*Math.sin((x-1)*(y-5))*Math.cos((x-1)*(y-5))*(x-1);
+    	
     	return direction;
     }
        
@@ -429,6 +471,7 @@ public class ConjugateGradientMin {
     	double g [] = new double[N];
     	double h [] = new double[N];
     	double xi [] = new double[N];
+    	double fret;
     	
     	// Initializations:
     	// evaluate function and derivative at given point
@@ -448,46 +491,56 @@ public class ConjugateGradientMin {
     	}
     	
     	System.out.println("initial xi= " + xi[0] + " " + xi[1]);    	
+    	switchD = 1;
     	
     	for(int iteration = 1; iteration < maxIterations; iteration ++){
     		System.out.println("iteration = " + iteration);
     		conjIterations = iteration;
-        	double fret = linemin(point, xi);
-        	//double fret = lineMinOutput[0];
-        	for (int i = 0; i < N; i ++){
-        		//initPoint[i] = point[i];
-        		point [i] = minReferencePoint[i];
-        		xi[i] = minReferenceDirection[i];
-        		drawablePoints[iteration*N + i] = point[i];
-        	}
+			fret = linemin(point, xi); 
+			//check to see if this move is OK
+			checkMove();
+        	if(checked == true){
+        		//the following lone accepts the move:
+        		for (int i = 0; i < N; i ++){
+        			//initPoint[i] = point[i];
+        			point [i] = minReferencePoint[i];
+        			xi[i] = minReferenceDirection[i];
+        			drawablePoints[iteration*N + i] = point[i];
+        		}
     		
-        	// Check for doneness
-        	if(2.0*Math.abs(fret - f_p) <= tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS)){
-    			//we are done -> return
-        		System.out.println("Conj Grad Min finished after " + iteration + " iterations");
-        		return point;
+        		// Check for doneness
+        		if(2.0*Math.abs(fret - f_p) <= tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS)){
+        			//we are done -> return
+        			System.out.println("Conj Grad Min finished after " + iteration + " iterations");
+        			return point;
+        		}else{
+        			//accept the new value of the function value
+        			f_p = fret;
+        			//Construct the new direction h
+        			double dgg = 0.0; //  numeration of gamma scalar = varies by method
+        			double gg = 0.0; // denominator of gamma scalar = g_i dot g_i
+        			for(int j = 0; j < N; j ++){
+        				gg += g[j]*g[j];
+        				//dgg += xi[j]*xi[j];			// This statement for Fletcher-Reeves
+        				dgg += (xi[j] + g[j])*xi[j];	//This statement for Polak--Ribiere
+        			}
+        			if(gg == 0.0){
+        				System.out.println("Conj Grad Min finished gg = 0 after " + iteration + " iterations");
+        				return point;
+        				//if gradient is exactly zero, then we are already done
+        			}	
+        			double gamma = dgg/gg;
+        			for(int j = 0; j < N; j++){
+        				g[j] = -xi[j];
+        				h[j] = g[j] +gamma*h[j];
+        				xi[j] = h[j];	//This is our new direction
+        			}
+        		}
+        		switchD = 1;
     		}else{
-    			//accept the new value of the function value
-    			f_p = fret;
-    			//Construct the new direction h
-      			double dgg = 0.0; //  numeration of gamma scalar = varies by method
-    			double gg = 0.0; // denominator of gamma scalar = g_i dot g_i
-    			for(int j = 0; j < N; j ++){
-    				gg += g[j]*g[j];
-    				//dgg += xi[j]*xi[j];			// This statement for Fletcher-Reeves
-    				dgg += (xi[j] + g[j])*xi[j];	//This statement for Polak--Ribiere
-    			}
-    			if(gg == 0.0){
-    				System.out.println("Conj Grad Min finished gg = 0 after " + iteration + " iterations");
-    				return point;
-    				//if gradient is exactly zero, then we are already done
-    			}
-    			double gamma = dgg/gg;
-    			for(int j = 0; j < N; j++){
-    				g[j] = -xi[j];
-    				h[j] = g[j] +gamma*h[j];
-    				xi[j] = h[j];	//This is our new direction
-    			}
+    			for (int i = 0; i < N; i++)
+    				point[i] = minReferencePoint[i];
+    			switchD = -1;
     		}
     		
     	}
@@ -495,6 +548,36 @@ public class ConjugateGradientMin {
     return point;
     }
 
+    public void checkMove(){
+    	double trialPoint [] = new double [N];
+    	double trialPointD [] = new double [N];
+    	double df = 0;
+    	checked = false;
+  
+    	//before making the move, sample some points along the way to see if you are traversing 
+    	//any uphill paths
+    	//if(iteration ==1){
+    	for (int i = 1; i <10; i++){
+    		for (int j = 0; j < N; j++){
+    			trialPoint[j] = minReferencePoint[j] + lambda*(double)i*0.1*xi[j];
+    			trialPointD[j] = minReferencePoint[j] + lambda*((double)i*0.1 + delta)*xi[j];
+			}    				
+    		//evaluate the der at the point + lambda*(double)i*.1*xi
+
+    		df = functionMultiDim(trialPointD) - functionMultiDim(trialPoint);
+    		System.out.println("df = " + df);
+    		if(df > 0.0){
+    			for (int j = 0; j < N; j ++){
+    				minReferencePoint[j] = trialPoint[j];
+    				//xi[j] = -xi[j];
+    				return;
+    			}
+			}
+		}
+    	checked = true;
+    }
+    
+    
     public double [] steepestDecent(double point []){
     	double xi [] = new double[N];
     	// Initializations:
@@ -508,6 +591,9 @@ public class ConjugateGradientMin {
     	
     	double f_p = functionMultiDim(point);
     	xi = dFunctionMultiDim(point);
+    	for(int i = 0; i < N; i++)
+    		xi[i] = -xi[i];
+    	
     	
     	for(int iteration = 1; iteration < maxIterations; iteration ++){
     		System.out.println("iteration = " + iteration);
@@ -515,14 +601,14 @@ public class ConjugateGradientMin {
         	double fret = linemin(point, xi);
         	for (int i = 0; i < N; i ++){
         		point [i] = minReferencePoint[i];
-        		xi[i] = minReferenceDirection[i];
+        		xi[i] = -minReferenceDirection[i];
         		drawablePoints[iteration*N + i] = point[i];
         	}
     		
         	// Check for doneness
         	if(2.0*Math.abs(fret - f_p) <= tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS)){
     			//we are done -> return
-        		System.out.println("Conj Grad Min finished after " + iteration + " iterations");
+        		System.out.println("Steepest Decent finished after " + iteration + " iterations");
         		return point;
     		}else{
     			//accept the new value of the function value

@@ -1,6 +1,6 @@
 package rachele.ising.dim2.apps;
 
-/* This is basically the same as kip.clump.dim2.FiledClump2D.java */
+/* The Langevin Dynamics part of this is basically the same as kip.clump.dim2.FiledClump2D.java */
 
 //import static kip.util.MathPlus.j1;
 
@@ -39,6 +39,8 @@ public class IsingField2DApp extends Simulation {
 	Plot sfSlopePlot = new Plot("SF peak slope");
 	StructureFactor sf;
     IsingField2D ising;
+    
+    
 
     
 	public static void main(String[] args) {
@@ -51,7 +53,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Conserve M", new ChoiceValue("On", "Off"));
+		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", "Langevin No M Conservation", "Conjugate Gradient Min"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable", "Exact SemiStable", "Exact", "Linear", "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
@@ -170,7 +172,10 @@ public class IsingField2DApp extends Simulation {
         	}
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
-			ising.simulate();
+			if(params.sget("Dynamics?") == "Conjugate Gradient Min")
+				ising.getConjGradMin();
+			else
+				ising.simulate();
 			if (equilibrating && ising.time() >= .5) {
 				equilibrating = false;
 			}
