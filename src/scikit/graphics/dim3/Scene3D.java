@@ -130,6 +130,9 @@ public class Scene3D extends Scene<Gfx3D> {
 		}
 		
 		public void mouseDragged(MouseEvent event) {
+			if (_lastDrag == null)
+				return; // this case did occur once, but i'm not sure how
+			
 			double dx = event.getX() - _lastDrag.x;
 			double dy = event.getY() - _lastDrag.y;
 			_lastDrag = event.getPoint();

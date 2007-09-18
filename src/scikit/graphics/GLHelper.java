@@ -23,8 +23,12 @@ public class GLHelper {
 		// but would also be slower
 		final GLCanvas canvas = new GLCanvas(capabilities) {
 			private static final long serialVersionUID = 1L;
-			// mystery: for some reason, repaint() doesn't work, so we must override to
-			// explicitly call display() from GUI thread.
+			// the default behavior of repaint() is undesirable, because of the unusual way
+			// in which we use threads. the GUI thread is usually idle, waiting for the
+			// simulation thread, which only periodically returns control for 0ms.
+			// by default repaint() is too submissive in calling display(), and this leads
+			// to choppy animation. instead we explicitly force display() in the GUI thread,
+			// in order to get smoother animation.
 			public void repaint() {
 				// N.B.: can't call display() from this thread, since its a blocking call, but
 				// the GUI call is already blocked waiting for us!
