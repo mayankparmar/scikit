@@ -20,7 +20,7 @@ import scikit.params.Parameters;
 
 public class IsingField2D {
 	public double L, R, T, dx, J, H;
-	public int Lp;
+	public int Lp, N;
 	public double dt, t;
 	public double lastMu;
 	public double[] phi, del_phiSq;
@@ -33,6 +33,32 @@ public class IsingField2D {
 	double[] fftScratch;
 	public static final double KR_SP = 5.13562230184068255630140;
 	public static final double T_SP = 0.132279487396100031736846;	
+	
+	
+	//conjugate gradient parameters
+	public int conjIterations;
+	static double GOLD = 1.618034;
+	static double GOLDR = 0.61803399;
+	static double GOLDC = 1-GOLDR;
+	static double maxIterations = 1000;
+	static double tolerance = 1e-16;
+	static double EPS = 1e-16;
+	public boolean checked = false;
+	public double lambda;
+	static double delta = 1e-10;
+	public double switchD = 1;
+	static double ZEPS = 0.0000000001;  //small number that protects against
+	//trying to achieve fractional accuracy for a minimum that happens to be
+	// exactly zero
+
+	public double [] minReferencePoint;
+	public double [] minReferenceDirection;
+	public double [] xi;
+	public double [] g;
+	public double [] h;
+	
+	public double f_p;
+	public double fret;
 	
 	Accumulator accFreeEnergy;
 	Accumulator dF_dtAcc;
@@ -97,10 +123,10 @@ public class IsingField2D {
 			noiselessDynamics = false;
 		}
 	
-		if(params.sget("Conserve M") == "Off")
-			magConservation = false;
-		else 
+		if(params.sget("Dynamics?") == "Langevin Conserve M")
 			magConservation = true;
+		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
+			magConservation = false;
 		
 		
 		theory = params.sget("Approx");
@@ -110,7 +136,15 @@ public class IsingField2D {
 		double RoverDx = R/dx;
 		params.set("R/dx", RoverDx);
 		params.set("Lp", Lp);
+		N = Lp*Lp;
 		
+
+		minReferencePoint = new double [N];
+		minReferenceDirection = new double [N];
+		xi = new double [N];
+		g = new double [N];
+		h = new double [N];
+
 		t = 0;
 
 		phi = new double[Lp*Lp];
@@ -212,10 +246,10 @@ public class IsingField2D {
 			noiselessDynamics = false;
 		}
 
-		if(params.sget("Conserve M") == "Off")
-			magConservation = false;
-		else 
+		if(params.sget("Dynamics?") == "Langevin Conserve M")
 			magConservation = true;
+		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
+			magConservation = false;
 		
 		theory = params.sget("Approx");
 		
@@ -444,6 +478,262 @@ public class IsingField2D {
 	
 	public Accumulator getAccFEvT(){
 		return accFEvT;
+	}
+	
+	public void initializeConjGrad(){
+    	// Initializations:
+    	// evaluate function and derivative at given point
+    	// set all vectors (xi, g, h) equal to the direction
+    	// of steepest decent at this point
+		f_p = freeEnergyCalc(phi);
+		xi = delFreeEnergyCalc(phi);
+    	for(int j = 0; j < N; j ++){
+    		g[j] = -xi[j];
+    		h[j] = g[j];
+    		xi[j] = h[j];
+    	}		
+	}
+	
+	public void getConjGradMin(){
+    	
+    	//for(int iteration = 1; iteration < maxIterations; iteration ++){
+    		//System.out.println("iteration = " + iteration);
+    		//conjIterations = iteration;
+			fret = linemin(phi, xi); 
+			//check to see if this move is OK
+			//checkMove();
+        	//if(checked == true){
+        		//the following lone accepts the move:
+        		for (int i = 0; i < N; i ++){
+        			phi [i] = minReferencePoint[i];
+        			xi[i] = minReferenceDirection[i];
+        			//drawablePoints[iteration*N + i] = point[i];
+        		}
+    		
+        		// Check for doneness
+        		if(2.0*Math.abs(fret - f_p) <= tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS)){
+        			//we are done -> return
+        			System.out.println("Conj Grad Min finished at time " + t + " iterations");
+        			return;
+        		}else{
+        			//accept the new value of the function value
+        			f_p = fret;
+        			//Construct the new direction h
+        			double dgg = 0.0; //  numeration of gamma scalar = varies by method
+        			double gg = 0.0; // denominator of gamma scalar = g_i dot g_i
+        			for(int j = 0; j < N; j ++){
+        				gg += g[j]*g[j];
+        				//dgg += xi[j]*xi[j];			// This statement for Fletcher-Reeves
+        				dgg += (xi[j] + g[j])*xi[j];	//This statement for Polak--Ribiere
+        			}
+        			if(gg == 0.0){
+        				System.out.println("Conj Grad Min finished gg = 0 at time " + t + " iterations");
+        				return;
+        				//if gradient is exactly zero, then we are already done
+        			}	
+        			double gamma = dgg/gg;
+        			for(int j = 0; j < N; j++){
+        				g[j] = -xi[j];
+        				h[j] = g[j] +gamma*h[j];
+        				xi[j] = h[j];	//This is our new direction
+        			}
+        		}
+        	//	switchD = 1;
+    		//}else{
+    		//	for (int i = 0; i < N; i++)
+    		//		point[i] = minReferencePoint[i];
+    		//	switchD = -1;
+    		//}
+    		
+    	//}
+    t += dt;
+    System.out.println("Maximum iterations exceeded");
+	}
+	
+    public double linemin(double point[], double direction[]){
+    	double [] initBracket = new double [3]; 
+     	// Make up two initial configurations and find an initial bracket
+    	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
+    	initBracket = initialBracketMultiDim(0, 100.0, point, direction);
+    	//Find the min with golden
+    	double minValue = goldenMinMultiDim(initBracket);
+    	return minValue;
+    }
+	
+    public double [] initialBracketMultiDim(double ax, double bx, double point [], double direction[]){
+		double [] output = new double [3];
+		
+		for (int i = 0; i < N; i++){
+			minReferencePoint[i] = point[i];
+			minReferenceDirection[i] = direction[i];			
+		}
+
+		//make sure bx is positive
+		
+		bx = Math.abs(bx)*switchD;
+		
+		double f_b = f1dim(bx);
+		double f_a = f1dim(ax);
+		double u, f_u;
+		
+		//Check to see if f(ax) has a higher value than f(bx)
+		//If not, make bx smaller and smaller until it does
+		
+		while (f_b > f_a){
+			bx = .5*bx;
+			f_b = f1dim(bx);
+			if(bx < tolerance){
+				System.out.print("bx less than tolerence");
+			}
+		}
+		System.out.println("bx = " + bx);
+		
+		//If not, switch the sign of bx and check
+		
+//		if (f_b > f_a){
+//			bx = -bx;
+//			f_b = f1dim(bx);
+//		}
+//		
+//		//Check to see if f(ax) has a higher value than f(bx)
+//		//If not, switch roles of ax and bx so that we can 
+//		//go downhill in the direction from ax to bx
+//		if (f_b > f_a){
+//			double tempA = f_a;
+//			f_a = f_b;
+//			f_b = tempA;
+//			tempA = ax;
+//			ax = bx;
+//			bx = tempA;
+//		}
+		
+		//First guess for midpoint
+		double cx =	bx + GOLD*(bx-ax);
+		double f_c = f1dim(cx);
+		
+		//repeat the following until we bracket
+		int iterations = 0;
+		while(f_b > f_c){
+			iterations ++;
+			u = cx + GOLD*(cx-bx);
+			f_u = f1dim(u);
+			ax = bx;
+			f_a = f_b;
+			bx = cx;
+			f_b = f_c;
+			cx = u;
+			f_c = f_u;
+		}
+		
+		output[0] = ax;
+		output[1] = bx;
+		output[2] = cx;
+		System.out.println("init bracket finished after " + iterations + " iterations");
+		return output;
+	}
+	
+	public double freeEnergyCalc(double [] config){
+		convolveWithRange(config, phi_bar, R);
+		for (int i = 0; i < Lp*Lp; i++) {
+			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
+			double potential = -(config[i]*phi_bar[i])/2.0;
+			freeEnergy += potential - T*entropy - H*config[i];
+		}
+		return freeEnergy;
+	}
+	
+	public double goldenMinMultiDim(double [] input){
+		
+		double x0, x1, x2, x3;
+		double ax = input[0];
+		double bx = input[1];
+		double cx = input[2];
+		x0 = ax;
+		x3 = cx;
+		
+		//put the new test point in the longer segment
+		//if bc is the longer segment, then x2 is the 
+		//new test point and goes in between b and c
+		
+		if(Math.abs(cx - bx) > Math.abs(bx - ax)){
+			x1 = bx;
+			x2 = bx + GOLDC*(cx - bx);
+		}else{
+			x2 = bx;
+			x1 = bx - GOLDC*(bx - ax);
+		}
+		
+		double f_1 = f1dim(x1);
+		double f_2 = f1dim(x2);
+		
+		int iteration = 0;
+		while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
+			iteration ++;
+//			System.out.println(x1 + " " + x2 + " " + x3);
+//			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
+			
+			if(f_2 < f_1){
+				// choose new triplet as x1, x2, x3
+				// shift variables x0, x1, x2 (new test point
+				// which is chosen to go inside the larger segment
+				x0 = x1;
+				x1 = x2;
+				x2 = GOLDR*x1 + GOLDC*x3; 
+				// x2 goes a distance GOLDC*(x3-x1) inside the x3 x1 segment:
+				// so x2 = x1 + GOLDC*(x3-x1)
+				//       = x1*(1-GOLDC) + GOLDC*x3
+				//       = x1*GOLDR + x3*GOLDC
+				
+				f_1 = f_2;
+				f_2 = f1dim(x2);
+				
+			}else{
+				x3 = x2;
+				x2 = x1;
+				x1 = GOLDR*x2 + GOLDC*x0;
+				// x1 = x0 + GOLDC*(x2-x0)
+				//    = x0*GOLDR + x2*GOLDC
+				
+				f_2 = f_1;
+				f_1 = f1dim(x1);
+			}
+		}
+		
+		System.out.println("Golden Min finished after " + iteration + " iterations");
+		
+		double xmin;
+		double minValue;
+		if(f_1 < f_2){
+			xmin = x1;
+			minValue = f_1;
+		}else{
+			xmin = x2;
+			minValue = f_2;
+		}
+		for(int i = 0; i < N; i ++){
+			minReferencePoint[i] = minReferencePoint[i] + xmin*minReferenceDirection[i];
+		}
+		System.out.println("golden min = " + minReferencePoint[0] + " " + minReferencePoint[1] + " lambda = " + xmin);
+		minReferenceDirection = delFreeEnergyCalc(minReferencePoint);
+		lambda = xmin;
+		return minValue;
+	}
+	
+    public double f1dim(double lambda){
+    	double newPoint [] = new double [N];
+    	for(int i = 0; i < N; i++){
+    		newPoint[i] = minReferencePoint[i] + lambda*minReferenceDirection[i];
+    	}
+    	double ret = freeEnergyCalc(newPoint);
+    	return ret;
+    }
+
+	public double [] delFreeEnergyCalc(double [] config){
+		convolveWithRange(config, phi_bar, R);
+		for (int i = 0; i < Lp*Lp; i++) {
+			del_phi[i] = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
+		}
+		return del_phi;		
 	}
 	
 }

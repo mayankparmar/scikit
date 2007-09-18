@@ -9,6 +9,7 @@ import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.params.ChoiceValue;
 //import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frame;
 
@@ -21,7 +22,7 @@ public class ConjugateGradientMinApp extends Simulation{
 
 	public ConjugateGradientMinApp() {
 		frame(function);
-
+		params.addm("Minimization", new ChoiceValue("Conjugate Gradient", "SteepestDecent"));
 		acc.setAveraging(true);
 	}
 	
@@ -32,7 +33,7 @@ public class ConjugateGradientMinApp extends Simulation{
 	public void animate() {
 		//plot the function:
 		double [] point = new double [2];
-		double [] funcData = new double [21*21];
+		double [] funcData = new double [size*size];
 		int index;
 		for (int x = 0; x < size; x++){
 			for(int y = 0; y < size; y++){
@@ -59,10 +60,14 @@ public class ConjugateGradientMinApp extends Simulation{
 		
 		// Give some initial point for the conjugate grad minimization
 		double [] initialPoint = new double[cjMin.N];
-		for(int i = 0; i < cjMin.N; i++)
-			initialPoint[i] = size*.3;
-		cjMin.conjuageGradMin(initialPoint);
-		//cjMin.steepestDecent(initialPoint);
+		//for(int i = 0; i < cjMin.N; i++)
+		initialPoint[0] = size*0.0;
+		initialPoint[1] = size*0.1;
+		if (params.sget("Minimization") == "Conjugate Gradient"){
+			cjMin.conjuageGradMin(initialPoint);
+		}else{
+			cjMin.steepestDecent(initialPoint);
+		}
 		Job.animate();
 		acc.clear();
 	}
