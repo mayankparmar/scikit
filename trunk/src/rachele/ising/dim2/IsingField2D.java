@@ -51,8 +51,8 @@ public class IsingField2D {
 	//trying to achieve fractional accuracy for a minimum that happens to be
 	// exactly zero
 
-	public double [] minReferencePoint;
-	public double [] minReferenceDirection;
+	public double [] lineminPoint;
+	public double [] lineminDirection;
 	public double [] xi;
 	public double [] g;
 	public double [] h;
@@ -139,8 +139,8 @@ public class IsingField2D {
 		N = Lp*Lp;
 		
 
-		minReferencePoint = new double [N];
-		minReferenceDirection = new double [N];
+		lineminPoint = new double [N];
+		lineminDirection = new double [N];
 		xi = new double [N];
 		g = new double [N];
 		h = new double [N];
@@ -486,7 +486,7 @@ public class IsingField2D {
     	// set all vectors (xi, g, h) equal to the direction
     	// of steepest decent at this point
 		f_p = freeEnergyCalc(phi);
-		xi = delFreeEnergyCalc(phi);
+		xi = steepestAssentCalc(phi);
     	for(int j = 0; j < N; j ++){
     		g[j] = -xi[j];
     		h[j] = g[j];
@@ -505,8 +505,8 @@ public class IsingField2D {
         	//if(checked == true){
         		//the following lone accepts the move:
         		for (int i = 0; i < N; i ++){
-        			phi [i] = minReferencePoint[i];
-        			xi[i] = minReferenceDirection[i];
+        			phi [i] = lineminPoint[i];
+        			xi[i] = lineminDirection[i];
         			//drawablePoints[iteration*N + i] = point[i];
         		}
     		
@@ -546,34 +546,38 @@ public class IsingField2D {
     		//}
     		
     	//}
+        		for(int i = 0; i < N; i ++){
+        			del_phiSq[i] = xi[i];
+        		}
     t += dt;
-    System.out.println("Maximum iterations exceeded");
+    //System.out.println("Maximum iterations exceeded");
 	}
 	
     public double linemin(double point[], double direction[]){
+    	for (int i = 0; i < N; i ++){	
+    		lineminPoint[i] = point[i];	
+    		lineminDirection[i] = direction[i];
+    		//System.out.println( i + " " + lineminPoint[i] + " " + lineminDirection[i]);
+    	}
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
     	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
-    	initBracket = initialBracketMultiDim(0, 100.0, point, direction);
+    	initBracket = initialBracketMultiDim(0.0, 0.1);
     	//Find the min with golden
     	double minValue = goldenMinMultiDim(initBracket);
     	return minValue;
     }
 	
-    public double [] initialBracketMultiDim(double ax, double bx, double point [], double direction[]){
+    public double [] initialBracketMultiDim(double ax, double bx){
 		double [] output = new double [3];
 		
-		for (int i = 0; i < N; i++){
-			minReferencePoint[i] = point[i];
-			minReferenceDirection[i] = direction[i];			
-		}
-
 		//make sure bx is positive
 		
-		bx = Math.abs(bx)*switchD;
+		bx = Math.abs(bx);
 		
 		double f_b = f1dim(bx);
 		double f_a = f1dim(ax);
+		System.out.println("f_b = " + f_b + " f_a = " + f_a);
 		double u, f_u;
 		
 		//Check to see if f(ax) has a higher value than f(bx)
@@ -582,11 +586,11 @@ public class IsingField2D {
 		while (f_b > f_a){
 			bx = .5*bx;
 			f_b = f1dim(bx);
-			if(bx < tolerance){
-				System.out.print("bx less than tolerence");
-			}
+//			if(bx < tolerance){
+//				System.out.print("bx less than tolerence");
+//			}
 		}
-		System.out.println("bx = " + bx);
+		//System.out.println("bx = " + bx);
 		
 		//If not, switch the sign of bx and check
 		
@@ -629,6 +633,7 @@ public class IsingField2D {
 		output[1] = bx;
 		output[2] = cx;
 		System.out.println("init bracket finished after " + iterations + " iterations");
+		System.out.println("f_a = " + f_a + " f_b = " + f_b + " f_c = " + f_c);
 		return output;
 	}
 	
@@ -637,8 +642,10 @@ public class IsingField2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
 			double potential = -(config[i]*phi_bar[i])/2.0;
+			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
 			freeEnergy += potential - T*entropy - H*config[i];
 		}
+		
 		return freeEnergy;
 	}
 	
@@ -711,10 +718,10 @@ public class IsingField2D {
 			minValue = f_2;
 		}
 		for(int i = 0; i < N; i ++){
-			minReferencePoint[i] = minReferencePoint[i] + xmin*minReferenceDirection[i];
+			lineminPoint[i] = lineminPoint[i] + xmin*lineminDirection[i];
 		}
-		System.out.println("golden min = " + minReferencePoint[0] + " " + minReferencePoint[1] + " lambda = " + xmin);
-		minReferenceDirection = delFreeEnergyCalc(minReferencePoint);
+		//System.out.println("golden min = " + minReferencePoint[0] + " " + minReferencePoint[1] + " lambda = " + xmin);
+		//minReferenceDirection = delFreeEnergyCalc(minReferencePoint);
 		lambda = xmin;
 		return minValue;
 	}
@@ -722,18 +729,35 @@ public class IsingField2D {
     public double f1dim(double lambda){
     	double newPoint [] = new double [N];
     	for(int i = 0; i < N; i++){
-    		newPoint[i] = minReferencePoint[i] + lambda*minReferenceDirection[i];
+    		newPoint[i] = lineminPoint[i] + lambda*lineminDirection[i];
     	}
     	double ret = freeEnergyCalc(newPoint);
     	return ret;
     }
 
-	public double [] delFreeEnergyCalc(double [] config){
+	public double [] steepestAssentCalc(double [] config){
+		double steepestAssentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			del_phi[i] = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
+			steepestAssentDir[i] = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
 		}
-		return del_phi;		
+		return steepestAssentDir;		
+	}
+	
+	public void steepestDecent(){
+		// Find direction of steepest decent
+		del_phiSq = steepestAssentCalc(phi);
+		for (int i = 0; i < N; i ++){
+			del_phiSq[i] = -del_phiSq[i];
+		}		
+		fret = linemin(phi, del_phiSq);
+		
+		for (int i = 0; i < N; i ++){
+			phi[i] = lineminPoint[i];
+		}
+		t += dt;
+		accFreeEnergy.accum(t,fret);
+
 	}
 	
 }
