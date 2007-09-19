@@ -53,7 +53,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", "Langevin No M Conservation", "Conjugate Gradient Min"));
+		params.addm("Dynamics?", new ChoiceValue("Steepest Decent", "Conjugate Gradient Min", "Langevin Conserve M", "Langevin No M Conservation"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable", "Exact SemiStable", "Exact", "Linear", "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
@@ -166,30 +166,35 @@ public class IsingField2DApp extends Simulation {
 		sf.setBounds(0.1, 14);
 		
         boolean equilibrating = true;
+		if(params.sget("Dynamics?") == "Conjugate Gradient Min")
+			ising.initializeConjGrad();        
         while (true) {
         	if (flags.contains("Write Config")){
         		writeConfiguration();
         	}
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
-			if(params.sget("Dynamics?") == "Conjugate Gradient Min")
+			if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
 				ising.getConjGradMin();
-			else
+			}else if(params.sget("Dynamics?") == "Steepest Decent"){
+				ising.steepestDecent();
+			}else{
 				ising.simulate();
+			}
 			if (equilibrating && ising.time() >= .5) {
 				equilibrating = false;
 			}
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
 			//System.out.println(Math.abs(ising.dF_dt));
-			if(params.sget("Plot FEvT") == "On"){
-				if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
-					System.out.println("input FE");
-					ising.accumFreeEnergy();
-					double temp = params.fget("T");
-					temp += params.fget("dT");
-					params.set("T", temp);
-				}				
-			}
+//			if(params.sget("Plot FEvT") == "On"){
+//				if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
+//					System.out.println("input FE");
+//					ising.accumFreeEnergy();
+//					double temp = params.fget("T");
+//					temp += params.fget("dT");
+//					params.set("T", temp);
+//				}				
+//			}
 
 			Job.animate();
 		}
