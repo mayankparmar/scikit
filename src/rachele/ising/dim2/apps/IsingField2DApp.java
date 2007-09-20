@@ -29,7 +29,9 @@ public class IsingField2DApp extends Simulation {
     Grid sfGrid = new Grid("S(k)");
     Grid delPhiGrid = new Grid("DelPhi");
 	Plot hSlice = new Plot("Horizontal Slice");
-    Plot vSlice = new Plot("Vertical Slice");
+	Plot vSlice = new Plot("Vertical Slice");    
+	Plot del_hSlice = new Plot("Horizontal Slice Change");
+	Plot del_vSlice = new Plot("Vertical Slice Change");
 	Plot structurePeakV = new Plot("Ver Structure Factor");
 	Plot structurePeakH = new Plot("Hor Structure factor");
 	Plot sfPlot = new Plot("Structure Factor");
@@ -39,9 +41,9 @@ public class IsingField2DApp extends Simulation {
 	Plot sfSlopePlot = new Plot("SF peak slope");
 	StructureFactor sf;
     IsingField2D ising;
+    SteepestDescentMin opt;
+    ConjugateGradientMin min;
     
-    
-
     
 	public static void main(String[] args) {
 		new Control(new IsingField2DApp(), "Ising Field");
@@ -49,11 +51,11 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
-		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH);
+		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Steepest Decent", "Conjugate Gradient Min", "Langevin Conserve M", "Langevin No M Conservation"));
+		params.addm("Dynamics?", new ChoiceValue("Conjugate Gradient Min", "Steepest Decent",  "Langevin Conserve M", "Langevin No M Conservation"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable", "Exact SemiStable", "Exact", "Linear", "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
@@ -80,7 +82,6 @@ public class IsingField2DApp extends Simulation {
 		flags.add("Write Config");
 		flags.add("Clear");
 		flags.add("Accept F");
-
 	}
 	
 	public void animate() {
@@ -91,7 +92,19 @@ public class IsingField2DApp extends Simulation {
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		if (params.sget("Zoom").equals("Yes")) {
 			grid.registerData(ising.Lp, ising.Lp, ising.phi);
-			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+			if(params.sget("Dynamics?") == "Steepest Decent"){
+				delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
+				del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.GREEN);
+				del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.BLUE);
+			}else if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
+				delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
+				del_hSlice.registerLines("Slice", min.get_delHslice(), Color.GREEN);
+				del_vSlice.registerLines("Slice", min.get_delVslice(), Color.BLUE);			
+			}else{
+				delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+				del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.GREEN);
+				del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.BLUE);
+			}
 		}
 		else {
 			grid.registerData(ising.Lp, ising.Lp, ising.phi, -1, 1);
@@ -103,11 +116,14 @@ public class IsingField2DApp extends Simulation {
 				Geom2D.line(ising.verticalSlice, 0, ising.verticalSlice, 1, Color.BLUE)));
 
 		delPhiGrid.setDrawables(asList(
-				Geom2D.line(0, ising.horizontalSlice, 1, ising.horizontalSlice, Color.GREEN),
-				Geom2D.line(ising.verticalSlice, 0, ising.verticalSlice, 1, Color.BLUE)));
+				Geom2D.line(0, ising.horizontalSlice, 1, ising.horizontalSlice, Color.RED),
+				Geom2D.line(ising.verticalSlice, 0, ising.verticalSlice, 1, Color.YELLOW)));
 		
-		hSlice.registerLines("Slice", ising.getHslice(), Color.BLACK);
-		vSlice.registerLines("Slice", ising.getVslice(), Color.BLACK);
+		hSlice.registerLines("Slice", ising.getHslice(), Color.GREEN);
+		vSlice.registerLines("Slice", ising.getVslice(), Color.BLUE);
+
+
+		
 		
 		freeEnergyPlot.registerLines("Free Energy", ising.getFreeEnergyAcc(), Color.MAGENTA);
 		
@@ -155,7 +171,6 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public void run() {
-		
 		if(params.sget("Init Conditions") == "Read From File")
 			readInputParams("../../../research/javaData/configs/inputParams");
 			
@@ -165,9 +180,28 @@ public class IsingField2DApp extends Simulation {
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
 		
+		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
+			public double freeEnergyCalc(double[] point) {
+				return ising.isingFreeEnergyCalc(point);
+			}
+			public double[] steepestAscentCalc(double[] point) {
+				return ising.steepestAscentCalc(point);
+			}
+		};
+		
+		min = new ConjugateGradientMin(ising.phi,ising.verticalSlice, ising.horizontalSlice, ising.dx) {
+			public double freeEnergyCalc(double[] point) {
+				return ising.isingFreeEnergyCalc(point);
+			}
+			public double[] steepestAscentCalc(double[] point) {
+				return ising.steepestAscentCalc(point);
+			}
+		};
+		
         boolean equilibrating = true;
 		if(params.sget("Dynamics?") == "Conjugate Gradient Min")
-			ising.initializeConjGrad();        
+			min.initialize();   
+			System.out.println("CG initialized");
         while (true) {
         	if (flags.contains("Write Config")){
         		writeConfiguration();
@@ -175,9 +209,13 @@ public class IsingField2DApp extends Simulation {
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
 			if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
-				ising.getConjGradMin();
+				min.step();
+				ising.t += 1;
+				ising.accFreeEnergy.accum(min.t, min.freeEnergy);				
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
-				ising.steepestDecent();
+				opt.step();
+				ising.t += 1;
+				ising.accFreeEnergy.accum(opt.t, opt.freeEnergy);
 			}else{
 				ising.simulate();
 			}
