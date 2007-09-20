@@ -204,12 +204,13 @@ public class FieldClump2D extends AbstractClump2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			if (!onBoundary[i]) {
 				rms_dF_dphi += sqr(del_phi[i] / (dt*phi[i]*phi[i]));
-				freeEnergyDensity += phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
+				freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
 				phi[i] += del_phi[i];
 			}
 		}
 		rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
 		freeEnergyDensity /= elementsInsideBoundary;
+		freeEnergyDensity -= 0.5;
 		t += dt;
 	}
 	
