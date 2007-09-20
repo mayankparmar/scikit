@@ -24,16 +24,23 @@ public class SaddleApp extends Simulation {
 		params.addm("T", 0.135);
 		params.addm("dt", 1.0);
 		params.add("R", 1000);
-		params.add("L/R", 32.0);
-		params.add("dx", 125.0);
+		params.add("L/R", 10.0);
+		params.add("dx", 100.0);
 		params.add("Random seed", 0);
 		params.add("Time");
 		params.add("F density");
 		params.add("dF/dphi");
 		params.add("Valid profile");
+		flags.add("Increase resolution");
 	}
-
+	
 	public void animate() {
+		if (flags.contains("Increase resolution")) {
+			clump.doubleResolution();
+			params.set("dx", clump.dx);
+		}
+		flags.clear();
+		
 		clump.readParams(params);
 		if (params.sget("Zoom").equals("Yes"))
 			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
@@ -51,8 +58,9 @@ public class SaddleApp extends Simulation {
 	
 	public void run() {
 		clump = new FieldClump2D(params);
-		clump.useNoiselessDynamics();
-		clump.useFixedBoundaryConditions();
+		clump.useNoiselessDynamics(true);
+		clump.useNaturalDynamics(true);
+		// clump.useFixedBoundaryConditions();
 		clump.initializeFieldWithSeed();
 		Job.animate();
 		
