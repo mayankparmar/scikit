@@ -34,22 +34,35 @@ public class FieldClump2D extends AbstractClump2D {
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		params.set("dx", dx);
+		allocate();
 		
-		t = 0;
-
+		t = 0;		
+		for (int i = 0; i < Lp*Lp; i++)
+			phi[i] = DENSITY;
+	}
+	
+	private void allocate() {
 		phi = new double[Lp*Lp];
 		phi_bar = new double[Lp*Lp];
 		del_phi = new double[Lp*Lp];
 		onBoundary = new boolean[Lp*Lp];
 		elementsInsideBoundary = Lp*Lp;
-		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
-		
-		for (int i = 0; i < Lp*Lp; i++)
-			phi[i] = DENSITY;
 	}
 	
+	public void doubleResolution() {
+		int old_Lp = Lp;
+		double[] old_phi = phi; 
+		Lp *= 2;
+		dx /= 2.0;
+		allocate();
+		for (int y = 0; y < Lp; y++) {
+			for (int x = 0; x < Lp; x++) {
+				phi[y*Lp+x] = old_phi[(y/2)*old_Lp + (x/2)];
+			}
+		}
+	}
 	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
@@ -77,7 +90,7 @@ public class FieldClump2D extends AbstractClump2D {
 //			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(y*kR/R)));
 			
 			// uncomment for random initial condition
-//			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
+			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
 	}
 	
@@ -106,8 +119,13 @@ public class FieldClump2D extends AbstractClump2D {
 	}
 	
 	
-	public void useNoiselessDynamics() {
-		noiselessDynamics = true;
+	public void useNaturalDynamics(boolean b) {
+		unstableDynamics = b;
+	}
+	
+	
+	public void useNoiselessDynamics(boolean b) {
+		noiselessDynamics = b;
 	}
 	
 	
