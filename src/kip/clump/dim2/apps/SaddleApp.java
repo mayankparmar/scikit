@@ -1,12 +1,13 @@
 package kip.clump.dim2.apps;
 
+import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
-import kip.clump.dim2.*;
+import kip.clump.dim2.FieldClump2D;
+import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
-import scikit.graphics.dim2.Grid;
 
 
 public class SaddleApp extends Simulation {
@@ -27,6 +28,7 @@ public class SaddleApp extends Simulation {
 		params.add("dx", 125.0);
 		params.add("Random seed", 0);
 		params.add("Time");
+		params.add("F density");
 		params.add("dF/dphi");
 		params.add("Valid profile");
 	}
@@ -37,8 +39,9 @@ public class SaddleApp extends Simulation {
 			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		else
 			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
-		params.set("Time", clump.time());
-		params.set("dF/dphi", clump.rms_dF_dphi);
+		params.set("Time", format(clump.time()));
+		params.set("F density", format(clump.freeEnergyDensity));
+		params.set("dF/dphi", format(clump.rms_dF_dphi));
 		params.set("Valid profile", !clump.rescaleClipped);
 	}
 	
