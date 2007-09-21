@@ -367,6 +367,8 @@ public class IsingField2D {
 		}
 		
 		freeEnergy /= (Lp*Lp) ;
+		//remove the following line
+		freeEnergy = isingFreeEnergyCalc(phi);
 		potAccum /= (Lp*Lp);
 		entAccum /= (Lp*Lp);
 		accFreeEnergy.accum(t,freeEnergy);
@@ -521,7 +523,7 @@ public class IsingField2D {
 			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
 			freeEnergy += potential - T*entropy - H*config[i];
 		}
-		freeEnergy /= N;
+		freeEnergy /= (Lp*Lp);
 		if (Double.isNaN(freeEnergy))
 			return Double.POSITIVE_INFINITY;
 		return freeEnergy;
@@ -530,7 +532,7 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
+			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H);//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		
 	}

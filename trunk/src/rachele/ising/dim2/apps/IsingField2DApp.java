@@ -43,6 +43,7 @@ public class IsingField2DApp extends Simulation {
     IsingField2D ising;
     SteepestDescentMin opt;
     ConjugateGradientMin min;
+    boolean cgInitialized = false;
     
     
 	public static void main(String[] args) {
@@ -61,7 +62,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.1);
+		params.addm("T", 0.21);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -94,16 +95,16 @@ public class IsingField2DApp extends Simulation {
 			grid.registerData(ising.Lp, ising.Lp, ising.phi);
 			if(params.sget("Dynamics?") == "Steepest Decent"){
 				delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
-				del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.GREEN);
-				del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.BLUE);
+				del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
+				del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
 			}else if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
 				delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
-				del_hSlice.registerLines("Slice", min.get_delHslice(), Color.GREEN);
-				del_vSlice.registerLines("Slice", min.get_delVslice(), Color.BLUE);			
+				del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
+				del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
 			}else{
 				delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
-				del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.GREEN);
-				del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.BLUE);
+				del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
+				del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.YELLOW);
 			}
 		}
 		else {
@@ -199,9 +200,10 @@ public class IsingField2DApp extends Simulation {
 		};
 		
         boolean equilibrating = true;
-		if(params.sget("Dynamics?") == "Conjugate Gradient Min")
-			min.initialize();   
-			System.out.println("CG initialized");
+//		if(params.sget("Dynamics?") == "Conjugate Gradient Min")
+//			min.initialize();   
+//			System.out.println("CG initialized");
+//			cgInitialized = true;
         while (true) {
         	if (flags.contains("Write Config")){
         		writeConfiguration();
@@ -209,14 +211,21 @@ public class IsingField2DApp extends Simulation {
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
 			if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
+				if(cgInitialized == false){
+					min.initialize();   
+					System.out.println("CG initialized");
+					cgInitialized = true;					
+				}
 				min.step();
 				ising.t += 1;
-				ising.accFreeEnergy.accum(min.t, min.freeEnergy);				
+				ising.accFreeEnergy.accum(ising.t, min.freeEnergy);				
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
 				opt.step();
 				ising.t += 1;
-				ising.accFreeEnergy.accum(opt.t, opt.freeEnergy);
+				ising.accFreeEnergy.accum(ising.t, opt.freeEnergy);
+				cgInitialized = false;
 			}else{
+				cgInitialized = false;
 				ising.simulate();
 			}
 			if (equilibrating && ising.time() >= .5) {
