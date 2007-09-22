@@ -105,8 +105,10 @@ public class Wolff2DApp extends Simulation {
 		palette.setColor(1, Color.WHITE); // spin up
 		palette.setColor(2, new Color(130, 200, 200)); // spin up (alternate)
 		palette.setColor(4, new Color(0, 100, 0)); // branch cut
-		grid.registerData(L, L, original, palette);
-		grid2.registerData(Lc, Lc, conformal, palette);
+		grid.setColors(palette);
+		grid2.setColors(palette);
+		grid.registerData(L, L, original);
+		grid2.registerData(Lc, Lc, conformal);
 	}
 	
 	public void clear() {

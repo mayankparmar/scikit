@@ -1,5 +1,8 @@
 package scikit.graphics.dim3;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +15,11 @@ import scikit.util.Point;
 public class Grid3D extends Scene3D {
 	double[] _data;
 	int _w, _h, _d; // width, height, depth
-	ColorChooser _cc;
-	
+	ColorChooser _colors;
+    private boolean _autoScale = true;
+    private double _lo = 0, _hi = 1;
+    
+    
 	public Grid3D(String title) {
 		super(title);
 	}
@@ -25,10 +31,23 @@ public class Grid3D extends Scene3D {
 		super.clear();
 	}
 	
-	public void registerData(int w, int h, int d, double[] data, ColorChooser cc) {
-		_cc = cc;
+	public void setColors(ColorChooser colors) {
+		_colors = colors;
+	}
+	
+	public void setAutoScale() {
+		_autoScale = true;
+	}
+	
+	public void setScale(double lo, double hi) {
+		_lo = lo;
+		_hi = hi;
+	}
+	
+	public void registerData(int w, int h, int d, double[] data) {
 		setSize(w, h, d, data.length);
 		System.arraycopy(data, 0, _data, 0, w*h*d);
+		findRange();
 		animate();
     }
 	
@@ -38,7 +57,18 @@ public class Grid3D extends Scene3D {
 		ds.addAll(super.getAllDrawables());
 		return ds;
 	}
-
+	
+	private void findRange() {
+		if (_autoScale) {
+			_lo = Double.POSITIVE_INFINITY;
+			_hi = Double.NEGATIVE_INFINITY;
+			for (double v : _data) {
+				_lo = min(_lo, v);
+				_hi = max(_hi, v);
+			}
+		}
+	}
+	
 	private void setSize(int w, int h, int d, int expectedSize) {
 		if (w*h*d == 0)
 			throw new IllegalArgumentException(
@@ -60,7 +90,7 @@ public class Grid3D extends Scene3D {
  	        	for (int z = 0; z < _d; z++) { 
  	        		for (int y = 0; y < _h; y++) {
  	        			for (int x = 0; x < _w; x++) {
- 	        				Color color = _cc.getColor(_data[_w*_h*z+_w*y+x]);
+ 	        				Color color = _colors.getColor(_data[_w*_h*z+_w*y+x], _lo, _hi);
  	        				if (color != null) {
  	        					g.setColor(color);
  	        					double cx = (x+0.5)/_w;

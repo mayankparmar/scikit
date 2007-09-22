@@ -21,11 +21,16 @@ import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 
+
 public class Grid extends Scene2D {
+	private ColorChooser _colors = new ColorGradient();
 	private BufferedImage _image = null;
 	private int _w = 0, _h = 0;
 	private double[] _data = null;
-    private int[] _pixelArray;
+    private int[] _pixelArray = null;
+    private boolean _autoScale = true;
+    private double _lo = 0, _hi = 1;
+    
     
 	public Grid(String title) {
 		super(title);
@@ -68,34 +73,32 @@ public class Grid extends Scene2D {
 		return ret;
 	}
 	
+	public void setColors(ColorChooser colors) {
+		_colors = colors;
+	}
+	
+	public void setAutoScale() {
+		_autoScale = true;
+	}
+	
+	public void setScale(double lo, double hi) {
+		_autoScale = false;
+		_lo = lo;
+		_hi = hi;
+	}
+	
 	public void registerData(int w, int h, double[] data) {
-		double lo = Double.POSITIVE_INFINITY;
-		double hi = Double.NEGATIVE_INFINITY;
-		for (double v : data) {
-			lo = min(lo, v);
-			hi = max(hi, v);
-		}
-		registerData(w, h, data, lo, hi);
-	}
-	
-	// TODO split out ColorChooser to a separate method
-	
-	public void registerData(int w, int h, double[] data, double lo, double hi) {
-		registerData(w, h, data, new ColorGradient(lo, hi));
-	}
-	
-	public void registerData(int w, int h, double[] data, ColorChooser cc) {
 		setSize(w, h, data.length);
 		System.arraycopy(data, 0, _data, 0, w*h);
-		rasterizeImage(cc);
+		rasterizeImage();
 		animate();
     }
 	
-	public void registerData(int w, int h, int[] data, ColorChooser cc) {
+	public void registerData(int w, int h, int[] data) {
 		setSize(w, h, data.length);
 		for (int i = 0; i < data.length; i++)
 			_data[i] = data[i];
-		rasterizeImage(cc);
+		rasterizeImage();
 		animate();
 	}
 	
@@ -114,18 +117,32 @@ public class Grid extends Scene2D {
     	}
 	}
 	
-	private void rasterizeImage(ColorChooser cc) {
-        int pixelArrayOffset = 0;
-        for (int y = 0; y < _h; y++) {
-            for (int x = 0; x < _w; x++) {
-                Color color = cc.getColor(_data[_w*y+x]);
-                _pixelArray[pixelArrayOffset++] = color.getRed();
-                _pixelArray[pixelArrayOffset++] = color.getGreen();
-                _pixelArray[pixelArrayOffset++] = color.getBlue();
-            }
-        }
-        WritableRaster raster = _image.getRaster();
-        raster.setPixels(0, 0, _w, _h, _pixelArray);
+	private void findRange() {
+		if (_autoScale) {
+			_lo = Double.POSITIVE_INFINITY;
+			_hi = Double.NEGATIVE_INFINITY;
+			for (double v : _data) {
+				_lo = min(_lo, v);
+				_hi = max(_hi, v);
+			}
+		}
+	}
+	
+	private void rasterizeImage() {
+		findRange();
+		// draw pixels
+		int pixelArrayOffset = 0;
+		for (int y = 0; y < _h; y++) {
+			for (int x = 0; x < _w; x++) {
+				Color color = _colors.getColor(_data[_w*y+x], _lo, _hi);
+				_pixelArray[pixelArrayOffset++] = color.getRed();
+				_pixelArray[pixelArrayOffset++] = color.getGreen();
+				_pixelArray[pixelArrayOffset++] = color.getBlue();
+			}
+		}
+		// copy pixels into image
+		WritableRaster raster = _image.getRaster();
+		raster.setPixels(0, 0, _w, _h, _pixelArray);
 	}
 	
 	private Drawable<Gfx2D> _gridDrawable = new Drawable<Gfx2D>() {

@@ -25,8 +25,9 @@ public class SpinodalApp extends Simulation {
     
     public void animate() {
         beta = 1 / params.fget("Temperature");
-        J = params.fget("Interaction");   
-        grid.registerData(L, L, data, 0, 16);
+        J = params.fget("Interaction");
+        grid.setScale(0, 16);
+        grid.registerData(L, L, data);
     }
     
     public void clear() {
