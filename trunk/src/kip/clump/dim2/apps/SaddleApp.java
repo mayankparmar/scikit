@@ -13,6 +13,7 @@ import scikit.params.ChoiceValue;
 public class SaddleApp extends Simulation {
 	Grid grid = new Grid("Grid");
 	FieldClump2D clump;
+	boolean periodic;
 	
 	public static void main(String[] args) {
 		new Control(new SaddleApp(), "Clump Model Saddle Profile");
@@ -44,7 +45,8 @@ public class SaddleApp extends Simulation {
 		flags.clear();
 		params.set("dx", clump.dx);
 		
-		clump.useFixedBoundaryConditions(!params.sget("Periodic").equals("Yes"));
+		periodic = params.sget("Periodic").equals("Yes");
+		clump.useFixedBoundaryConditions(!periodic);
 		
 		clump.readParams(params);
 		if (params.sget("Zoom").equals("Yes"))
@@ -64,8 +66,6 @@ public class SaddleApp extends Simulation {
 	}
 	
 	public void run() {
-		boolean periodic = params.sget("Periodic").equals("Yes");
-		
 		clump = new FieldClump2D(params);
 		clump.useNoiselessDynamics(true);
 		clump.useNaturalDynamics(true);
@@ -80,7 +80,7 @@ public class SaddleApp extends Simulation {
 			clump.scaleField(scale);
 			
 			if (periodic) {
-				clump.R -= 20*clump.dFdensity_dR();
+				clump.R -= 100*clump.dFdensity_dR();
 			}
 			Job.animate();
 		}
