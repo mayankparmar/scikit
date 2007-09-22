@@ -7,7 +7,6 @@ import java.awt.Color;
 import kip.clump.dim3.Clump3D;
 import kip.clump.dim3.StructureFactor3D;
 import scikit.dataset.Function;
-import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
@@ -47,12 +46,12 @@ public class Clump3DApp extends Simulation {
 		clump.readParams(params);
 
 		int nc = clump.numColumns();
-		ColorChooser cc = new ColorGradient(0, 2) {
-			public Color getColor(double x) {
-				return x < 1.5 ? null : super.getColor(x);
+		scene.setColors(new ColorGradient() {
+			public Color getColor(double x, double lo, double hi) {
+				return (x-lo)/(hi-lo) > 0.5 ? super.getColor(x, lo, hi) : null;
 			}
-		};
-		scene.registerData(nc, nc, nc, clump.coarseGrained(), cc);
+		});
+		scene.registerData(nc, nc, nc, clump.coarseGrained());
 		
 		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
 		plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
@@ -63,9 +62,10 @@ public class Clump3DApp extends Simulation {
 		
 		// one 2D slice is presented in field display
 		if (params.sget("Zoom").equals("Yes"))
-			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+			grid.setAutoScale();
 		else
-			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+			grid.setScale(0, 2);
+		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 	}
 	
 	public void clear() {

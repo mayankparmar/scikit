@@ -4,7 +4,6 @@ import java.awt.Color;
 import static java.lang.Math.*;
 
 public class ColorGradient implements ColorChooser {
-	private double _lo = 0, _hi = 1;
 	private static double _colors[][] = {
 			{1-1.0,     0, 0, 0},
 			{1-0.98,    10, 0, 50},
@@ -33,14 +32,9 @@ public class ColorGradient implements ColorChooser {
         }
     }
 	
-	public ColorGradient(double lo, double hi) {
-		_lo = lo;
-		_hi = hi;
-	}
-	
-	public Color getColor(double v) {
-		double scaled = (v - _lo) / (_hi - _lo);
-		int c = (int) (WHEEL_SIZE*scaled);
+	public Color getColor(double v, double lo, double hi) {
+		v = (v - lo) / (hi - lo);
+		int c = (int) (WHEEL_SIZE*v);
 		return wheel[min(max(c, 0), WHEEL_SIZE-1)];
 	}
 }

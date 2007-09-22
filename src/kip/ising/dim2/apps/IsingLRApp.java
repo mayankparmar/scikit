@@ -42,9 +42,10 @@ public class IsingLRApp extends Simulation {
 		sim.setParameters(params);
 		
 		if (params.sget("Scale colors").equals("False"))
-			grid.registerData(sim.L/dx, sim.L/dx, sim.getField(dx), -1, 1);
+			grid.setScale(-1, 1);
 		else
-			grid.registerData(sim.L/dx, sim.L/dx, sim.getField(dx));
+			grid.setAutoScale();
+		grid.registerData(sim.L/dx, sim.L/dx, sim.getField(dx));
 	}
 	
 	public void clear() {

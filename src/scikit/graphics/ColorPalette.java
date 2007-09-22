@@ -15,7 +15,7 @@ public class ColorPalette implements ColorChooser {
 		colors.put(value, color);
 	}
 	
-	public Color getColor(double value) {
+	public Color getColor(double value, double lo, double hi) {
 		return colors.containsKey((int)value) ? colors.get((int)value) : Color.BLACK;
 	}
 }

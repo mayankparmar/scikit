@@ -50,9 +50,10 @@ public class SaddleApp extends Simulation {
 		
 		clump.readParams(params);
 		if (params.sget("Zoom").equals("Yes"))
-			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
+			grid.setAutoScale();
 		else
-			grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained(), 0, 2);
+			grid.setScale(0, 2);
+		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
 		params.set("R", clump.R);
 		params.set("Time", format(clump.time()));

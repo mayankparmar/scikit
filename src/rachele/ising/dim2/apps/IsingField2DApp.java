@@ -90,26 +90,31 @@ public class IsingField2DApp extends Simulation {
 		ising.readParams(params);
 		//params.set("dF_dt", ising.dF_dt);
 		
-		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
+		
 		if (params.sget("Zoom").equals("Yes")) {
-			grid.registerData(ising.Lp, ising.Lp, ising.phi);
-			if(params.sget("Dynamics?") == "Steepest Decent"){
-				delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
-				del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
-				del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
-			}else if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
-				delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
-				del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
-				del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
-			}else{
-				delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
-				del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
-				del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.YELLOW);
-			}
+			grid.setAutoScale();
+			delPhiGrid.setAutoScale();
 		}
 		else {
-			grid.registerData(ising.Lp, ising.Lp, ising.phi, -1, 1);
-			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq, 0, 1);
+			grid.setScale(-1, 1);
+			delPhiGrid.setScale(0, 1);
+		}
+		
+		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
+		grid.registerData(ising.Lp, ising.Lp, ising.phi);
+		String dyn = params.sget("Dynamics?");
+		if (dyn.equals("Steepest Decent")) {
+			delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
+			del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
+			del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
+		} else if (dyn.equals("Conjugate Gradient Min")) {
+			delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
+			del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
+			del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
+		} else {
+			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+			del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
+			del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.YELLOW);
 		}
 		
 		grid.setDrawables(asList(
