@@ -39,6 +39,7 @@ public class IsingField2DApp extends Simulation {
 	Plot freeEnergyPlot = new Plot("Free Energy");
 	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp");
 	Plot sfSlopePlot = new Plot("SF peak slope");
+	Plot landscape = new Plot("Local FE landscape");
 	StructureFactor sf;
     IsingField2D ising;
     SteepestDescentMin opt;
@@ -52,7 +53,7 @@ public class IsingField2DApp extends Simulation {
 	
 	public IsingField2DApp() {
 		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
-		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice);
+		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));

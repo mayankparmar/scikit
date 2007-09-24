@@ -1,5 +1,7 @@
 package rachele.ising.dim2;
 
+import scikit.dataset.Accumulator;
+
 //import static java.lang.Math.log;
 
 abstract public class LineMin {
@@ -11,6 +13,7 @@ abstract public class LineMin {
 	// input values
 	int N;
 	double[] lineminPoint, lineminDirection;
+	Accumulator landscape;
 	
 	// return values
 	double minValue;
@@ -22,6 +25,7 @@ abstract public class LineMin {
 		N = lineminPoint.length;
 		this.lineminPoint = lineminPoint;
 		this.lineminDirection = lineminDirection;
+		landscape.setAveraging(true);
 		
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
@@ -208,6 +212,7 @@ abstract public class LineMin {
     		newPoint[i] = lineminPoint[i] + lambda*lineminDirection[i];
     	}
     	double ret = freeEnergyCalc(newPoint);
+    	landscape.accum(lambda, ret);
     	return ret;
     }
 
