@@ -1,18 +1,17 @@
 package kip.clump.dim3;
-import static java.lang.Math.*;
-import kip.util.Random;
+
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.exp;
+import static java.lang.Math.floor;
+import static java.lang.Math.min;
+import static java.lang.Math.sin;
 import scikit.jobs.Job;
 import scikit.params.Parameters;
 
 
-public class Clump3D {
-	public static final double DENSITY = 1;
-	public static final double KR_SP = 5.76345919689454979140645;
-	public static final double T_SP = 0.08617089416190739793014991;
-	
-	public double L, R, T, dx;
-	Random random = new Random();
-
+public class Clump3D extends AbstractClump3D {
 	PtsGrid3D pts;
 	int t_cnt, numPts;
 	double dt;
