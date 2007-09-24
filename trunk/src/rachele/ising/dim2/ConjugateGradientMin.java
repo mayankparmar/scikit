@@ -21,6 +21,8 @@ abstract public class ConjugateGradientMin {
 	public abstract double freeEnergyCalc(double[] point);
 	public abstract double[] steepestAscentCalc(double[] point);
 	
+
+	
 	public ConjugateGradientMin(double[] point, double horizontalSlice, double verticalSlice, double dx) {
 		N = point.length;
 		Lp =  (int)Math.sqrt((double)N);
