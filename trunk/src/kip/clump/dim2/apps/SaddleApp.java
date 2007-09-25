@@ -1,5 +1,6 @@
 package kip.clump.dim2.apps;
 
+import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 import kip.clump.dim2.FieldClump2D;
@@ -81,7 +82,7 @@ public class SaddleApp extends Simulation {
 			clump.scaleField(scale);
 			
 			if (periodic) {
-				clump.R -= 100*clump.dFdensity_dR();
+				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
 			}
 			Job.animate();
 		}

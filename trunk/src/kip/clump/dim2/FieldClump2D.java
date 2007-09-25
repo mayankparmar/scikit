@@ -207,7 +207,7 @@ public class FieldClump2D extends AbstractClump2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			ret += 0.5*phi[i]*dphibar_dR[i];
 		}
-		return ret / Lp*Lp;
+		return ret / (Lp*Lp);
 	}
 	
 	public StructureFactor newStructureFactor(double binWidth) {

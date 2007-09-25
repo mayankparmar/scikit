@@ -1,9 +1,17 @@
 package kip.clump.dim3;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.ceil;
+import static java.lang.Math.cos;
+import static java.lang.Math.floor;
+import static java.lang.Math.log;
+import static java.lang.Math.min;
+import static java.lang.Math.rint;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
 import static kip.util.DoubleArray.max;
 import static kip.util.DoubleArray.min;
-import static kip.util.MathPlus.*;
+import static kip.util.MathPlus.sqr;
 import scikit.numerics.fft.ComplexDouble3DFFT;
 import scikit.params.Parameters;
 
@@ -89,12 +97,13 @@ public class FieldClump3D extends AbstractClump3D {
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
 			double z = dx*((i/(Lp*Lp)) - Lp/2);
-			double r = sqrt(x*x+y*y+z*z);
-			double mag = 0.5 / (1+sqr(r/R));
+//			double r = sqrt(x*x+y*y+z*z);
+//			double mag = 0.5 / (1+sqr(r/R));
+			double mag = 0.2;
 			
 			double kR = KR_SP;
 			double b1, b2, b3;
-			int seedType = 0;
+			int seedType = 2;
 			switch (seedType) {
 			case 0:
 				// FCC symmetry (reciprocal lattice is BCC) 
@@ -225,7 +234,7 @@ public class FieldClump3D extends AbstractClump3D {
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			ret += 0.5*phi[i]*dphibar_dR[i];
 		}
-		return ret / Lp*Lp*Lp;
+		return ret / (Lp*Lp*Lp);
 	}
 	
 	public StructureFactor3D newStructureFactor(double binWidth) {
@@ -329,7 +338,7 @@ public class FieldClump3D extends AbstractClump3D {
 			for (int y = -Lp/2; y < Lp/2; y++) {
 				for (int x = -Lp/2; x < Lp/2; x++) {
 					int i = Lp*Lp*((z+Lp)%Lp) + Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-					double k = 2*PI*sqrt(x*x+y*y)/L;
+					double k = 2*PI*sqrt(x*x+y*y+z*z)/L;
 					double kR = k*R;
 					double kR2 = kR*kR;
 					double kR3 = kR2*kR;

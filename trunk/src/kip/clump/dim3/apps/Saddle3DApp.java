@@ -1,8 +1,10 @@
 package kip.clump.dim3.apps;
 
+import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 import kip.clump.dim3.FieldClump3D;
+import kip.util.DoubleArray;
 import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -23,7 +25,6 @@ public class Saddle3DApp extends Simulation {
 		frame(grid);
 		params.addm("Slice", new DoubleValue(0, 0, 0.999).withSlider());
 		params.addm("Periodic", new ChoiceValue("Yes", "No"));
-		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.09);
 		params.addm("dt", 1.0);
 		params.add("R", 1000.0);
@@ -50,14 +51,12 @@ public class Saddle3DApp extends Simulation {
 		clump.useFixedBoundaryConditions(!periodic);
 		
 		clump.readParams(params);
-		if (params.sget("Zoom").equals("Yes"))
-			grid.setAutoScale();
-		else
-			grid.setScale(0, 2);
 		int Lp = clump.numColumns();
 		double[] slice = new double[Lp*Lp];
 		int z = (int)(params.fget("Slice")*Lp);
-		System.out.println(z);
+		grid.setScale(
+				DoubleArray.min(clump.coarseGrained()),
+				DoubleArray.max(clump.coarseGrained()));
 		System.arraycopy(clump.coarseGrained(), Lp*Lp*z, slice, 0, Lp*Lp);
 		grid.registerData(Lp, Lp, slice);
 		
@@ -87,7 +86,7 @@ public class Saddle3DApp extends Simulation {
 			clump.scaleField(scale);
 			
 			if (periodic)
-				clump.R -= 100*clump.dFdensity_dR();
+				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
 			Job.animate();
 		}
 	}
