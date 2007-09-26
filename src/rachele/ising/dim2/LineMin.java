@@ -25,12 +25,13 @@ abstract public class LineMin {
 		N = lineminPoint.length;
 		this.lineminPoint = lineminPoint;
 		this.lineminDirection = lineminDirection;
+		landscape = new Accumulator (tolerance);
 		landscape.setAveraging(true);
 		
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
     	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
-    	initBracket = initialBracket(0.0, 0.1);
+    	initBracket = initialBracket(0.0, 0.3);
     	minValue = golden(initBracket);
     }
 	
@@ -155,7 +156,8 @@ abstract public class LineMin {
 		double f_2 = f1dim(x2);
 		
 		int iteration = 0;
-		while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
+		//while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
+		while(Math.abs(f_2-f_1) > tolerance  && x1 != x2 && x2 != x3){
 			iteration ++;
 //			System.out.println(x1 + " " + x2 + " " + x3);
 //			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
@@ -201,7 +203,8 @@ abstract public class LineMin {
 		for(int i = 0; i < N; i ++){
 			lineminPoint[i] = lineminPoint[i] + xmin*lineminDirection[i];
 		}
-		System.out.println("golden min = " + minValue + " lambda = " + xmin);
+		double finalBracket = x3-x2;
+		System.out.println("golden min = " + minValue + " lambda = " + xmin + " finalBracket = " + finalBracket);
 		//minReferenceDirection = delFreeEnergyCalc(minReferencePoint);
 		return minValue;
 	}
@@ -212,10 +215,16 @@ abstract public class LineMin {
     		newPoint[i] = lineminPoint[i] + lambda*lineminDirection[i];
     	}
     	double ret = freeEnergyCalc(newPoint);
+    	if(ret != Double.POSITIVE_INFINITY)
     	landscape.accum(lambda, ret);
+   		System.out.println("f1dim " + lambda + " " + ret);
     	return ret;
     }
 
+    
+    public Accumulator getLandscape(){
+    	return landscape;
+    }
     /*
 	public double [] steepestAscentCalc(double [] config){
 		double steepestAscentDir [] = new double [N];
