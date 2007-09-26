@@ -1,5 +1,6 @@
 package rachele.ising.dim2;
 
+import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 
 abstract public class SteepestDescentMin {
@@ -14,11 +15,11 @@ abstract public class SteepestDescentMin {
 	private double horizontalSlice;
 	private double verticalSlice;
 	private double dx;
-	
+	public Accumulator landscape;
 	
 	public abstract double freeEnergyCalc(double[] point);
 	public abstract double[] steepestAscentCalc(double[] point);
-	
+	private LineMin linemin;
 	
 	public SteepestDescentMin(double[] point, double horizontalSlice, double verticalSlice, double dx) {
 		N = point.length;
@@ -38,14 +39,19 @@ abstract public class SteepestDescentMin {
 		}
 		
 		//Replace point with the minimum point
-		LineMin linemin = new LineMin(point, direction) {
+		 linemin = new LineMin(point, direction) {
 			double freeEnergyCalc(double[] point) {
 				return SteepestDescentMin.this.freeEnergyCalc(point);
 			}
-		};
+		 };
 		freeEnergy = linemin.minValue;
 		
 	}
+
+	public Accumulator getLandscape(){
+		return linemin.getLandscape();
+	}
+	
 	
 	public PointSet get_delHslice(){
 		int y = (int) (horizontalSlice * Lp);

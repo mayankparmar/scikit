@@ -63,7 +63,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.21);
+		params.addm("T", 0.15);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -101,6 +101,16 @@ public class IsingField2DApp extends Simulation {
 			delPhiGrid.setScale(0, 1);
 		}
 		
+		landscape.setAutoScale(true);
+		freeEnergyPlot.setAutoScale(true);
+		del_hSlice.setAutoScale(true);
+		del_vSlice.setAutoScale(true);
+		hSlice.setAutoScale(true);
+		vSlice.setAutoScale(true);
+		structurePeakV.setAutoScale(true);
+		structurePeakH.setAutoScale(true);
+		
+		//landscape.getComponent().setPreferredSize(new Dimension(100, 100));
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		String dyn = params.sget("Dynamics?");
@@ -108,10 +118,12 @@ public class IsingField2DApp extends Simulation {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
 			del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
+			//landscape.registerLines("Free Energy Landscape", opt.getLandscape(), Color.BLACK);
 		} else if (dyn.equals("Conjugate Gradient Min")) {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
 			del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
+			//landscape.registerLines("Free Energy Landscape", min.getLandscape(), Color.BLACK);
 		} else {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
 			del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
@@ -172,9 +184,13 @@ public class IsingField2DApp extends Simulation {
 			System.out.println("clicked");
 		}
 		flags.clear();
+		
+		//System.out.println("  max phi = " + kip.util.DoubleArray.max(ising.phi));
+		//System.out.println("  min phi = " + kip.util.DoubleArray.min(ising.phi));
 	}
 	
 	public void clear() {
+		cgInitialized = false;
 	}
 	
 	public void run() {
