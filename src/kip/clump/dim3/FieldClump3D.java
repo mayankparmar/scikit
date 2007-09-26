@@ -35,7 +35,7 @@ public class FieldClump3D extends AbstractClump3D {
 		random.setSeed(params.iget("Random seed", 0));
 		
 		R = params.fget("R");
-		L = R*params.fget("L/R");
+		L = params.fget("L");
 		T = params.fget("T");
 		dx = params.fget("dx");
 		dt = params.fget("dt");
@@ -101,7 +101,7 @@ public class FieldClump3D extends AbstractClump3D {
 			if (type.equals("FCC")) {
 				mag = 0.1;
 				field = 0;
-				k *= 0.5;
+				k *= 0.8;
 				// FCC symmetry (reciprocal lattice is BCC)
 				// waves to centers of cubes
 				field += cos(k * ( x + y + z) / sqrt(3.));
@@ -114,7 +114,7 @@ public class FieldClump3D extends AbstractClump3D {
 				field += cos(k * z / sqrt(3.));
 			}
 			else if (type.equals("BCC")) {
-				mag = 0.2;
+				mag = 0.1;
 				field = 0;
 				// BCC (reciprocal lattice is FCC)
 				field += cos(k * ( x + z) / sqrt(3.));
@@ -173,12 +173,7 @@ public class FieldClump3D extends AbstractClump3D {
 	}
 	
 	
-	double noise() {
-		return noiselessDynamics ? 0 : random.nextGaussian();
-	}
-
-	
-	double mean(double[] a) {
+	public double mean(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp*Lp; i++)
 			if (!onBoundary[i])
@@ -187,7 +182,7 @@ public class FieldClump3D extends AbstractClump3D {
 	}
 	
 	
-	double meanSquared(double[] a) {
+	public double meanSquared(double[] a) {
 		double sum = 0;
 		for (int i = 0; i < Lp*Lp*Lp; i++)
 			if (!onBoundary[i])
@@ -201,7 +196,7 @@ public class FieldClump3D extends AbstractClump3D {
 		
 		if (unstableDynamics) {
 			for (int i = 0; i < Lp*Lp*Lp; i++) {
-				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/dx)*noise();
+				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
 			}
 			double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp*Lp*Lp; i++) {
@@ -211,7 +206,7 @@ public class FieldClump3D extends AbstractClump3D {
 		else {
 			for (int i = 0; i < Lp*Lp*Lp; i++) {
 				double phi2 = phi[i] * phi[i];
-				del_phi[i] = - phi2*dt*(phi_bar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*noise();
+				del_phi[i] = - phi2*dt*(phi_bar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx*dx))*noise();
 			}
 			double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
 			for (int i = 0; i < Lp*Lp*Lp; i++) {
@@ -281,6 +276,11 @@ public class FieldClump3D extends AbstractClump3D {
 		fft = new ComplexDouble3DFFT(Lp, Lp, Lp);
 	}
 	
+	
+	private double noise() {
+		return noiselessDynamics ? 0 : random.nextGaussian();
+	}
+
 	
 	static private int minSeq(Integer... vals) {
 		int ret = Integer.MAX_VALUE;
