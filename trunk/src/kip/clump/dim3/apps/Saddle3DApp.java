@@ -35,13 +35,14 @@ public class Saddle3DApp extends Simulation {
 
 	public Saddle3DApp() {
 		frame(grid, plot);
-		params.addm("Slice", new DoubleValue(0, 0, 0.999).withSlider());
+		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Periodic", new ChoiceValue("Yes", "No"));
-		params.addm("T", 0.09);
+		params.addm("Slice", new DoubleValue(0, 0, 0.999).withSlider());
+		params.addm("T", new DoubleValue(0.09, 0.0, 0.15).withSlider());
 		params.addm("dt", 1.0);
 		params.add("Seed", new ChoiceValue("BCC", "FCC", "Noise"));
 		params.add("R", 1000.0);
-		params.add("L/R", 2.0);
+		params.add("L", 2000.0);
 		params.add("dx", 100.0);
 		params.add("Random seed", 0);
 		params.add("Time");
@@ -68,21 +69,25 @@ public class Saddle3DApp extends Simulation {
 		params.set("dx", clump.dx);
 		
 		periodic = params.sget("Periodic").equals("Yes");
-		clump.useFixedBoundaryConditions(!periodic);
-		
+		clump.useFixedBoundaryConditions(!periodic);		
 		clump.readParams(params);
+		
+		if (params.sget("Zoom").equals("Yes"))
+			grid.setScale(
+					DoubleArray.min(clump.coarseGrained()),
+					DoubleArray.max(clump.coarseGrained()));
+		else
+			grid.setScale(0, 2);
+		
 		int Lp = clump.numColumns();
 		double[] slice = new double[Lp*Lp];
 		int z = (int)(params.fget("Slice")*Lp);
-		grid.setScale(
-				DoubleArray.min(clump.coarseGrained()),
-				DoubleArray.max(clump.coarseGrained()));
 		System.arraycopy(clump.coarseGrained(), Lp*Lp*z, slice, 0, Lp*Lp);
 		grid.registerData(Lp, Lp, slice);
 		
 		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
 		
-		params.set("R", clump.R);
+		params.set("R", format(clump.R));
 		params.set("Time", format(clump.time()));
 		params.set("F density", format(clump.freeEnergyDensity));
 		params.set("dF/dphi", format(clump.rms_dF_dphi));
@@ -111,7 +116,7 @@ public class Saddle3DApp extends Simulation {
 			clump.scaleField(scale);
 			
 			if (periodic)
-				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
+				clump.R -= 0.1*sqr(clump.R)*clump.dFdensity_dR();
 			
 			Job.animate();
 		}

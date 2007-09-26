@@ -167,7 +167,7 @@ public class FieldClump2D extends AbstractClump2D {
 		
 		if (unstableDynamics) {
 			for (int i = 0; i < Lp*Lp; i++) {
-				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/dx)*noise();
+				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx))*noise();
 			}
 			double mu = mean(del_phi)-(DENSITY-mean(phi));
 			for (int i = 0; i < Lp*Lp; i++) {
