@@ -2,11 +2,9 @@ package kip.clump.dim3;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
-import static java.lang.Math.cos;
 import static java.lang.Math.exp;
 import static java.lang.Math.floor;
 import static java.lang.Math.min;
-import static java.lang.Math.sin;
 import scikit.jobs.Job;
 import scikit.params.Parameters;
 
@@ -124,9 +122,5 @@ public class Clump3D extends AbstractClump3D {
 	
 	public double time() {
 		return (double)t_cnt/numPts;
-	}
-	
-	public double potential(double kR) {
-		return 3*(sin(kR)-kR*cos(kR))/(kR*kR*kR);		
 	}
 }
