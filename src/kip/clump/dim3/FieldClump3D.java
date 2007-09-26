@@ -89,49 +89,48 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	
 	public void initializeFieldWithSeed(String type) {
-		int seed;
-		if (type.equals("FCC"))
-			seed = 0;
-		else if (type.equals("BCC"))
-			seed = 1;
-		else if (type.equals("Noise"))
-			seed = 2;
-		else
-			throw new IllegalArgumentException();
-		
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
+  		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			if (onBoundary[i])
 				continue;
 			
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
 			double z = dx*((i/(Lp*Lp)) - Lp/2);
-//			double r = sqrt(x*x+y*y+z*z);
-//			double mag = 0.5 / (1+sqr(r/R));
-			double mag = 0.2;
-			
-			double kR = KR_SP;
-			double b1, b2, b3;
-			switch (seed) {
-			case 0:
-				// FCC symmetry (reciprocal lattice is BCC) 
-				b1 = ( x + y - z) / sqrt(3.);
-				b2 = ( x - y + z) / sqrt(3.);
-				b3 = (-x + y + z) / sqrt(3.);
-				phi[i] = DENSITY*(1+mag*(cos(b1*kR/R) + cos(b2*kR/R) + cos(b3*kR/R)));
-				break;
-			case 1:
+			double field = 0, mag = 0;
+			double k = KR_SP/R;
+			if (type.equals("FCC")) {
+				mag = 0.1;
+				field = 0;
+				k *= 0.5;
+				// FCC symmetry (reciprocal lattice is BCC)
+				// waves to centers of cubes
+				field += cos(k * ( x + y + z) / sqrt(3.));
+				field += cos(k * ( x - y + z) / sqrt(3.));
+				field += cos(k * (-x + y + z) / sqrt(3.));
+				field += cos(k * (-x - y + z) / sqrt(3.));
+				// waves to adjacent cube corners
+				field += cos(k * x / sqrt(3.));
+				field += cos(k * y / sqrt(3.));
+				field += cos(k * z / sqrt(3.));
+			}
+			else if (type.equals("BCC")) {
+				mag = 0.2;
+				field = 0;
 				// BCC (reciprocal lattice is FCC)
-				b1 = (x + y) / sqrt(2.);
-				b2 = (x + z) / sqrt(2.);
-				b3 = (y + z) / sqrt(2.);
-				phi[i] = DENSITY*(1+mag*(cos(b1*kR/R) + cos(b2*kR/R) + cos(b3*kR/R)));
-				break;
-			case 2:
+				field += cos(k * ( x + z) / sqrt(3.));
+				field += cos(k * (-x + z) / sqrt(3.));
+				field += cos(k * ( y + z) / sqrt(3.));
+				field += cos(k * (-y + z) / sqrt(3.));
+			}
+			else if (type.equals("Noise")) {
 				// random
-				phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
+				mag = 1;
+				field = random.nextGaussian();
 				break;
 			}
+//			double r = sqrt(x*x+y*y+z*z);
+//			double mag = 0.5 / (1+sqr(r/R));
+			phi[i] = DENSITY*(1+mag*field);
 		}
 	}
 	
