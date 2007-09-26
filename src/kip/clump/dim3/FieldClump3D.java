@@ -7,7 +7,6 @@ import static java.lang.Math.floor;
 import static java.lang.Math.log;
 import static java.lang.Math.min;
 import static java.lang.Math.rint;
-import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static kip.util.DoubleArray.max;
 import static kip.util.DoubleArray.min;
@@ -89,7 +88,17 @@ public class FieldClump3D extends AbstractClump3D {
 	}
 	
 	
-	public void initializeFieldWithSeed() {
+	public void initializeFieldWithSeed(String type) {
+		int seed;
+		if (type.equals("FCC"))
+			seed = 0;
+		else if (type.equals("BCC"))
+			seed = 1;
+		else if (type.equals("Noise"))
+			seed = 2;
+		else
+			throw new IllegalArgumentException();
+		
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			if (onBoundary[i])
 				continue;
@@ -103,8 +112,7 @@ public class FieldClump3D extends AbstractClump3D {
 			
 			double kR = KR_SP;
 			double b1, b2, b3;
-			int seedType = 2;
-			switch (seedType) {
+			switch (seed) {
 			case 0:
 				// FCC symmetry (reciprocal lattice is BCC) 
 				b1 = ( x + y - z) / sqrt(3.);
@@ -313,8 +321,8 @@ public class FieldClump3D extends AbstractClump3D {
 			for (int y = -Lp/2; y < Lp/2; y++) {
 				for (int x = -Lp/2; x < Lp/2; x++) {
 					int i = Lp*Lp*((z+Lp)%Lp) + Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-					double kR = (2*PI*sqrt(x*x+y*y+z*z)/L) * R;
-					double J = (kR == 0) ? 1 : (3/(kR*kR))*(sin(kR)/kR - cos(kR));
+					double k = 2*PI*sqrt(x*x+y*y+z*z)/L;
+					double J = potential(k*R);
 					fftScratch[2*i] *= J;
 					fftScratch[2*i+1] *= J;
 				}
@@ -339,11 +347,7 @@ public class FieldClump3D extends AbstractClump3D {
 				for (int x = -Lp/2; x < Lp/2; x++) {
 					int i = Lp*Lp*((z+Lp)%Lp) + Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 					double k = 2*PI*sqrt(x*x+y*y+z*z)/L;
-					double kR = k*R;
-					double kR2 = kR*kR;
-					double kR3 = kR2*kR;
-					double kR4 = kR2*kR2;
-					double dJ_dR = (kR == 0) ? 0 : (9*cos(kR)/kR3 + 3*(kR2-3)*sin(kR)/kR4)*k;
+					double dJ_dR = dpotential_dkR(k*R)*k;
 					fftScratch[2*i] *= dJ_dR;
 					fftScratch[2*i+1] *= dJ_dR;
 				}
