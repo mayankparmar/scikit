@@ -5,12 +5,12 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
-import static kip.util.DoubleArray.max;
-import static kip.util.DoubleArray.min;
 import static kip.util.MathPlus.sqr;
+import kip.util.DoubleArray;
 import scikit.numerics.fft.ComplexDouble3DFFT;
 import scikit.params.Parameters;
 
@@ -24,7 +24,6 @@ public class FieldClump3D extends AbstractClump3D {
 	double[] fftScratch;
 	
 	boolean fixedBoundary = false;
-	boolean unstableDynamics = true;
 	boolean noiselessDynamics = false;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
 	public double rms_dF_dphi;
@@ -134,13 +133,6 @@ public class FieldClump3D extends AbstractClump3D {
 		}
 	}
 	
-	
-	
-	public void useNaturalDynamics(boolean b) {
-		unstableDynamics = b;
-	}
-	
-	
 	public void useNoiselessDynamics(boolean b) {
 		noiselessDynamics = b;
 	}
@@ -162,8 +154,8 @@ public class FieldClump3D extends AbstractClump3D {
 		// phi will not be scaled above PHI_UB or below PHI_LB
 		double PHI_UB = 5;
 		double PHI_LB = 0.01;
-		double s1 = (PHI_UB-DENSITY)/(max(phi)-DENSITY+1e-10);
-		double s2 = (PHI_LB-DENSITY)/(min(phi)-DENSITY-1e-10);
+		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
+		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
 		rescaleClipped = scale > min(s1,s2);
 		if (rescaleClipped)
 			scale = min(s1,s2);
@@ -194,24 +186,13 @@ public class FieldClump3D extends AbstractClump3D {
 	public void simulate() {
 		convolveWithRange(phi, phi_bar, R);
 		
-		if (unstableDynamics) {
-			for (int i = 0; i < Lp*Lp*Lp; i++) {
-				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
-			}
-			double mu = mean(del_phi)-(DENSITY-mean(phi));
-			for (int i = 0; i < Lp*Lp*Lp; i++) {
-				del_phi[i] -= mu;
-			}
+		for (int i = 0; i < Lp*Lp*Lp; i++) {
+			del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
 		}
-		else {
-			for (int i = 0; i < Lp*Lp*Lp; i++) {
-				double phi2 = phi[i] * phi[i];
-				del_phi[i] = - phi2*dt*(phi_bar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx*dx))*noise();
-			}
-			double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
-			for (int i = 0; i < Lp*Lp*Lp; i++) {
-				del_phi[i] -= mu*phi[i]*phi[i];
-			}
+		double mu = mean(del_phi)-(DENSITY-mean(phi));
+		for (int i = 0; i < Lp*Lp*Lp; i++) {
+			// clip del_phi to ensure phi(t+dt) > phi(t)/2
+			del_phi[i] = max(del_phi[i]-mu, -phi[i]/2.);
 		}
 		
 		rms_dF_dphi = 0;
@@ -276,12 +257,10 @@ public class FieldClump3D extends AbstractClump3D {
 		fft = new ComplexDouble3DFFT(Lp, Lp, Lp);
 	}
 	
-	
 	private double noise() {
 		return noiselessDynamics ? 0 : random.nextGaussian();
 	}
 
-	
 	static private int minSeq(Integer... vals) {
 		int ret = Integer.MAX_VALUE;
 		for (int v : vals)
@@ -289,7 +268,6 @@ public class FieldClump3D extends AbstractClump3D {
 		return ret;
 	}
 	
-
 	private void fixBoundaryConditions() {
 		elementsInsideBoundary = Lp*Lp*Lp;
 		int thickness = (int)ceil(0.5*R/dx);
