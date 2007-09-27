@@ -3,6 +3,7 @@ package scikit.util;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.io.DataInput;
 import java.io.IOException;
@@ -21,6 +22,8 @@ import static java.lang.Math.*;
 
 
 public class Utilities {
+	public final static int OPTIMAL_FRAME_SIZE = 300;
+
 	static DecimalFormat df1 = new DecimalFormat("0.#######");
 	static DecimalFormat df2 = new DecimalFormat("0.#######E0");
 	static public String format(double x) {
@@ -92,8 +95,7 @@ public class Utilities {
 	}
 	
 	
-	static int _frameStagger = 100;
-	
+	private static int _frameStagger = 100;
 	public static JFrame frame(Component comp, String title) {
 		JFrame frame = new JFrame(title);
 		frame.getContentPane().add(comp);
@@ -130,6 +132,14 @@ public class Utilities {
 					BorderFactory.createLineBorder(Color.GRAY)));
 			item.add(f.getComponent());
 			panel.add(item);
+		}
+		// adjust panel's preferred size to be closer to OPTIMAL_FRAME_SIZE
+		Dimension d = panel.getPreferredSize();
+		double w = d.getWidth(), h = d.getHeight();
+		double opt = OPTIMAL_FRAME_SIZE;
+		if (max(w, h) > opt) {
+			double scale = (0.5*(max(w,h) - opt) + opt) / max(w,h);
+			panel.setPreferredSize(new Dimension((int)(w*scale), (int)(h*scale)));
 		}
 		return frame(panel, title);
 	}

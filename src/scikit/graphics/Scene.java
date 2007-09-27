@@ -1,6 +1,9 @@
 package scikit.graphics;
 
+import static scikit.util.Utilities.OPTIMAL_FRAME_SIZE;
+
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -36,6 +39,7 @@ abstract public class Scene<T> implements Frameable {
 			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
 			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
 		});
+		_component.setPreferredSize(new Dimension(OPTIMAL_FRAME_SIZE, OPTIMAL_FRAME_SIZE));
 		_title = title;
 	}
 	

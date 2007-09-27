@@ -1,7 +1,5 @@
 package scikit.graphics;
 
-import java.awt.Dimension;
-
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
@@ -41,7 +39,6 @@ public class GLHelper {
 		};
 		
 		canvas.addGLEventListener(listener);
-		canvas.setPreferredSize(new Dimension(300, 300));
 		return canvas;
 	}
 }
