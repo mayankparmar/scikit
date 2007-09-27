@@ -11,45 +11,48 @@ import scikit.util.Bounds;
 
 
 public class Gfx2DSwing implements Gfx2D {
-	private final Graphics2D engine;
-	private final Scene2D scene;
-	private final Bounds pixBds;
-	private Bounds datBds;
+	private final Graphics2D _engine;
+	private final Bounds _pixBds, _viewBds;
+	private Bounds _proj;
 	
-	public Gfx2DSwing(Graphics2D engine, Scene2D scene) {
-		this.engine = engine;
-		this.scene = scene;
-		datBds = pixBds = scene.pixelBounds();
+	public Gfx2DSwing(Graphics2D engine, JComponent component, Scene2D scene) {
+		_engine = engine;
+		_pixBds = new Bounds(0, component.getWidth(), 0, component.getHeight());
+		_proj = _viewBds = scene.viewBounds();
 	}
 	
 	public Graphics2D engine() {
-		return engine;
+		return _engine;
 	}
 	
-	public Scene2D scene() {
-		return scene;
+	public Bounds viewBounds() {
+		return _viewBds;
 	}
-
-	public void projectOrtho2D(Bounds proj) {
+	
+	public Bounds pixelBounds() {
+		return _pixBds;
+	}
+	
+	public void setProjection(Bounds proj) {
 		// incoming points are transformed from datBds (data coordinates) 
 		// into pixBds (pixel coordinates)
-		this.datBds = proj;
+		_proj = proj;
 	}
 
 	private int transX(double x) {
-		return (int) (pixBds.xmax * (x - datBds.xmin) / datBds.getWidth());
+		return (int) (_pixBds.xmax * (x - _proj.xmin) / _proj.getWidth());
 	}
 	
 	private int transY(double y) {
-		return (int) (pixBds.getHeight() - pixBds.ymax * (y - datBds.ymin) / datBds.getHeight());
+		return (int) (_pixBds.getHeight() - _pixBds.ymax * (y - _proj.ymin) / _proj.getHeight());
 	}
 	
 	private int offsetX(double w) {
-		return (int) (w * pixBds.getWidth() / datBds.getWidth());
+		return (int) (w * _pixBds.getWidth() / _proj.getWidth());
 	}
 	
 	private int offsetY(double h) {
-		return (int) (h * pixBds.getHeight() / datBds.getHeight());
+		return (int) (h * _pixBds.getHeight() / _proj.getHeight());
 	}
 	
 	public void setLineSmoothing(boolean b) {
@@ -58,16 +61,16 @@ public class Gfx2DSwing implements Gfx2D {
 	}
 	
 	public void setColor(Color color) {
-		engine.setColor(color);
+		_engine.setColor(color);
 	}
 	
 	public void drawPoint(double x, double y) {
 		int pix = 4;
-		engine.fillRect((int)transX(x)-pix/2, (int)transY(y)-pix/2, pix, pix);
+		_engine.fillRect((int)transX(x)-pix/2, (int)transY(y)-pix/2, pix, pix);
 	}
 	
 	public void drawLine(double x1, double y1, double x2, double y2) {
-		engine.drawLine(transX(x1), transY(y1), transX(x2), transY(y2));
+		_engine.drawLine(transX(x1), transY(y1), transX(x2), transY(y2));
 	}
 
 	public void drawLines(double[] xys) {
@@ -76,38 +79,38 @@ public class Gfx2DSwing implements Gfx2D {
 	}
 
 	public void drawRect(double x, double y, double w, double h) {
-		engine.drawRect(transX(x), transY(y)-offsetY(h), offsetX(w), offsetY(h));
+		_engine.drawRect(transX(x), transY(y)-offsetY(h), offsetX(w), offsetY(h));
 	}
 
 	public void fillRect(double x, double y, double w, double h) {
-		engine.fillRect(transX(x), transY(y)-offsetY(h), offsetX(w), offsetY(h));
+		_engine.fillRect(transX(x), transY(y)-offsetY(h), offsetX(w), offsetY(h));
 	}
 	
 	public void drawCircle(double x, double y, double r) {
 		int w = offsetX(2*r);
 		int h = offsetY(2*r);
-		engine.drawOval(transX(x)-w/2, transY(y)-h/2, w, h);
+		_engine.drawOval(transX(x)-w/2, transY(y)-h/2, w, h);
 	}
 
 	public void fillCircle(double x, double y, double r) {
 		int w = offsetX(2*r);
 		int h = offsetY(2*r);
-		engine.fillOval(transX(x)-w/2, transY(y)-h/2, w, h);
+		_engine.fillOval(transX(x)-w/2, transY(y)-h/2, w, h);
 	}
 
 	public double stringWidth(String str) {
-		double pix2dat = datBds.getWidth() / pixBds.getWidth();
-		return engine.getFontMetrics().getStringBounds(str, engine).getWidth() * pix2dat;
+		double pix2dat = _proj.getWidth() / _pixBds.getWidth();
+		return _engine.getFontMetrics().getStringBounds(str, _engine).getWidth() * pix2dat;
 	}
 	
 	public double stringHeight(String str) {
-		double pix2dat = datBds.getHeight() / pixBds.getHeight();
+		double pix2dat = _proj.getHeight() / _pixBds.getHeight();
 		double fudge = 0.7;
-		return engine.getFontMetrics().getStringBounds(str, engine).getHeight() * pix2dat * fudge;
+		return _engine.getFontMetrics().getStringBounds(str, _engine).getHeight() * pix2dat * fudge;
 	}
 
 	public void drawString(String str, double x, double y) {
-		engine.drawString(str, transX(x), transY(y));
+		_engine.drawString(str, transX(x), transY(y));
 	}
 
 	public static JComponent createComponent(final Scene2D scene) {
@@ -124,7 +127,7 @@ public class Gfx2DSwing implements Gfx2D {
 				 ((Graphics2D)engine).setRenderingHint(
 						RenderingHints.KEY_ANTIALIASING,
                 		RenderingHints.VALUE_ANTIALIAS_ON);
-				scene.drawAll(new Gfx2DSwing((Graphics2D)engine, scene));
+				 scene.drawAll(new Gfx2DSwing((Graphics2D)engine, this, scene));
 			}
 		};
 		return component;
@@ -137,6 +140,6 @@ public class Gfx2DSwing implements Gfx2D {
     	int y2p = transY(y2);
 		int w = image.getWidth();
 		int h = image.getHeight();
-        engine.drawImage(image, x1p, y1p, x2p, y2p, 0, 0, w, h, null);
+        _engine.drawImage(image, x1p, y1p, x2p, y2p, 0, 0, w, h, null);
 	}
 }

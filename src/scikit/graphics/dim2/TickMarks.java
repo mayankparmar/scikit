@@ -28,7 +28,7 @@ public class TickMarks implements Drawable<Gfx2D> {
 	
 	public void draw(Gfx2D g) {
 		Bounds db = _plot.viewBounds();
-		Bounds cb = _plot.pixelBounds();
+		Bounds cb = g.pixelBounds();
 		
 		List<Tick> xticks, yticks;
 		if (!_plot._logScaleX)
@@ -137,7 +137,7 @@ public class TickMarks implements Drawable<Gfx2D> {
 	
 	private void drawTickLabels(Gfx2D g, List<Tick> xticks, List<Tick> yticks) {
 		Bounds db = _plot.viewBounds();
-		Bounds cb = _plot.pixelBounds();
+		Bounds cb = g.pixelBounds();
 		double heightPerPix = db.getHeight() / cb.getHeight();
 		double widthPerPix = db.getWidth() / cb.getWidth();
 		

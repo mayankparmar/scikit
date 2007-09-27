@@ -6,8 +6,9 @@ import scikit.util.Bounds;
 
 
 public interface Gfx2D {
-	public Scene2D scene();
-	public void projectOrtho2D(Bounds bds);
+	public Bounds pixelBounds();
+	public Bounds viewBounds();
+	public void setProjection(Bounds bds);
 	public void setLineSmoothing(boolean b);
 	public void setColor(Color color);
 	public void drawPoint(double x, double y);

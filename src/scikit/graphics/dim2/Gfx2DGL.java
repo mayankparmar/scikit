@@ -1,6 +1,8 @@
 package scikit.graphics.dim2;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 
 import java.awt.Color;
 
@@ -10,53 +12,55 @@ import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 
-import com.sun.opengl.util.GLUT;
-
 import scikit.graphics.GLHelper;
 import scikit.util.Bounds;
 
+import com.sun.opengl.util.GLUT;
+
 
 public class Gfx2DGL implements Gfx2D {
-	private final GL gl;
-	private final GLUT glut;
-	private final Scene2D scene;
-	private final Bounds pixBds;
-	private Bounds datBds; 		// TODO rename to projBds
+	private final GL _gl;
+	private final GLUT _glut;
+	private final Bounds _pixBds, _viewBds;
+	private Bounds _proj;
 	
 	private static int FONT = GLUT.BITMAP_8_BY_13;
 	private static int FONT_HEIGHT = 8; // pixels
 	
 	
-	// TODO replace scene by pixBds
-	public Gfx2DGL(GL gl, Scene2D scene) {
-		this.gl = gl;
-		this.glut = new GLUT();
-		this.scene = scene;
-		datBds = pixBds = scene.pixelBounds();
+	public Gfx2DGL(GLAutoDrawable glDrawable, Scene2D scene) {
+		_gl = glDrawable.getGL();
+		_glut = new GLUT();
+		_pixBds = new Bounds(0, glDrawable.getWidth(), 0, glDrawable.getHeight());
+		_proj = _viewBds = scene.viewBounds();
+	}
+		
+	public Bounds viewBounds() {
+		return _viewBds;
 	}
 	
-	public Scene2D scene() {
-		return scene;
+	public Bounds pixelBounds() {
+		return _pixBds;
 	}
 	
-	public void projectOrtho2D(Bounds proj) {
+	public void setProjection(Bounds proj) {
 		// the GL projection matrix is 2d, in units of pixels
-		gl.glMatrixMode(GL.GL_PROJECTION);
-		gl.glLoadIdentity();
-		(new GLU()).gluOrtho2D(0, pixBds.xmax, 0, pixBds.ymax);
-		gl.glMatrixMode(GL.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		_gl.glMatrixMode(GL.GL_PROJECTION);
+		_gl.glLoadIdentity();
+		(new GLU()).gluOrtho2D(0, _pixBds.xmax, 0, _pixBds.ymax);
+		_gl.glMatrixMode(GL.GL_MODELVIEW);
+		_gl.glLoadIdentity();
 		// incoming points are transformed from datBds (data coordinates) 
 		// into pixBds (pixel coordinates)
-		this.datBds = proj;
+		_proj = proj;
 	}
 	
 	private double transX(double x) {
-		return pixBds.xmax * (x - datBds.xmin) / datBds.getWidth();
+		return _pixBds.xmax * (x - _proj.xmin) / _proj.getWidth();
 	}
 	
 	private double transY(double y) {
-		return pixBds.ymax * (y - datBds.ymin) / datBds.getHeight();
+		return _pixBds.ymax * (y - _proj.ymin) / _proj.getHeight();
 	}
 	
 	private void vertex2d(GL gl, double x, double y) {
@@ -65,52 +69,52 @@ public class Gfx2DGL implements Gfx2D {
 	
 	public void setLineSmoothing(boolean b) {
 		if (b)
-			gl.glEnable(GL.GL_LINE_SMOOTH);
+			_gl.glEnable(GL.GL_LINE_SMOOTH);
 		else
-			gl.glDisable(GL.GL_LINE_SMOOTH);
+			_gl.glDisable(GL.GL_LINE_SMOOTH);
 	}
 	
 	public void setColor(Color color) {
-		gl.glColor4fv(color.getComponents(null), 0);
+		_gl.glColor4fv(color.getComponents(null), 0);
 	}
 	
 	public void drawPoint(double x, double y) {
-		gl.glBegin(GL.GL_POINTS);
-		vertex2d(gl, x, y);
-		gl.glEnd();
+		_gl.glBegin(GL.GL_POINTS);
+		vertex2d(_gl, x, y);
+		_gl.glEnd();
 	}
 	
 	public void drawLine(double x1, double y1, double x2, double y2) {
-		gl.glBegin(GL.GL_LINES);
-		vertex2d(gl, x1, y1);
-		vertex2d(gl, x2, y2);
-		gl.glEnd();
+		_gl.glBegin(GL.GL_LINES);
+		vertex2d(_gl, x1, y1);
+		vertex2d(_gl, x2, y2);
+		_gl.glEnd();
 	}
 	
 	public void drawLines(double[] xys) {
-		gl.glBegin(GL.GL_LINES);
+		_gl.glBegin(GL.GL_LINES);
 		for (int i = 0; i < xys.length; i++) {
-			vertex2d(gl, xys[2*i+0], xys[2*i+1]);
+			vertex2d(_gl, xys[2*i+0], xys[2*i+1]);
 		}
-		gl.glEnd();
+		_gl.glEnd();
 	}
 	
 	public void drawRect(double x, double y, double w, double h) {
-		gl.glBegin(GL.GL_LINE_LOOP);
-		vertex2d(gl, x, y);
-		vertex2d(gl, x, y+h);
-		vertex2d(gl, x+w, y+h);
-		vertex2d(gl, x+w, y);
-		gl.glEnd();
+		_gl.glBegin(GL.GL_LINE_LOOP);
+		vertex2d(_gl, x, y);
+		vertex2d(_gl, x, y+h);
+		vertex2d(_gl, x+w, y+h);
+		vertex2d(_gl, x+w, y);
+		_gl.glEnd();
 	}
 	
 	public void fillRect(double x, double y, double w, double h) {
-		gl.glBegin(GL.GL_QUADS);
-		vertex2d(gl, x, y);
-		vertex2d(gl, x, y+h);
-		vertex2d(gl, x+w, y+h);
-		vertex2d(gl, x+w, y);
-		gl.glEnd();
+		_gl.glBegin(GL.GL_QUADS);
+		vertex2d(_gl, x, y);
+		vertex2d(_gl, x, y+h);
+		vertex2d(_gl, x+w, y+h);
+		vertex2d(_gl, x+w, y);
+		_gl.glEnd();
 	}
 	
 	final private static int EDGES = 32;
@@ -123,43 +127,42 @@ public class Gfx2DGL implements Gfx2D {
 	}
 	
 	public void drawCircle(double x, double y, double r) {
-		gl.glBegin(GL.GL_LINE_LOOP);
+		_gl.glBegin(GL.GL_LINE_LOOP);
 		for (int i = 0; i < EDGES; i++) {
-			vertex2d(gl, x+r*COS[i], y+r*SIN[i]);
+			vertex2d(_gl, x+r*COS[i], y+r*SIN[i]);
 		}
-		gl.glEnd();
+		_gl.glEnd();
 		
 	}
 	
 	public void fillCircle(double x, double y, double r) {
-		gl.glBegin(GL.GL_POLYGON);
+		_gl.glBegin(GL.GL_POLYGON);
 		for (int i = 0; i < EDGES; i++) {
-			vertex2d(gl, x+r*COS[i], y+r*SIN[i]);
+			vertex2d(_gl, x+r*COS[i], y+r*SIN[i]);
 		}
-		gl.glEnd();
+		_gl.glEnd();
 	}
 
 	public double stringWidth(String str) {
-		return glut.glutBitmapLength(FONT, str) * datBds.getWidth() / pixBds.getWidth();
+		return _glut.glutBitmapLength(FONT, str) * _proj.getWidth() / _pixBds.getWidth();
 	}
 	
 	public double stringHeight(String str) {
-		return FONT_HEIGHT * datBds.getHeight() / pixBds.getHeight();
+		return FONT_HEIGHT * _proj.getHeight() / _pixBds.getHeight();
 	}
 	
 	public void drawString(String str, double x, double y) {
-		gl.glPushMatrix();
-		gl.glRasterPos2d(transX(x), transY(y));
-		glut.glutBitmapString(FONT, str); 
-		gl.glPopMatrix();
+		_gl.glPushMatrix();
+		_gl.glRasterPos2d(transX(x), transY(y));
+		_glut.glutBitmapString(FONT, str); 
+		_gl.glPopMatrix();
 	}
 	
 	public static GLCanvas createComponent(final Scene2D scene) {
 		return GLHelper.createComponent(new GLEventListener() {
 			public void display(GLAutoDrawable glDrawable) {
-				GL gl = glDrawable.getGL();
-				gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-				scene.drawAll(new Gfx2DGL(gl, scene));
+				glDrawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+				scene.drawAll(new Gfx2DGL(glDrawable, scene));
 			}
 			public void displayChanged(GLAutoDrawable gLDrawable, boolean modeChanged, boolean deviceChanged) {
 			}

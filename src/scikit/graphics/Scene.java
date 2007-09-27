@@ -89,14 +89,10 @@ abstract public class Scene<T> implements Frameable {
 		_component.repaint();
 	}
 	
-	public Component getCanvas() {
-		return _component;
-	}
-	
-	public Bounds pixelBounds() {
-		return new Bounds(0, _component.getWidth(), 0, _component.getHeight());
-	}
-	
+	/**
+	 * Returns the current viewing bounds for the same, in data coordinates.
+	 * @return current scene view bounds
+	 */
 	public Bounds viewBounds() {
 		return _curBounds.clone();
 	}
