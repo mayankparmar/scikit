@@ -19,7 +19,7 @@ public class Clump3D extends AbstractClump3D {
 		random.setSeed(params.iget("Random seed", 0));
 
 		R = params.fget("R");
-		L = R*params.fget("L/R");
+		L = params.fget("L");
 		T = params.fget("T");
 		dx = params.fget("dx");
 		dt = params.fget("dt");

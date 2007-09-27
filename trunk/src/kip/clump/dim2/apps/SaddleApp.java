@@ -27,7 +27,7 @@ public class SaddleApp extends Simulation {
 		params.addm("T", 0.135);
 		params.addm("dt", 1.0);
 		params.add("R", 1000.0);
-		params.add("L/R", 10.0);
+		params.add("L", 10000.0);
 		params.add("dx", 100.0);
 		params.add("Random seed", 0);
 		params.add("Time");
@@ -70,7 +70,6 @@ public class SaddleApp extends Simulation {
 	public void run() {
 		clump = new FieldClump2D(params);
 		clump.useNoiselessDynamics(true);
-		clump.useNaturalDynamics(true);
 		clump.initializeFieldWithSeed();
 		Job.animate();
 		

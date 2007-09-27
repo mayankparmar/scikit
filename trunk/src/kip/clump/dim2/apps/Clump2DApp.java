@@ -20,7 +20,7 @@ public class Clump2DApp extends Simulation {
     Plot plot = new Plot("Structure factor");
     StructureFactor sf;
     AbstractClump2D clump;
-    boolean fieldDynamics = false;
+    boolean fieldDynamics = true;
 	
 	public static void main(String[] args) {
 		new Control(new Clump2DApp(), "Clump Model");
@@ -33,21 +33,26 @@ public class Clump2DApp extends Simulation {
 		params.addm("dt", 1.0);
 		if (fieldDynamics) {
 			params.add("R", 1000);
-			params.add("L/R", 16.0);
+			params.add("L", 16000.0);
 			params.add("dx", 125.0);
 		}
 		else {
 			params.add("R", 12.0);
-			params.add("L/R", 16.0);
+			params.add("L", 192.0);
 			params.add("dx", 3.0);
 		}
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Time");
+		flags.add("Clear S.F.");
 	}
 	
 	public void animate() {
 		clump.readParams(params);
+		
+		if (flags.contains("Clear S.F."))
+			sf.getAccumulator().clear();
+		flags.clear();
 		
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
@@ -70,22 +75,13 @@ public class Clump2DApp extends Simulation {
 	}
 	
 	public void run() {
-		if (fieldDynamics)
-			clump = new FieldClump2D(params);
-		else
-			clump = new Clump2D(params);
-		
+		clump = fieldDynamics ? new FieldClump2D(params) : new Clump2D(params);
         sf = clump.newStructureFactor(params.fget("kR bin-width"));
 		sf.setBounds(0.1, 14);
         
-        boolean equilibrating = true;
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
-			if (equilibrating && clump.time() >= 15) {
-				equilibrating = false;
-				sf.getAccumulator().clear();
-			}
 			clump.accumulateIntoStructureFactor(sf);
 			Job.animate();
 		}
