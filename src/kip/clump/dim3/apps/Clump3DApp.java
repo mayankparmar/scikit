@@ -4,7 +4,9 @@ import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
+import kip.clump.dim3.AbstractClump3D;
 import kip.clump.dim3.Clump3D;
+import kip.clump.dim3.FieldClump3D;
 import kip.clump.dim3.StructureFactor3D;
 import scikit.dataset.Function;
 import scikit.graphics.ColorGradient;
@@ -21,10 +23,10 @@ public class Clump3DApp extends Simulation {
     Grid grid = new Grid("Grid");
     Plot plot = new Plot("Structure factor");
     Grid3D scene = new Grid3D("test");
-    
     StructureFactor3D sf;
-    Clump3D clump;
- 	
+    AbstractClump3D clump;
+    boolean fieldDynamics = true;
+
 	public static void main(String[] args) {
 		new Control(new Clump3DApp(), "Clump Model");
 	}
@@ -34,17 +36,29 @@ public class Clump3DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.15);
 		params.addm("dt", 1.0);
-		params.add("R", 4.0);
-		params.add("L/R", 4.0);
-		params.add("dx", 2.0);
+		if (fieldDynamics) {
+			params.add("R", 1000.0);
+			params.add("L", 4000.0);
+			params.add("dx", 250.0);
+		}
+		else {
+			params.add("R", 4.0);
+			params.add("L", 16.0);
+			params.add("dx", 2.0);
+		}
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Time");
+		flags.add("Clear S.F.");
 	}
 	
 	public void animate() {
 		clump.readParams(params);
 
+		if (flags.contains("Clear S.F."))
+			sf.getAccumulator().clear();
+		flags.clear();
+		
 		int nc = clump.numColumns();
 		scene.setColors(new ColorGradient() {
 			public Color getColor(double x, double lo, double hi) {
@@ -75,22 +89,15 @@ public class Clump3DApp extends Simulation {
 	}
 	
 	public void run() {
-		clump = new Clump3D(params);
-        
+		clump = fieldDynamics ? new FieldClump3D(params) : new Clump3D(params);
         sf = clump.newStructureFactor(params.fget("kR bin-width"));
 		sf.setBounds(0.1, 14);
         
-        boolean equilibrating = true;
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
-			if (equilibrating && clump.time() >= 15) {
-				equilibrating = false;
-				sf.getAccumulator().clear();
-			}
 			clump.accumulateIntoStructureFactor(sf);
 			Job.animate();
 		}
  	}
-
 }

@@ -16,7 +16,6 @@ public class FieldClump2D extends AbstractClump2D {
 	double[] fftScratch;
 	
 	boolean fixedBoundary = false;
-	boolean unstableDynamics = false;
 	boolean noiselessDynamics = false;
 	public boolean rescaleClipped = false;
 	public double rms_dF_dphi;
@@ -27,7 +26,7 @@ public class FieldClump2D extends AbstractClump2D {
 		random.setSeed(params.iget("Random seed", 0));
 		
 		R = params.fget("R");
-		L = R*params.fget("L/R");
+		L = params.fget("L");
 		T = params.fget("T");
 		dx = params.fget("dx");
 		dt = params.fget("dt");
@@ -100,13 +99,7 @@ public class FieldClump2D extends AbstractClump2D {
 		}
 	}
 	
-	
-	
-	public void useNaturalDynamics(boolean b) {
-		unstableDynamics = b;
-	}
-	
-	
+		
 	public void useNoiselessDynamics(boolean b) {
 		noiselessDynamics = b;
 	}
@@ -165,29 +158,19 @@ public class FieldClump2D extends AbstractClump2D {
 	public void simulate() {
 		convolveWithRange(phi, phi_bar, R);
 		
-		if (unstableDynamics) {
-			for (int i = 0; i < Lp*Lp; i++) {
-				del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx))*noise();
-			}
-			double mu = mean(del_phi)-(DENSITY-mean(phi));
-			for (int i = 0; i < Lp*Lp; i++) {
-				del_phi[i] -= mu;
-			}
+		for (int i = 0; i < Lp*Lp; i++) {
+			del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx))*noise();
 		}
-		else {
-			for (int i = 0; i < Lp*Lp; i++) {
-				double phi2 = phi[i] * phi[i];
-				del_phi[i] = - phi2*dt*(phi_bar[i]+T*log(phi[i])) + sqrt(phi2*dt*2*T/(dx*dx))*noise();
-			}
-			double mu = (mean(del_phi)-(DENSITY-mean(phi))) / meanSquared(phi);
-			for (int i = 0; i < Lp*Lp; i++) {
-				del_phi[i] -= mu*phi[i]*phi[i];
-			}
+		double mu = mean(del_phi)-(DENSITY-mean(phi));
+		for (int i = 0; i < Lp*Lp; i++) {
+			// clip del_phi to ensure phi(t+dt) > phi(t)/2
+			del_phi[i] = max(del_phi[i]-mu, -phi[i]/2.); 
 		}
 		
 		rms_dF_dphi = 0;
 		freeEnergyDensity = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
+			
 			if (!onBoundary[i]) {
 				rms_dF_dphi += sqr(del_phi[i] / (dt*phi[i]*phi[i]));
 				freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);

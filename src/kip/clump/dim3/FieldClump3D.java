@@ -24,7 +24,7 @@ public class FieldClump3D extends AbstractClump3D {
 	double[] fftScratch;
 	
 	boolean fixedBoundary = false;
-	boolean unstableDynamics = false;
+	boolean unstableDynamics = true;
 	boolean noiselessDynamics = false;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
 	public double rms_dF_dphi;
