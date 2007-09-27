@@ -20,7 +20,7 @@ public class Plot extends Scene2D {
 	ArrayList<RegisteredData> _datas = new ArrayList<RegisteredData>();
 	// log-scale drawing is handled as follows:
 	//  - all registered Datasets are reinterpreted (x,y)->(log x,log y)
-	//  - the viewbounds are recalculated in log space
+	//  - the viewbounds are calculated using transformed Datasets
 	//  - the TickMarks Drawable changes its mode
 	//  - Drawables which are not Datasets are hidden, since non-linear warping
 	//    can't be accurately represented
@@ -196,7 +196,7 @@ class RegisteredData implements Drawable<Gfx2D> {
 	}
 
 	public void draw(Gfx2D g) {
-		Bounds bds = expBounds(g.scene().viewBounds());
+		Bounds bds = expBounds(g.viewBounds());
 		double pts[] = _data.copyPartial(1000, bds.xmin, bds.xmax, bds.ymin, bds.ymax);
 		g.setColor(_color);
 		

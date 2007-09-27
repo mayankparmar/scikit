@@ -50,7 +50,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	protected void drawAll(Gfx2D g) {
 		drawBackground(g);
-		g.projectOrtho2D(viewBounds());
+		g.setProjection(viewBounds());
 		for (Drawable<Gfx2D> d : getAllDrawables())
 			d.draw(g);
 	}
@@ -144,7 +144,7 @@ public class Scene2D extends Scene<Gfx2D> {
 		public void draw(Gfx2D g) {
 			if (_selectionActive) {
 				g.setLineSmoothing(false);
-				g.projectOrtho2D(g.scene().pixelBounds());
+				g.setProjection(g.pixelBounds());
 				
 				Bounds sel = new Bounds(_selectionStart, _selectionEnd);
 				g.setColor(new Color(0.6f, 0.9f, 0.8f, 0.25f));
@@ -152,7 +152,7 @@ public class Scene2D extends Scene<Gfx2D> {
 				g.setColor(new Color(0f, 0f, 0f, 0.25f));
 				g.drawRect(sel.xmin, sel.ymin, sel.getWidth(), sel.getHeight());
 				
-				g.projectOrtho2D(g.scene().viewBounds());
+				g.setProjection(g.viewBounds());
 				g.setLineSmoothing(true);
 			}
 		}
