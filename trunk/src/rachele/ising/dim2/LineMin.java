@@ -31,24 +31,40 @@ abstract public class LineMin {
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
     	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
-    	initBracket = initialBracket(0.0, 0.3);
+    	initBracket = initialBracket(0.0, 0.5);
     	minValue = golden(initBracket);
     }
 	
-    private double [] initialBracket(double ax, double bx){
+    private double [] initialBracket(double ax, double del){
 		double [] output = new double [3];
 		//can't accept infinity as a bracketing parameter.
 		
-		//make sure bx is positive
 		
-		//bx = Math.abs(bx);
-		
+		double bx = ax + del;
 		double f_b = f1dim(bx);
-		while(f_b == Double.POSITIVE_INFINITY){
-			bx /= 2.0;
-			f_b = f1dim(bx);
-		}
 		double f_a = f1dim(ax);
+		//		if(f_b == Double.POSITIVE_INFINITY){
+//			bx *= -1.0;
+//			f_b = f1dim(bx);
+//			if(f_b == Double.POSITIVE_INFINITY)
+//				System.out.println("first b inf both ways");
+//		}
+//		while(f_b == Double.POSITIVE_INFINITY){
+//			bx = (bx - ax)*GOLDC +ax;
+//			//bx /= 2.0;
+//			f_b = f1dim(bx);
+//			//System.out.println("inf looping");
+//		}
+		if(Math.abs(bx-ax) < 1e-15){
+			System.out.println("bracket too small");
+		}										
+
+		while(Math.abs(f_b-f_a) < 1e-15){
+			System.out.println("fe difference too small");
+			bx *= GOLD;
+			f_b = f1dim(bx);
+		}										
+		
 		double u, f_u;
 		
 		//Check to see if f(ax) has a higher value than f(bx)
@@ -86,7 +102,8 @@ abstract public class LineMin {
 		double cx = bx + move;
 		double f_c = f1dim(cx);
 		while(f_c ==  Double.POSITIVE_INFINITY){
-			move /= 2.0;
+			move *= GOLDC;
+			//move /= 2.0;
 			cx = bx + move;
 			f_c = f1dim(cx);
 			//System.out.println("f_c loop = " + f_c);
@@ -125,8 +142,14 @@ abstract public class LineMin {
 		output[0] = ax;
 		output[1] = bx;
 		output[2] = cx;
+		double brSize = cx-ax;
+		double feDiff1 = f_c-f_b;
+		double feDiff2 = f_a-f_b;
+		System.out.print(" ");
 		System.out.println("init bracket finished after " + iterations + " iterations");
 		System.out.println("f_a = " + f_a + " f_b = " + f_b + " f_c = " + f_c);
+		System.out.print("bracket size = " + brSize + " FE diff = " + feDiff1 + " and " + feDiff2);
+		System.out.println(" ");
 		return output;
 	}
 	
@@ -156,8 +179,9 @@ abstract public class LineMin {
 		double f_2 = f1dim(x2);
 		
 		int iteration = 0;
+		while(Math.abs(x3-x0) > tolerance  && Math.abs(f_2-f_1) > tolerance && x1 != x2 && x2 != x3){
 		//while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
-		while(Math.abs(f_2-f_1) > tolerance  && x1 != x2 && x2 != x3){
+		//while(Math.abs(f_2-f_1) > tolerance  && x1 != x2 && x2 != x3){
 			iteration ++;
 //			System.out.println(x1 + " " + x2 + " " + x3);
 //			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
@@ -213,11 +237,17 @@ abstract public class LineMin {
     	double newPoint [] = new double [N];
     	for(int i = 0; i < N; i++){
     		newPoint[i] = lineminPoint[i] + lambda*lineminDirection[i];
+//    		if(Math.abs(newPoint[i]) >= 1.0){
+//    			System.out.println("not allowed");
+//    		}
     	}
     	double ret = freeEnergyCalc(newPoint);
-    	if(ret != Double.POSITIVE_INFINITY)
-    	landscape.accum(lambda, ret);
-   		System.out.println("f1dim " + lambda + " " + ret);
+    	if(ret == Double.POSITIVE_INFINITY){
+    		System.out.println("inf at lambda = " + lambda);
+    		//landscape.accum(lambda, 0);
+    	}else
+    		landscape.accum(lambda, ret);
+   			//System.out.println("f1dim " + lambda + " " + ret);
     	return ret;
     }
 

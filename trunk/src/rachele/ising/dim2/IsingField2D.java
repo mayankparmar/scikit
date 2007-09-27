@@ -23,10 +23,10 @@ public class IsingField2D {
 	public int Lp, N;
 	public double dt, t;
 	public double lastMu;
-	public double[] phi, del_phiSq;
+	public double[] phi, phiVector;
 	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
 	public int aveCount;
-	double [] phi_bar, del_phi, Lambda, A;
+	double [] phi_bar, delPhi, Lambda, A;
 	public double horizontalSlice;
 	public double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
@@ -147,9 +147,9 @@ public class IsingField2D {
 
 		phi = new double[Lp*Lp];
 		phi_bar = new double[Lp*Lp];
-		del_phi = new double[Lp*Lp];
+		delPhi = new double[Lp*Lp];
 		Lambda = new double [Lp*Lp];
-		del_phiSq = new double[Lp*Lp];
+		phiVector = new double[Lp*Lp];
 		A = new double [Lp*Lp];
 		
 		fftScratch = new double[2*Lp*Lp];
@@ -348,8 +348,8 @@ public class IsingField2D {
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);
 				entropy = (sqr(phi[i]))/2.0;
 			}
-			del_phi[i] = - dt*Lambda[i]*dF_dPhi;// + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
-			del_phiSq[i] = del_phi[i]*del_phi[i];
+			delPhi[i] = - dt*Lambda[i]*dF_dPhi;// + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+			phiVector[i] = delPhi[i];
 			meanLambda += Lambda[i];
 			
 			double potential = -(phi[i]*phi_bar[i])/2.0;
@@ -361,13 +361,13 @@ public class IsingField2D {
 		}
 		
 		meanLambda /= Lp*Lp;
-		double mu = (mean(del_phi)-(DENSITY-mean(phi)))/meanLambda;
+		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
 		mu /= dt;
 		if (magConservation == false)
 			mu = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			freeEnergy +=  -mu*phi[i];
-			phi[i] += del_phi[i]-Lambda[i]*mu*dt;
+			phi[i] += delPhi[i]-Lambda[i]*mu*dt;
 			del_phiSquared += phi[i]*phi[i];
 		}
 		
@@ -461,7 +461,7 @@ public class IsingField2D {
 		int y = (int) (horizontalSlice * Lp);
 		double slice[] = new double[Lp];
 		for (int x = 0; x < Lp; x++) {
-			slice[x] = del_phiSq[Lp*y + x];
+			slice[x] = delPhi[Lp*y + x];
 		}
 		return new PointSet(0, dx, slice);
 	}	
@@ -470,7 +470,7 @@ public class IsingField2D {
 		int x = (int) (verticalSlice * Lp);
 		double slice[] = new double[Lp];
 		for (int y = 0; y < Lp; y++) {
-			slice[y] = del_phiSq[Lp*y + x];
+			slice[y] = delPhi[Lp*y + x];
 		}
 		return new PointSet(0, dx, slice);
 	}	
@@ -523,6 +523,8 @@ public class IsingField2D {
 		convolveWithRange(config, phi_bar, R);
 		freeEnergy = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
+			if(Math.abs(phi[i]) >= 1)
+				System.out.println("boundary at point " + i);
 			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
 			double potential = -(config[i]*phi_bar[i])/2.0;
 			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
@@ -537,7 +539,7 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H);//*(sqr(1 - phi[i]*phi[i]));
+			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H)*(pow(1 - phi[i]*phi[i], 4));
 		}
 		return steepestAscentDir;		
 	}

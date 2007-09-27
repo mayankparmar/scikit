@@ -8,6 +8,7 @@ import static java.lang.Math.*;
 import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frameTogether;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -52,6 +53,20 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
+
+		landscape.getComponent().setPreferredSize(new Dimension(150, 150));
+		vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+		sfPlot.getComponent().setPreferredSize(new Dimension(150, 150));
+		structurePeakV.getComponent().setPreferredSize(new Dimension(150, 150));
+		hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+		sfHPlot.getComponent().setPreferredSize(new Dimension(150, 150));
+		structurePeakH.getComponent().setPreferredSize(new Dimension(150, 150));
+		del_hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+		del_vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+		grid.getComponent().setPreferredSize(new Dimension(200, 200));
+		delPhiGrid.getComponent().setPreferredSize(new Dimension(200, 200));
+		sfGrid.getComponent().setPreferredSize(new Dimension(200, 200));
+		freeEnergyPlot.getComponent().setPreferredSize(new Dimension(200, 200));
 		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
 		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
@@ -63,11 +78,11 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.15);
+		params.addm("T", 0.18);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
-		params.addm("H", 0.0);
+		params.addm("H", 0.4);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
 		params.add("L/R", 4.0);
@@ -110,7 +125,8 @@ public class IsingField2DApp extends Simulation {
 		structurePeakV.setAutoScale(true);
 		structurePeakH.setAutoScale(true);
 		
-		//landscape.getComponent().setPreferredSize(new Dimension(100, 100));
+		
+
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		String dyn = params.sget("Dynamics?");
@@ -125,7 +141,7 @@ public class IsingField2DApp extends Simulation {
 			del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
 			landscape.registerLines("Free Energy Landscape", min.getLandscape(), Color.BLACK);
 		} else {
-			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
+			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.phiVector);
 			del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.YELLOW);
 		}
@@ -205,19 +221,19 @@ public class IsingField2DApp extends Simulation {
 		
 		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
 			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalcA(point);
+				return ising.isingFreeEnergyCalc(point);
 			}
 			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalcA(point);
+				return ising.steepestAscentCalc(point);
 			}
 		};
 		
 		min = new ConjugateGradientMin(ising.phi,ising.verticalSlice, ising.horizontalSlice, ising.dx) {
 			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalcA(point);
+				return ising.isingFreeEnergyCalc(point);
 			}
 			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalcA(point);
+				return ising.steepestAscentCalc(point);
 			}
 		};
 		
@@ -239,12 +255,12 @@ public class IsingField2DApp extends Simulation {
 					cgInitialized = true;					
 				}
 				min.step();
-				ising.getPhiFrA();
+				//ising.getPhiFrA();
 				ising.t += 1;
 				ising.accFreeEnergy.accum(ising.t, min.freeEnergy);				
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
 				opt.step();
-				ising.getPhiFrA();
+				//ising.getPhiFrA();
 				ising.t += 1;
 				ising.accFreeEnergy.accum(ising.t, opt.freeEnergy);
 				cgInitialized = false;
