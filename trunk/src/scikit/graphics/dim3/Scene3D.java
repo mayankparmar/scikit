@@ -83,7 +83,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		List<Drawable<Gfx3D>> ds = new ArrayList<Drawable<Gfx3D>>();
 		ds.addAll(super.getAllDrawables());
 		if (_drawBounds)
-			ds.add(Geom3D.cuboid(viewBounds(), Color.RED));
+			ds.add(Geom3D.cuboid(viewBounds(), Color.GREEN));
 		return ds;
 	}
 	

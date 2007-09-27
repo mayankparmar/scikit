@@ -7,17 +7,20 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.media.opengl.GL;
+
 import scikit.graphics.ColorChooser;
+import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
-import scikit.util.Point;
 
 public class Grid3D extends Scene3D {
-	double[] _data;
-	int _w, _h, _d; // width, height, depth
-	ColorChooser _colors;
+	private ColorChooser _colors = new ColorGradient();
+	private int _w, _h, _d; // width, height, depth
+	private double[] _data;
     private boolean _autoScale = true;
     private double _lo = 0, _hi = 1;
+    private double _cutoff = 0.5;
     
     
 	public Grid3D(String title) {
@@ -70,10 +73,7 @@ public class Grid3D extends Scene3D {
 	}
 	
 	private void setSize(int w, int h, int d, int expectedSize) {
-		if (w*h*d == 0)
-			throw new IllegalArgumentException(
-					"Illegal specified shape (" + w + "*" + h + "*" + d + ")");
-		if (w*h*d > expectedSize)
+		if (w*h*d != expectedSize)
 			throw new IllegalArgumentException("Array length " + expectedSize
 					+ " does not fit specified shape (" + w + "*" + h + "*" + d + ")");
 		if (w != _w || h != _h || d != _d) {
@@ -83,23 +83,82 @@ public class Grid3D extends Scene3D {
     		_data = new double[w*h*d];
     	}
 	}
-
+	
+	private double getSample(int x, int y, int z) {
+		if (x < 0 || x >= _w || y < 0 || y >= _h || z < 0 || z >= _d)
+			return Double.NEGATIVE_INFINITY;
+		double v = _data[_w*_h*z+_w*y+x];
+		return (v - _lo) / (_hi - _lo);
+	}
+	
+	private Color getColor(int x, int y, int z) {
+		return _colors.getColor(_data[_w*_h*z+_w*y+x], _lo, _hi);
+	}
+	
+	private static final double[][] _normals = new double[][] {
+		{-1, 0, 0}, {+1, 0, 0},
+		{0, -1, 0}, {0, +1, 0},
+		{0, 0, -1}, {0, 0, +1}
+	};
+	private static final double[][] _dx = new double[][]{
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{+1, -1, -1, +1},
+			{+1, -1, -1, +1},
+			{+1, +1, -1, -1},
+			{-1, -1, +1, +1},
+	};
+	private static final double[][] _dy = new double[][]{
+			{+1, +1, -1, -1},
+			{-1, -1, +1, +1},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0},
+			{+1, -1, -1, +1},
+			{+1, -1, -1, +1}
+	};
+	private static final double[][] _dz = new double[][]{
+			{+1, -1, -1, +1},
+			{+1, -1, -1, +1},
+			{+1, +1, -1, -1},
+			{-1, -1, +1, +1},
+			{0, 0, 0, 0},
+			{0, 0, 0, 0}
+	};
+	private void drawPanel(Gfx3D g, double x, double y, double z, int dir) {
+		GL gl = g.getGL();
+		gl.glBegin(GL.GL_QUADS);
+		gl.glNormal3dv(_normals[dir], 0);
+		for (int i = 0; i < 4; i++) {
+			gl.glVertex3d(
+					(x+0.5*_dx[dir][i]+0.5)/_w,
+					(y+0.5*_dy[dir][i]+0.5)/_h,
+					(z+0.5*_dz[dir][i]+0.5)/_d);
+		}
+		gl.glEnd();
+	}
+	
 	private Drawable<Gfx3D> _gridDrawable = new Drawable<Gfx3D>() {
 		public void draw(Gfx3D g) {
 	        if (_data != null) {
  	        	for (int z = 0; z < _d; z++) { 
  	        		for (int y = 0; y < _h; y++) {
  	        			for (int x = 0; x < _w; x++) {
- 	        				Color color = _colors.getColor(_data[_w*_h*z+_w*y+x], _lo, _hi);
- 	        				if (color != null) {
- 	        					g.setColor(color);
- 	        					double cx = (x+0.5)/_w;
- 	        					double cy = (y+0.5)/_h;
- 	        					double cz = (z+0.5)/_d;
- 	        					double radius = 1./_w;
- 	        					g.drawSphere(new Point(cx, cy, cz), radius);
+ 	        				if (getSample(x, y, z) >= _cutoff) {
+ 	        					g.setColor(getColor(x, y, z));
+ 	        					if (getSample(x-1, y, z) < _cutoff)
+ 	        						drawPanel(g, x-0.5, y, z, 0);
+ 	        					if (getSample(x+1, y, z) < _cutoff)
+ 	        						drawPanel(g, x+0.5, y, z, 1);
+ 	        					if (getSample(x, y-1, z) < _cutoff)
+ 	        						drawPanel(g, x, y-0.5, z, 2);
+ 	        					if (getSample(x, y+1, z) < _cutoff)
+ 	        						drawPanel(g, x, y+0.5, z, 3);
+ 	        					if (getSample(x, y, z-1) < _cutoff)
+ 	        						drawPanel(g, x, y, z-0.5, 4);
+ 	        					if (getSample(x, y, z+1) < _cutoff)
+ 	        						drawPanel(g, x, y, z+0.5, 5);
  	        				}
- 	        			}
+  	        			}
  	        		}
  	        	}
 	        }
