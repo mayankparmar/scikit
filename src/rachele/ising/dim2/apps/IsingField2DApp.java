@@ -118,12 +118,12 @@ public class IsingField2DApp extends Simulation {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
 			del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
-			//landscape.registerLines("Free Energy Landscape", opt.getLandscape(), Color.BLACK);
+			landscape.registerLines("Free Energy Landscape", opt.getLandscape(), Color.BLACK);
 		} else if (dyn.equals("Conjugate Gradient Min")) {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
 			del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
-			//landscape.registerLines("Free Energy Landscape", min.getLandscape(), Color.BLACK);
+			landscape.registerLines("Free Energy Landscape", min.getLandscape(), Color.BLACK);
 		} else {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.del_phiSq);
 			del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
@@ -205,19 +205,19 @@ public class IsingField2DApp extends Simulation {
 		
 		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
 			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalc(point);
+				return ising.isingFreeEnergyCalcA(point);
 			}
 			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalc(point);
+				return ising.steepestAscentCalcA(point);
 			}
 		};
 		
 		min = new ConjugateGradientMin(ising.phi,ising.verticalSlice, ising.horizontalSlice, ising.dx) {
 			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalc(point);
+				return ising.isingFreeEnergyCalcA(point);
 			}
 			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalc(point);
+				return ising.steepestAscentCalcA(point);
 			}
 		};
 		
@@ -239,10 +239,12 @@ public class IsingField2DApp extends Simulation {
 					cgInitialized = true;					
 				}
 				min.step();
+				ising.getPhiFrA();
 				ising.t += 1;
 				ising.accFreeEnergy.accum(ising.t, min.freeEnergy);				
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
 				opt.step();
+				ising.getPhiFrA();
 				ising.t += 1;
 				ising.accFreeEnergy.accum(ising.t, opt.freeEnergy);
 				cgInitialized = false;

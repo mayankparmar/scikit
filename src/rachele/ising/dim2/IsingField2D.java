@@ -26,7 +26,7 @@ public class IsingField2D {
 	public double[] phi, del_phiSq;
 	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
 	public int aveCount;
-	double [] phi_bar, del_phi, Lambda;
+	double [] phi_bar, del_phi, Lambda, A;
 	public double horizontalSlice;
 	public double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
@@ -150,6 +150,7 @@ public class IsingField2D {
 		del_phi = new double[Lp*Lp];
 		Lambda = new double [Lp*Lp];
 		del_phiSq = new double[Lp*Lp];
+		A = new double [Lp*Lp];
 		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
@@ -185,6 +186,10 @@ public class IsingField2D {
 			
 		}else
 			System.out.println("no init conditions");
+		for (int i = 0; i < Lp*Lp; i ++){
+			A[i] = Math.log(phi[i]);
+		}
+		
 	}
 	
 	public void readInitialConfiguration(){
@@ -536,4 +541,36 @@ public class IsingField2D {
 		}
 		return steepestAscentDir;		
 	}
+	
+	public double isingFreeEnergyCalcA (double [] configA){
+		convolveWithRange(configA, phi_bar, R);
+		freeEnergy = 0;
+		for (int i = 0; i < Lp*Lp; i++) {
+			double entropy = -((1.0 + Math.tanh(configA[i]))*log(1.0 + Math.tanh(configA[i])) +(1.0 - Math.tanh(configA[i]))*log(1.0 - Math.tanh(configA[i])))/2.0;
+			double potential = -(Math.tanh(configA[i])*phi_bar[i])/2.0;
+			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
+			freeEnergy += potential - T*entropy - H*Math.tanh(configA[i]);
+		}
+		freeEnergy /= (Lp*Lp);
+		if (Double.isNaN(freeEnergy))
+			return Double.POSITIVE_INFINITY;
+		return freeEnergy;		
+	}
+
+	public double [] steepestAscentCalcA(double [] configA){
+		double steepestAscentDir [] = new double [N];
+		convolveWithRange(configA, phi_bar, R);
+		for (int i = 0; i < Lp*Lp; i++) {
+			steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
+		}
+		return steepestAscentDir;		
+	}
+
+	public double [] getPhiFrA(){
+		for (int i = 0; i < Lp*Lp; i++){
+			phi[i] = tanh(phi[i]);
+		}
+		return phi;
+	}
+	
 }
