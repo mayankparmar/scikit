@@ -110,7 +110,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		// from the left. operations on the scene object occur in reverse order from
 		// their specification.
 		// step (3): move object away from camera
-		gl.glTranslated(0, 0, -1.8*len);
+		gl.glTranslated(0, 0, -1.5*len);
 		// step (2): rotate object about zero
 		gl.glMultMatrixd(_rotation.getRotationMatrix(), 0);
 		// step (1): move object to its center
