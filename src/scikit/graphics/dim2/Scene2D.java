@@ -28,6 +28,10 @@ public class Scene2D extends Scene<Gfx2D> {
 		_canvas.addMouseMotionListener(_mouseListener);
 	}
 	
+	public void setAutoScale(boolean autoScale) {
+		_autoScale = autoScale;
+	}
+	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
 	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
 	// we could get an uncatchable NoClassDefFoundError.
@@ -60,10 +64,6 @@ public class Scene2D extends Scene<Gfx2D> {
 		ds.addAll(super.getAllDrawables());
 		ds.add(_selectionGraphics);
 		return ds;
-	}
-	
-	public void setAutoScale(boolean autoScale) {
-		_autoScale = autoScale;
 	}
 	
 	protected Point pixToCoord(Point pix) {
