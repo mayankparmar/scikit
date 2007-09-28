@@ -68,6 +68,7 @@ public class Plot extends Scene2D {
 			_logScaleX = logScaleX;
 			_logScaleY = logScaleY;
 			// clear current view bounds
+			_zoomed = false;
 			_curBounds = new Bounds();
 			// calculate new view bounds and redisplay
 			animate();
