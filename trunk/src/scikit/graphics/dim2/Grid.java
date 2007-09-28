@@ -44,7 +44,7 @@ public class Grid extends Scene2D {
 		super.clear();
 	}
 	
-	protected Component createComponent() {
+	protected Component createCanvas() {
 		return Gfx2DSwing.createComponent(this);
 	}
 	

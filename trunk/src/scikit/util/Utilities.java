@@ -108,14 +108,8 @@ public class Utilities {
 	}
 	
 	public static void frame(Frameable... fs) {
-		for (Frameable f : fs) {
-			JPanel item = new JPanel(new BorderLayout());
-			item.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(4, 4, 4, 4),
-					BorderFactory.createLineBorder(Color.GRAY)));
-			item.add(f.getComponent());
-			frame(item, f.getTitle());
-		}
+		for (Frameable f : fs)
+			frame(f.getComponent(), f.getTitle());
 	}
 	
 	public static JFrame frameTogether(String title, Frameable... fs) {
@@ -127,9 +121,7 @@ public class Utilities {
 		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		for (Frameable f : fs) {
 			JPanel item = new JPanel(new BorderLayout());
-			item.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createTitledBorder(f.getTitle()),
-					BorderFactory.createLineBorder(Color.GRAY)));
+			item.setBorder(BorderFactory.createTitledBorder(f.getTitle()));
 			item.add(f.getComponent());
 			panel.add(item);
 		}

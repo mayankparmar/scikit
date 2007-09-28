@@ -24,14 +24,14 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	public Scene2D(String title) {
 		super(title);
-		_component.addMouseListener(_mouseListener);
-		_component.addMouseMotionListener(_mouseListener);
+		_canvas.addMouseListener(_mouseListener);
+		_canvas.addMouseMotionListener(_mouseListener);
 	}
 	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
 	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
 	// we could get an uncatchable NoClassDefFoundError.
-	protected Component createComponent() {
+	protected Component createCanvas() {
 		try {
 			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
 			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
@@ -40,12 +40,12 @@ public class Scene2D extends Scene<Gfx2D> {
 			}
 		}
 		catch (Exception e) {}
-		return Gfx2DSwing.createComponent(this);				
+		return Gfx2DSwing.createComponent(this);
 	}
 	
 	protected void drawBackground(Gfx2D g) {
 		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, _component.getWidth(), _component.getHeight());
+		g.fillRect(0, 0, g.pixelBounds().getWidth(), g.pixelBounds().getHeight());
 	}
 	
 	protected void drawAll(Gfx2D g) {
@@ -68,15 +68,15 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	protected Point pixToCoord(Point pix) {
 		Bounds cb = _curBounds;
-		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _component.getWidth();
-		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _component.getHeight();
+		double x = cb.xmin + (cb.xmax - cb.xmin) * pix.x / _canvas.getWidth();
+		double y = cb.ymin + (cb.ymax - cb.ymin) * pix.y / _canvas.getHeight();
 		return new Point(x, y);
 	}
 	
 	protected Point coordToPix(Point coord) {
 		Bounds cb = _curBounds;
-		double x = ((coord.x - cb.xmin)/(cb.xmax - cb.xmin)) * _component.getWidth();
-		double y = ((coord.y - cb.ymin)/(cb.ymax - cb.ymin)) * _component.getHeight();
+		double x = ((coord.x - cb.xmin)/(cb.xmax - cb.xmin)) * _canvas.getWidth();
+		double y = ((coord.y - cb.ymin)/(cb.ymax - cb.ymin)) * _canvas.getHeight();
 		return new Point(x, y);		
 	}
 	
@@ -104,7 +104,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	}
 	
 	private Point eventToPix(MouseEvent event) {
-		return new Point(event.getX()-1, _component.getHeight()-event.getY()+1);
+		return new Point(event.getX()-1, _canvas.getHeight()-event.getY()+1);
 	}
 	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
@@ -119,7 +119,7 @@ public class Scene2D extends Scene<Gfx2D> {
 				_selectionStart = eventToPix(event);
 				_selectionEnd = eventToPix(event);
 				_selectionActive = true;
-				_component.repaint();
+				_canvas.repaint();
 			}
 		}
 		public void mouseReleased(MouseEvent event) {
@@ -131,12 +131,12 @@ public class Scene2D extends Scene<Gfx2D> {
 					_curBounds = bds;
 				}
 				_selectionActive = false;
-				_component.repaint();
+				_canvas.repaint();
 			}
 		}
 		public void mouseDragged(MouseEvent event) {
 			_selectionEnd = eventToPix(event);
-			_component.repaint();
+			_canvas.repaint();
 		}
 	};
 	

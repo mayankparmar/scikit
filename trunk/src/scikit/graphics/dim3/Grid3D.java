@@ -3,15 +3,22 @@ package scikit.graphics.dim3;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
+import scikit.jobs.Job;
 import scikit.util.Bounds;
 
 public class Grid3D extends Scene3D {
@@ -53,6 +60,20 @@ public class Grid3D extends Scene3D {
 		findRange();
 		animate();
     }
+	
+	protected Component createComponent(Component canvas) {
+		final JSlider slider = new JSlider(0, 1000, 500);
+		slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				_cutoff = slider.getValue()/1000.;
+				Job.current().wake();
+			}
+		});
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(super.createComponent(canvas), BorderLayout.CENTER);
+		panel.add(slider, BorderLayout.SOUTH);
+		return panel;
+	}
 	
 	protected List<Drawable<Gfx3D>> getAllDrawables() {
 		List<Drawable<Gfx3D>> ds = new ArrayList<Drawable<Gfx3D>>();
