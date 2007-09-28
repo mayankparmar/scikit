@@ -50,6 +50,7 @@ public class IsingField2D {
 	static double ZEPS = 0.0000000001;  //small number that protects against
 	//trying to achieve fractional accuracy for a minimum that happens to be
 	// exactly zero
+	static double sigma = .2;
 
 	public double [] lineminDirection;
 	public double [] xi;
@@ -324,7 +325,7 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
-			if(theory == "Exact"){
+			if(theory == "Exact" || theory == "Avoid Boundaries"){
 				//dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0 - H;
 				dF_dPhi = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
 				Lambda[i] = 1;
@@ -367,7 +368,18 @@ public class IsingField2D {
 			mu = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			freeEnergy +=  -mu*phi[i];
-			phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+			if (theory == "Avoid Boundaries"){
+				double tempPhi = phi[i] + delPhi[i]-Lambda[i]*mu*dt;
+				if(Math.abs(tempPhi) > .99){
+					//System.out.println("high");
+					double halfMove = phi[i] + (Math.signum(phi[i]) - phi[i])/2.0;
+					phi[i] = Math.signum(phi[i])*Math.min(Math.abs(tempPhi), Math.abs(halfMove));
+				}else{
+					phi[i] = tempPhi;
+				}
+			}else{
+				phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+			}
 			del_phiSquared += phi[i]*phi[i];
 		}
 		
@@ -527,7 +539,6 @@ public class IsingField2D {
 				System.out.println("boundary at point " + i);
 			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
 			double potential = -(config[i]*phi_bar[i])/2.0;
-			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
 			freeEnergy += potential - T*entropy - H*config[i];
 		}
 		freeEnergy /= (Lp*Lp);
@@ -539,40 +550,47 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H)*(pow(1 - phi[i]*phi[i], 4));
+			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H);//*(pow(1 - phi[i]*phi[i], 4));
 		}
 		return steepestAscentDir;		
 	}
 	
-	public double isingFreeEnergyCalcA (double [] configA){
-		convolveWithRange(configA, phi_bar, R);
+	public double isingFreeEnergyCalcA (double [] config){
+		convolveWithRange(config, phi_bar, R);
 		freeEnergy = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
-			double entropy = -((1.0 + Math.tanh(configA[i]))*log(1.0 + Math.tanh(configA[i])) +(1.0 - Math.tanh(configA[i]))*log(1.0 - Math.tanh(configA[i])))/2.0;
-			double potential = -(Math.tanh(configA[i])*phi_bar[i])/2.0;
-			//System.out.println( i + " " + config[i] + " " + entropy + " " + potential);
-			freeEnergy += potential - T*entropy - H*Math.tanh(configA[i]);
+			if(Math.abs(phi[i]) >= 1)
+				System.out.println("boundary at point " + i);
+			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
+			double potential = -(config[i]*phi_bar[i])/2.0;
+			double boundaryTerm = exp(-sqr(1-config[i])/(2.0*sigma*sigma))/sqr(1-config[i]) + exp(-sqr(1+config[i])/(2.0*sigma*sigma))/sqr(1+config[i]);
+			//System.out.println("Boundary term = " + boundaryTerm);
+			freeEnergy += potential - T*entropy - H*config[i] + boundaryTerm;
 		}
 		freeEnergy /= (Lp*Lp);
 		if (Double.isNaN(freeEnergy))
 			return Double.POSITIVE_INFINITY;
-		return freeEnergy;		
+		return freeEnergy;
 	}
 
-	public double [] steepestAscentCalcA(double [] configA){
+	public double [] steepestAscentCalcA(double [] config){
 		double steepestAscentDir [] = new double [N];
-		convolveWithRange(configA, phi_bar, R);
+		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
+			double boundaryTerm =  exp(-sqr(1-config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1-config[i])))/(1-config[i]);
+			boundaryTerm -=        exp(-sqr(1+config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1+config[i])))/(1+config[i]);
+			//System.out.println("Boundary term = " + boundaryTerm);
+			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H + boundaryTerm);
+			//steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H + boundaryTerm);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		
 	}
 
-	public double [] getPhiFrA(){
-		for (int i = 0; i < Lp*Lp; i++){
-			phi[i] = tanh(phi[i]);
-		}
-		return phi;
-	}
+//	public double [] getPhiFrA(){
+//		for (int i = 0; i < Lp*Lp; i++){
+//			phi[i] = tanh(phi[i]);
+//		}
+//		return phi;
+//	}
 	
 }

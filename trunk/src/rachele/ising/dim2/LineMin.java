@@ -35,35 +35,12 @@ abstract public class LineMin {
     	minValue = golden(initBracket);
     }
 	
-    private double [] initialBracket(double ax, double del){
+    private double [] initialBracket(double ax, double bx){
 		double [] output = new double [3];
-		//can't accept infinity as a bracketing parameter.
-		
-		
-		double bx = ax + del;
+
 		double f_b = f1dim(bx);
 		double f_a = f1dim(ax);
-		//		if(f_b == Double.POSITIVE_INFINITY){
-//			bx *= -1.0;
-//			f_b = f1dim(bx);
-//			if(f_b == Double.POSITIVE_INFINITY)
-//				System.out.println("first b inf both ways");
-//		}
-//		while(f_b == Double.POSITIVE_INFINITY){
-//			bx = (bx - ax)*GOLDC +ax;
-//			//bx /= 2.0;
-//			f_b = f1dim(bx);
-//			//System.out.println("inf looping");
-//		}
-		if(Math.abs(bx-ax) < 1e-15){
-			System.out.println("bracket too small");
-		}										
 
-		while(Math.abs(f_b-f_a) < 1e-15){
-			System.out.println("fe difference too small");
-			bx *= GOLD;
-			f_b = f1dim(bx);
-		}										
 		
 		double u, f_u;
 		
@@ -101,36 +78,32 @@ abstract public class LineMin {
 		//double cx =	bx + GOLD*(bx-ax);
 		double cx = bx + move;
 		double f_c = f1dim(cx);
-		while(f_c ==  Double.POSITIVE_INFINITY){
-			move *= GOLDC;
-			//move /= 2.0;
-			cx = bx + move;
-			f_c = f1dim(cx);
-			//System.out.println("f_c loop = " + f_c);
-		}
+//		while(f_c ==  Double.POSITIVE_INFINITY){
+//			move *= GOLDC;
+//			//move /= 2.0;
+//			cx = bx + move;
+//			f_c = f1dim(cx);
+//			//System.out.println("f_c loop = " + f_c);
+//		}
 		//System.out.println("f_c = " + f_c);
 		//repeat the following until we bracket
 		int iterations = 0;
 		while(f_b > f_c){
+			iterations ++;
 			u = 0.0;
 			f_u = 0.0;
-			//System.out.println("top: cx = "+ cx + " f_c = "+ f_c + " u = " + u + " f_u = " + f_u + " f_c= "+ tester + " f_b = "+ f_b);
-			iterations ++;
 			move =  GOLD*(cx-bx);
-			//u = cx + GOLD*(cx-bx);
 			u = cx + move;
 			f_u = f1dim(u);
-			//System.out.println("top: cx = "+ cx + " f_c = "+ f_c + " u = " + u + " f_u = " + f_u + " f_b = "+ f_b);
-			if(f_u ==  Double.POSITIVE_INFINITY){
-				int uIterations = 0;
-				while(f_u ==  Double.POSITIVE_INFINITY){
-					uIterations += 1;
-					move /= 2.0;
-					//System.out.println(f_u);
-					u = cx + move;
-					f_u = f1dim(u);
-				}
-			}
+//			if(f_u ==  Double.POSITIVE_INFINITY){
+//				int uIterations = 0;
+//				while(f_u ==  Double.POSITIVE_INFINITY){
+//					uIterations += 1;
+//					move /= 2.0;
+//					u = cx + move;
+//					f_u = f1dim(u);
+//				}
+//			}
 			ax = bx;
 			f_a = f_b;
 			bx = cx;
