@@ -29,8 +29,8 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	public Scene3D(String title) {
 		super(title);
-		_component.addMouseListener(_mouseListener);
-		_component.addMouseMotionListener(_mouseListener);
+		_canvas.addMouseListener(_mouseListener);
+		_canvas.addMouseMotionListener(_mouseListener);
 	}
 	
 	public void clear() {
@@ -38,7 +38,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		_rotation = new Quaternion();
 	}
 	
-	protected Component createComponent() {
+	protected Component createCanvas() {
 		return GLHelper.createComponent(new GLEventListener() {
 			public void display(GLAutoDrawable glDrawable) {
 				drawAll(new Gfx3D(glDrawable.getGL()));
@@ -87,7 +87,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		return ds;
 	}
 	
-	// TODO move to Gfx3D.projectPerspective3D
+	// TODO move to Gfx3D.projectPerspective3D. remove explicit reference to _canvas
 	private void setProjection(Gfx3D gd) {
 		// get the corner to corner distance of the view bounds cuboid
 		Bounds cb = viewBounds();
@@ -98,7 +98,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		gl.glMatrixMode(GL.GL_PROJECTION);
 		gl.glLoadIdentity();
 		double fovY = 35;
-		double aspect = (double)_component.getWidth() / _component.getHeight();
+		double aspect = (double)_canvas.getWidth() / _canvas.getHeight();
 		double zNear = 0.1*len;
 		double zFar = 10*len;
 		(new GLU()).gluPerspective(fovY, aspect, zNear, zFar);
@@ -143,7 +143,7 @@ public class Scene3D extends Scene<Gfx3D> {
 			q.mul(_rotation);
 			q.normalize();
 			_rotation = q;
-			_component.repaint();
+			_canvas.repaint();
 		}
 	};
 }

@@ -27,6 +27,14 @@ public class Job {
 	}
 	
 	/**
+	 * Returns the Job object which is currently running.
+	 * @return the currently running job
+	 */
+	public static Job current() {
+		return current;
+	}
+
+	/**
 	 * Performs one step of the simulation. The GUI thread will wait while
 	 * the simulation thread runs. The step is completed when the simulation thread calls
 	 * the static method Job.animate().
@@ -162,10 +170,6 @@ public class Job {
 			coop.sleep(0);
 			lastYield = System.currentTimeMillis();
 		}
-	}
-
-	private static Job current() {
-		return current;
 	}
 	
 	private String detailedErrorMessage(Exception e) {

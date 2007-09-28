@@ -2,6 +2,8 @@ package scikit.graphics;
 
 import static scikit.util.Utilities.OPTIMAL_FRAME_SIZE;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -9,7 +11,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import scikit.util.Bounds;
@@ -17,7 +21,8 @@ import scikit.util.Frameable;
 
 
 abstract public class Scene<T> implements Frameable {
-	protected Component _component;
+	protected Component _component; // contains scene and possible other GUI objects
+	protected Component _canvas;    // the canvas on which scene is drawn
 	protected Bounds _curBounds = new Bounds();
 	protected List<Drawable<T>> _drawables = new ArrayList<Drawable<T>>();
 	protected JPopupMenu _popup = new JPopupMenu();
@@ -34,11 +39,12 @@ abstract public class Scene<T> implements Frameable {
 	private String _title;
 	
 	public Scene(String title) {
-		_component = createComponent();
-		_component.addMouseListener(new MouseAdapter() {
+		_canvas = createCanvas();
+		_canvas.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) { maybeShowPopup(e); }
 			public void mouseReleased(MouseEvent e) { maybeShowPopup(e); }
 		});
+		_component = createComponent(_canvas);
 		_component.setPreferredSize(new Dimension(OPTIMAL_FRAME_SIZE, OPTIMAL_FRAME_SIZE));
 		_title = title;
 	}
@@ -47,6 +53,9 @@ abstract public class Scene<T> implements Frameable {
 		return _title;
 	}
 
+	/**
+	 * Gets the GUI component object for this scene 
+	 */
 	public Component getComponent() {
 		return _component;
 	}
@@ -71,13 +80,13 @@ abstract public class Scene<T> implements Frameable {
 		_drawables.addAll(drawables);
 		animate();
 	}
-
+	
 	/** Animates the scene by updating the view bounds and repainting the canvas component. */
 	public void animate() {
 		if (!_zoomed) {
 			_curBounds = calculateVisibleBounds(_autoScale ? new Bounds() : _curBounds);
 		}
-		_component.repaint();
+		_canvas.repaint();
 	}
 	
 	/** Completely clears the scene to it's initial state by removing all drawables and
@@ -86,7 +95,7 @@ abstract public class Scene<T> implements Frameable {
 		_drawables.clear();
 		_curBounds = new Bounds();
 		_zoomed = false;
-		_component.repaint();
+		_canvas.repaint();
 	}
 	
 	/**
@@ -97,17 +106,45 @@ abstract public class Scene<T> implements Frameable {
 		return _curBounds.clone();
 	}
 	
+	/**
+	 * Draws all objects in the scene
+	 * @param g the graphics engine
+	 */
 	abstract protected void drawAll(T g);
 	
-	abstract protected Component createComponent(); 
+	/**
+	 * Creates the canvas GUI component on which the scene will be drawn.  This object
+	 * may display a pop-up menu when requested.
+	 * @return the canvas GUI component
+	 */
+	abstract protected Component createCanvas();
 	
+	/**
+	 * Creates a wrapper around the canvas component which may contain additional GUI
+	 * content.
+	 * @param canvas
+	 * @return a component which wraps the canvas object
+	 */
+	protected Component createComponent(Component canvas) {
+		JPanel component = new JPanel(new BorderLayout());
+		component.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createEmptyBorder(4, 4, 4, 4),
+				BorderFactory.createLineBorder(Color.GRAY)));
+		component.add(canvas);
+		return component;
+	}
+	
+	/**
+	 * Gets a list of all drawable objects contained in the scene.
+	 * @return the list of all drawable objects
+	 */
 	protected List<Drawable<T>> getAllDrawables() {
 		return _suppressDrawables ? new ArrayList<Drawable<T>>() : _drawables;
 	}
 	
 	/**
 	 * Calculates the bounds for all data contained in the scene.
-	 * @return
+	 * @return the total data bounds
 	 */
 	protected Bounds calculateDataBounds() {
 		Bounds bounds = new Bounds();
@@ -116,6 +153,10 @@ abstract public class Scene<T> implements Frameable {
 		return bounds;
 	}
 	
+	/**
+	 * Gets all menu items to be included when the user opens a popup menu from the GUI canvas
+	 * @return the list of popup menu items
+	 */
 	protected List<JMenuItem> getAllPopupMenuItems() {
 		return new ArrayList<JMenuItem>();
 	}
