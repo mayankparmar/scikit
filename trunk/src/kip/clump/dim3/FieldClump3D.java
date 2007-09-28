@@ -95,41 +95,22 @@ public class FieldClump3D extends AbstractClump3D {
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
 			double z = dx*((i/(Lp*Lp)) - Lp/2);
-			double field = 0, mag = 0;
+			double field = 0;
 			double k = KR_SP/R;
-			if (type.equals("FCC")) {
-				mag = 0.1;
-				field = 0;
-				k *= 0.8;
-				// FCC symmetry (reciprocal lattice is BCC)
-				// waves to centers of cubes
-				field += cos(k * ( x + y + z) / sqrt(3.));
-				field += cos(k * ( x - y + z) / sqrt(3.));
-				field += cos(k * (-x + y + z) / sqrt(3.));
-				field += cos(k * (-x - y + z) / sqrt(3.));
-				// waves to adjacent cube corners
-				field += cos(k * x / sqrt(3.));
-				field += cos(k * y / sqrt(3.));
-				field += cos(k * z / sqrt(3.));
-			}
-			else if (type.equals("BCC")) {
-				mag = 0.1;
+			if (type.equals("BCC")) {
 				field = 0;
 				// BCC (reciprocal lattice is FCC)
-				field += cos(k * ( x + z) / sqrt(3.));
-				field += cos(k * (-x + z) / sqrt(3.));
-				field += cos(k * ( y + z) / sqrt(3.));
-				field += cos(k * (-y + z) / sqrt(3.));
+				field += 0.1*cos(k * ( x + z) / sqrt(3.));
+				field += 0.1*cos(k * (-x + z) / sqrt(3.));
+				field += 0.1*cos(k * ( y + z) / sqrt(3.));
+				field += 0.1*cos(k * (-y + z) / sqrt(3.));
 			}
 			else if (type.equals("Noise")) {
 				// random
-				mag = 1;
 				field = random.nextGaussian();
 				break;
 			}
-//			double r = sqrt(x*x+y*y+z*z);
-//			double mag = 0.5 / (1+sqr(r/R));
-			phi[i] = DENSITY*(1+mag*field);
+			phi[i] = DENSITY*(1+field);
 		}
 	}
 	
