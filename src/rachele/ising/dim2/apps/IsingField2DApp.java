@@ -4,26 +4,30 @@ package rachele.ising.dim2.apps;
 
 //import static kip.util.MathPlus.j1;
 
-import static java.lang.Math.*;
+import static java.lang.Math.floor;
 import static scikit.util.Utilities.asList;
 import static scikit.util.Utilities.frameTogether;
+
 import java.awt.Color;
-import java.awt.Dimension;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import rachele.ising.dim2.*;
+
+import rachele.ising.dim2.ConjugateGradientMin;
+import rachele.ising.dim2.IsingField2D;
+import rachele.ising.dim2.SteepestDescentMin;
+import rachele.ising.dim2.StructureFactor;
+import scikit.graphics.dim2.Geom2D;
+import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
-import scikit.graphics.dim2.Geom2D;
-import scikit.graphics.dim2.Plot;
-import scikit.graphics.dim2.Grid;
 
 public class IsingField2DApp extends Simulation {
     Grid grid = new Grid("Phi(x)");
@@ -53,20 +57,20 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-
-		landscape.getComponent().setPreferredSize(new Dimension(150, 150));
-		vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
-		sfPlot.getComponent().setPreferredSize(new Dimension(150, 150));
-		structurePeakV.getComponent().setPreferredSize(new Dimension(150, 150));
-		hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
-		sfHPlot.getComponent().setPreferredSize(new Dimension(150, 150));
-		structurePeakH.getComponent().setPreferredSize(new Dimension(150, 150));
-		del_hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
-		del_vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
-		grid.getComponent().setPreferredSize(new Dimension(200, 200));
-		delPhiGrid.getComponent().setPreferredSize(new Dimension(200, 200));
-		sfGrid.getComponent().setPreferredSize(new Dimension(200, 200));
-		freeEnergyPlot.getComponent().setPreferredSize(new Dimension(200, 200));
+// this code should no longer be needed -- kip
+//		landscape.getComponent().setPreferredSize(new Dimension(150, 150));
+//		vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+//		sfPlot.getComponent().setPreferredSize(new Dimension(150, 150));
+//		structurePeakV.getComponent().setPreferredSize(new Dimension(150, 150));
+//		hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+//		sfHPlot.getComponent().setPreferredSize(new Dimension(150, 150));
+//		structurePeakH.getComponent().setPreferredSize(new Dimension(150, 150));
+//		del_hSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+//		del_vSlice.getComponent().setPreferredSize(new Dimension(150, 150));
+//		grid.getComponent().setPreferredSize(new Dimension(200, 200));
+//		delPhiGrid.getComponent().setPreferredSize(new Dimension(200, 200));
+//		sfGrid.getComponent().setPreferredSize(new Dimension(200, 200));
+//		freeEnergyPlot.getComponent().setPreferredSize(new Dimension(200, 200));
 		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
 		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));

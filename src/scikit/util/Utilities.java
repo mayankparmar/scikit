@@ -130,7 +130,7 @@ public class Utilities {
 		double w = d.getWidth(), h = d.getHeight();
 		double opt = OPTIMAL_FRAME_SIZE;
 		if (max(w, h) > opt) {
-			double scale = (0.5*(max(w,h) - opt) + opt) / max(w,h);
+			double scale = (0.4*(max(w,h) - opt) + opt) / max(w,h);
 			panel.setPreferredSize(new Dimension((int)(w*scale), (int)(h*scale)));
 		}
 		return frame(panel, title);
