@@ -18,7 +18,6 @@ import javax.swing.event.ChangeListener;
 import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
-import scikit.jobs.Job;
 import scikit.util.Bounds;
 
 public class Grid3D extends Scene3D {
@@ -66,7 +65,7 @@ public class Grid3D extends Scene3D {
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				_cutoff = slider.getValue()/1000.;
-				Job.current().wake();
+				_canvas.repaint();
 			}
 		});
 		JPanel panel = new JPanel(new BorderLayout());
