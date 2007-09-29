@@ -122,7 +122,8 @@ public class Scene3D extends Scene<Gfx3D> {
 		java.awt.Point _lastDrag;
 		
 		public void mousePressed(MouseEvent event) {
-			_lastDrag = event.getPoint();
+			if (!event.isPopupTrigger())
+				_lastDrag = event.getPoint();
 		}
 		
 		public void mouseReleased(MouseEvent event) {
@@ -131,7 +132,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		
 		public void mouseDragged(MouseEvent event) {
 			if (_lastDrag == null)
-				return; // this case did occur once, but i'm not sure how
+				return;
 			
 			double dx = event.getX() - _lastDrag.x;
 			double dy = event.getY() - _lastDrag.y;
