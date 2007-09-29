@@ -1,5 +1,8 @@
 package kip.util;
 
+import static kip.util.MathPlus.sqr;
+
+
 public class DoubleArray {
 	public static double min(double a[]) {
 		double min = a[0];
@@ -27,5 +30,10 @@ public class DoubleArray {
 		for (double v : a)
 			sum += v*v;
 		return sum/a.length;
+	}
+	
+	// untested
+	public static double variance(double a[]) {
+		return meanSquared(a) - sqr(mean(a));
 	}
 }
