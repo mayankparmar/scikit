@@ -11,7 +11,7 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DirectoryValue;
-import scikit.util.Dump;
+import scikit.util.FileUtil;
 import static scikit.util.Utilities.*;
 
 import kip.md.LJParticle2D;
@@ -105,8 +105,8 @@ public class LennardJonesApp extends Simulation {
 			}
 		}
 		else {
-			File dir = Dump.getEmptyDirectory(params.sget("Output directory"), "output");
-			Dump.dumpString(dir+File.separator+"parameters.txt", params.toString());
+			File dir = FileUtil.getEmptyDirectory(params.sget("Output directory"), "output");
+			FileUtil.dumpString(dir+File.separator+"parameters.txt", params.toString());
 			
 			dt = sim.getStepSize();
 			while (sim.time()+dt/2 < 50) {

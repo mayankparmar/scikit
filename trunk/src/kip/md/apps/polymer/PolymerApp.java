@@ -11,7 +11,7 @@ import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DirectoryValue;
 import scikit.params.DoubleValue;
-import scikit.util.Dump;
+import scikit.util.FileUtil;
 import static scikit.util.Utilities.*;
 
 import kip.md.LJParticle2D;
@@ -90,8 +90,8 @@ public class PolymerApp extends Simulation {
 			}
 		}
 		else {
-			File dir = Dump.getEmptyDirectory(params.sget("Output directory"), "output");
-			Dump.dumpString(dir+File.separator+"parameters.txt", params.toString());
+			File dir = FileUtil.getEmptyDirectory(params.sget("Output directory"), "output");
+			FileUtil.dumpString(dir+File.separator+"parameters.txt", params.toString());
 			while (true) {
 				sim.step();
 				maybeAnimate();

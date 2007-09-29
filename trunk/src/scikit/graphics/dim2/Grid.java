@@ -20,6 +20,7 @@ import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
+import scikit.util.FileUtil;
 
 
 public class Grid extends Scene2D {
@@ -43,36 +44,7 @@ public class Grid extends Scene2D {
 		_data = null;
 		super.clear();
 	}
-	
-	protected Component createCanvas() {
-		return Gfx2DSwing.createComponent(this);
-	}
-	
-	protected void drawBackground(Gfx2D g) {
-		// looks better without background
-	}
-	
-	protected List<Drawable<Gfx2D>> getAllDrawables() {
-		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
-		ds.add(_gridDrawable);
-		ds.addAll(super.getAllDrawables());
-		return ds;
-	}
-		
-	protected List<JMenuItem> getAllPopupMenuItems() {
-		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
-		if (_data != null) {
-			JMenuItem menuItem = new JMenuItem("Save grid data ...");
-			menuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					saveData("grid.txt");
-				}
-			});
-			ret.add(menuItem);
-		}
-		return ret;
-	}
-	
+
 	public void setColors(ColorChooser colors) {
 		_colors = colors;
 	}
@@ -100,6 +72,36 @@ public class Grid extends Scene2D {
 			_data[i] = data[i];
 		rasterizeImage();
 		animate();
+	}
+	
+	
+	protected Component createCanvas() {
+		return Gfx2DSwing.createComponent(this);
+	}
+	
+	protected void drawBackground(Gfx2D g) {
+		// looks better without background
+	}
+	
+	protected List<Drawable<Gfx2D>> getAllDrawables() {
+		List<Drawable<Gfx2D>> ds = new ArrayList<Drawable<Gfx2D>>();
+		ds.add(_gridDrawable);
+		ds.addAll(super.getAllDrawables());
+		return ds;
+	}
+	
+	protected List<JMenuItem> getAllPopupMenuItems() {
+		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
+		if (_data != null) {
+			JMenuItem menuItem = new JMenuItem("Save grid data ...");
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveData("grid.txt");
+				}
+			});
+			ret.add(menuItem);
+		}
+		return ret;
 	}
 	
 	private void setSize(int w, int h, int expectedSize) {
@@ -156,11 +158,14 @@ public class Grid extends Scene2D {
 		}
 	};
 	
-	private void saveData(String str) {
+	private void saveData(String fname) {
 		try {
-			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
-			if (pw != null)
-				scikit.util.Dump.writeOctaveGrid(pw, _data, _w, 1);
+			fname = FileUtil.saveDialog(_component, fname);
+			if (fname != null) {
+				PrintWriter pw = FileUtil.pwFromString(fname);
+				FileUtil.writeOctaveGrid(pw, _data, _w, 1);
+				pw.close();
+			}
 		} catch (IOException e) {}
 	}
 }

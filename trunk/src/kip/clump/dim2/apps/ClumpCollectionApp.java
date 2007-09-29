@@ -11,6 +11,7 @@ import scikit.dataset.Function;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.util.FileUtil;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
 
@@ -89,7 +90,7 @@ public class ClumpCollectionApp extends Simulation {
             String filename = params.sget("Output directory")+
                 "/R="+clump.R+",T="+format(clump.T)+"" +
                 ",ts="+eqTime+",tf="+stopTime+".txt";
-            scikit.util.Dump.dumpColumns(filename, sf.getAccumulator().copyData(), 2);
+            FileUtil.dumpColumns(filename, sf.getAccumulator().copyData(), 2);
             
             params.set("T", format(clump.T+dT));
         }

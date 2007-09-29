@@ -14,6 +14,7 @@ import javax.swing.JMenuItem;
 import scikit.dataset.DataSet;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
+import scikit.util.FileUtil;
 
 
 public class Plot extends Scene2D {
@@ -149,7 +150,7 @@ public class Plot extends Scene2D {
 			menuItem.setForeground(d._color);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					saveDataset(d._data, d._name);
+					saveDataset(d._data, d._name+".txt");
 				}
 			});
 			ret.add(menuItem);
@@ -166,15 +167,17 @@ public class Plot extends Scene2D {
 		// otherwise, add 'dataset' to the end of the list
 		else
 			_datas.add(dw);
-		
 		animate();
 	}
 	
-	private void saveDataset(DataSet data, String str) {
+	private void saveDataset(DataSet data, String fname) {
 		try {
-			PrintWriter pw = scikit.util.Dump.pwFromDialog(_component, str);
-			if (pw != null)
-				scikit.util.Dump.writeColumns(pw, data.copyData(), 2);
+			fname = FileUtil.saveDialog(_component, fname);
+			if (fname != null) {
+				PrintWriter pw = FileUtil.pwFromString(fname);
+				FileUtil.writeColumns(pw, data.copyData(), 2);
+				pw.close();
+			}
 		} catch (IOException e) {}
 	}
 }
