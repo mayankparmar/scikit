@@ -82,7 +82,7 @@ public class Grid3D extends Scene3D {
 		} catch (IOException e) {}
 	}
 	
-	public void readData(String fname) {
+	public void loadData(String fname) {
 		try {
 			fname = FileUtil.loadDialog(_component, fname);
 			if (fname != null) {
@@ -131,6 +131,14 @@ public class Grid3D extends Scene3D {
 			});
 			ret.add(menuItem);
 		}
+		JMenuItem menuItem = new JMenuItem("Load grid data ...");
+		menuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				loadData("");
+			}
+		});
+		ret.add(menuItem);
+		
 		return ret;
 	}
 	
