@@ -1,23 +1,14 @@
 package kip.md.apps.shaker;
 
-//import java.awt.Color;
-//import java.io.DataInput;
-//import java.io.File;
+import static scikit.util.FileUtil.readFloatLittleEndian;
+import static scikit.util.FileUtil.readIntLittleEndian;
+
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.Map;
-//import java.util.TreeMap;
 
 import kip.md.Particle;
 import kip.md.ParticleContext;
-//import kip.md.ParticleTag;
-//import kip.md.ParticleContext.Type;
-//import kip.md.apps.SimulationTrajectory.Snapshot;
-
-import static scikit.util.Utilities.*;
 
 public class ExperimentTrajectory implements AbstractTrajectory {
 	double t_i, t_f;

@@ -6,10 +6,16 @@ import static java.lang.Math.min;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -19,6 +25,7 @@ import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
+import scikit.util.FileUtil;
 
 public class Grid3D extends Scene3D {
 	private ColorChooser _colors = new ColorGradient();
@@ -60,6 +67,38 @@ public class Grid3D extends Scene3D {
 		animate();
     }
 	
+	public void saveData(String fname) {
+		try {
+			fname = FileUtil.saveDialog(_component, fname);
+			if (fname != null) {
+				DataOutputStream dos = FileUtil.dosFromString(fname);
+				dos.writeInt(_w);
+				dos.writeInt(_h);
+				dos.writeInt(_d);
+				for (double v : _data)
+					dos.writeDouble(v);
+				dos.close();
+			}
+		} catch (IOException e) {}
+	}
+	
+	public void readData(String fname) {
+		try {
+			fname = FileUtil.loadDialog(_component, fname);
+			if (fname != null) {
+				DataInputStream dis = FileUtil.disFromString(fname);
+				int w = dis.readInt();
+				int h = dis.readInt();
+				int d = dis.readInt();
+				double[] data = new double[w*h*d];
+				for (int i = 0; i < w*h*d; i++)
+					data[i] = dis.readDouble();
+				dis.close();
+				registerData(w, h, d, data);
+			}
+		} catch (IOException e) {}		
+	}
+
 	protected Component createComponent(Component canvas) {
 		final JSlider slider = new JSlider(0, 1000, 500);
 		slider.addChangeListener(new ChangeListener() {
@@ -79,6 +118,20 @@ public class Grid3D extends Scene3D {
 		ds.add(_gridDrawable);
 		ds.addAll(super.getAllDrawables());
 		return ds;
+	}
+	
+	protected List<JMenuItem> getAllPopupMenuItems() {
+		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
+		if (_data != null) {
+			JMenuItem menuItem = new JMenuItem("Save grid data ...");
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveData("grid.dat");
+				}
+			});
+			ret.add(menuItem);
+		}
+		return ret;
 	}
 	
 	private void findRange() {
