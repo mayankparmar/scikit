@@ -101,9 +101,8 @@ public class Saddle3DApp extends Simulation {
 		energy.clear();
 	}
 	
-	public void run() {		
+	public void run() {
 		clump = new FieldClump3D(params);
-		clump.useNoiselessDynamics(true);
 		clump.initializeFieldWithSeed(params.sget("Seed"));
         sf = clump.newStructureFactor(kRwidth);
 		energyAcc = new Accumulator(0.001);

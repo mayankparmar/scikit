@@ -44,7 +44,6 @@ public class SaddleApp extends Simulation {
 		if (flags.contains("Res down"))
 			clump.halveResolution();
 		flags.clear();
-		params.set("dx", clump.dx);
 		
 		periodic = params.sget("Periodic").equals("Yes");
 		clump.useFixedBoundaryConditions(!periodic);
@@ -56,6 +55,7 @@ public class SaddleApp extends Simulation {
 			grid.setScale(0, 2);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
+		params.set("dx", clump.dx);
 		params.set("R", clump.R);
 		params.set("Time", format(clump.time()));
 		params.set("F density", format(clump.freeEnergyDensity));
