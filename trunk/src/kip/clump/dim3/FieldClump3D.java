@@ -96,21 +96,34 @@ public class FieldClump3D extends AbstractClump3D {
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
 			double z = dx*((i/(Lp*Lp)) - Lp/2);
 			double field = 0;
-			double k = KR_SP/R;
+			double k = 1.3*KR_SP/R;
 			if (type.equals("BCC")) {
 				field = 0;
 				// BCC (reciprocal lattice is FCC)
-				field += 0.1*cos(k * ( x + z) / sqrt(3.));
-				field += 0.1*cos(k * (-x + z) / sqrt(3.));
-				field += 0.1*cos(k * ( y + z) / sqrt(3.));
-				field += 0.1*cos(k * (-y + z) / sqrt(3.));
+				field += cos(k * ( x + z) / sqrt(3.));
+				field += cos(k * (-x + z) / sqrt(3.));
+				field += cos(k * ( y + z) / sqrt(3.));
+				field += cos(k * (-y + z) / sqrt(3.));
+			}
+			else if (type.equals("Triangle")) {
+				double rad = 0.2*R;
+				double sigma = 0.05*R;
+				double x0 = rad, y0 = 0, z0 = 0;
+				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));				
+				x0 = rad*cos(2*Math.PI/3);
+				y0 = rad*Math.sin(2*Math.PI/3);
+				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));
+				x0 = rad*cos(4*Math.PI/3);
+				y0 = rad*Math.sin(4*Math.PI/3);
+				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));
 			}
 			else if (type.equals("Noise")) {
 				// random
 				field = random.nextGaussian();
-				break;
 			}
-			phi[i] = DENSITY*(1+field);
+			double r = sqrt(x*x+y*y+z*z);
+			double mag = 0.1 / (1+sqr(r/R));
+			phi[i] = DENSITY*(1+mag*field);
 		}
 	}
 	
@@ -133,16 +146,30 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	public void scaleField(double scale) {
 		// phi will not be scaled above PHI_UB or below PHI_LB
-		double PHI_UB = 5;
-		double PHI_LB = 0.01;
-		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
-		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
-		rescaleClipped = scale > min(s1,s2);
-		if (rescaleClipped)
-			scale = min(s1,s2);
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
+//		double PHI_UB = 1.5*DENSITY;
+//		double PHI_LB = 0.5*DENSITY;
+//		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
+//		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
+//		rescaleClipped = scale > min(s1,s2);
+//		if (rescaleClipped)
+//			scale = min(s1,s2);
+//		System.out.println(scale);
+		
+		double PHI_UB = 4;
+		double PHI_LB = 0.1;
+		for (int i = 0; i < Lp*Lp*Lp; i++)
 			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
+		rescaleClipped = DoubleArray.min(phi) < PHI_LB || DoubleArray.max(phi) > PHI_UB;
+		if (rescaleClipped) {
+			for (int i = 0; i < Lp*Lp*Lp; i++)
+				phi[i] = min(max(phi[i], PHI_LB), PHI_UB);
+//			double mean = DoubleArray.mean(phi);
+//			for (int i = 0; i < Lp*Lp*Lp; i++)
+//				phi[i] = DENSITY + (phi[i] - mean);
 		}
+//		if (DoubleArray.min(phi) < PHI_LB || DoubleArray.max(phi) > PHI_UB) {
+//			throw new IllegalArgumentException("doh");
+//		}
 	}
 	
 	
