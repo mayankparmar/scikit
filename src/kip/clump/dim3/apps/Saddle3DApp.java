@@ -42,9 +42,9 @@ public class Saddle3DApp extends Simulation {
 		params.addm("Periodic", new ChoiceValue("Yes", "No"));
 		params.addm("T", new DoubleValue(0.09, 0.0, 0.15).withSlider());
 		params.addm("dt", 1.0);
-		params.add("Seed", new ChoiceValue("BCC", "Noise"));
-		params.add("R", 1000.0);
-		params.add("L", 2000.0);
+		params.add("Seed", new ChoiceValue("BCC", "Triangle", "Noise"));
+		params.add("R", 1300.0);
+		params.add("L", 4000.0);
 		params.add("dx", 100.0);
 		params.add("Random seed", 0);
 		params.add("Time");
