@@ -15,6 +15,7 @@ import static kip.util.MathPlus.j1;
 import static kip.util.MathPlus.jn;
 import static kip.util.MathPlus.sqr;
 import kip.util.DoubleArray;
+import scikit.dataset.Accumulator;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
 
@@ -142,6 +143,20 @@ public class FieldClump2D extends AbstractClump2D {
 		}
 	}
 	
+	public void circularAverage() {
+		Accumulator acc = new Accumulator(1);
+		acc.setAveraging(true);
+		for (int i = 0; i < Lp*Lp; i++) {
+			double x = i%Lp - Lp/2.;
+			double y = i/Lp - Lp/2.;
+			acc.accum(sqrt(x*x+y*y), phi[i]);
+		}
+		for (int i = 0; i < Lp*Lp; i++) {
+			double x = i%Lp - Lp/2.;
+			double y = i/Lp - Lp/2.;
+			phi[i] = acc.eval(sqrt(x*x+y*y));
+		}
+	}
 	
 	public double mean(double[] a) {
 		double sum = 0;
