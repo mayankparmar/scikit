@@ -3,8 +3,13 @@ package kip.clump.dim2.apps;
 import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
+
+import java.awt.Color;
+
 import kip.clump.dim2.FieldClump2D;
+import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -15,19 +20,22 @@ public class SaddleApp extends Simulation {
 	Grid grid = new Grid("Grid");
 	FieldClump2D clump;
 	boolean periodic;
+	Plot plot = new Plot("");
 	
 	public static void main(String[] args) {
 		new Control(new SaddleApp(), "Clump Model Saddle Profile");
 	}
 
 	public SaddleApp() {
-		frame(grid);
+		frame(grid, plot);
 		params.addm("Periodic", new ChoiceValue("Yes", "No"));
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
+		params.addm("Saddle", new ChoiceValue("Yes", "No"));
+		params.addm("Circular", new ChoiceValue("No", "Yes"));
 		params.addm("T", 0.135);
 		params.addm("dt", 1.0);
 		params.add("R", 1000.0);
-		params.add("L", 10000.0);
+		params.add("L", 30000.0);
 		params.add("dx", 100.0);
 		params.add("Random seed", 0);
 		params.add("Time");
@@ -55,6 +63,11 @@ public class SaddleApp extends Simulation {
 			grid.setScale(0, 2);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
+		int Lp = clump.numColumns();
+		double[] section = new double[Lp];
+		System.arraycopy(clump.coarseGrained(), Lp*(Lp/2), section, 0, Lp);
+		plot.registerLines("", new PointSet(0, 1, section), Color.BLUE);
+		
 		params.set("dx", clump.dx);
 		params.set("R", clump.R);
 		params.set("Time", format(clump.time()));
@@ -65,6 +78,7 @@ public class SaddleApp extends Simulation {
 	
 	public void clear() {
 		grid.clear();
+		plot.clear();
 	}
 	
 	public void run() {
@@ -78,8 +92,13 @@ public class SaddleApp extends Simulation {
 			clump.simulate();
 			double var2 = clump.phiVariance();
 			double scale = var1/var2;
-			clump.scaleField(scale);
 			
+			if (params.sget("Saddle").equals("Yes")) {
+				clump.scaleField(scale);
+			}
+			if (params.sget("Circular").equals("Yes")) {
+				clump.circularAverage();
+			}
 			if (periodic) {
 				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
 			}
