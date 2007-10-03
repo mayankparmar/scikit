@@ -1,5 +1,6 @@
 package scikit.graphics.dim3;
 
+import static scikit.util.Utilities.format;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -66,6 +67,10 @@ public class Grid3D extends Scene3D {
 		findRange();
 		animate();
     }
+	
+	public void extractData(double[] dst) {
+		System.arraycopy(_data, 0, dst, 0, _data.length);
+	}
 	
 	public void saveData(String fname) {
 		try {
@@ -221,7 +226,7 @@ public class Grid3D extends Scene3D {
 	private Drawable<Gfx3D> _gridDrawable = new Drawable<Gfx3D>() {
 		public void draw(Gfx3D g) {
 	        if (_data != null) {
- 	        	for (int z = 0; z < _d; z++) { 
+	        	for (int z = 0; z < _d; z++) { 
  	        		for (int y = 0; y < _h; y++) {
  	        			for (int x = 0; x < _w; x++) {
  	        				if (getSample(x, y, z) >= _cutoff) {
@@ -243,6 +248,12 @@ public class Grid3D extends Scene3D {
  	        		}
  	        	}
 	        }
+	        
+			g.ortho2D(g.pixelBounds());
+			g.setColor(Color.BLACK);
+        	g.rasterString("lo = "+format(_lo), 10, 10+1.5*g.stringHeight(null));
+        	g.rasterString("hi = "+format(_hi), 10, 10);
+        	g.perspective3D(g.viewBounds());
 		}
 		public Bounds getBounds() {
 			return new Bounds(0, 1, 0, 1, 0, 1);
