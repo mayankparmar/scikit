@@ -361,6 +361,8 @@ public class IsingField2D {
 
 		}
 		
+		//freeEnergy = isingFreeEnergyCalc(phi);
+		
 		meanLambda /= Lp*Lp;
 		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
 		mu /= dt;

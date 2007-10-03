@@ -52,6 +52,11 @@ abstract public class SteepestDescentMin {
 		return linemin.getLandscape();
 	}
 	
+	public Accumulator getBracketLandscape(){
+		return linemin.getBracketLandscape();
+    }
+    
+	
 	
 	public PointSet get_delHslice(){
 		int y = (int) (horizontalSlice * Lp);

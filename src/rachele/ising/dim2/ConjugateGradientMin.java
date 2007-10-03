@@ -50,7 +50,7 @@ abstract public class ConjugateGradientMin {
 		}		
 	}
 	
-	public void step() {
+	public void step(double t) {
 		linemin = new LineMin(point, xi) {
 			double freeEnergyCalc(double[] point) {
 				return ConjugateGradientMin.this.freeEnergyCalc(point);
@@ -63,10 +63,10 @@ abstract public class ConjugateGradientMin {
     	}
     	xi = steepestAscentCalc(point);
 		// Check for doneness
-    	double sub = fret - f_p;
+    	//double sub = fret - f_p;
     	double test = tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS);
-    	System.out.println("check CG " + sub + " " + test);
-    	if(2.0*Math.abs(fret - f_p) <= tolerance*(Math.abs(fret)+ Math.abs(f_p)+ EPS)){
+    	//System.out.println("check CG " + sub + " " + test);
+    	if(2.0*Math.abs(fret - f_p) <= test){
     		//we are done -> return
     		System.out.println("Conj Grad Min finished at time " + t + " iterations");
     		//return;
@@ -111,6 +111,10 @@ abstract public class ConjugateGradientMin {
 	public Accumulator getLandscape(){
 		return linemin.getLandscape();
 	}
+	
+    public Accumulator getBracketLandscape(){
+    	return linemin.getBracketLandscape();
+    }
 	
 	public PointSet get_delHslice(){
 		int y = (int) (horizontalSlice * Lp);
