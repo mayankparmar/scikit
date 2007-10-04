@@ -48,6 +48,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	}
 	
 	protected void drawBackground(Gfx2D g) {
+		g.setProjection(g.pixelBounds());
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, g.pixelBounds().getWidth(), g.pixelBounds().getHeight());
 	}
