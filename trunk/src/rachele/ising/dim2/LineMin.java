@@ -24,7 +24,10 @@ abstract public class LineMin {
 	double minValue;
 	double xmin;
 	
+	boolean gotoLinemin = true;
+	
 	abstract double freeEnergyCalc(double point[]);
+	abstract double [] steepestAscentCalc(double[] point);
 	
 	public LineMin(double lineminPoint[], double lineminDirection[]){
 		N = lineminPoint.length;
@@ -38,37 +41,143 @@ abstract public class LineMin {
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket
     	//be careful about input:  start at lambda_a = 0 amd lambda_b = positive so that it goes downhill 
-    	initBracket = initialBracket(0.0, 0.5);
-    	minValue = golden(initBracket);
+    	double initTrialX = 0.01;
+    	initBracket = initialBracket(0.0, initTrialX);
+    	double bSize = Math.abs(initBracket[2]-initBracket[0]);
+    	if(bSize > 100) gotoLinemin = false;
+    	//uphillBracket(0.0, initTrialX);
+    	System.out.println("gotoLinemin? " + gotoLinemin);
+    	//minValue = golden(initBracket);
+//    	if(gotoLinemin == true){
+    		minValue = golden(initBracket);
+//    	}else{
+//    		return;
+//    	}
+//    	lineminDirection = steepestAscentCalc(lineminPoint);
+//    		minValue = f1dim(.1);
+//    		for(int i = 0; i < N; i ++){
+//    			lineminPoint[i] -= .1*lineminDirection[i];
+//    		}
+//
+//    	}
     }
+	
+//	private void uphillBracket(double ax, double bx){
+//		//want to go uphill untill we find a max, then downhill until we find a min
+//		//make ax the lower point and bx the higher point:
+//		
+//		double f_a = f1dim(ax);
+//		double f_b = f1dim(bx);
+//		if(f_a > f_b){
+//			double tempA = f_a;
+//			f_a = f_b;
+//			f_b = tempA;
+//			tempA = ax;
+//			ax = bx;
+//			bx = tempA;
+//		}
+//		if(f_b == Double.POSITIVE_INFINITY)
+//			return;
+//		//First guess for midpoint
+//		double move = GOLD*(bx-ax);
+//		double cx = bx + move;
+//		double f_c = f1dim(cx);
+//		if(f_c != Double.POSITIVE_INFINITY)
+//			bracketLandscape.accum(cx, f_c);
+//		bracketPts += 1;
+//
+//		//repeat the following until we bracket
+//		double u = 0.0;
+//		double f_u = 0.0;
+//		int iterations = 0;
+//		while(f_b < f_c && f_c != Double.POSITIVE_INFINITY){
+//			iterations ++;
+//			if(f_b < f_c){
+//				move =  GOLD*(cx-bx);
+//				u = cx + move;
+//				f_u = f1dim(u);
+//				if(f_u != Double.POSITIVE_INFINITY)
+//					bracketLandscape.accum(u, f_u);
+//					bracketPts += 1;
+//			
+//					ax = bx;
+//					f_a = f_b;
+//					bx = cx;
+//					f_b = f_c;
+//					cx = u;
+//					f_c = f_u;
+//
+//			}
+//			System.out.println("max is inf");
+//		}		
+//	
+//	}
 	
     private double [] initialBracket(double ax, double bx){
 		double [] output = new double [3];
-
+		double cx;
 		double f_b = f1dim(bx);
 		double f_a = f1dim(ax);
-		bracketLandscape.accum(bx, f_b);
-		bracketLandscape.accum(ax, f_a);
+		if(f_b != Double.POSITIVE_INFINITY){
+			bracketLandscape.accum(bx, f_b);
+		}else{
+			System.out.println("init b = inf");
+			bx *= -1;
+			f_b = f1dim(bx);
+			while (f_b == Double.POSITIVE_INFINITY){
+				bx /=2.0;
+				f_b = f1dim(bx);
+				//System.out.println(f_b);
+			}
+		}	
+		if(f_a != Double.POSITIVE_INFINITY){
+			bracketLandscape.accum(ax, f_a);
+		}else{
+			System.out.println("init a = inf");
+		}
 		bracketPts = 2;
 		
 		double u, f_u;
 		
-		//Check to see if f(ax) has a higher value than f(bx)
-		//If not, make bx smaller and smaller until it does
+		u = bx;
+		f_u = f1dim(bx);
+		if(f_u != Double.POSITIVE_INFINITY)
+			bracketLandscape.accum(u, f_u);
+
+		for(int i = 0; i < 50; i++){
+			u += bx;
+			f_u = f1dim(bx);
+			if(f_u != Double.POSITIVE_INFINITY)
+				bracketLandscape.accum(u, f_u);			
+		}
 		
-		//while (f_b > f_a){
-			//bx = .5*bx;
-			//f_b = f1dim(bx);
-//			if(bx < tolerance){
-//				System.out.print("bx less than tolerence");
-//			}
-		//}
-		//If not, switch the sign of bx and check
-//		if (f_b > f_a){
-//			bx = -bx;
-//			f_b = f1dim(bx);
-//		}
-//		
+		u = -bx;
+		for(int i = 0; i < 50; i++){
+			u -= bx;
+			f_u = f1dim(bx);
+			if(f_u != Double.POSITIVE_INFINITY)
+				bracketLandscape.accum(u, f_u);			
+		}
+		
+		
+		//first check a point in between
+		
+		u = bx /2.0;
+		f_u = f1dim(u);
+		if(f_a != Double.POSITIVE_INFINITY){
+			bracketLandscape.accum(ax, f_a);
+		}
+		
+		if(f_u < f_a && f_u < f_b){
+			System.out.println("mid was min");
+			cx = u;
+			output[0] = ax;
+			output[1] = cx;
+			output[2] = bx;
+			if(f_u == Double.POSITIVE_INFINITY) gotoLinemin = false;
+			return(output);
+		}else{
+		
 		//Check to see if f(ax) has a higher value than f(bx)
 		//If not, switch roles of ax and bx so that we can 
 		//go downhill in the direction from ax to bx
@@ -81,13 +190,14 @@ abstract public class LineMin {
 			ax = bx;
 			bx = tempA;
 		}
-		
+				
 		//First guess for midpoint
 		double move = GOLD*(bx-ax);
 		//double cx =	bx + GOLD*(bx-ax);
-		double cx = bx + move;
+		cx = bx + move;
 		double f_c = f1dim(cx);
-		bracketLandscape.accum(cx, f_c);
+		if(f_c != Double.POSITIVE_INFINITY)
+			bracketLandscape.accum(cx, f_c);
 		bracketPts += 1;
 //		while(f_c ==  Double.POSITIVE_INFINITY){
 //			move *= GOLDC;
@@ -99,37 +209,54 @@ abstract public class LineMin {
 		//System.out.println("f_c = " + f_c);
 		//repeat the following until we bracket
 		int iterations = 0;
-		while(f_b > f_c){
+		while(f_b > f_c){//  || f_c == Double.POSITIVE_INFINITY){
 			iterations ++;
 			u = 0.0;
 			f_u = 0.0;
-			move =  GOLD*(cx-bx);
-			u = cx + move;
-			f_u = f1dim(u);
-			bracketLandscape.accum(u, f_u);
-			bracketPts += 1;
-			
-//			if(f_u ==  Double.POSITIVE_INFINITY){
-//				int uIterations = 0;
-//				while(f_u ==  Double.POSITIVE_INFINITY){
-//					uIterations += 1;
-//					move /= 2.0;
-//					u = cx + move;
-//					f_u = f1dim(u);
-//				}
-//			}
-			ax = bx;
-			f_a = f_b;
-			bx = cx;
-			f_b = f_c;
-			cx = u;
-			f_c = f_u;
+			if(f_b > f_c){
+				move =  GOLD*(cx-bx);
+				u = cx + move;
+				f_u = f1dim(u);
+				if(f_u != Double.POSITIVE_INFINITY)
+					bracketLandscape.accum(u, f_u);
+					bracketPts += 1;
+					ax = bx;
+					f_a = f_b;
+					bx = cx;
+					f_b = f_c;
+					cx = u;
+					f_c = f_u;
+//			}else{
+////				move =  GOLDR*(cx-bx);
+////				u = cx - move;
+////				f_u = f1dim(u);
+////				if(f_u != Double.POSITIVE_INFINITY)
+////					bracketLandscape.accum(u, f_u);
+////				bracketPts += 1;
+////				cx = u;
+////				f_c = f_u;
+			}
+		}
+		if(f_c ==  Double.POSITIVE_INFINITY){
+			//look to see if inf goes away with another step
+			double uu =cx+1;
+			double f_uu = f1dim(uu);
+			if(f_uu == Double.POSITIVE_INFINITY){
+				System.out.println("still inf");
+			}else{
+				System.out.println("not inf after 1 step  " + uu + " "+ cx + " " +f_uu);
+				bracketLandscape.accum(uu, f_uu);
+			}	
 		}
 		
+		if(f_c == Double.POSITIVE_INFINITY){
+			gotoLinemin = false;
+		}
 		output[0] = ax;
 		output[1] = bx;
 		output[2] = cx;
-		System.out.println("no of init pts = " + bracketPts);
+		System.out.println("no of init pts = " + bracketPts + " " + ax + " " + bx + " " + cx);
+		System.out.println("fvalues: " + f_a + " " + f_b + " " + f_c);
 		//double brSize = cx-ax;
 		//double feDiff1 = f_c-f_b;
 		//double feDiff2 = f_a-f_b;
@@ -138,9 +265,22 @@ abstract public class LineMin {
 		//System.out.println("f_a = " + f_a + " f_b = " + f_b + " f_c = " + f_c);
 		//System.out.print("bracket size = " + brSize + " FE diff = " + feDiff1 + " and " + feDiff2);
 		//System.out.println(" ");
+		
+		//Test some other points:
+		
+//		u = cx*100;
+//		f_u = f1dim(cx);
+//		if(f_u != Double.POSITIVE_INFINITY)
+//			bracketLandscape.accum(u, f_u);
+//		u = -cx*100;
+//		f_u = f1dim(cx);
+//		if(f_u != Double.POSITIVE_INFINITY)
+//			bracketLandscape.accum(u, f_u);		
+		
 		return output;
-	}
-	
+
+		}
+    }
 	
 	private double golden(double [] input){
 		
@@ -149,8 +289,7 @@ abstract public class LineMin {
 		double bx = input[1];
 		double cx = input[2];
 		double smallest, smallestTol;
-		
-		
+				
 		//SOME TESTING
 		
 		double bracketSize = Math.abs(cx-ax);
@@ -211,20 +350,24 @@ abstract public class LineMin {
 		
 		double f_1 = f1dim(x1);
 		double f_2 = f1dim(x2);
-		landscape.accum(x1, f_1);
-		landscape.accum(x2, f_2);
+		if(f_1 != Double.POSITIVE_INFINITY)
+			landscape.accum(x1, f_1);
+		if(f_2 != Double.POSITIVE_INFINITY)
+			landscape.accum(x2, f_2);
 		accumPts = 2;
 		
 		int iteration = 0;
 		//while(Math.abs(x3-x0) > tolerance  && Math.abs(f_2-f_1) > tolerance && x1 != x2 && x2 != x3){
 		//while(Math.abs(x3-x0) > tolerance*(Math.abs(x1) + Math.abs(x2))  && x1 != x2 && x2 != x3){
+		//System.out.println("f2 = " + f_2 + " f1 = " + f_1);
 		while(2*Math.abs(f_2-f_1) > tolerance*(Math.abs(f_1) + Math.abs(f_2))  
-				&& 2*smallest > tolerance*smallestTol){
+				&& 2*smallest > tolerance*smallestTol || f_1 == Double.POSITIVE_INFINITY || f_2 == Double.POSITIVE_INFINITY){
 				//&& x1 != x2 && x2 != x3){
 			iteration ++;
 //			System.out.println(x1 + " " + x2 + " " + x3);
 //			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
 			
+
 			if(f_2 < f_1){
 				// choose new triplet as x1, x2, x3
 				// shift variables x0, x1, x2 (new test point
@@ -240,7 +383,8 @@ abstract public class LineMin {
 				f_1 = f_2;
 				f_2 = f1dim(x2);
 				accumPts += 1;
-				landscape.accum(x2, f_2);
+				if(f_2 != Double.POSITIVE_INFINITY)
+					landscape.accum(x2, f_2);
 				
 			}else{
 				x3 = x2;
@@ -252,8 +396,10 @@ abstract public class LineMin {
 				f_2 = f_1;
 				f_1 = f1dim(x1);
 				accumPts += 1;
-				landscape.accum(x1, f_1);				
+				if(f_1 != Double.POSITIVE_INFINITY)
+					landscape.accum(x1, f_1);				
 			}
+			//System.out.println("f2 = " + f_2 + " f1 = " + f_1);
 			d01 = Math.abs(x1-x0);
 			tol01 = Math.abs(x1)+ Math.abs(x0);
 			d12 = Math.abs(x2-x1);
@@ -307,7 +453,7 @@ abstract public class LineMin {
     	}
     	double ret = freeEnergyCalc(newPoint);
     	if(ret == Double.POSITIVE_INFINITY){
-    		System.out.println("inf at lambda = " + lambda);
+    		//System.out.println("inf at lambda = " + lambda);
     		feInfCt += 1;
     		//landscape.accum(lambda, 0);
     	}else{

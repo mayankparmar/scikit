@@ -43,6 +43,9 @@ abstract public class SteepestDescentMin {
 			double freeEnergyCalc(double[] point) {
 				return SteepestDescentMin.this.freeEnergyCalc(point);
 			}
+			double [] steepestAscentCalc(double [] point){
+				return SteepestDescentMin.this.steepestAscentCalc(point);
+			}
 		 };
 		freeEnergy = linemin.minValue;
 		
