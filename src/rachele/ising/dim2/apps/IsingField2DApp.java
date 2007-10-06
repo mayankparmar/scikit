@@ -40,13 +40,11 @@ public class IsingField2DApp extends Simulation {
 	Plot del_vSlice = new Plot("Vertical Slice Change");
 	Plot structurePeakV = new Plot("Ver Structure Factor");
 	Plot structurePeakH = new Plot("Hor Structure factor");
-	Plot sfPlot = new Plot("Structure Factor");
-	//Plot sfHPlot = new Plot("Structure Factor Hor");
+	Plot sfPeakBoth = new Plot("Both Structure factors");
 	Plot freeEnergyPlot = new Plot("Free Energy");
 	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp");
-	Plot sfSlopePlot = new Plot("SF peak slope");
-	Plot landscape = new Plot("Local FE landscape");
-	Plot freeEnergySample = new Plot ("Free Energy for Min");
+	Plot landscape = new Plot("Free Energy Landscape");
+	Plot brLandscape = new Plot("Br Free Energy Landscape");
 	StructureFactor sf;
     IsingField2D ising;
     SteepestDescentMin opt;
@@ -61,24 +59,25 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
+		frameTogether("Grids", grid, delPhiGrid, sfGrid);
+		frameTogether("landscapes", landscape, brLandscape);
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
-		frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice,
-				freeEnergySample, structurePeakH, del_hSlice, del_vSlice, landscape);
+		frameTogether("Plots", vSlice, del_hSlice, structurePeakV, 
+				 hSlice, del_vSlice,  structurePeakH, freeEnergyPlot, freeEnergyTempPlot, sfPeakBoth);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", 
-				"Conjugate Gradient Min", "Steepest Decent",  "Langevin No M Conservation"));
+		params.addm("Dynamics?", new ChoiceValue("Conjugate Gradient Min", 
+				"Steepest Decent",  "Langevin Conserve M", "Langevin No M Conservation"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
-		params.addm("Approx", new ChoiceValue("Exact Stable", 
-				"Avoid Boundaries", "Exact SemiStable", "Exact", "Linear", "Phi4"));
+		params.addm("Approx", new ChoiceValue("Avoid Boundaries", 
+				"Exact SemiStable", "Exact", "Linear", "Exact Stable", "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.09);
-		params.addm("H", 0.0);
+		params.addm("T", 0.03);
+		params.addm("H", 0.7);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -88,16 +87,18 @@ public class IsingField2DApp extends Simulation {
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.7);
+		params.add("Magnetization", 0.0);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
 		params.add("Free Energy");
-		params.add("dF_dt");
 
 		flags.add("Write Config");
 		flags.add("Clear");
-		flags.add("Accept F");
+		flags.add("Stripe");
+		flags.add("Clump");
+		flags.add("ClearFT");
+		params.addm("Back?", new ChoiceValue("No", "Yes"));
 		landscapeFiller = new Accumulator(.01);
 		brLandscapeFiller = new Accumulator(.01);
 	}
@@ -117,7 +118,6 @@ public class IsingField2DApp extends Simulation {
 			delPhiGrid.setScale(0, 1);
 		}
 		
-		landscape.setAutoScale(true);
 		freeEnergyPlot.setAutoScale(true);
 		del_hSlice.setAutoScale(true);
 		del_vSlice.setAutoScale(true);
@@ -125,32 +125,27 @@ public class IsingField2DApp extends Simulation {
 		vSlice.setAutoScale(true);
 		structurePeakV.setAutoScale(true);
 		structurePeakH.setAutoScale(true);
-		freeEnergySample.setAutoScale(true);
-		
-		
+		sfPeakBoth.setAutoScale(true);
+		landscape.setAutoScale(true);
+		brLandscape.setAutoScale(true);
 
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
-		freeEnergySample.registerLines("Free Energy Landscape", landscapeFiller, Color.BLACK);
-		
-		landscape.registerLines("Free Energy Landscape", sf.getPeakH(), Color.RED);
-//		landscape.registerLines("Free Energy Landscape", brLandscapeFiller, Color.RED);
 		String dyn = params.sget("Dynamics?");
+		landscape.registerLines("FE landscape", landscapeFiller, Color.BLACK);
+		brLandscape.registerLines("FE landscape", brLandscapeFiller, Color.BLUE);
 		if (dyn.equals("Steepest Decent")) {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, opt.direction);
 			del_hSlice.registerLines("Slice", opt.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", opt.get_delVslice(), Color.YELLOW);
-			//landscape.registerLines("Free Energy Landscape", opt.getLandscape(), Color.BLACK);
 		} else if (dyn.equals("Conjugate Gradient Min")) {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, min.xi);
 			del_hSlice.registerLines("Slice", min.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", min.get_delVslice(), Color.YELLOW);			
-			//landscape.registerLines("Free Energy Landscape", min.getLandscape(), Color.BLACK);
 		} else {
 			delPhiGrid.registerData(ising.Lp, ising.Lp, ising.phiVector);
 			del_hSlice.registerLines("Slice", ising.get_delHslice(), Color.RED);
 			del_vSlice.registerLines("Slice", ising.get_delVslice(), Color.YELLOW);
-			//landscape.registerLines("FE", landscapeFiller, Color.BLACK);
 		}
 		
 		grid.setDrawables(asList(
@@ -163,55 +158,44 @@ public class IsingField2DApp extends Simulation {
 		
 		hSlice.registerLines("Slice", ising.getHslice(), Color.GREEN);
 		vSlice.registerLines("Slice", ising.getVslice(), Color.BLUE);
-
-
-		
-		
 		freeEnergyPlot.registerLines("Free Energy", ising.getFreeEnergyAcc(), Color.MAGENTA);
 		
 		if(ising.circleInt() == true){
-			sfPlot.registerLines("Structure Function", sf.getAccumulatorC(), Color.YELLOW);
 			structurePeakV.registerLines("Peak Value", sf.getPeakC(), Color.YELLOW);
 		}else{
 			structurePeakV.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
-			structurePeakH.registerLines("Structure Fucntion", sf.getPeakH(), Color.ORANGE);
-			structurePeakH.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);			
-			sfPlot.registerLines("Vertical SF", sf.getAccumulatorV(), Color.CYAN);
-			//sfHPlot.registerLines("Horizontal SF", sf.getAccumulatorH(), Color.ORANGE);
-			sfSlopePlot.registerLines("Vertical Slope", sf.getPeakVslope(), Color.CYAN);
-			sfSlopePlot.registerLines("Horizontal Slope", sf.getPeakHslope(), Color.ORANGE);			
+			sfPeakBoth.registerLines("Hortizontal Peak", sf.getPeakH(), Color.ORANGE);
+			sfPeakBoth.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
+			structurePeakH.registerLines("Horizontal Peak", sf.getPeakH(), Color.ORANGE);
 		}	
  
-		if (flags.contains("Accept F")){
-			ising.accumFreeEnergy();
-			System.out.println("accum free energy T = " + ising.T);
-			//double temp = params.fget("T");
-			//temp += params.fget("dT");
-			//params.set("T", temp);			
+		if (flags.contains("Stripe")){
+			ising.accumStripeFreeEnergy();
+			System.out.println("accum Stripe free energy T = " + ising.T);
+		}else if(flags.contains("Clump")){
+			ising.accumClumpFreeEnergy();
+			System.out.println("accum Clump free energy T = " + ising.T);
 		}
 
+		freeEnergyTempPlot.registerLines("Stripe FE", ising.getStripeFreeEnergyAcc(), Color.GREEN);
+		freeEnergyTempPlot.registerLines("Clump FE", ising.getClumpFreeEnergyAcc(),Color.PINK);
 		
 		if (flags.contains("Clear") || lastClear > 1000) {
 			ising.getFreeEnergyAcc().clear();
-			ising.getDF_dtAcc().clear();
-			ising.getAccEntropy().clear();
-			ising.getAccPotential().clear();
 			sf.getPeakH().clear();
 			sf.getPeakV().clear();
 			sf.getPeakHslope().clear();
 			sf.getPeakVslope().clear();
 			ising.aveCount = 0;
-			ising.F_ave=0;
-//			sf.getAccumulatorCA().clear();
-//			sf.getAccumulatorHA().clear();
-//			sf.getAccumulatorVA().clear();
 			System.out.println("cleared");
 			lastClear = 0;
 		}
 		flags.clear();
+		if(flags.contains("ClearFT")){
+			ising.getClumpFreeEnergyAcc().clear();
+			ising.getStripeFreeEnergyAcc().clear();
+		}
 		
-		//System.out.println("  max phi = " + kip.util.DoubleArray.max(ising.phi));
-		//System.out.println("  min phi = " + kip.util.DoubleArray.min(ising.phi));
 	}
 	
 	public void clear() {
@@ -257,18 +241,30 @@ public class IsingField2DApp extends Simulation {
         	}
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
+
 			if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
+				if(params.sget("Back?") == "Yes"){
+					for(int i = 0; i < ising.Lp*ising.Lp; i ++) ising.phi[i] = min.oldPoint[i];
+					flags.clear();
+					System.out.println("back");
+				}else{
 				if(cgInitialized == false){
 					min.initialize();   
 					System.out.println("CG initialized");
 					cgInitialized = true;					
 				}
 				min.step(ising.t);
-				//ising.getPhiFrA();
+//				if(min.gotoIsing == true){
+//					ising.simulate();
+//					min.gotoIsing = false;
+//					cgInitialized = false;
+//				}else{
+					ising.accFreeEnergy.accum(ising.t, min.freeEnergy);
+					landscapeFiller = min.getLandscape();					
+//				}
 				ising.t += 1;
-				ising.accFreeEnergy.accum(ising.t, min.freeEnergy);
-				landscapeFiller = min.getLandscape();
 				brLandscapeFiller = min.getBracketLandscape();
+				}
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
 				opt.step();
 				//ising.getPhiFrA();
@@ -280,23 +276,14 @@ public class IsingField2DApp extends Simulation {
 			}else{
 				cgInitialized = false;
 				ising.simulate();
+			
 			}
 			if (equilibrating && ising.time() >= .5) {
 				equilibrating = false;
 			}
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
-			//System.out.println(Math.abs(ising.dF_dt));
-//			if(params.sget("Plot FEvT") == "On"){
-//				if(Math.abs(ising.dF_dt) < params.fget("tolerance")){
-//					System.out.println("input FE");
-//					ising.accumFreeEnergy();
-//					double temp = params.fget("T");
-//					temp += params.fget("dT");
-//					params.set("T", temp);
-//				}				
-//			}
+
 			lastClear += 1;
-			//System.out.println(lastClear);
 			Job.animate();
 		}
  	}

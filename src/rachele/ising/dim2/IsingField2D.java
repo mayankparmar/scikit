@@ -24,7 +24,7 @@ public class IsingField2D {
 	public double dt, t;
 	public double lastMu;
 	public double[] phi, phiVector;
-	public double F_ave, lastFreeEnergy, dF_dt, freeEnergy;
+	public double freeEnergy;
 	public int aveCount;
 	double [] phi_bar, delPhi, Lambda, A;
 	public double horizontalSlice;
@@ -60,14 +60,10 @@ public class IsingField2D {
 	public double f_p;
 	public double fret;
 	
+	Accumulator accClumpFreeEnergy;
+	Accumulator accStripeFreeEnergy;
 	public Accumulator accFreeEnergy;
-	Accumulator dF_dtAcc;
-	Accumulator accMaxPhi;
-	Accumulator accMinPhi;
-	Accumulator accFEvT;
-	Accumulator accPotential;
-	Accumulator accEntropy;
-		
+			
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = true;
 	boolean magConservation = false;
@@ -91,22 +87,12 @@ public class IsingField2D {
 		DENSITY = params.fget("Magnetization");
 
 		
+		accStripeFreeEnergy = new Accumulator(0.0001);
+		accStripeFreeEnergy.setAveraging(true);
+		accClumpFreeEnergy = new Accumulator(0.0001);
+		accClumpFreeEnergy.setAveraging(true);
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
-		//accFEvT = new Accumulator(dT);
-		//accFEvT.setAveraging(true);
-		dF_dtAcc = new Accumulator(dt);
-		dF_dtAcc.setAveraging(true);
-		accMaxPhi = new Accumulator(dt);
-		accMaxPhi.setAveraging(true);		
-		accMinPhi = new Accumulator(dt);
-		accMinPhi.setAveraging(true);
-		accPotential = new Accumulator(dt);
-		accPotential.setAveraging(true);
-		accEntropy = new Accumulator(dt);
-		accEntropy.setAveraging(true);
-		accFEvT = new Accumulator(dt);
-		accFEvT.setAveraging(true);
 		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
@@ -235,7 +221,6 @@ public class IsingField2D {
 		
 		params.set("R/dx", R/dx);
 		params.set("Lp", Lp);
-		params.set("dF_dt", dF_dt);
 		params.set("Free Energy", freeEnergy);
 		
 		if(params.sget("Interaction") == "Circle"){
@@ -335,21 +320,23 @@ public class IsingField2D {
 				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
 				Lambda[i] = (1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			}else if(theory == "Exact Stable"){
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else if(theory == "Phi4"){
-				dF_dPhi = -phi_bar[i]+T*(-phi[i]-phi[i]*sqr(phi[i])/2.0) - H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);
+				dF_dPhi = -phi_bar[i]-T*(+2.0*phi[i]+pow(phi[i],3))/2.0 - H;
+				//Lambda[i] = sqr(1 - phi[i]*phi[i]);
+				Lambda[i] = 1;
 				entropy = (sqr(phi[i]) + sqr(sqr(phi[i]))/4.0)/2.0;
 			}else if(theory == "Linear"){
 				dF_dPhi = -phi_bar[i] - T*phi[i] -H;
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);
 				entropy = (sqr(phi[i]))/2.0;
+			}else{
+				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
+				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}
-			delPhi[i] = - dt*Lambda[i]*dF_dPhi;// + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+	
+			delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 			phiVector[i] = delPhi[i];
 			meanLambda += Lambda[i];
 			
@@ -387,25 +374,19 @@ public class IsingField2D {
 		
 		freeEnergy /= (Lp*Lp) ;
 		//remove the following line
-		freeEnergy = isingFreeEnergyCalc(phi);
+		//freeEnergy = isingFreeEnergyCalc(phi);
 		potAccum /= (Lp*Lp);
 		entAccum /= (Lp*Lp);
-		accFreeEnergy.accum(t,freeEnergy);
-		accPotential.accum(t, potAccum);
-		accEntropy.accum(t, entAccum);
-		dF_dtAcc.accum(t,dF_dt);
-		dF_dt = (freeEnergy - lastFreeEnergy)/dt;
-		lastFreeEnergy = freeEnergy;
-		//System.out.println("dF_dt " + freeEnergy + " " + freeEnergy_i + " " + dF_dt);
+		accFreeEnergy.accum(t, freeEnergy);
 		t += dt;
-		
-		accMinPhi.accum(t, kip.util.DoubleArray.min(phi));
-		accMaxPhi.accum(t, kip.util.DoubleArray.max(phi));
-		//System.out.println(kip.util.DoubleArray.max(phi) + " " + kip.util.DoubleArray.min(phi));
 	}
 	
-	public void accumFreeEnergy(){
-		accFEvT.accum(T, freeEnergy);
+	public void accumClumpFreeEnergy(){
+		accClumpFreeEnergy.accum(T, freeEnergy);
+	}
+	
+	public void accumStripeFreeEnergy(){
+		accStripeFreeEnergy.accum(T, freeEnergy);
 	}
 	
 	public void useNoiselessDynamics() {
@@ -492,29 +473,13 @@ public class IsingField2D {
 	public Accumulator getFreeEnergyAcc() {
 		return accFreeEnergy;
 	}
-
-	public Accumulator getMaxPhiAcc() {
-		return accMaxPhi;
-	}
-
-	public Accumulator getMinPhiAcc() {
-		return accMinPhi;
-	}
-
-	public Accumulator getDF_dtAcc(){
-		return dF_dtAcc;
+	
+	public Accumulator getStripeFreeEnergyAcc() {
+		return accStripeFreeEnergy;
 	}
 	
-	public Accumulator getAccPotential(){
-		return accPotential;
-	}
-
-	public Accumulator getAccEntropy(){
-		return accEntropy;
-	}
-	
-	public Accumulator getAccFEvT(){
-		return accFEvT;
+	public Accumulator getClumpFreeEnergyAcc() {
+		return accClumpFreeEnergy;
 	}
 	
 	public void initializeConjGrad(){
@@ -565,9 +530,9 @@ public class IsingField2D {
 				System.out.println("boundary at point " + i);
 			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
 			double potential = -(config[i]*phi_bar[i])/2.0;
-			double boundaryTerm = exp(-sqr(1-config[i])/(2.0*sigma*sigma))/sqr(1-config[i]) + exp(-sqr(1+config[i])/(2.0*sigma*sigma))/sqr(1+config[i]);
+			//double boundaryTerm = exp(-sqr(1-config[i])/(2.0*sigma*sigma))/sqr(1-config[i]) + exp(-sqr(1+config[i])/(2.0*sigma*sigma))/sqr(1+config[i]);
 			//System.out.println("Boundary term = " + boundaryTerm);
-			freeEnergy += potential - T*entropy - H*config[i] + boundaryTerm;
+			freeEnergy += potential - T*entropy*100 - H*config[i];
 		}
 		freeEnergy /= (Lp*Lp);
 		if (Double.isNaN(freeEnergy))
@@ -580,19 +545,11 @@ public class IsingField2D {
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
 			double boundaryTerm =  exp(-sqr(1-config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1-config[i])))/(1-config[i]);
-			boundaryTerm -=        exp(-sqr(1+config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1+config[i])))/(1+config[i]);
+			//boundaryTerm -=        exp(-sqr(1+config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1+config[i])))/(1+config[i]);
 			//System.out.println("Boundary term = " + boundaryTerm);
-			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H + boundaryTerm);
+			steepestAscentDir[i] = (-phi_bar[i] +T*100* kip.util.MathPlus.atanh(config[i])- H + boundaryTerm);
 			//steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H + boundaryTerm);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		
 	}
-
-//	public double [] getPhiFrA(){
-//		for (int i = 0; i < Lp*Lp; i++){
-//			phi[i] = tanh(phi[i]);
-//		}
-//		return phi;
-//	}
-	
 }

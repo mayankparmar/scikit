@@ -7,6 +7,7 @@ abstract public class ConjugateGradientMin {
 	public int N;
 	public double t;
 	public double[] point;
+	public double[] oldPoint;
 	public double freeEnergy;
 	private double f_p;
 	private double [] g, h;
@@ -23,6 +24,7 @@ abstract public class ConjugateGradientMin {
 	public abstract double[] steepestAscentCalc(double[] point);
 	private LineMin linemin;
 
+	public boolean gotoIsing = false;
 	
 	public ConjugateGradientMin(double[] point, double horizontalSlice, double verticalSlice, double dx) {
 		N = point.length;
@@ -34,6 +36,8 @@ abstract public class ConjugateGradientMin {
 		xi = new double [N];
 		g = new double [N];
 		h = new double [N];
+		oldPoint = new double[N];
+		for (int i = 0; i < N; i++)	oldPoint[i] = point[i];
 	}
 	
 	public void initialize(){
@@ -55,12 +59,21 @@ abstract public class ConjugateGradientMin {
 			double freeEnergyCalc(double[] point) {
 				return ConjugateGradientMin.this.freeEnergyCalc(point);
 			}
+			double [] steepestAscentCalc(double [] point){
+				return ConjugateGradientMin.this.steepestAscentCalc(point);
+			}
 		};
+//		if(linemin.gotoLinemin == false){
+//			gotoIsing = true;
+//			return;
+//		}
+
 		double fret = linemin.minValue; 
     	//the following lines accept the move:
     	for (int i = 0; i < N; i ++){
     		point [i] = linemin.lineminPoint[i];
     	}
+
     	xi = steepestAscentCalc(point);
 		// Check for doneness
     	//double sub = fret - f_p;
@@ -93,18 +106,7 @@ abstract public class ConjugateGradientMin {
     			xi[j] = h[j];	//This is our new direction
     		}
     	}
-    	//	switchD = 1;
-		//}else{
-		//	for (int i = 0; i < N; i++)
-		//		point[i] = minReferencePoint[i];
-		//	switchD = -1;
-		//}
-		
-	//}
-//    		for(int i = 0; i < N; i ++){
-//    			del_phiSq[i] = xi[i];
-//    		}
-		
+
 		freeEnergy = linemin.minValue;
 	}
 	
