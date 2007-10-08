@@ -1,3 +1,4 @@
+
 package rachele.ising.dim2.apps;
 
 /* The Langevin Dynamics part of this is basically the same as kip.clump.dim2.FiledClump2D.java */
@@ -29,6 +30,7 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
+//import kip.util.*;
 
 public class IsingField2DApp extends Simulation {
     Grid grid = new Grid("Phi(x)");
@@ -71,8 +73,8 @@ public class IsingField2DApp extends Simulation {
 				"Steepest Decent",  "Langevin Conserve M", "Langevin No M Conservation"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
-		params.addm("Approx", new ChoiceValue("Avoid Boundaries", 
-				"Exact SemiStable", "Exact", "Linear", "Exact Stable", "Phi4"));
+		params.addm("Approx", new ChoiceValue("Exact Stable",
+				"Avoid Boundaries", "Exact SemiStable", "Exact", "Linear",  "Phi4"));
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
@@ -97,8 +99,8 @@ public class IsingField2DApp extends Simulation {
 		flags.add("Clear");
 		flags.add("Stripe");
 		flags.add("Clump");
-		flags.add("ClearFT");
-		params.addm("Back?", new ChoiceValue("No", "Yes"));
+		//flags.add("ClearFT");
+		params.addm("Slow CG?", new ChoiceValue( "Yes, some", "No", "Yes, lots"));
 		landscapeFiller = new Accumulator(.01);
 		brLandscapeFiller = new Accumulator(.01);
 	}
@@ -106,8 +108,6 @@ public class IsingField2DApp extends Simulation {
 	public void animate() {
 
 		ising.readParams(params);
-		//params.set("dF_dt", ising.dF_dt);
-		
 		
 		if (params.sget("Zoom").equals("Yes")) {
 			grid.setAutoScale();
@@ -179,6 +179,7 @@ public class IsingField2DApp extends Simulation {
 
 		freeEnergyTempPlot.registerLines("Stripe FE", ising.getStripeFreeEnergyAcc(), Color.GREEN);
 		freeEnergyTempPlot.registerLines("Clump FE", ising.getClumpFreeEnergyAcc(),Color.PINK);
+		freeEnergyTempPlot.registerLines("fe", ising.getEitherFreeEnergyAcc(), Color.BLACK);
 		
 		if (flags.contains("Clear") || lastClear > 1000) {
 			ising.getFreeEnergyAcc().clear();
@@ -191,10 +192,10 @@ public class IsingField2DApp extends Simulation {
 			lastClear = 0;
 		}
 		flags.clear();
-		if(flags.contains("ClearFT")){
-			ising.getClumpFreeEnergyAcc().clear();
-			ising.getStripeFreeEnergyAcc().clear();
-		}
+//		if(flags.contains("ClearFT")){
+//			ising.getClumpFreeEnergyAcc().clear();
+//			ising.getStripeFreeEnergyAcc().clear();
+//		}
 		
 	}
 	
@@ -231,40 +232,27 @@ public class IsingField2DApp extends Simulation {
 		};
 		
         boolean equilibrating = true;
-//		if(params.sget("Dynamics?") == "Conjugate Gradient Min")
-//			min.initialize();   
-//			System.out.println("CG initialized");
-//			cgInitialized = true;
+        int feCounter = 0;  //counts iterations before taking FE vs T data point
+        
         while (true) {
-        	if (flags.contains("Write Config")){
-        		writeConfiguration();
-        	}
+        	if (flags.contains("Write Config"))	writeConfiguration();
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
-
 			if(params.sget("Dynamics?") == "Conjugate Gradient Min"){
-				if(params.sget("Back?") == "Yes"){
-					for(int i = 0; i < ising.Lp*ising.Lp; i ++) ising.phi[i] = min.oldPoint[i];
-					flags.clear();
-					System.out.println("back");
-				}else{
 				if(cgInitialized == false){
 					min.initialize();   
 					System.out.println("CG initialized");
 					cgInitialized = true;					
 				}
 				min.step(ising.t);
-//				if(min.gotoIsing == true){
-//					ising.simulate();
-//					min.gotoIsing = false;
-//					cgInitialized = false;
-//				}else{
-					ising.accFreeEnergy.accum(ising.t, min.freeEnergy);
-					landscapeFiller = min.getLandscape();					
-//				}
-				ising.t += 1;
+				ising.accFreeEnergy.accum(ising.t, min.freeEnergy);
+				landscapeFiller = min.getLandscape();					
 				brLandscapeFiller = min.getBracketLandscape();
-				}
+				ising.t += 1;
+				//double minPhi = DoubleArray.min(ising.phi);
+				//double maxPhi = DoubleArray.max(ising.phi);
+				//System.out.println("min = " + minPhi);
+				//System.out.println("max = " + maxPhi);
 			}else if(params.sget("Dynamics?") == "Steepest Decent"){
 				opt.step();
 				//ising.getPhiFrA();
@@ -276,13 +264,19 @@ public class IsingField2DApp extends Simulation {
 			}else{
 				cgInitialized = false;
 				ising.simulate();
-			
-			}
-			if (equilibrating && ising.time() >= .5) {
-				equilibrating = false;
-			}
-			sf.accumulateAll(ising.time(), ising.coarseGrained());
+				if(params.sget("Plot FEvT")=="On"){
+					feCounter += 1;
+					if(feCounter == 50){
+						ising.accumEitherFreeEnergy();
+						feCounter = 0;
+						System.out.println( feCounter + " " + ising.t + " Free Energy accum at " + ising.T);
+						ising.changeT(); 
+					}
+				}
 
+			}
+			if (equilibrating && ising.time() >= .5) equilibrating = false;
+			sf.accumulateAll(ising.time(), ising.coarseGrained());
 			lastClear += 1;
 			Job.animate();
 		}
@@ -318,11 +312,6 @@ public class IsingField2DApp extends Simulation {
 			System.out.println(readData);
 			params.set("R/dx", readData);
 			dis.readChar();	
-
-//			readData = dis.readDouble();
-//			System.out.println(readData);
-//			params.set("Magnetization", readData);
-//			dis.readChar();	
 			
 			System.out.println("input read");
 		}catch(IOException ex){
@@ -370,8 +359,6 @@ public class IsingField2DApp extends Simulation {
 			dos.writeChar('\t');
 			dos.writeDouble(params.fget("R/dx"));
 			dos.writeChar('\t');
-//			dos.writeDouble(params.fget("Magnetization"));
-//			dos.writeChar('\t');			
 			dos.writeChar('\n');
 			dos.close();
 		}catch(IOException ex){

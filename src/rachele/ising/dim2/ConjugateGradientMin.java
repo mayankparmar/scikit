@@ -83,7 +83,7 @@ abstract public class ConjugateGradientMin {
     		//we are done -> return
     		System.out.println("Conj Grad Min finished at time " + t + " iterations");
     		//return;
-    	}else{
+    	}//else{
     		//accept the new value of the function value
     		f_p = fret;
     		//Construct the new direction h
@@ -105,7 +105,7 @@ abstract public class ConjugateGradientMin {
     			h[j] = g[j] +gamma*h[j];
     			xi[j] = h[j];	//This is our new direction
     		}
-    	}
+    	//}
 
 		freeEnergy = linemin.minValue;
 	}
