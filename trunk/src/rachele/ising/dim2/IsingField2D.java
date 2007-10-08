@@ -19,7 +19,7 @@ import scikit.params.Parameters;
 //import java.io.*;
 
 public class IsingField2D {
-	public double L, R, T, dx, J, H;
+	public double L, R, T, dx, J, H, dT;
 	public int Lp, N;
 	public double dt, t;
 	public double lastMu;
@@ -62,11 +62,13 @@ public class IsingField2D {
 	
 	Accumulator accClumpFreeEnergy;
 	Accumulator accStripeFreeEnergy;
+	Accumulator accEitherFreeEnergy;
 	public Accumulator accFreeEnergy;
 			
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = true;
 	boolean magConservation = false;
+	int slowPower = 0;
 	String theory;
 	
 	Random random = new Random();
@@ -83,6 +85,7 @@ public class IsingField2D {
 		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
+		dT = params.fget("dT");
 		//double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
 
@@ -91,6 +94,8 @@ public class IsingField2D {
 		accStripeFreeEnergy.setAveraging(true);
 		accClumpFreeEnergy = new Accumulator(0.0001);
 		accClumpFreeEnergy.setAveraging(true);
+		accEitherFreeEnergy = new Accumulator(0.0001);
+		accEitherFreeEnergy.setAveraging(true);
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
 		
@@ -108,11 +113,13 @@ public class IsingField2D {
 		}else{
 			noiselessDynamics = false;
 		}
-	
-		if(params.sget("Dynamics?") == "Langevin Conserve M")
-			magConservation = true;
-		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
-			magConservation = false;
+
+		if(params.sget("Slow CG?") == "Yes, lots") slowPower = 4;
+		else if(params.sget("Slow CG?") == "Yes, some") slowPower = 2;
+		else if(params.sget("Slow CG?") == "No") slowPower = 0;
+		
+		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
+		else if(params.sget("Dynamics?") == "Langevin No M Conservation") magConservation = false;
 		
 		
 		theory = params.sget("Approx");
@@ -209,7 +216,7 @@ public class IsingField2D {
 	}
 	
 	public void readParams(Parameters params) {
-		T = params.fget("T");
+		if (params.sget("Plot FEvT") == "Off") T = params.fget("T");
 		dt = params.fget("dt");
 		H = params.fget("H");
 		J = params.fget("J");
@@ -218,6 +225,7 @@ public class IsingField2D {
 		dx = R/params.fget("R/dx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
+		dT = params.fget("dT");
 		
 		params.set("R/dx", R/dx);
 		params.set("Lp", Lp);
@@ -244,6 +252,10 @@ public class IsingField2D {
 		
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
+		
+		if(params.sget("Slow CG?") == "Yes, lots") slowPower = 4;
+		else if(params.sget("Slow CG?") == "Yes, some") slowPower = 2;
+		else if(params.sget("Slow CG?") == "No") slowPower = 0;
 	}
 	
 	public void initializeFieldWithSeed() {
@@ -381,12 +393,21 @@ public class IsingField2D {
 		t += dt;
 	}
 	
+	public void changeT(){
+		T += dT;
+		System.out.println("T = " + T + " " + dT);
+	}
+	
 	public void accumClumpFreeEnergy(){
 		accClumpFreeEnergy.accum(T, freeEnergy);
 	}
 	
 	public void accumStripeFreeEnergy(){
 		accStripeFreeEnergy.accum(T, freeEnergy);
+	}
+
+	public void accumEitherFreeEnergy(){
+		accEitherFreeEnergy.accum(T, freeEnergy);
 	}
 	
 	public void useNoiselessDynamics() {
@@ -482,6 +503,11 @@ public class IsingField2D {
 		return accClumpFreeEnergy;
 	}
 	
+	public Accumulator getEitherFreeEnergyAcc() {
+		return accEitherFreeEnergy;
+	}
+
+	
 	public void initializeConjGrad(){
     	// Initializations:
     	// evaluate function and derivative at given point
@@ -517,7 +543,8 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H);//*(pow(1 - phi[i]*phi[i], 4));
+			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H);
+			steepestAscentDir[i] *= (pow(1 - phi[i]*phi[i], slowPower));
 		}
 		return steepestAscentDir;		
 	}

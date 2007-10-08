@@ -8,7 +8,7 @@ abstract public class LineMin {
 	static double GOLD = 1.618034;
 	static double GOLDR = 0.61803399;
 	static double GOLDC = 1-GOLDR;
-	static double tolerance = 1e-15;
+	static double tolerance = 1e-10;
 	public int feInfCt = 0;
 	public int bracketPts = 0;
 	public int accumPts = 0;
@@ -46,7 +46,7 @@ abstract public class LineMin {
     	double bSize = Math.abs(initBracket[2]-initBracket[0]);
     	if(bSize > 100) gotoLinemin = false;
     	//uphillBracket(0.0, initTrialX);
-    	System.out.println("gotoLinemin? " + gotoLinemin);
+    	//System.out.println("gotoLinemin? " + gotoLinemin);
     	//minValue = golden(initBracket);
 //    	if(gotoLinemin == true){
     		minValue = golden(initBracket);
@@ -121,7 +121,7 @@ abstract public class LineMin {
 		if(f_b != Double.POSITIVE_INFINITY){
 			bracketLandscape.accum(bx, f_b);
 		}else{
-			System.out.println("init b = inf");
+			//System.out.println("init b = inf");
 			bx *= -1;
 			f_b = f1dim(bx);
 			while (f_b == Double.POSITIVE_INFINITY){
@@ -133,7 +133,7 @@ abstract public class LineMin {
 		if(f_a != Double.POSITIVE_INFINITY){
 			bracketLandscape.accum(ax, f_a);
 		}else{
-			System.out.println("init a = inf");
+			//System.out.println("init a = inf");
 		}
 		bracketPts = 2;
 		
@@ -144,20 +144,20 @@ abstract public class LineMin {
 		if(f_u != Double.POSITIVE_INFINITY)
 			bracketLandscape.accum(u, f_u);
 
-		for(int i = 0; i < 50; i++){
-			u += bx;
-			f_u = f1dim(bx);
-			if(f_u != Double.POSITIVE_INFINITY)
-				bracketLandscape.accum(u, f_u);			
-		}
-		
-		u = -bx;
-		for(int i = 0; i < 50; i++){
-			u -= bx;
-			f_u = f1dim(bx);
-			if(f_u != Double.POSITIVE_INFINITY)
-				bracketLandscape.accum(u, f_u);			
-		}
+//		for(int i = 0; i < 50; i++){
+//			u += bx;
+//			f_u = f1dim(bx);
+//			if(f_u != Double.POSITIVE_INFINITY)
+//				bracketLandscape.accum(u, f_u);			
+//		}
+//		
+//		u = -bx;
+//		for(int i = 0; i < 50; i++){
+//			u -= bx;
+//			f_u = f1dim(bx);
+//			if(f_u != Double.POSITIVE_INFINITY)
+//				bracketLandscape.accum(u, f_u);			
+//		}
 		
 		
 		//first check a point in between
@@ -169,7 +169,7 @@ abstract public class LineMin {
 		}
 		
 		if(f_u < f_a && f_u < f_b){
-			System.out.println("mid was min");
+			//System.out.println("mid was min");
 			cx = u;
 			output[0] = ax;
 			output[1] = cx;
@@ -242,9 +242,9 @@ abstract public class LineMin {
 			double uu =cx+1;
 			double f_uu = f1dim(uu);
 			if(f_uu == Double.POSITIVE_INFINITY){
-				System.out.println("still inf");
+				//System.out.println("still inf");
 			}else{
-				System.out.println("not inf after 1 step  " + uu + " "+ cx + " " +f_uu);
+				//System.out.println("not inf after 1 step  " + uu + " "+ cx + " " +f_uu);
 				bracketLandscape.accum(uu, f_uu);
 			}	
 		}
@@ -255,8 +255,8 @@ abstract public class LineMin {
 		output[0] = ax;
 		output[1] = bx;
 		output[2] = cx;
-		System.out.println("no of init pts = " + bracketPts + " " + ax + " " + bx + " " + cx);
-		System.out.println("fvalues: " + f_a + " " + f_b + " " + f_c);
+		//System.out.println("no of init pts = " + bracketPts + " " + ax + " " + bx + " " + cx);
+		//System.out.println("fvalues: " + f_a + " " + f_b + " " + f_c);
 		//double brSize = cx-ax;
 		//double feDiff1 = f_c-f_b;
 		//double feDiff2 = f_a-f_b;
@@ -416,6 +416,10 @@ abstract public class LineMin {
 			if (smallest > d23){
 				smallest = d23;
 				smallestTol = tol23;}
+			if (iteration >1000) {
+				System.out.println("too many iterations");
+				return f_1;
+			}
 		}
 		
 		//System.out.println("Golden Min finished after " + iteration + " iterations");
