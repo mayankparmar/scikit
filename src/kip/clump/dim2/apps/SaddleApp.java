@@ -60,7 +60,7 @@ public class SaddleApp extends Simulation {
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
 		else
-			grid.setScale(0, 2);
+			grid.setScale(0, 5);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
 		int Lp = clump.numColumns();

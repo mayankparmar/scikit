@@ -1,11 +1,18 @@
 package kip.clump.dim2.apps;
 
 import static kip.util.MathPlus.j1;
+import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 
-import kip.clump.dim2.*;
+import kip.clump.dim2.AbstractClump2D;
+import kip.clump.dim2.Clump2D;
+import kip.clump.dim2.FieldClump2D;
+import kip.clump.dim2.StructureFactor;
 import scikit.dataset.Function;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
@@ -13,14 +20,16 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.util.FileUtil;
 
 
 public class Clump2DApp extends Simulation {
-    Grid grid = new Grid("Grid");
+	final static boolean WRITE_FILES = false;
+	Grid grid = new Grid("Grid");
     Plot plot = new Plot("Structure factor");
     StructureFactor sf;
     AbstractClump2D clump;
-    boolean fieldDynamics = true;
+    boolean fieldDynamics = false;
 	
 	public static void main(String[] args) {
 		new Control(new Clump2DApp(), "Clump Model");
@@ -34,7 +43,7 @@ public class Clump2DApp extends Simulation {
 		if (fieldDynamics) {
 			params.add("R", 1000);
 			params.add("L", 16000.0);
-			params.add("dx", 125.0);
+			params.add("dx", 250.0);
 		}
 		else {
 			params.add("R", 12.0);
@@ -57,7 +66,7 @@ public class Clump2DApp extends Simulation {
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
 		else
-			grid.setScale(0, 2);
+			grid.setScale(0, 5);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
         plot.registerLines("Structure Data", sf.getAccumulator(), Color.BLACK);
@@ -79,11 +88,38 @@ public class Clump2DApp extends Simulation {
         sf = clump.newStructureFactor(params.fget("kR bin-width"));
 		sf.setBounds(0.1, 14);
         
+		File dir = makeDirectory();
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
 			clump.accumulateIntoStructureFactor(sf);
+			writeField(dir);
 			Job.animate();
 		}
  	}
+	
+	File makeDirectory() {
+		if (WRITE_FILES) {
+			File dir = FileUtil.getEmptyDirectory(System.getProperty("user.home"), "output");
+			FileUtil.dumpString(dir+File.separator+"parameters.txt", params.toString());
+			return dir;
+		}
+		return null;
+	}
+	
+	void writeField(File dir) {
+		if (WRITE_FILES) {
+			String fname = dir+File.separator+"t="+format(clump.time());
+			try {
+				DataOutputStream dos = FileUtil.dosFromString(fname);
+				dos.writeInt(clump.numColumns());
+				dos.writeInt(clump.numColumns());
+				double[] phi = clump.coarseGrained();
+				for (int i = 0; i < phi.length; i++)
+					dos.writeFloat((float)phi[i]);
+				dos.close();
+			}
+			catch (IOException e) {}
+		}
+	}
 }
