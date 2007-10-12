@@ -9,11 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.JMenuItem;
 
 import scikit.graphics.ColorChooser;
@@ -74,6 +76,9 @@ public class Grid extends Scene2D {
 		animate();
 	}
 	
+	public BufferedImage getImage() {
+		return _image;
+	}
 	
 	protected Component createCanvas() {
 		return Gfx2DSwing.createComponent(this);
@@ -97,6 +102,13 @@ public class Grid extends Scene2D {
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					saveData("grid.txt");
+				}
+			});
+			ret.add(menuItem);
+			menuItem = new JMenuItem("Save image ...");
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveImage("grid.png");
 				}
 			});
 			ret.add(menuItem);
@@ -165,6 +177,15 @@ public class Grid extends Scene2D {
 				PrintWriter pw = FileUtil.pwFromString(fname);
 				FileUtil.writeOctaveGrid(pw, _data, _w, 1);
 				pw.close();
+			}
+		} catch (IOException e) {}
+	}
+
+	private void saveImage(String fname) {
+		try {
+			fname = FileUtil.saveDialog(_component, fname);
+			if (fname != null) {
+				ImageIO.write(_image, "png", new File(fname));
 			}
 		} catch (IOException e) {}
 	}
