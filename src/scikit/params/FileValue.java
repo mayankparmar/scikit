@@ -14,6 +14,10 @@ import javax.swing.event.ChangeListener;
 public class FileValue extends GuiValue {
 	JFileChooser chooser = new JFileChooser();
 	
+	public FileValue() {
+		this(null);
+	}
+	
 	public FileValue(String v) {
 		super(defaultDirectory(v));
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -48,6 +52,6 @@ public class FileValue extends GuiValue {
 		if (v != null && new File(v).isDirectory() || new File(v).isFile())
 			return v;
 		else
-			return (new JFileChooser()).getCurrentDirectory().toString();
+			return System.getProperty("user.home");
 	}	
 }
