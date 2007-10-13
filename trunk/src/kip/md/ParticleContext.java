@@ -114,17 +114,6 @@ public class ParticleContext {
 	}
 	
 	
-	public void layOutParticlesSpiral(Particle[] particles) {
-		int N = particles.length;
-		double R = L / (2 + sqrt(PI/N));
-		for (int i = 0; i < N; i++) {
-			double r = R * sqrt((double)(i+1) / N);
-			double a = 2 * sqrt(PI * (i+1));
-			particles[i].x = L/2. + r*cos(a);
-			particles[i].y = L/2. + r*sin(a);
-		}		
-	}
-	
 	public void layOutParticles(Particle[] particles) {
 		int N = particles.length;
 		int[] indices = Utilities.integerSequence(N);
