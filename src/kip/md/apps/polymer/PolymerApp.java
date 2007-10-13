@@ -1,6 +1,7 @@
 package kip.md.apps.polymer;
 
 import static java.lang.Math.*;
+
 import java.awt.Color;
 import java.io.File;
 
@@ -32,12 +33,12 @@ public class PolymerApp extends Simulation {
 	
 	public PolymerApp() {
 		frame(canvas);
-		params.add("Output directory", new DirectoryValue(""));
+		params.add("Output directory", new DirectoryValue());
 		params.add("Write files", new ChoiceValue("No", "Yes"));
 		params.add("Topology", new ChoiceValue("Disk", "Torus"));
 		params.add("Length", 30.0);
 		params.add("Particles", 120);
-		params.addm("Radius", new DoubleValue(1, 0.6, 1.4).withSlider());
+		params.addm("Radius", new DoubleValue(1, 0.5, 1.4).withSlider());
 		params.addm("Temperature", new DoubleValue(5, 0, 10).withSlider());
 		params.addm("dt", 0.005);
 		params.addm("Bath coupling", 0.2);
@@ -62,26 +63,27 @@ public class PolymerApp extends Simulation {
 
 	public void run() {
 		double L = params.fget("Length");
-		PolyContext pc = new PolyContext(L, ParticleContext.typeForString(params.sget("Topology")));
 		double dt = params.fget("dt");		
-		
+		double radius = params.fget("Radius");
 		int N = params.iget("Particles");
+		PolyContext pc = new PolyContext(L, ParticleContext.typeForString(params.sget("Topology")));
 		PolyParticle[] particles = new PolyParticle[N];
 		
 		for (int i = 0; i < N; i++) {
 			ParticleTag tag = new PolyTag(i, particles);
 			tag.pc = pc;
-			tag.radius = params.fget("Radius");
+			tag.radius = radius;
 			tag.color = new Color(1f-(float)i/N, 0f, (float)i/N, 0.5f);
 			tag.mass = 1;
-			tag.interactionRange = 6*tag.radius;
+			tag.interactionRange = 6*radius;
 			particles[i] = new PolyParticle();
 			particles[i].tag = tag;
 		}
 		
-		pc.layOutParticlesSpiral(particles);		
+		layOutParticlesSpiral(L, radius, particles);		
 		sim = new MolecularDynamics2D<PolyParticle>(dt, pc, particles);
 		lastAnimate = 0;
+		Job.animate();
 		
 		if (params.sget("Write files").equals("No")) {
 			while (true) {
@@ -98,6 +100,17 @@ public class PolymerApp extends Simulation {
 				maybeDump(10, dir, particles);
 			}
 		}
+	}
+	
+	void layOutParticlesSpiral(double L, double radius, Particle[] particles) {
+		int N = particles.length;
+		double R = Math.min(L / (2 + sqrt(PI/N)), 2*radius*sqrt(N/PI));
+		for (int i = 0; i < N; i++) {
+			double r = R * sqrt((double)(i+1) / N);
+			double a = 2 * sqrt(PI * (i+1));
+			particles[i].x = L/2. + r*cos(a);
+			particles[i].y = L/2. + r*sin(a);
+		}		
 	}
 	
 	void maybeAnimate() {
