@@ -8,6 +8,7 @@ import java.awt.Color;
 
 import kip.clump.dim2.FieldClump2D;
 import scikit.dataset.PointSet;
+import scikit.graphics.GrayScale;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
@@ -55,12 +56,13 @@ public class SaddleApp extends Simulation {
 		
 		periodic = params.sget("Periodic").equals("Yes");
 		clump.useFixedBoundaryConditions(!periodic);
-		
 		clump.readParams(params);
+		
+		grid.setColors(new GrayScale());
 		if (params.sget("Zoom").equals("Yes"))
 			grid.setAutoScale();
 		else
-			grid.setScale(0, 5);
+			grid.setScale(0.2, 4);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
 		int Lp = clump.numColumns();
