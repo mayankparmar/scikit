@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 
 import javax.imageio.ImageIO;
 
+import scikit.graphics.GrayScale;
 import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -31,8 +32,8 @@ public class AnimateApp extends Simulation {
 		params.add("t start", 1700.0);
 		params.add("t finish", 2150.0);
 		params.add("dt", 1);
-		params.add("lo", 0.);
-		params.add("hi", 5.);
+		params.add("lo", 0.2);
+		params.add("hi", 4.);
 		params.add("time");
 	}
 
@@ -68,6 +69,7 @@ public class AnimateApp extends Simulation {
 					data[i] = dis.readFloat();
 				dis.close();
 				
+				grid.setColors(new GrayScale());
 				grid.setScale(lo, hi);
 				grid.registerData(w, h, data);
 				try {
