@@ -3,23 +3,33 @@ package scikit.numerics.opt;
 import static java.lang.Math.*;
 
 public class LinearOptimizer {
-	protected Function1D _fn;
+	protected C1Function1D _f;
 	static final double GOLDEN = (1+sqrt(5))/2; // = 1.618...
 	static final double TOL = 3e-8; // sqrt of double precision, see N.R. discussion
+	static final double EPS = 1e-10;
 	
-	public LinearOptimizer(Function1D fn) {
-		_fn = fn;
+	public void setFunction(C1Function1D f) {
+		_f = f;
 	}
 	
-	public double optimize(double x1, double x2) {
-		double f1 = _fn.eval(x1);
-		double f2 = _fn.eval(x2);
-		assert(f1 != f2);
-		double[] bracket = f1 > f2 ? bracket(x1, f1, x2, f2) : bracket(x2, f2, x1, f1);
-		return optimize(bracket);
+	public double[] optimize(double x) {
+		double x1 = x;
+		double f1 = _f.eval(x1);
+		double x2, f2;
+		double alpha = - _f.deriv(x);
+		for (int i = 0; i < 10; i++) {
+			x2 = x1 + alpha;
+			f2 = _f.eval(x2);
+			if (2*abs(f2-f1) <= TOL*(abs(f2)+abs(f1)+EPS))
+				return new double[]{x1, f1};
+			if (f1 > f2)
+				return optimize(bracket(x1, f1, x2, f2));
+			alpha *= 0.1;
+		}
+		throw new IllegalStateException("Invalid derivative information.");
 	}
 	
-	public double optimize(double[] bracket) {
+	public double[] optimize(double[] bracket) {
 		double x0 = bracket[0];
 		double xm = bracket[1];
 		double x3 = bracket[2];
@@ -32,32 +42,32 @@ public class LinearOptimizer {
 			x1 = (xm-x0)/GOLDEN + x0; 
 			x2 = xm;
 		}
-		double f1 = _fn.eval(x1);
-		double f2 = _fn.eval(x2);
+		double f1 = _f.eval(x1);
+		double f2 = _f.eval(x2);
 		while(abs(x3-x0) > TOL*(abs(x1)+abs(x2))) {
 			if (f2 < f1) {
 				x0 = x1;
 				x1 = x2;
 				x2 = (x2-x3)/GOLDEN + x3;
 				f1 = f2;
-				f2 = _fn.eval(x2);
+				f2 = _f.eval(x2);
 			}
 			else {
 				x3 = x2;
 				x2 = x1;
 				x1 = (x1-x0)/GOLDEN + x0;
 				f2 = f1;
-				f1 = _fn.eval(f1);
+				f1 = _f.eval(x1);
 			}
 		}
-		return f1 < f2 ? x1 : x2;
+		return f1 < f2 ? new double[]{x1,f1} : new double[]{x2,f2};
 	}
 	
 	protected double[] bracket(double x1, double f1, double x2, double f2) {
 		assert (f1 > f2);
 		while (abs(x2-x1) < 1e10) {
 			double x3 = x2 + GOLDEN*(x2-x1);
-			double f3 = _fn.eval(x3);
+			double f3 = _f.eval(x3);
 			if (f2 < f3) {
 				return new double[] {min(x1, x3), x2, max(x1, x3)};
 			}
@@ -69,6 +79,6 @@ public class LinearOptimizer {
 				f2 = f3;
 			}
 		}
-		throw new IllegalArgumentException("Doh");
+		throw new IllegalStateException("Could not bracket a minimum.");
 	}
 }
