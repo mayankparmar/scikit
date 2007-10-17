@@ -7,6 +7,7 @@ abstract public class Optimizer {
 	protected C1Function _f;
 	protected LinearOptimizer _linOpt;
 	protected ArrayList<Constraint> _constraints;
+	protected boolean _finished;
 	
 	public Optimizer(int dim, LinearOptimizer linOpt) {
 		_dim = dim;
@@ -22,6 +23,10 @@ abstract public class Optimizer {
 		_f = f;
 	}
 	
+	public boolean isFinished() {
+		return _finished;
+	}
+	
 	/**
 	 * Initialize the optimization with an initial guess p. The results
 	 * of the optimization will be stored in p at each step.
@@ -34,5 +39,5 @@ abstract public class Optimizer {
 	 * p passed to the initialize method.
 	 * @return A boolean indicating whether convergence has been reached
 	 */
-	abstract public boolean step();
+	abstract public void step();
 }

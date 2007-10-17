@@ -1,11 +1,12 @@
 package scikit.numerics.opt;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 
 public class ConjugateGradient extends Optimizer {
 	static final double FTOL = 3e-8; // sqrt of double precision, see N.R. discussion
-	static final double EPS = 1e-10;
+	static final double EPS = 1e-12;
 	double[] temp1, temp2;
 	double[] p, g, h, d_f;
 	double fp;
@@ -28,17 +29,23 @@ public class ConjugateGradient extends Optimizer {
 			g[i] = h[i] = -d_f[i];
 		}
 		iter = 0;
+		_finished = false;
 	}
 	
-	public boolean step() {
-		double fp2 = linmin(p, d_f);
-		if (2*abs(fp2-fp) <= FTOL*(abs(fp2)+abs(fp)+EPS))
-			return true;
+	public void step() {
+		// double fp2 = linmin(p, d_f); // uncomment for steepest descent
+		double fp2 = linmin(p, h);
+		if (2*abs(fp2-fp) <= FTOL*(abs(fp2)+abs(fp)+EPS)) {
+			_finished = true;
+			return;
+		}
 		fp = fp2;
 		_f.grad(p, d_f);
 		double gg = dotProduct(g, g);
-		if (gg == 0)
-			return true;
+		if (gg == 0) {
+			_finished = true;
+			return;
+		}
 		double gamma = 0;
 		for (int i = 0; i < _dim; i++)
 			gamma += (-d_f[i]-g[i])*(-d_f[i]);
@@ -48,9 +55,6 @@ public class ConjugateGradient extends Optimizer {
 			h[i] = -d_f[i] + gamma*h[i];
 		}
 		iter++;
-		if (iter > 200)
-			throw new IllegalStateException("Conjugate gradient not converging");
-		return false;
 	}
 	
 	// given a n-dimensional point p and a direction dir, moves and resets p
@@ -67,7 +71,7 @@ public class ConjugateGradient extends Optimizer {
 				for (int i = 0; i < _dim; i++)
 					temp1[i] = p[i] + x*dir[i];
 				_f.grad(temp1, temp2);
-				return dotProduct(temp2, dir);
+				return dotProduct(temp2, dir)/sqrt(dotProduct(dir,dir));
 			}
 		};
 		_linOpt.setFunction(f_lin);
