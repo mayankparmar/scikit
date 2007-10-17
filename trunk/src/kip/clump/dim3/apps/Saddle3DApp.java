@@ -1,6 +1,5 @@
 package kip.clump.dim3.apps;
 
-import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 
@@ -8,7 +7,7 @@ import java.awt.Color;
 
 import kip.clump.dim3.FieldClump3D;
 import kip.clump.dim3.StructureFactor3D;
-import scikit.dataset.Accumulator;
+import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
 import scikit.jobs.Control;
@@ -20,8 +19,7 @@ import scikit.params.DoubleValue;
 public class Saddle3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");
     Plot plot = new Plot("Structure factor");
-    Plot energy = new Plot("Saddle Pt. Free Energy vs Temperature");
-    Accumulator energyAcc;
+    Plot slice = new Plot("Slice");
 	FieldClump3D clump;
 	boolean periodic;
 	boolean findSaddle;
@@ -37,7 +35,7 @@ public class Saddle3DApp extends Simulation {
 	}
 
 	public Saddle3DApp() {
-		frame(grid, plot, energy);
+		frame(grid, plot, slice);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
 		params.addm("Periodic", new ChoiceValue("Yes", "No"));
 		params.addm("T", new DoubleValue(0.09, 0.0, 0.15).withSlider());
@@ -54,7 +52,7 @@ public class Saddle3DApp extends Simulation {
 		flags.add("Res up");
 		flags.add("Res down");
 		flags.add("Calc S.F.");
-		flags.add("Add Pt.");
+		flags.add("Load config.");
 	}
 	
 	public void animate() {
@@ -69,8 +67,8 @@ public class Saddle3DApp extends Simulation {
 			sf.setBounds(kRmin, kRmax);
 			clump.accumulateIntoStructureFactor(sf);
 		}
-		if (flags.contains("Add Pt.")) {
-			energyAcc.accum(clump.T, clump.freeEnergyDensity);
+		if (flags.contains("Load config.")) {
+			grid.extractData(clump.coarseGrained());
 		}
 		flags.clear();
 		
@@ -85,7 +83,10 @@ public class Saddle3DApp extends Simulation {
 		grid.registerData(Lp, Lp, Lp, clump.coarseGrained());
 		
 		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
-		energy.registerLines("Data", energyAcc, Color.BLACK);
+		
+		double[] sliceData = new double[Lp];
+		System.arraycopy(clump.coarseGrained(), (Lp*Lp)*(Lp/2)+Lp*(Lp/2), sliceData, 0, Lp);
+		slice.registerLines("Slice", new PointSet(0, 1, sliceData), Color.BLACK);
 		
 		params.set("dx", clump.dx);
 		params.set("R", format(clump.R));
@@ -98,14 +99,13 @@ public class Saddle3DApp extends Simulation {
 	public void clear() {
 		grid.clear();
 		plot.clear();
-		energy.clear();
+		slice.clear();
 	}
 	
 	public void run() {
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed(params.sget("Seed"));
         sf = clump.newStructureFactor(kRwidth);
-		energyAcc = new Accumulator(0.001);
         
 		Job.animate();
 		
@@ -116,8 +116,8 @@ public class Saddle3DApp extends Simulation {
 			double scale = var1/var2;
 			if (findSaddle)
 				clump.scaleField(scale);
-			if (periodic)
-				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
+//			if (periodic)
+//				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
 			Job.animate();
 		}
 	}
