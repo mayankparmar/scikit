@@ -22,14 +22,15 @@ import scikit.params.Parameters;
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;
 	double dt, t;
-	double[] phi, phi_bar, del_phi;
+	double[] del_phi;
 	boolean[] onBoundary;
 	int elementsInsideBoundary;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
-	double[] fftScratch;
-	
+	double[] fftScratch;	
 	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
+	
+	public double[] phi, phi_bar;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
 	public double rms_dF_dphi;
 	public double freeEnergyDensity;
@@ -110,6 +111,11 @@ public class FieldClump2D extends AbstractClump2D {
 			// uncomment for random initial condition
 			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
+		
+		double mean = mean(phi);
+		for (int i = 0; i < Lp*Lp; i++)
+			if (!onBoundary[i])
+				phi[i] += (DENSITY-mean);
 	}
 	
 	public void useNoiselessDynamics(boolean b) {
@@ -234,11 +240,32 @@ public class FieldClump2D extends AbstractClump2D {
 		return Lp;
 	}
 	
-	
 	public double time() {
 		return t;
 	}
 	
+	public void convolveWithRange(double[] src, double[] dest, double R) {
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftScratch[2*i] = src[i];
+			fftScratch[2*i+1] = 0;
+		}
+		
+		fft.transform(fftScratch);
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			for (int x = -Lp/2; x < Lp/2; x++) {
+				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+				double J = (kR == 0 ? 1 : 2*j1(kR)/kR);
+				fftScratch[2*i] *= J;
+				fftScratch[2*i+1] *= J;
+			}
+		}
+		fft.backtransform(fftScratch);
+		
+		for (int i = 0; i < Lp*Lp; i++) {
+			dest[i] = fftScratch[2*i] / (Lp*Lp);
+		}		
+	}
 	
 	private void allocate() {
 		phi = new double[Lp*Lp];
@@ -270,29 +297,6 @@ public class FieldClump2D extends AbstractClump2D {
 				elementsInsideBoundary--;
 			}
 		}
-	}
-	
-	private void convolveWithRange(double[] src, double[] dest, double R) {
-		for (int i = 0; i < Lp*Lp; i++) {
-			fftScratch[2*i] = src[i];
-			fftScratch[2*i+1] = 0;
-		}
-		
-		fft.transform(fftScratch);
-		for (int y = -Lp/2; y < Lp/2; y++) {
-			for (int x = -Lp/2; x < Lp/2; x++) {
-				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
-				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				double J = (kR == 0 ? 1 : 2*j1(kR)/kR);
-				fftScratch[2*i] *= J;
-				fftScratch[2*i+1] *= J;
-			}
-		}
-		fft.backtransform(fftScratch);
-		
-		for (int i = 0; i < Lp*Lp; i++) {
-			dest[i] = fftScratch[2*i] / (Lp*Lp);
-		}		
 	}
 
 	private void convolveWithRangeDerivative(double[] src, double[] dest, double R) {

@@ -6,7 +6,7 @@ public class LinearOptimizer {
 	protected C1Function1D _f;
 	static final double GOLDEN = (1+sqrt(5))/2; // = 1.618...
 	static final double TOL = 3e-8; // sqrt of double precision, see N.R. discussion
-	static final double EPS = 1e-10;
+	static final double EPS = 1e-12;
 	
 	public void setFunction(C1Function1D f) {
 		_f = f;
@@ -15,16 +15,17 @@ public class LinearOptimizer {
 	public double[] optimize(double x) {
 		double x1 = x;
 		double f1 = _f.eval(x1);
-		double x2, f2;
 		double alpha = - _f.deriv(x);
+		double x2 = x1 + alpha;
+		double f2 = _f.eval(x2);
+		boolean tooClose = (2*abs(f2-f1) < TOL*(abs(f2)+abs(f1)+EPS));
+		double factor = tooClose ? 10 : 0.1;
 		for (int i = 0; i < 10; i++) {
-			x2 = x1 + alpha;
-			f2 = _f.eval(x2);
-			if (2*abs(f2-f1) <= TOL*(abs(f2)+abs(f1)+EPS))
-				return new double[]{x1, f1};
 			if (f1 > f2)
 				return optimize(bracket(x1, f1, x2, f2));
-			alpha *= 0.1;
+			alpha *= factor;
+			x2 = x1 + alpha;
+			f2 = _f.eval(x2);
 		}
 		throw new IllegalStateException("Invalid derivative information.");
 	}
