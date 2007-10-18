@@ -14,10 +14,10 @@ import static kip.util.MathPlus.j0;
 import static kip.util.MathPlus.j1;
 import static kip.util.MathPlus.jn;
 import static kip.util.MathPlus.sqr;
-import kip.util.DoubleArray;
 import scikit.dataset.Accumulator;
 import scikit.numerics.fft.ComplexDouble2DFFT;
 import scikit.params.Parameters;
+import scikit.util.DoubleArray;
 
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;

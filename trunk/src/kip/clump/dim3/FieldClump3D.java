@@ -10,9 +10,9 @@ import static java.lang.Math.min;
 import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.sqr;
-import kip.util.DoubleArray;
 import scikit.numerics.fft.ComplexDouble3DFFT;
 import scikit.params.Parameters;
+import scikit.util.DoubleArray;
 
 public class FieldClump3D extends AbstractClump3D {
 	int Lp;

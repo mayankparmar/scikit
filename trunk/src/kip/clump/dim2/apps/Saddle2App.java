@@ -3,7 +3,6 @@ package kip.clump.dim2.apps;
 import static java.lang.Math.log;
 import static scikit.util.Utilities.frame;
 import kip.clump.dim2.FieldClump2D;
-import kip.util.DoubleArray;
 import scikit.graphics.GrayScale;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
@@ -14,7 +13,11 @@ import scikit.numerics.opt.C1Function;
 import scikit.numerics.opt.ConjugateGradient;
 import scikit.numerics.opt.Constraint;
 import scikit.numerics.opt.LinearOptimizer;
+import scikit.numerics.opt.Optimizer;
+import scikit.numerics.opt.Relaxation;
 import scikit.params.ChoiceValue;
+import scikit.util.DoubleArray;
+import scikit.util.Pair;
 
 public class Saddle2App extends Simulation {
 	Grid grid = new Grid("Grid");
@@ -59,23 +62,11 @@ public class Saddle2App extends Simulation {
 	}
 	
 	public void run() {
-//		ConjugateGradient opt = new ConjugateGradient(2, new LinearOptimizer());
-//		opt.setFunction(new C1Function() {
-//			public double eval(double[] p) {
-//				return (p[0]-3)*(p[0]-3) + 2*(p[1]+1)*(p[1]+1);
-//			}
-//			public void grad(double[] p, double[] ret) {
-//				ret[0] = 2*(p[0]-3);
-//				ret[1] = 4*(p[1]+1);
-//			}
-//		});
-//		double[] p = new double[] {4, 3};
-//		opt.initialize(p);
-
 		clump = new FieldClump2D(params);
 		clump.initializeFieldWithSeed();
 		
 		C1Function f = new C1Function() {
+			double[] grad = new double[clump.phi.length];
 			double freeEnergy(double p, double pb) {
 				double inf = Double.POSITIVE_INFINITY;
 				double f = 0.5*p*pb+clump.T*p*log(p);
@@ -84,44 +75,41 @@ public class Saddle2App extends Simulation {
 			double delFreeEnergy(double p, double pb) {
 				return pb+clump.T*log(p);
 			}
-			public double eval(double[] p) {
-				double[] pb = clump.phi_bar;
+			public Pair<Double,double[]> calculate(final double[] p) {
+				final double[] pb = clump.phi_bar;
 				clump.convolveWithRange(p, pb, clump.R);
-				double acc = 0;
+				double f = 0;
 				for (int i = 0; i < p.length; i++) {
-					acc += freeEnergy(p[i], pb[i]);
+					f += freeEnergy(p[i], pb[i]) / p.length;
+					grad[i] = delFreeEnergy(p[i], pb[i]);
 				}
-				return acc / p.length;
-			}
-			public void grad(double[] p, double[] ret) {
-				double[] pb = clump.phi_bar;
-				clump.convolveWithRange(p, pb, clump.R);
+				double mu = DoubleArray.mean(grad);
 				for (int i = 0; i < p.length; i++) {
-					ret[i] = delFreeEnergy(p[i], pb[i]);
+					grad[i] -= mu;
 				}
-				double mu = DoubleArray.mean(ret);
-				for (int i = 0; i < p.length; i++) {
-					ret[i] -= mu;
-				}
+				return new Pair<Double,double[]>(f, grad);
 			}
 		};
 		
 		Constraint c = new Constraint() {
+			double[] grad = new double[clump.phi.length];
 			public double tolerance() {
 				return 0.01;
 			}
-			public double eval(double[] p) {
-				// TODO
-				return 0;
-			}
-			public void grad(double[] p, double[] dir) {
-				// TODO Auto-generated method stub
+			public Pair<Double,double[]> calculate(double[] p) {
+				double c = 0;
+				for (int i = 0; i < p.length; i++) {
+					c += (p[i]-1)*(p[i]-1) / p.length;
+					grad[i] = 2*(p[i]-1);
+				}
+				return new Pair<Double,double[]>(c, grad);
 			}
 		};
-		c.eval(null);
 		
-		ConjugateGradient opt = new ConjugateGradient(clump.phi.length, new LinearOptimizer());
+		Optimizer opt = new ConjugateGradient(clump.phi.length, new LinearOptimizer());
+		opt = new Relaxation(clump.phi.length, 0.1);
 		opt.setFunction(f);
+		opt.addConstraint(c);
 		opt.initialize(clump.phi);
 		
 		while (!opt.isFinished()) {

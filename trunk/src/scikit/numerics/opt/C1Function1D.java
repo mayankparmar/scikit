@@ -1,6 +1,15 @@
 package scikit.numerics.opt;
 
-public interface C1Function1D {
-	public double eval(double x);
-	public double deriv(double x);
+import scikit.util.Pair;
+
+abstract public class C1Function1D {
+	abstract public Pair<Double,Double> calculate(double x);
+	
+	public double eval(double x) {
+		return calculate(x).fst();
+	}
+	
+	public double deriv(double x) {
+		return calculate(x).snd();
+	}
 }
