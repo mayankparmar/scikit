@@ -1,6 +1,7 @@
 package scikit.numerics.opt;
 
 import static java.lang.Math.*;
+import scikit.util.Pair;
 
 public class LinearOptimizer {
 	protected C1Function1D _f;
@@ -12,7 +13,7 @@ public class LinearOptimizer {
 		_f = f;
 	}
 	
-	public double[] optimize(double x) {
+	public Pair<Double,Double> optimize(double x) {
 		double x1 = x;
 		double f1 = _f.eval(x1);
 		double alpha = - _f.deriv(x);
@@ -30,7 +31,7 @@ public class LinearOptimizer {
 		throw new IllegalStateException("Invalid derivative information.");
 	}
 	
-	public double[] optimize(double[] bracket) {
+	public Pair<Double,Double> optimize(double[] bracket) {
 		double x0 = bracket[0];
 		double xm = bracket[1];
 		double x3 = bracket[2];
@@ -61,7 +62,7 @@ public class LinearOptimizer {
 				f1 = _f.eval(x1);
 			}
 		}
-		return f1 < f2 ? new double[]{x1,f1} : new double[]{x2,f2};
+		return f1 < f2 ? new Pair<Double,Double>(x1,f1) : new Pair<Double,Double>(x2,f2);
 	}
 	
 	protected double[] bracket(double x1, double f1, double x2, double f2) {

@@ -7,8 +7,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.sqr;
-import kip.util.DoubleArray;
 import scikit.params.Parameters;
+import scikit.util.DoubleArray;
 
 public class ClumpRadial {
 	double DENSITY = 1;
