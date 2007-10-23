@@ -45,7 +45,7 @@ public class FieldClump2D extends AbstractClump2D {
 		dx = params.fget("dx");
 		dt = params.fget("dt");
 		
-		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		Lp = Integer.highestOneBit((int)rint(L/dx));
 		dx = L / Lp;
 		params.set("dx", dx);
 		allocate();
