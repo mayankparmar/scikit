@@ -39,7 +39,7 @@ public class FieldClump3D extends AbstractClump3D {
 		dx = params.fget("dx");
 		dt = params.fget("dt");
 		
-		Lp = Integer.highestOneBit((int)rint((L/dx)));
+		Lp = Integer.highestOneBit((int)rint(L/dx));
 		dx = L / Lp;
 		params.set("dx", dx);
 		allocate();
