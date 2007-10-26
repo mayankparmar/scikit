@@ -14,6 +14,8 @@ import com.sun.opengl.util.GLUT;
 
 import scikit.util.Bounds;
 import scikit.util.Point;
+import scikit.vecmath.Quat4d;
+import scikit.vecmath.VecHelper;
 
 public class Gfx3D {
 	private final GL _gl;
@@ -21,7 +23,7 @@ public class Gfx3D {
 	private final GLUT _glut = new GLUT();
 	private final GLUquadric _gluq = _glu.gluNewQuadric();
 	private final Bounds _pixBds, _viewBds;
-	private final Quaternion _rotation; 
+	private final Quat4d _rotation; 
 	
 	private static int FONT = GLUT.BITMAP_8_BY_13;
 	private static int FONT_HEIGHT = 8; // pixels
@@ -44,6 +46,10 @@ public class Gfx3D {
 	
 	public Bounds viewBounds() {
 		return _viewBds;
+	}
+	
+	public Quat4d rotation() {
+		return _rotation;
 	}
 	
 	public void ortho2D(Bounds bds) {
@@ -87,7 +93,7 @@ public class Gfx3D {
 		// step (3): move object away from camera
 		_gl.glTranslated(0, 0, -1.5*len);
 		// step (2): rotate object about zero
-		_gl.glMultMatrixd(_rotation.getRotationMatrix(), 0);
+		_gl.glMultMatrixd(VecHelper.getGLMatrix(_rotation), 0);
 		// step (1): move object to its center
 		Point center = _viewBds.getCenter();
 		_gl.glTranslated(-center.x, -center.y, -center.z);

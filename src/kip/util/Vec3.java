@@ -2,7 +2,7 @@ package kip.util;
 
 import static java.lang.Math.*;
 
-
+// TODO replace with scikit.vecmath.Vector3d
 public class Vec3 implements Cloneable {
 	public double x, y, z;
 	public Vec3(double x, double y, double z) {
