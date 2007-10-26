@@ -254,8 +254,11 @@ public class FieldClump2D extends AbstractClump2D {
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
-				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 				double J = (kR == 0 ? 1 : 2*j1(kR)/kR);
+//				double kRx = (2*PI*x/L) * R;
+//				double kRy = (2*PI*y/L) * R;
+//				double J = (kRx == 0 ? 1 : sin(kRx)/kRx) * (kRy == 0 ? 1 : sin(kRy)/kRy);
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 				fftScratch[2*i] *= J;
 				fftScratch[2*i+1] *= J;
 			}

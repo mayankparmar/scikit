@@ -20,6 +20,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 import scikit.util.FileUtil;
 
 
@@ -29,7 +30,7 @@ public class Clump2DApp extends Simulation {
     Plot plot = new Plot("Structure factor");
     StructureFactor sf;
     AbstractClump2D clump;
-    boolean fieldDynamics = false;
+    boolean fieldDynamics = true;
 	
 	public static void main(String[] args) {
 		new Control(new Clump2DApp(), "Clump Model");
@@ -38,18 +39,20 @@ public class Clump2DApp extends Simulation {
 	public Clump2DApp() {
 		frame(grid, plot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("T", 0.15);
-		params.addm("dt", 1.0);
 		if (fieldDynamics) {
+			params.addm("T", new DoubleValue(0.15, 0, 0.4).withSlider());
+			params.addm("Noisy", new ChoiceValue("Yes", "No"));
 			params.add("R", 1000);
-			params.add("L", 16000.0);
-			params.add("dx", 250.0);
+			params.add("L", 8000.0);
+			params.add("dx", 100.0);
 		}
 		else {
+			params.addm("T", 0.15);
 			params.add("R", 12.0);
 			params.add("L", 192.0);
 			params.add("dx", 3.0);
 		}
+		params.addm("dt", 1.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
 		params.add("Time");
@@ -58,7 +61,9 @@ public class Clump2DApp extends Simulation {
 	
 	public void animate() {
 		clump.readParams(params);
-		
+		if (fieldDynamics) {
+			((FieldClump2D)clump).useNoiselessDynamics(!params.sget("Noisy").equals("Yes"));
+		}
 		if (flags.contains("Clear S.F."))
 			sf.getAccumulator().clear();
 		flags.clear();
