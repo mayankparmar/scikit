@@ -52,7 +52,7 @@ public class Clump1DApp extends Simulation {
 		plot.registerLines("Clump data", new PointSet(0, clump.dx, clump.coarseGrained()), Color.BLACK);
 		
 		sfplot.clear();
-		sfplot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
+		sfplot.registerBars("Structure data", sf.getAccumulator(), Color.RED);
 		if (clump.T > AbstractClump1D.T_SP) {
 			sfplot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
 				public double eval(double kR) {
