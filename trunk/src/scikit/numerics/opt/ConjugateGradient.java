@@ -2,6 +2,7 @@ package scikit.numerics.opt;
 
 import static scikit.util.DoubleArray.dot;
 import static java.lang.Math.sqrt;
+import scikit.numerics.fn.C1Function1D;
 import scikit.util.Pair;
 
 
