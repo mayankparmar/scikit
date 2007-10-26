@@ -15,11 +15,13 @@ import javax.swing.event.MouseInputListener;
 import scikit.graphics.Drawable;
 import scikit.graphics.GLHelper;
 import scikit.graphics.Scene;
+import scikit.vecmath.Quat4d;
+import scikit.vecmath.VecHelper;
 
 
 public class Scene3D extends Scene<Gfx3D> {
 	boolean _drawBounds = true;
-	Quaternion _rotation = new Quaternion();
+	Quat4d _rotation = new Quat4d(0, 0, 0, 1);
 	
 	public Scene3D(String title) {
 		super(title);
@@ -29,10 +31,10 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	public void clear() {
 		super.clear();
-		_rotation = new Quaternion();
+		_rotation = new Quat4d(0, 0, 0, 1);
 	}
 	
-	public Quaternion getRotation() {
+	public Quat4d getRotation() {
 		return _rotation;
 	}
 	
@@ -48,6 +50,7 @@ public class Scene3D extends Scene<Gfx3D> {
 				GL gl = glDrawable.getGL();
 				gl.glEnable(GL.GL_NORMALIZE);
 				gl.glEnable(GL.GL_BLEND);
+				gl.glEnable(GL.GL_CULL_FACE);
 				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 				gl.glShadeModel(GL.GL_SMOOTH);
 				gl.glClearColor(1f, 1f, 1f, 0.0f);
@@ -98,11 +101,9 @@ public class Scene3D extends Scene<Gfx3D> {
 			_lastDrag = event.getPoint();
 			
 			double radPerPixel = 0.01;
-			Quaternion q = new Quaternion();
-			q.setFromRotationVector(radPerPixel*dy, radPerPixel*dx, 0);
-			q.mul(_rotation);
-			q.normalize();
-			_rotation = q;
+			Quat4d q = VecHelper.quatFromAxisAngle(radPerPixel*dy, radPerPixel*dx, 0);
+			_rotation.mul(q, _rotation);
+			_rotation.normalize();
 			_canvas.repaint();
 		}
 	};

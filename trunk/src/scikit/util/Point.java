@@ -1,5 +1,7 @@
 package scikit.util;
 
+// TODO replace all occurrences by Tuple3d
+
 public class Point implements Cloneable {
 	public double x = 0, y = 0, z = 0;
 	
