@@ -91,13 +91,58 @@ public final class MathPlus extends Object {
     */
 
 	
-	
+	/**
+	 * @param x a double value
+	 * @return x squared
+	 * @author kip
+	 */
 	static public double sqr(double x) {
 		return x*x;
 	}
-
+	
+	/**
+	 * @param x a double value
+	 * @return |x|/x
+	 * @author kip
+	 */
 	static public double sign(double x) {
 		return x/java.lang.Math.abs(x);
+	}
+
+	/**
+	 * @param x a double value
+	 * @param y a double value
+	 * @return the magnitude of the vector (x,y) without under/over flow
+	 * @author kip
+	 */
+	static public double hypot(double x, double y) {
+		double r = Math.max(Math.abs(x), Math.abs(y));
+		if (r == 0)
+			return 0;
+		else {
+			double xp = x/r;
+			double yp = y/r;
+			return r*Math.sqrt(xp*xp + yp*yp);
+		}
+	}
+
+	/**
+	 * @param x a double value
+	 * @param y a double value
+	 * @param z a double value
+	 * @return the magnitude of the vector (x,y,z) without under/over flow
+	 * @author kip
+	 */
+	static public double hypot(double x, double y, double z) {
+		double r = Math.max(Math.abs(x), Math.max(Math.abs(y), Math.abs(z)));
+		if (r == 0)
+			return 0;
+		else {
+			double xp = x/r;
+			double yp = y/r;
+			double zp = z/r;
+			return r*Math.sqrt(xp*xp + yp*yp + zp*zp);
+		}
 	}
 	
     /**
