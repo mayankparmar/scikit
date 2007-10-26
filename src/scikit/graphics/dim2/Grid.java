@@ -1,8 +1,5 @@
 package scikit.graphics.dim2;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -22,6 +19,7 @@ import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
+import scikit.util.DoubleArray;
 import scikit.util.FileUtil;
 
 
@@ -62,14 +60,14 @@ public class Grid extends Scene2D {
 	}
 	
 	public void registerData(int w, int h, double[] data) {
-		setSize(w, h, data.length);
+		allocateBuffers(w, h, data.length);
 		System.arraycopy(data, 0, _data, 0, w*h);
 		rasterizeImage();
 		animate();
     }
 	
 	public void registerData(int w, int h, int[] data) {
-		setSize(w, h, data.length);
+		allocateBuffers(w, h, data.length);
 		for (int i = 0; i < data.length; i++)
 			_data[i] = data[i];
 		rasterizeImage();
@@ -116,7 +114,7 @@ public class Grid extends Scene2D {
 		return ret;
 	}
 	
-	private void setSize(int w, int h, int expectedSize) {
+	private void allocateBuffers(int w, int h, int expectedSize) {
 		if (w*h == 0)
 			throw new IllegalArgumentException("Illegal specified shape (" + w + "*" + h + ")");
 		if (w*h > expectedSize)
@@ -133,12 +131,8 @@ public class Grid extends Scene2D {
 	
 	private void findRange() {
 		if (_autoScale) {
-			_lo = Double.POSITIVE_INFINITY;
-			_hi = Double.NEGATIVE_INFINITY;
-			for (double v : _data) {
-				_lo = min(_lo, v);
-				_hi = max(_hi, v);
-			}
+			_lo = DoubleArray.min(_data);
+			_hi = DoubleArray.max(_data);
 		}
 	}
 	
