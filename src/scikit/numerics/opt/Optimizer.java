@@ -4,6 +4,8 @@ import static java.lang.Math.abs;
 
 import java.util.ArrayList;
 
+import scikit.numerics.fn.C1Function;
+
 import static scikit.util.DoubleArray.dot;
 
 

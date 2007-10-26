@@ -1,4 +1,4 @@
-package scikit.numerics.opt;
+package scikit.numerics.fn;
 
 import scikit.util.Pair;
 

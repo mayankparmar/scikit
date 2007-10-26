@@ -1,6 +1,7 @@
 package scikit.numerics.opt;
 
 import static java.lang.Math.*;
+import scikit.numerics.fn.C1Function1D;
 import scikit.util.Pair;
 
 public class LinearOptimizer {
