@@ -1,7 +1,10 @@
 package kip.clump.dim2;
 
 import static java.lang.Math.*;
+import static kip.util.MathPlus.hypot;
+import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
+import scikit.numerics.fft.util.FFT2D;
 import scikit.params.Parameters;
 
 
@@ -10,7 +13,8 @@ public class Clump2D extends AbstractClump2D {
 	int t_cnt, numPts;
 	double dt;
 	double[] ptsX, ptsY;
-
+	FFT2D fft;
+	
 	public Clump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 
@@ -26,6 +30,9 @@ public class Clump2D extends AbstractClump2D {
 		ptsY = new double[numPts];
 		randomizePts();
 		t_cnt = 0;
+		
+		fft = new FFT2D((int)(2*L), (int)(2*L));
+		fft.setLengths(L, L);
 	}
 	
 	private void randomizePts() {
@@ -88,15 +95,27 @@ public class Clump2D extends AbstractClump2D {
 		}
 	}
 	
-	public StructureFactor newStructureFactor(double binWidth) {
+	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		return new StructureFactor((int)(2*L), L, R, binWidth);
+		Accumulator ret = new Accumulator(binWidth);
+		ret.setAveraging(true);
+		return ret;
 	}
 	
-	public void accumulateIntoStructureFactor(StructureFactor sf) {
-		sf.accumulate(ptsX, ptsY);		
-	}
+	public void accumulateStructure(final Accumulator sf) {
+		double[] scratch = fft.getScratch();
+		int Lp = fft.dim1;
+		performCoarseGraining(scratch, Lp);
+		fft.transform(scratch, new FFT2D.MapFn() {
+			public void apply(double k1, double k2, double re, double im) {
+				double k = hypot(k1, k2);
+				double kR = k*R;
+				if (kR > 0 && kR <= 4*KR_SP)
+					sf.accum(kR, (re*re+im*im)/(L*L));
+			}
+		});
+	}	
 	
 	public double[] coarseGrained() {
 		return pts.rawElements;
@@ -108,5 +127,17 @@ public class Clump2D extends AbstractClump2D {
 	
 	public double time() {
 		return (double)t_cnt/numPts;
+	}
+	
+	private void performCoarseGraining(double[] field, int Lp) {
+		double dx = L/Lp;
+		for (int i = 0; i < Lp*Lp; i++)
+			field[i] = 0;
+		for (int k = 0; k < ptsX.length; k++) {
+			int i = (int)(Lp*ptsX[k]/L);
+			int j = (int)(Lp*ptsY[k]/L);
+			assert(i < Lp && j < Lp);
+			field[(Lp*j+i)] += 1/(dx*dx);
+		}
 	}
 }

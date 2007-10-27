@@ -1,6 +1,5 @@
 package kip.clump.dim2.apps;
 
-import static kip.util.MathPlus.j1;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 
@@ -12,7 +11,7 @@ import java.io.IOException;
 import kip.clump.dim2.AbstractClump2D;
 import kip.clump.dim2.Clump2D;
 import kip.clump.dim2.FieldClump2D;
-import kip.clump.dim2.StructureFactor;
+import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
@@ -28,7 +27,7 @@ public class Clump2DApp extends Simulation {
 	final static boolean WRITE_FILES = false;
 	Grid grid = new Grid("Grid");
     Plot plot = new Plot("Structure factor");
-    StructureFactor sf;
+    Accumulator sf;
     AbstractClump2D clump;
     boolean fieldDynamics = true;
 	
@@ -65,7 +64,7 @@ public class Clump2DApp extends Simulation {
 			((FieldClump2D)clump).useNoiselessDynamics(!params.sget("Noisy").equals("Yes"));
 		}
 		if (flags.contains("Clear S.F."))
-			sf.getAccumulator().clear();
+			sf.clear();
 		flags.clear();
 		
 		if (params.sget("Zoom").equals("Yes"))
@@ -74,11 +73,10 @@ public class Clump2DApp extends Simulation {
 			grid.setScale(0, 5);
 		grid.registerData(clump.numColumns(), clump.numColumns(), clump.coarseGrained());
 		
-        plot.registerLines("Structure Data", sf.getAccumulator(), Color.BLACK);
-        plot.registerLines("Structure Theory", new Function(sf.kRmin(), sf.kRmax()) {
+        plot.registerLines("Structure Data", sf, Color.BLACK);
+        plot.registerLines("Structure Theory", new Function() {
         	public double eval(double kR) {
-        		double V = 2*j1(kR)/kR;
-        		return 1/(V/clump.T+1);
+        		return 1/(clump.potential(kR)/clump.T+1);
         	}
         }, Color.BLUE);
 	}
@@ -90,14 +88,13 @@ public class Clump2DApp extends Simulation {
 	
 	public void run() {
 		clump = fieldDynamics ? new FieldClump2D(params) : new Clump2D(params);
-        sf = clump.newStructureFactor(params.fget("kR bin-width"));
-		sf.setBounds(0.1, 14);
+        sf = clump.newStructureAccumulator(params.fget("kR bin-width"));
         
 		File dir = makeDirectory();
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
-			clump.accumulateIntoStructureFactor(sf);
+			clump.accumulateStructure(sf);
 			writeField(dir);
 			Job.animate();
 		}

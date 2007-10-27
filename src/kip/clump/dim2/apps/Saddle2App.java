@@ -71,7 +71,7 @@ public class Saddle2App extends Simulation {
 			double[] grad = new double[clump.phi.length];
 			public Pair<Double,double[]> calculate(final double[] p) {
 				final double[] pb = clump.phi_bar;
-				clump.convolveWithRange(p, pb, clump.R);
+//				clump.convolveWithRange(p, pb, clump.R);
 				double fe_acc = 0;
 				for (int i = 0; i < p.length; i++) {
 					if (p[i] <= 0) {
