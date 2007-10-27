@@ -4,9 +4,8 @@ import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
-import kip.clump.dim1.AbstractClump1D;
 import kip.clump.dim1.FieldClump1D;
-import kip.clump.dim1.StructureFactor1D;
+import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Plot;
@@ -21,7 +20,7 @@ public class Clump1DApp extends Simulation {
     Plot plot = new Plot("Clump density");
     Plot sfplot = new Plot("Structure factor");
     
-    StructureFactor1D sf;
+    Accumulator sf;
     FieldClump1D clump;
 
 	public static void main(String[] args) {
@@ -44,22 +43,19 @@ public class Clump1DApp extends Simulation {
 	
 	public void animate() {		
 		if (flags.contains("Clear S.F."))
-			sf.getAccumulator().clear();
+			sf.clear();
 		flags.clear();
 		
 		clump.readParams(params);
 		clump.useNoiselessDynamics(!params.sget("Noisy").equals("Yes"));
 		plot.registerLines("Clump data", new PointSet(0, clump.dx, clump.coarseGrained()), Color.BLACK);
 		
-		sfplot.clear();
-		sfplot.registerBars("Structure data", sf.getAccumulator(), Color.RED);
-		if (clump.T > AbstractClump1D.T_SP) {
-			sfplot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
-				public double eval(double kR) {
-					return 1/(clump.potential(kR)/clump.T+1);
-				}
-			}, Color.BLUE);
-		}
+		sfplot.registerLines("Structure data", sf, Color.BLACK);
+		sfplot.registerLines("Structure theory", new Function() {
+			public double eval(double kR) {
+				return 1/(clump.potential(kR)/clump.T+1);
+			}
+		}, Color.BLUE);
 	}
 	
 	public void clear() {
@@ -68,13 +64,12 @@ public class Clump1DApp extends Simulation {
 	
 	public void run() {
 		clump = new FieldClump1D(params);
-        sf = clump.newStructureFactor(params.fget("kR bin-width"));
-		sf.setBounds(0.1, 14);
+        sf = clump.newStructureAccumulator(params.fget("kR bin-width"));
         
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
-			clump.accumulateIntoStructureFactor(sf);
+			clump.accumulateStructure(sf);
 			Job.animate();
 		}
  	}
