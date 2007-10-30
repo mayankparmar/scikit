@@ -31,9 +31,9 @@ public class Grid3DSurfaceView extends Grid3DView {
 					if (_grid.getSample(x, y, z) >= _cutoff) {
 						g.setColor(_grid.getColor(x, y, z));
 						for (int dir = 0; dir < 6; dir++) {
-							int xp = x+(int)_normals[dir][0];
-							int yp = y+(int)_normals[dir][1];
-							int zp = z+(int)_normals[dir][2];
+							int xp = x+(int)_normal[dir].x;
+							int yp = y+(int)_normal[dir].y;
+							int zp = z+(int)_normal[dir].z;
 							if (_grid.getSample(xp, yp, zp) < _cutoff)
 								drawPanel(g, x, y, z, dir);
 						}
@@ -46,12 +46,12 @@ public class Grid3DSurfaceView extends Grid3DView {
 	private void drawPanel(Gfx3D g, double x, double y, double z, int dir) {
 		GL gl = g.getGL();
 		gl.glBegin(GL.GL_QUADS);
-		gl.glNormal3dv(_normals[dir], 0);
+		gl.glNormal3d(_normal[dir].x, _normal[dir].y, _normal[dir].z);
 		for (int i = 0; i < 4; i++) {
 			gl.glVertex3d(
-					(x+0.5*_dx[dir][i]+0.5)/_dim[0],
-					(y+0.5*_dy[dir][i]+0.5)/_dim[1],
-					(z+0.5*_dz[dir][i]+0.5)/_dim[2]);
+					(x+0.5*_panel[dir][i].x+0.5)/_dim[0],
+					(y+0.5*_panel[dir][i].y+0.5)/_dim[1],
+					(z+0.5*_panel[dir][i].z+0.5)/_dim[2]);
 		}
 		gl.glEnd();
 	}

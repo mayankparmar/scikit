@@ -1,38 +1,49 @@
 package scikit.graphics.dim3;
 
+import scikit.vecmath.Vector3d;
+
 abstract public class Grid3DView {
-	// arrays for drawing cube panels
-	protected static final double[][] _normals = new double[][] {
-		{-1, 0, 0}, {+1, 0, 0},
-		{0, -1, 0}, {0, +1, 0},
-		{0, 0, -1}, {0, 0, +1}
+	// normal vectors for each cube panel
+	protected static final Vector3d[] _normal = new Vector3d[] {
+		new Vector3d(-1, 0, 0),
+		new Vector3d(+1, 0, 0),
+		new Vector3d(0, -1, 0),
+		new Vector3d(0, +1, 0),
+		new Vector3d(0, 0, -1),
+		new Vector3d(0, 0, +1),
 	};
-	protected static final double[][] _dx = new double[][]{
-		{-1, -1, -1, -1},
-		{+1, +1, +1, +1},
-		{+1, -1, -1, +1},
-		{+1, -1, -1, +1},
-		{+1, +1, -1, -1},
-		{-1, -1, +1, +1},
-	};
-	protected static final double[][] _dy = new double[][]{
-		{+1, +1, -1, -1},
-		{-1, -1, +1, +1},
-		{-1, -1, -1, -1},
-		{+1, +1, +1, +1},
-		{+1, -1, -1, +1},
-		{+1, -1, -1, +1}
-	};
-	protected static final double[][] _dz = new double[][]{
-		{+1, -1, -1, +1},
-		{+1, -1, -1, +1},
-		{+1, +1, -1, -1},
-		{-1, -1, +1, +1},
-		{-1, -1, -1, -1},
-		{+1, +1, +1, +1}
-	};
-	protected static final double[][] _texCoord = new double[][]{
-		{0, 0}, {1, 0}, {1, 1}, {0, 1} // ???
+	// the four points of each cube panel
+	protected static final Vector3d[][] _panel = new Vector3d[][] {
+		{   new Vector3d(-1, +1, +1),
+			new Vector3d(-1, +1, -1),
+			new Vector3d(-1, -1, -1),
+			new Vector3d(-1, -1, +1)
+		},
+		{   new Vector3d(+1, -1, +1),
+			new Vector3d(+1, -1, -1),
+			new Vector3d(+1, +1, -1),
+			new Vector3d(+1, +1, +1)
+		},
+		{   new Vector3d(+1, -1, +1),
+			new Vector3d(-1, -1, +1),
+			new Vector3d(-1, -1, -1),
+			new Vector3d(+1, -1, -1)
+		},
+		{   new Vector3d(+1, +1, -1),
+			new Vector3d(-1, +1, -1),
+			new Vector3d(-1, +1, +1),
+			new Vector3d(+1, +1, +1)
+		},
+		{   new Vector3d(+1, +1, -1),
+			new Vector3d(+1, -1, -1),
+			new Vector3d(-1, -1, -1),
+			new Vector3d(-1, +1, -1)
+		},
+		{   new Vector3d(-1, +1, +1),
+			new Vector3d(-1, -1, +1),
+			new Vector3d(+1, -1, +1),
+			new Vector3d(+1, +1, +1)
+		}
 	};
 	
 	abstract public void draw(Gfx3D g);
