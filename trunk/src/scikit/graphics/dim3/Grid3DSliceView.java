@@ -5,6 +5,7 @@ import static java.lang.Math.sqrt;
 
 import java.awt.Color;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 
@@ -35,7 +36,7 @@ public class Grid3DSliceView extends Grid3DView {
 	}
 
 	public void setDisplayParam(double x) {
-		_depth = x;
+		_depth = Math.min(x, 1-1e-8);
 	}
 
 	public void draw(Gfx3D g) {
@@ -47,44 +48,33 @@ public class Grid3DSliceView extends Grid3DView {
 		int[] textures = buildTextures(g);
 		
 		for (int side = 0; side < CUBE_SIDES; side++) {
+			Polygon p = new Polygon(
+					_panel[side][0], _panel[side][1], _panel[side][2], _panel[side][3]);
+			Vector3d n = new Vector3d(0, 0, 1);
+			VecHelper.rotate(_rotation, n);
+			p.intersect(n, _depth);
 			gl.glBindTexture(GL.GL_TEXTURE_2D, textures[side]);
-			gl.glBegin(GL.GL_QUADS);
-			gl.glNormal3dv(_normals[side], 0);
-			for (int i = 0; i < 4; i++) {
-				gl.glTexCoord2d(_texCoord[i][0], _texCoord[i][1]);
-				gl.glVertex3d(
-						0.5*_dx[side][i]+0.5,
-						0.5*_dy[side][i]+0.5,
-						0.5*_dz[side][i]+0.5);
-			}
-			gl.glEnd();
+			p.draw(gl, _normal[side]);
 		}
 		
-		/*
+		double r3 = sqrt(3);
+		Vector3d v0 = new Vector3d(-r3, -r3, _depth);
+		Vector3d v1 = new Vector3d(+r3, -r3, _depth);
+		Vector3d v2 = new Vector3d(+r3, +r3, _depth);
+		Vector3d v3 = new Vector3d(-r3, +r3, _depth);
 		Vector3d n = new Vector3d(0, 0, 1);
-		Vector3d v1 = new Vector3d(-0.5*sqrt(3), -0.5*sqrt(3), 0);
-		Vector3d v2 = new Vector3d(+0.5*sqrt(3), -0.5*sqrt(3), 0);
-		Vector3d v3 = new Vector3d(+0.5*sqrt(3), +0.5*sqrt(3), 0);
-		Vector3d v4 = new Vector3d(-0.5*sqrt(3), +0.5*sqrt(3), 0);
-		Quat4d q = new Quat4d(g.rotation());
-		q.inverse();
-		q.rotate(n);
-		q.rotate(v1);
-		q.rotate(v2);
-		q.rotate(v3);
-		q.rotate(v4);
-		gl.glBegin(GL.GL_QUADS);
-		gl.glNormal3d(n.x, n.y, n.z);
-		gl.glTexCoord2d(0, 0);
-		gl.glVertex3d(0.5+v1.x, 0.5+v1.y, 0.5+v1.z);
-		gl.glTexCoord2d(1, 0);
-		gl.glVertex3d(0.5+v2.x, 0.5+v2.y, 0.5+v2.z);
-		gl.glTexCoord2d(1, 1);
-		gl.glVertex3d(0.5+v3.x, 0.5+v3.y, 0.5+v3.z);
-		gl.glTexCoord2d(0, 1);
-		gl.glVertex3d(0.5+v4.x, 0.5+v4.y, 0.5+v4.z);
-		gl.glEnd();
-		*/
+		VecHelper.rotate(_rotation, v0);
+		VecHelper.rotate(_rotation, v1);
+		VecHelper.rotate(_rotation, v2);
+		VecHelper.rotate(_rotation, v3);
+		VecHelper.rotate(_rotation, n);
+		Polygon p = new Polygon(v0, v1, v2, v3);
+		for (int side = 0; side < CUBE_SIDES; side++) {
+			p.intersect(_normal[side], 1);
+		}
+		gl.glBindTexture(GL.GL_TEXTURE_2D, textures[CUBE_SIDES]);
+		p.draw(gl, n);
+		
 		gl.glDeleteTextures(PANELS, textures, 0);
 		gl.glDisable(GL.GL_TEXTURE_2D);		
 	}
@@ -96,59 +86,124 @@ public class Grid3DSliceView extends Grid3DView {
 		buffer.put((byte)c.getAlpha());
 	}
 	
-	private void writePixels(int side, int npix, ByteBuffer buffer) {
-		if (side < 6) {
-			Vector3d v0 = new Vector3d((_dx[side][0]+1)/2, (_dy[side][0]+1)/2, (_dz[side][0]+1)/2);
-			Vector3d v1 = new Vector3d((_dx[side][1]+1)/2, (_dy[side][1]+1)/2, (_dz[side][1]+1)/2);
-			Vector3d v3 = new Vector3d((_dx[side][3]+1)/2, (_dy[side][3]+1)/2, (_dz[side][3]+1)/2);
-
-			for (int py = 0; py < npix; py++) {
-				for (int px = 0; px < npix; px++) {
-					double gx = v0.x + ((v1.x-v0.x)*px+(v3.x-v0.x)*py)/(npix-1);
-					double gy = v0.y + ((v1.y-v0.y)*px+(v3.y-v0.y)*py)/(npix-1);
-					double gz = v0.z + ((v1.z-v0.z)*px+(v3.z-v0.z)*py)/(npix-1);
-					int ix = (int)rint(gx*(_dim[0]-1));
-					int iy = (int)rint(gy*(_dim[1]-1));
-					int iz = (int)rint(gz*(_dim[2]-1));
-					putColor(buffer, _grid.getColor(ix, iy, iz));
-//					putColor(buffer, Color.RED);
-				}
-			}
+	private void writePixels(Gfx3D g, int side, int npix, ByteBuffer buffer) {
+		Vector3d v0, v1, v3, n;
+		if (side < CUBE_SIDES) {
+			v0 = _panel[side][0];
+			v1 = _panel[side][1];
+			v3 = _panel[side][3];
+			n = _normal[side];
 		}
 		else {
-			Vector3d v = new Vector3d();
-			for (int py = 0; py < npix; py++) {
-				for (int px = 0; px < npix; px++) {
-					v.set(sqrt(3)*(px/(npix-0.)-0.5), sqrt(3)*(py/(npix-0.)-0.5), 0);
-					VecHelper.rotate(_rotation, v);
-					int x = (int)(_dim[0]*(v.x+0.5));
-					int y = (int)(_dim[1]*(v.y+0.5));
-					int z = (int)(_dim[2]*(v.z+0.5));
-					Color c = _grid.getColor(x, y, z);
-					putColor(buffer, c);
-				}
+			double r3 = sqrt(3);
+			v0 = new Vector3d(-r3, -r3, _depth);
+			v1 = new Vector3d(+r3, -r3, _depth);
+			v3 = new Vector3d(-r3, +r3, _depth);
+			n = new Vector3d(0, 0, 1);
+		}
+		
+		if (!isPanelVisible(g, n))
+			return;
+		
+		buffer.clear();
+		for (int py = 0; py < npix; py++) {
+			for (int px = 0; px < npix; px++) {
+				double gx = v0.x + ((v1.x-v0.x)*px+(v3.x-v0.x)*py)/(npix-1);
+				double gy = v0.y + ((v1.y-v0.y)*px+(v3.y-v0.y)*py)/(npix-1);
+				double gz = v0.z + ((v1.z-v0.z)*px+(v3.z-v0.z)*py)/(npix-1);
+				int ix = (int)rint(0.5*(gx+1)*(_dim[0]-1));
+				int iy = (int)rint(0.5*(gy+1)*(_dim[1]-1));
+				int iz = (int)rint(0.5*(gz+1)*(_dim[2]-1));
+				putColor(buffer, _grid.getColor(ix, iy, iz));
 			}
 		}
 		buffer.flip();
+		g.getGL().glTexImage2D(
+				GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, npix, npix,
+				0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
+	}
+	
+	private boolean isPanelVisible(Gfx3D g, Vector3d normal) {
+		normal = new Vector3d(normal);
+		VecHelper.rotate(g.rotation(), normal);
+		return normal.dot(new Vector3d(0, 0, 1)) > 0;
 	}
 	
 	private int[] buildTextures(Gfx3D g) {
 		GL gl = g.getGL();
 
-		int npix = 64;
-		ByteBuffer buffer = BufferUtil.newByteBuffer(npix*npix*4);
-
 		int[] textures = new int[PANELS];
 		gl.glGenTextures(PANELS, textures, 0);
+
+		int[] npix = new int[] {128, 128, 128, 128, 128, 128, 256};
+		
+		ByteBuffer buffer = BufferUtil.newByteBuffer(npix[6]*npix[6]*4);
 		for (int side = 0; side < PANELS; side++) {
 			gl.glBindTexture(GL.GL_TEXTURE_2D, textures[side]);
 			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
 			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-			buffer.clear();
-			writePixels(side, npix, buffer);
-			gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, npix, npix, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
+			writePixels(g, side, npix[side], buffer);
 		}
 		
 		return textures;
+	}
+}
+
+class Polygon {
+	Vector3d t0, t1, t3;
+	ArrayList<Vector3d> vs;
+	
+	public Polygon(Vector3d v0, Vector3d v1, Vector3d v2, Vector3d v3) {
+		t0 = v0;
+		t1 = v1;
+		t3 = v3;
+		vs = new ArrayList<Vector3d>();
+		vs.add(v0);
+		vs.add(v1);
+		vs.add(v2);
+		vs.add(v3);
+	}
+	
+	public void intersect(Vector3d planeNormal, double depth) {
+		boolean[] test = new boolean[vs.size()];
+		for (int i = 0; i < vs.size(); i++)
+			test[i] = vs.get(i).dot(planeNormal) < depth;
+
+		ArrayList<Vector3d> res = new ArrayList<Vector3d>();
+		for (int i = 0; i < vs.size(); i++) {
+			if (test[i])
+				res.add(vs.get(i));
+			if (test[i] != test[(i+1)%vs.size()]) {
+				Vector3d v1 = vs.get(i);
+				Vector3d v2 = vs.get((i+1)%vs.size());
+				double v1n = v1.dot(planeNormal);
+				double v2n = v2.dot(planeNormal);
+				double alpha = (depth - v1n) / (v2n - v1n);
+				res.add(new Vector3d(
+						(1-alpha)*v1.x+alpha*v2.x,
+						(1-alpha)*v1.y+alpha*v2.y,
+						(1-alpha)*v1.z+alpha*v2.z));
+			}
+		}
+		vs = res;
+	}
+	
+	public void draw(GL gl, Vector3d normal) {		
+		Vector3d t10 = new Vector3d(), t30 = new Vector3d();
+		t10.sub(t1, t0);
+		t30.sub(t3, t0);
+		double n10 = t10.dot(t10);
+		double n30 = t30.dot(t30);
+		
+		gl.glBegin(GL.GL_POLYGON);
+		gl.glNormal3d(normal.x, normal.y, normal.z);
+		for (int i = 0; i < vs.size(); i++) {
+			Vector3d v = vs.get(i);
+			Vector3d tv0 = new Vector3d();
+			tv0.sub(v, t0);
+			gl.glTexCoord2d(tv0.dot(t10)/n10, tv0.dot(t30)/n30);
+			gl.glVertex3d(0.5*v.x+0.5, 0.5*v.y+0.5, 0.5*v.z+0.5);
+		}
+		gl.glEnd();
 	}
 }
