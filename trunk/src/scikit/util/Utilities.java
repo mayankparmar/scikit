@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import scikit.graphics.dim2.Plot;
@@ -108,4 +110,28 @@ public class Utilities {
 		return frame(panel, title);
 	}
 
+	
+	/**
+	 * Returns true if the component is showing. If the component can be detected
+	 * as iconified (e.g. minimized to the dock), then the component is not considered
+	 * to be showing.
+	 * @param c the component to test
+	 * @return true if the component is showing
+	 */
+	public static boolean isComponentShowing(Component c) {
+		if (c.isShowing()) {
+			Component p = SwingUtilities.getRoot(c);
+			if (p instanceof Frame) {
+				int state = ((Frame)p).getExtendedState();
+				boolean iconified = (state & Frame.ICONIFIED) == Frame.ICONIFIED;
+				return !iconified;
+			}
+			else {
+				return true;
+			}
+		}
+		else {
+			return false;
+		}
+	}
 }
