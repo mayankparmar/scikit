@@ -20,8 +20,10 @@ import scikit.vecmath.VecHelper;
 
 
 public class Scene3D extends Scene<Gfx3D> {
-	boolean _drawBounds = true;
-	Quat4d _rotation = new Quat4d(0, 0, 0, 1);
+	protected final static double RADS_PER_PIXEL = 0.01;
+	protected boolean _drawBounds = true;
+	protected Quat4d _rotation = new Quat4d(0, 0, 0, 1);
+	
 	
 	public Scene3D(String title) {
 		super(title);
@@ -80,6 +82,12 @@ public class Scene3D extends Scene<Gfx3D> {
 		return ds;
 	}
 	
+	protected void handleMouseDrag(double dx, double dy, MouseEvent event) {
+		Quat4d q = VecHelper.quatFromAxisAngle(RADS_PER_PIXEL*dy, RADS_PER_PIXEL*dx, 0);
+		_rotation.mul(q, _rotation);
+		_rotation.normalize();
+	}
+	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
 		java.awt.Point _lastDrag;
 		
@@ -100,10 +108,7 @@ public class Scene3D extends Scene<Gfx3D> {
 			double dy = event.getY() - _lastDrag.y;
 			_lastDrag = event.getPoint();
 			
-			double radPerPixel = 0.01;
-			Quat4d q = VecHelper.quatFromAxisAngle(radPerPixel*dy, radPerPixel*dx, 0);
-			_rotation.mul(q, _rotation);
-			_rotation.normalize();
+			handleMouseDrag(dx, dy, event);
 			_canvas.repaint();
 		}
 	};

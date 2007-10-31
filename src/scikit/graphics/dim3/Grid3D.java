@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,6 +27,8 @@ import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 import scikit.util.DoubleArray;
 import scikit.util.FileUtil;
+import scikit.vecmath.Quat4d;
+import scikit.vecmath.VecHelper;
 
 
 public class Grid3D extends Scene3D {
@@ -161,6 +164,21 @@ public class Grid3D extends Scene3D {
 		ret.add(menuItem);
 
 		return ret;
+	}
+	
+	protected void handleMouseDrag(double dx, double dy, MouseEvent event) {
+		if (event.isShiftDown()) {
+			Quat4d q = VecHelper.quatFromAxisAngle(RADS_PER_PIXEL*dy, RADS_PER_PIXEL*dx, 0);
+			// q = r^-1 * q * r
+			Quat4d r = new Quat4d(_rotation);
+			q.mul(q, r);
+			r.inverse();
+			q.mul(r, q);
+			_views[_curView].rotateStructure(q);
+		}
+		else {
+			super.handleMouseDrag(dx, dy, event);
+		}
 	}
 	
 	protected double getSample(int x, int y, int z) {
