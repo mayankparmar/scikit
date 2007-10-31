@@ -18,6 +18,7 @@ import javax.swing.JPopupMenu;
 
 import scikit.util.Bounds;
 import scikit.util.Frameable;
+import scikit.util.Utilities;
 
 
 abstract public class Scene<T> implements Frameable {
@@ -86,7 +87,9 @@ abstract public class Scene<T> implements Frameable {
 		if (!_zoomed) {
 			_curBounds = calculateVisibleBounds(_autoScale ? new Bounds() : _curBounds);
 		}
-		_canvas.repaint();
+		if (Utilities.isComponentShowing(_canvas)) {
+			_canvas.repaint();
+		}
 	}
 	
 	/** Completely clears the scene to it's initial state by removing all drawables and
