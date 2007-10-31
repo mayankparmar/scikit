@@ -28,7 +28,9 @@ public class Grid3DSliceView extends Grid3DView {
 		_grid = grid;
 	}
 	
-	public void mouseDragged(double dx, double dy) {
+	public void rotateStructure(Quat4d q) {
+		_rotation.mul(q, _rotation);
+		_rotation.normalize();
 	}
 	
 	public double getDisplayParam() {
@@ -36,7 +38,7 @@ public class Grid3DSliceView extends Grid3DView {
 	}
 
 	public void setDisplayParam(double x) {
-		_depth = Math.min(x, 1-1e-8);
+		_depth = (x*2-1)*0.96;
 	}
 
 	public void draw(Gfx3D g) {
@@ -77,6 +79,8 @@ public class Grid3DSliceView extends Grid3DView {
 		
 		gl.glDeleteTextures(PANELS, textures, 0);
 		gl.glDisable(GL.GL_TEXTURE_2D);		
+
+		p.drawOutline(gl);
 	}
 	
 	private void putColor(ByteBuffer buffer, Color c) {
@@ -93,6 +97,14 @@ public class Grid3DSliceView extends Grid3DView {
 			v1 = _panel[side][1];
 			v3 = _panel[side][3];
 			n = _normal[side];
+			// before rotation, the camera is looking down the negative z axis.  if the
+			// normal vector of a side of the cube dotted with the z axis is negative,
+			// then that side is not visible to the camera. however, because of perspective,
+			// the same cannot be said of an internal cube slice.
+			Vector3d normal = new Vector3d(n);
+			VecHelper.rotate(g.rotation(), normal);
+			if (normal.dot(new Vector3d(0, 0, 1)) <= 0)
+				return;
 		}
 		else {
 			double r3 = sqrt(3);
@@ -100,10 +112,11 @@ public class Grid3DSliceView extends Grid3DView {
 			v1 = new Vector3d(+r3, -r3, _depth);
 			v3 = new Vector3d(-r3, +r3, _depth);
 			n = new Vector3d(0, 0, 1);
+			VecHelper.rotate(_rotation, v0);
+			VecHelper.rotate(_rotation, v1);
+			VecHelper.rotate(_rotation, v3);
+			VecHelper.rotate(_rotation, n);
 		}
-		
-		if (!isPanelVisible(g, n))
-			return;
 		
 		buffer.clear();
 		for (int py = 0; py < npix; py++) {
@@ -121,12 +134,6 @@ public class Grid3DSliceView extends Grid3DView {
 		g.getGL().glTexImage2D(
 				GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, npix, npix,
 				0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buffer);
-	}
-	
-	private boolean isPanelVisible(Gfx3D g, Vector3d normal) {
-		normal = new Vector3d(normal);
-		VecHelper.rotate(g.rotation(), normal);
-		return normal.dot(new Vector3d(0, 0, 1)) > 0;
 	}
 	
 	private int[] buildTextures(Gfx3D g) {
@@ -205,5 +212,19 @@ class Polygon {
 			gl.glVertex3d(0.5*v.x+0.5, 0.5*v.y+0.5, 0.5*v.z+0.5);
 		}
 		gl.glEnd();
+	}
+	
+	public void drawOutline(GL gl) {
+		gl.glDisable(GL.GL_LIGHTING);
+		
+		gl.glBegin(GL.GL_LINE_LOOP);
+		gl.glColor3d(0, 1, 1);
+		for (int i = 0; i < vs.size(); i++) {
+			Vector3d v = new Vector3d(vs.get(i));
+			v.scale(1+1e-3);
+			gl.glVertex3d(0.5*v.x+0.5, 0.5*v.y+0.5, 0.5*v.z+0.5);
+		}
+		gl.glEnd();
+		gl.glEnable(GL.GL_LIGHTING);
 	}
 }

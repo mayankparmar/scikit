@@ -1,6 +1,7 @@
 package scikit.graphics.dim3;
 
 import scikit.vecmath.Vector3d;
+import scikit.vecmath.Quat4d;
 
 abstract public class Grid3DView {
 	// normal vectors for each cube panel
@@ -47,7 +48,7 @@ abstract public class Grid3DView {
 	};
 	
 	abstract public void draw(Gfx3D g);
-	abstract public void mouseDragged(double dx, double dy);
+	abstract public void rotateStructure(Quat4d q);
 	abstract public void setDisplayParam(double x);
 	abstract public double getDisplayParam();
 }

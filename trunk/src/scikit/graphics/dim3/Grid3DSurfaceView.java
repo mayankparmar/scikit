@@ -2,6 +2,8 @@ package scikit.graphics.dim3;
 
 import javax.media.opengl.GL;
 
+import scikit.vecmath.Quat4d;
+
 public class Grid3DSurfaceView extends Grid3DView {
 	private Grid3D _grid;
 	private int[] _dim;
@@ -12,7 +14,7 @@ public class Grid3DSurfaceView extends Grid3DView {
 		_grid = grid;
 	}
 	
-	public void mouseDragged(double dx, double dy) {
+	public void rotateStructure(Quat4d q) {
 	}
 	
 	public double getDisplayParam() {
