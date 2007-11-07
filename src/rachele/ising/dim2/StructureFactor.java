@@ -3,13 +3,15 @@ package rachele.ising.dim2;
 
 import scikit.dataset.Accumulator;
 import static java.lang.Math.*;
-import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.*;
+//import scikit.util.DoubleArray;
 
 /*
 * Calculates the structure factor
 */
 public class StructureFactor {
 	ComplexDouble2DFFT fft;	// Object to perform transforms
+	RealDoubleFFT_Radix2 fft1D;
 	double[] fftData;       // Fourier transform data
 	public double sFactor [];
 	int Lp;                 // # elements per side
@@ -20,8 +22,9 @@ public class StructureFactor {
 	static double squarePeakValue = 4.4934092;
 	static double circlePeakValue = 5.135622302;
 	int squarePeakInt, circlePeakInt;
-	double lastHpeak, lastVpeak, lastCpeak;
-		
+	double lastHpeak, lastVpeak, lastCpeak, lastCmax, lastCmin;
+	int noBins = 32;	
+	
 	Accumulator accCircle;
 	Accumulator accHorizontal;
 	Accumulator accVertical;
@@ -34,6 +37,7 @@ public class StructureFactor {
 	Accumulator accPeakHslope;
 	Accumulator accPeakVslope;
 	Accumulator accPeakCslope;
+	Accumulator ringFT;
 	
 	public StructureFactor(int Lp, double L, double R, double kRbinWidth, double dt) {
 		this.Lp = Lp;
@@ -50,7 +54,11 @@ public class StructureFactor {
 		squarePeakInt = (int)dblePeakLength;
 		if(abs(2*PI*squarePeakInt*R/L - squarePeakValue) >= abs(2*PI*(squarePeakInt+1)*R/L - squarePeakValue))
 			squarePeakInt = squarePeakInt + 1;
-//
+		double kRvalue = R*2*PI*squarePeakInt/L;
+		System.out.println("square kR = " + kRvalue + " target value = " + squarePeakValue);
+		
+
+			//
 //		dblePeakLength = circlePeakValue*L/(2*PI*R);
 //		circlePeakInt = (int)dblePeakLength;
 //		if(abs(2*PI*circlePeakInt*R/L - circlePeakValue) >= abs(2*PI*(circlePeakInt+1)*R/L - circlePeakValue))
@@ -68,6 +76,7 @@ public class StructureFactor {
 		accPeakHslope = new Accumulator(dt);
 		accPeakVslope = new Accumulator(dt);
 		accPeakCslope = new Accumulator(dt);
+		ringFT = new Accumulator(1);
 		
 		accAvH.setAveraging(true);		
 		accAvV.setAveraging(true);
@@ -83,9 +92,29 @@ public class StructureFactor {
 		accPeakCslope.setAveraging(true);
 				
 		fft = new ComplexDouble2DFFT(Lp, Lp);
+		fft1D = new RealDoubleFFT_Radix2(noBins);
 		fftData = new double[2*Lp*Lp];
 	}
 
+	public double circlekRValue(){
+		int circleCount = 0;
+		double kRSum = 0;
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			for (int x = -Lp/2; x < Lp/2; x++) {
+				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+				if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
+					System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
+					circleCount += 1;
+					kRSum += kR;
+				}
+			}
+		}
+		double kRAve = kRSum / circleCount;
+		return kRAve;
+	}
+	
+	
+	
 	public Accumulator getPeakV() {
 		return accPeakV;
 	}
@@ -134,12 +163,37 @@ public class StructureFactor {
 		return accAvC;
 	}
 	
+	public double peakValueV(){
+		return lastVpeak;
+	}
+	
+	public double peakValueH(){
+		return lastHpeak;
+	}
+	
+	public double peakValueC(){
+		return lastCpeak;
+	}
+	
+	public double minC(){
+		return lastCmin;
+	}
+	
+	public double maxC(){
+		return lastCmax;
+	}
+	
+	
 	public double kRmin() {
 		return kRmin;
 	}
 	
 	public double kRmax() {
 		return kRmax;
+	}
+	
+	public Accumulator getRingFT(){
+		return ringFT;
 	}
 	
 	public void setBounds(double kRmin, double kRmax) {
@@ -177,6 +231,89 @@ public class StructureFactor {
 		accumulateAllAux(t);
 	}
 	
+	public void accumMin(double[] data,double kRcircle){
+		
+		double dx = (L/Lp);
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftData[2*i] = data[i]*dx*dx;
+			fftData[2*i+1] = 0;
+		}
+			fft.transform(fftData);
+			fftData = fft.toWraparoundOrder(fftData);
+			//double dP_dt;
+		
+	
+			for (int i=0; i < Lp*Lp; i++){
+				double re = fftData[2*i];
+				double im = fftData[2*i+1];
+				sFactor[i] = (re*re + im*im)/(L*L);
+			}
+	
+			//Instead of a circular average, we want the structure factor in the vertical and
+			//horizontal directions.
+			//vertical component
+			int y = squarePeakInt;	
+			int x=0;
+			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;			
+			lastVpeak = sFactor[i];
+	
+			//horizontal component
+			x = squarePeakInt;
+			y=0;
+			kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+			i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			lastHpeak = sFactor[i];
+	
+			//circularly averaged	
+			//double binSize = 2*PI/noBins;
+			double [] ringBins = new double [noBins*2];
+			//double ringSum =0;
+			ringFT.clear();
+			for (y = -Lp/2; y < Lp/2; y++) {
+				for (x = -Lp/2; x < Lp/2; x++) {
+					kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+					if (kR >= kRmin && kR <= kRmax) {
+						i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+						if(kR >= kRcircle - PI*R/(0.50*L) && kR <= kRcircle + PI*R/(0.50*L)){
+							double angle = atan((double)abs(y)/(double)abs(x));
+								if (x <= 0 && y >=0)
+									angle = PI -angle;
+								else if (x <=0 && y<=0)
+									angle += PI;
+								else if (x >= 0 && y <= 0)
+									angle = 2*PI - angle;
+								if (angle == 2*PI)
+									angle = 0;
+								//ringFT.accum(angle*360/(2*PI),sFactor[i]);
+								int j = (int)floor(angle*noBins/(2*PI));
+								j *= 2;
+								ringBins[j] += sFactor[i];
+								//	count += 1;
+							//ringSum += sFactor[i];
+							//lastCpeak = sFactor[i];
+						}
+					}	
+				}
+			}
+			//System.out.println(kRcircle + " o");
+//			for (int j = 0; j < 2*noBins; j++)
+//				ringFT.accum(j,ringBins[j]);
+			fft1D.transform(ringBins);
+			ringBins = fft1D.toWraparoundOrder(ringBins);
+			//ringFT.clear();
+			for (int j=0; j < noBins; j++){
+				//double re = ringBins[2*j];
+				//double im = ringBins[2*j+1];
+				ringFT.accum(j,ringBins[2*j]);
+			}
+			//stripe peak should be at pi:
+			//pi -> binNo = nobins/2
+			//which corresponds to -> q = 2 Pi * noBins / (2L) = Pi*noBins/L 
+			//lastCpeak = ringSum/count;
+			
+	}
+	
 	public void accumulateAllAux(double t) {
 		// compute fourier transform
 		fft.transform(fftData);
@@ -205,7 +342,7 @@ public class StructureFactor {
 					accPeakV.accum(t, sFactor[i]);
 					dP_dt = (sFactor[i] - lastVpeak)/dt;
 					lastVpeak = sFactor[i];
-					accPeakVslope.accum(t, dP_dt);
+					//accPeakVslope.accum(t, dP_dt);
 				}
 			}
 		}
@@ -225,7 +362,7 @@ public class StructureFactor {
 					accPeakH.accum(t, sFactor[i]);
 					dP_dt = (sFactor[i] - lastHpeak)/dt;
 					lastHpeak = sFactor[i];
-					accPeakHslope.accum(t, dP_dt);
+					//accPeakHslope.accum(t, dP_dt);
 				}
 			}
 		}		
@@ -250,6 +387,7 @@ public class StructureFactor {
 						dP_dt = (sFactor[i] - lastCpeak)/dt;
 						lastCpeak = sFactor[i];
 						accPeakCslope.accum(t, dP_dt);
+						//System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
 					}
 				}
 			}

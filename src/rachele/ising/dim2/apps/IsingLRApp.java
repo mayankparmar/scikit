@@ -17,7 +17,7 @@ public class IsingLRApp extends Simulation {
 	}
 	
 	//FieldDisplay fieldDisplay = new FieldDisplay("Coarse Grained Display", true);
-	Grid grid = new Grid("Coarse Grained Field");
+	Grid grid = new Grid("Long Range Ising Model");
 	int dx;
 	IsingLR sim;
 	
@@ -64,6 +64,7 @@ public class IsingLRApp extends Simulation {
 		sim = new IsingLR(params);
 		sim.setField(params.fget("Initial magnetization"));
 		dx = Math.max(Integer.highestOneBit(sim.R)/8, 1);
+		//dx = 1;
 		
 		double lastUpdate = 0;
 		while (true) {

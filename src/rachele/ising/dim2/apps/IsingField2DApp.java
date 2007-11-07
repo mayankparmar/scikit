@@ -3,21 +3,14 @@ package rachele.ising.dim2.apps;
 
 /* The Langevin Dynamics part of this is basically the same as kip.clump.dim2.FiledClump2D.java */
 
-//import static kip.util.MathPlus.j1;
 
 import static java.lang.Math.floor;
 import static scikit.util.Utilities.asList;
-import static scikit.util.Utilities.frameTogether;
+import static scikit.util.Utilities.*;
 import scikit.dataset.Accumulator;
 
 import java.awt.Color;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
+import java.io.*;
 import rachele.ising.dim2.ConjugateGradientMin;
 import rachele.ising.dim2.IsingField2D;
 import rachele.ising.dim2.SteepestDescentMin;
@@ -30,7 +23,7 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.params.ChoiceValue;
 import scikit.params.DoubleValue;
-//import kip.util.*;
+
 
 public class IsingField2DApp extends Simulation {
     Grid grid = new Grid("Phi(x)");
@@ -40,6 +33,8 @@ public class IsingField2DApp extends Simulation {
 	Plot vSlice = new Plot("Vertical Slice");    
 	Plot del_hSlice = new Plot("Horizontal Slice Change");
 	Plot del_vSlice = new Plot("Vertical Slice Change");
+	Plot sfHor = new Plot("H SF");
+	Plot sfVert = new Plot("V SF");
 	Plot structurePeakV = new Plot("Ver Structure Factor");
 	Plot structurePeakH = new Plot("Hor Structure factor");
 	Plot sfPeakBoth = new Plot("Both Structure factors");
@@ -47,30 +42,35 @@ public class IsingField2DApp extends Simulation {
 	Plot freeEnergyTempPlot = new Plot("Free Energy vs Temp");
 	Plot landscape = new Plot("Free Energy Landscape");
 	Plot brLandscape = new Plot("Br Free Energy Landscape");
+	Plot ring = new Plot("Circle SF Ring");
 	StructureFactor sf;
     IsingField2D ising;
     SteepestDescentMin opt;
     ConjugateGradientMin min;
     boolean cgInitialized = false;
+	boolean initFile = false;
     Accumulator landscapeFiller;
     Accumulator brLandscapeFiller;
     public int lastClear;
+
     
 	public static void main(String[] args) {
 		new Control(new IsingField2DApp(), "Ising Field");
 	}
 	
 	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid, sfGrid);
-		frameTogether("landscapes", landscape, brLandscape);
+		frameTogether("Grids", grid, delPhiGrid);
+		frame(ring);
+		//frameTogether("landscapes", landscape, brLandscape);
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
-		frameTogether("Plots", vSlice, del_hSlice, structurePeakV, 
-				 hSlice, del_vSlice,  structurePeakH, freeEnergyPlot, freeEnergyTempPlot, sfPeakBoth);
+		//frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
+		//frameTogether("SF", structurePeakV, 
+			//	 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
+		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Conjugate Gradient Min", 
-				"Steepest Decent",  "Langevin Conserve M", "Langevin No M Conservation"));
+		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Conjugate Gradient Min", 
+				"Steepest Decent",  "Langevin Conserve M"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable",
@@ -78,8 +78,9 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
-		params.addm("T", 0.03);
-		params.addm("H", 0.7);
+		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
+		params.addm("T", 0.05);
+		params.addm("H", 0.3);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -97,12 +98,14 @@ public class IsingField2DApp extends Simulation {
 
 		flags.add("Write Config");
 		flags.add("Clear");
-		flags.add("Stripe");
-		flags.add("Clump");
+		flags.add("SF");
+		//flags.add("Stripe");
+		//flags.add("Clump");
 		//flags.add("ClearFT");
 		params.addm("Slow CG?", new ChoiceValue( "Yes, some", "No", "Yes, lots"));
 		landscapeFiller = new Accumulator(.01);
 		brLandscapeFiller = new Accumulator(.01);
+
 	}
 	
 	public void animate() {
@@ -128,6 +131,10 @@ public class IsingField2DApp extends Simulation {
 		sfPeakBoth.setAutoScale(true);
 		landscape.setAutoScale(true);
 		brLandscape.setAutoScale(true);
+		sfVert.setAutoScale(true);
+		sfHor.setAutoScale(true);
+		ring.setAutoScale(true);
+		
 
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
@@ -161,12 +168,18 @@ public class IsingField2DApp extends Simulation {
 		freeEnergyPlot.registerLines("Free Energy", ising.getFreeEnergyAcc(), Color.MAGENTA);
 		
 		if(ising.circleInt() == true){
-			structurePeakV.registerLines("Peak Value", sf.getPeakC(), Color.YELLOW);
+			ring.registerLines("RING", sf.getRingFT(), Color.black);
+			structurePeakV.registerLines("Peak Value", sf.getPeakC(), Color.BLACK);
 		}else{
 			structurePeakV.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
 			sfPeakBoth.registerLines("Hortizontal Peak", sf.getPeakH(), Color.ORANGE);
 			sfPeakBoth.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
 			structurePeakH.registerLines("Horizontal Peak", sf.getPeakH(), Color.ORANGE);
+			sfHor.registerLines("Hor SF Ave", sf.getAccumulatorHA(), Color.BLACK);
+			sfHor.registerLines("Hor SF", sf.getAccumulatorH(), Color.ORANGE);
+			sfVert.registerLines("Vert SF Ave", sf.getAccumulatorVA(), Color.BLACK);
+			sfVert.registerLines("Vert SF", sf.getAccumulatorV(), Color.CYAN);
+
 		}	
  
 		if (flags.contains("Stripe")){
@@ -181,17 +194,26 @@ public class IsingField2DApp extends Simulation {
 		freeEnergyTempPlot.registerLines("Clump FE", ising.getClumpFreeEnergyAcc(),Color.PINK);
 		freeEnergyTempPlot.registerLines("fe", ising.getEitherFreeEnergyAcc(), Color.BLACK);
 		
-		if (flags.contains("Clear") || lastClear > 1000) {
+		//if (flags.contains("Clear")){// || lastClear > 1000) {
 			ising.getFreeEnergyAcc().clear();
 			sf.getPeakH().clear();
 			sf.getPeakV().clear();
+			sf.getPeakC().clear();
 			sf.getPeakHslope().clear();
 			sf.getPeakVslope().clear();
+			sf.getAccumulatorVA().clear();
+			sf.getAccumulatorHA().clear();
+			
 			ising.aveCount = 0;
-			System.out.println("cleared");
+			//System.out.println("cleared");
 			lastClear = 0;
+		//}
+		if(flags.contains("SF")){
+			writeDataToFile();
+			System.out.println("SF clicked");
 		}
 		flags.clear();
+
 //		if(flags.contains("ClearFT")){
 //			ising.getClumpFreeEnergyAcc().clear();
 //			ising.getStripeFreeEnergyAcc().clear();
@@ -201,6 +223,7 @@ public class IsingField2DApp extends Simulation {
 	
 	public void clear() {
 		cgInitialized = false;
+		initFile = false;
 	}
 	
 	public void run() {
@@ -232,9 +255,10 @@ public class IsingField2DApp extends Simulation {
 		};
 		
         boolean equilibrating = true;
-        int feCounter = 0;  //counts iterations before taking FE vs T data point
+        //int feCounter = 0;  //counts iterations before taking FE vs T data point
         
         while (true) {
+        	ising.readParams(params);
         	if (flags.contains("Write Config"))	writeConfiguration();
 			params.set("Time", ising.time());
 			params.set("Mean Phi", ising.mean(ising.phi));
@@ -264,20 +288,29 @@ public class IsingField2DApp extends Simulation {
 			}else{
 				cgInitialized = false;
 				ising.simulate();
-				if(params.sget("Plot FEvT")=="On"){
-					feCounter += 1;
-					if(feCounter == 50){
-						ising.accumEitherFreeEnergy();
-						feCounter = 0;
-						System.out.println( feCounter + " " + ising.t + " Free Energy accum at " + ising.T);
-						ising.changeT(); 
-					}
-				}
+				//sf.accumulateAll(ising.t, ising.phi);
+				
+//				if(params.sget("Plot FEvT")=="On"){
+//					feCounter += 1;
+//					if(feCounter == 500){
+//						//ising.accumEitherFreeEnergy();
+//						feCounter = 0;
+//						System.out.println( feCounter + " " + ising.t + " Free Energy accum at " + ising.T);
+//						ising.changeT(); 
+//					}
+//				}
 
 			}
 			if (equilibrating && ising.time() >= .5) equilibrating = false;
-			sf.accumulateAll(ising.time(), ising.coarseGrained());
+			sf.getAccumulatorV().clear();
+			sf.getAccumulatorH().clear();
+			//sf.accumulateAll(ising.time(), ising.coarseGrained());
+
 			lastClear += 1;
+			if (ising.time()%1 == 0){
+				sf.accumMin(ising.coarseGrained(), params.fget("kR"));
+				writeDataToFile();
+			}
 			Job.animate();
 		}
  	}
@@ -375,5 +408,62 @@ public class IsingField2DApp extends Simulation {
 			System.out.println("File delete failed");			
 	}
 
+	public void writeDataToFile(){
+		if (params.sget("Interaction")=="Square"){
+			try{
+				String dataFileV = "../../../research/javaData/sfData/dataFileV";
+				String dataFileH = "../../../research/javaData/sfData/dataFileH";
+				if (initFile == false){
+					deleteFile(dataFileH);
+					deleteFile(dataFileV);
+					File fileV = new File(dataFileV);
+					File fileH = new File(dataFileH);
+					PrintWriter outV = new PrintWriter(new FileWriter(fileV, true), true);
+					PrintWriter outH = new PrintWriter(new FileWriter(fileH, true), true);
+					outH.println(" # SF vs H data ");
+					outV.println(" # SF vs V data ");
+					outV.println(" # Temperature = " + ising.T);
+					outH.println(" # Temperature = " + ising.T);
+					initFile = true;
+				}
+				File fileV = new File(dataFileV);
+				File fileH = new File(dataFileH);
+				PrintWriter outV = new PrintWriter(new FileWriter(fileV, true), true);
+				PrintWriter outH = new PrintWriter(new FileWriter(fileH, true), true);
+				outH.println(ising.H + " " + sf.peakValueH() + " " +ising.freeEnergy + " " + ising.time());
+				outV.println(ising.H + " " + sf.peakValueV() + " " +ising.freeEnergy + " " + ising.time());
+				System.out.println("Data written to file for time = " + ising.time());
+			} catch (IOException ex){
+				ex.printStackTrace();
+			}
+		}else if(params.sget("Interaction")== "Circle"){
+			try{
+				String dataFileMax = "../../../research/javaData/sfData/dataMax";
+				//String dataFileMin = "../../../research/javaData/sfData/dataMin";
+				if (initFile == false){
+					deleteFile(dataFileMax);
+					//deleteFile(dataFileMin);
+					File fileMax = new File(dataFileMax);
+					//File fileMin = new File(dataFileMin);
+					PrintWriter outMax = new PrintWriter(new FileWriter(fileMax, true), true);
+					//PrintWriter outMin = new PrintWriter(new FileWriter(fileMin, true), true);
+					outMax.println(" # SF vs H data  for circle interaction");
+					outMax.println(" # Temperature = " + ising.T);
+					//outMin.println(" # SF vs H data  for circle interaction");
+					//outMin.println(" # Temperature = " + ising.T);
+					initFile = true;
+				}
+				File fileMax = new File(dataFileMax);
+				//File fileMin = new File(dataFileMin);
+				PrintWriter outMax = new PrintWriter(new FileWriter(fileMax, true), true);
+				//PrintWriter outMin = new PrintWriter(new FileWriter(fileMin, true), true);
+				outMax.println(ising.H + " " + sf.peakValueC() + " " +ising.freeEnergy + " " + ising.time());
+				//outMin.println(ising.H + " " + sf.minC() + " " +ising.freeEnergy + " " + ising.time());
+				System.out.println("Data written to file for time = " + ising.time());
+			} catch (IOException ex){
+				ex.printStackTrace();
+			}
+		}
+	}
 }
  
