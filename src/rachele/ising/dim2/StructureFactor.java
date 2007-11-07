@@ -3,7 +3,8 @@ package rachele.ising.dim2;
 
 import scikit.dataset.Accumulator;
 import static java.lang.Math.*;
-import scikit.numerics.fft.*;
+import scikit.numerics.fft.util.FFT1D;
+import scikit.numerics.fft.ComplexDouble2DFFT;
 //import scikit.util.DoubleArray;
 
 /*
@@ -11,7 +12,8 @@ import scikit.numerics.fft.*;
 */
 public class StructureFactor {
 	ComplexDouble2DFFT fft;	// Object to perform transforms
-	RealDoubleFFT_Radix2 fft1D;
+	//RealDoubleFFT_Radix2 fft1D;
+	FFT1D fft1d;
 	double[] fftData;       // Fourier transform data
 	public double sFactor [];
 	int Lp;                 // # elements per side
@@ -23,7 +25,7 @@ public class StructureFactor {
 	static double circlePeakValue = 5.135622302;
 	int squarePeakInt, circlePeakInt;
 	double lastHpeak, lastVpeak, lastCpeak, lastCmax, lastCmin;
-	int noBins = 32;	
+	int noBins = 1024;	
 	
 	Accumulator accCircle;
 	Accumulator accHorizontal;
@@ -76,7 +78,7 @@ public class StructureFactor {
 		accPeakHslope = new Accumulator(dt);
 		accPeakVslope = new Accumulator(dt);
 		accPeakCslope = new Accumulator(dt);
-		ringFT = new Accumulator(1);
+		ringFT = new Accumulator(.01);
 		
 		accAvH.setAveraging(true);		
 		accAvV.setAveraging(true);
@@ -90,9 +92,10 @@ public class StructureFactor {
 		accPeakHslope.setAveraging(true);
 		accPeakVslope.setAveraging(true);
 		accPeakCslope.setAveraging(true);
+		ringFT.setAveraging(true);
 				
 		fft = new ComplexDouble2DFFT(Lp, Lp);
-		fft1D = new RealDoubleFFT_Radix2(noBins);
+		fft1d = new FFT1D(noBins);
 		fftData = new double[2*Lp*Lp];
 	}
 
@@ -267,7 +270,7 @@ public class StructureFactor {
 	
 			//circularly averaged	
 			//double binSize = 2*PI/noBins;
-			double [] ringBins = new double [noBins*2];
+			double [] ringBins = new double [noBins];
 			//double ringSum =0;
 			ringFT.clear();
 			for (y = -Lp/2; y < Lp/2; y++) {
@@ -285,33 +288,34 @@ public class StructureFactor {
 									angle = 2*PI - angle;
 								if (angle == 2*PI)
 									angle = 0;
-								//ringFT.accum(angle*360/(2*PI),sFactor[i]);
+//								ringFT.accum(angle*360/(2*PI),sFactor[i]);
 								int j = (int)floor(angle*noBins/(2*PI));
-								j *= 2;
 								ringBins[j] += sFactor[i];
-								//	count += 1;
-							//ringSum += sFactor[i];
-							//lastCpeak = sFactor[i];
+//								ringFT.accum(j,ringBins[j]);
 						}
 					}	
 				}
 			}
-			//System.out.println(kRcircle + " o");
-//			for (int j = 0; j < 2*noBins; j++)
-//				ringFT.accum(j,ringBins[j]);
-			fft1D.transform(ringBins);
-			ringBins = fft1D.toWraparoundOrder(ringBins);
-			//ringFT.clear();
-			for (int j=0; j < noBins; j++){
-				//double re = ringBins[2*j];
-				//double im = ringBins[2*j+1];
-				ringFT.accum(j,ringBins[2*j]);
-			}
-			//stripe peak should be at pi:
-			//pi -> binNo = nobins/2
-			//which corresponds to -> q = 2 Pi * noBins / (2L) = Pi*noBins/L 
-			//lastCpeak = ringSum/count;
 			
+			fft1d = new FFT1D(ringBins.length);
+			fft1d.setLength(2*PI);
+//			for (int j = 0; j < ringBins.length; j++){
+//				ringBins[j] = 0;
+//			}
+//			ringBins[5] = 1;
+//			ringBins[ringBins.length-1] = 1;
+//			ringBins[2] = 1;
+//			ringBins[3] = 1;
+//			ringBins[ringBins.length/2] = 1;
+			
+			ringFT.clear();
+			fft1d.transform(ringBins, new FFT1D.MapFn() {
+				public void apply(double k, double re, double im) {
+					if (0 < k && k*2*PI < 100)
+						ringFT.accum(k, (re));
+				}
+			});
+
 	}
 	
 	public void accumulateAllAux(double t) {

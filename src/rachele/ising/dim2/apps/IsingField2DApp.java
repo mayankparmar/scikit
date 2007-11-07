@@ -20,8 +20,8 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.jobs.params.ChoiceValue;
-import scikit.jobs.params.DoubleValue;
+import scikit.params.ChoiceValue;
+import scikit.params.DoubleValue;
 
 
 public class IsingField2DApp extends Simulation {
@@ -458,7 +458,7 @@ public class IsingField2DApp extends Simulation {
 				//PrintWriter outMin = new PrintWriter(new FileWriter(fileMin, true), true);
 				outMax.println(ising.H + " " + sf.peakValueC() + " " +ising.freeEnergy + " " + ising.time());
 				//outMin.println(ising.H + " " + sf.minC() + " " +ising.freeEnergy + " " + ising.time());
-				System.out.println("Data written to file for time = " + ising.time());
+				//System.out.println("Data written to file for time = " + ising.time());
 			} catch (IOException ex){
 				ex.printStackTrace();
 			}
