@@ -12,14 +12,12 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.jobs.params.ChoiceValue;
 import scikit.numerics.fft.util.FFT2D;
 import scikit.numerics.fn.C1Function;
 import scikit.numerics.fn.Function2D;
-import scikit.numerics.opt.ConjugateGradient;
 //import scikit.numerics.opt.Constraint;
-import scikit.numerics.opt.LinearOptimizer;
-import scikit.numerics.opt.Optimizer;
-import scikit.params.ChoiceValue;
+import scikit.numerics.opt.Relaxation;
 import scikit.util.DoubleArray;
 import scikit.util.Pair;
 
@@ -36,6 +34,7 @@ public class Saddle2App extends Simulation {
 	FFT2D fft;
 	double fe;
 	int time;
+	double targetVar;
 	
 	
 	public static void main(String[] args) {
@@ -46,7 +45,8 @@ public class Saddle2App extends Simulation {
 		frame(grid, plot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.05);
-		params.addm("dt", 1.0);
+		params.addm("dt", 0.1);
+		params.addm("var", 2);
 		params.add("R", 1000.0);
 		params.add("L", 5000.0);
 		params.add("dim", 32);
@@ -58,7 +58,7 @@ public class Saddle2App extends Simulation {
 	public void animate() {
 		T = params.fget("T");
 		dt = params.fget("dt");
-		R = params.fget("R");
+		targetVar = params.fget("var"); 
 		
 		grid.setColors(new GrayScale());
 		if (params.sget("Zoom").equals("Yes"))
@@ -129,24 +129,23 @@ public class Saddle2App extends Simulation {
 //					c += (p[i]-1)*(p[i]-1) / p.length;
 //					grad[i] = 2*(p[i]-1);
 //				}
+//				c -= targetVar;
 //				return new Pair<Double,double[]>(c, grad);
 //			}
 //		};
 
-//		Optimizer opt = new Relaxation(dim*dim, dt);
-		Optimizer opt = new ConjugateGradient(dim*dim, new LinearOptimizer());
+		Relaxation opt = new Relaxation(dim*dim, dt);
 		opt.setFunction(f);
 //		opt.addConstraint(c);
 		opt.initialize(phi);
 		
-		while (!opt.isFinished()) {
-//		while(true) {
+		while(true) {
+			opt.setStepSize(dt);
 			opt.step();
 			fe = f.eval(phi);
 			time++;
 			Job.animate();
 		}
-//		System.out.println("done");
 	}
 	
 	private Function2D potential = new Function2D() {

@@ -2,7 +2,7 @@ package scikit.graphics.dim3;
 
 import javax.media.opengl.GL;
 
-import scikit.vecmath.Quat4d;
+import scikit.numerics.vecmath.Quat4d;
 
 public class Grid3DSurfaceView extends Grid3DView {
 	private Grid3D _grid;

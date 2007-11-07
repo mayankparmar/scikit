@@ -10,7 +10,7 @@
  * $State: Exp $
  */
 
-package scikit.vecmath;
+package scikit.numerics.vecmath;
 
 /**
  * Utility vecmath class used when computing the hash code for vecmath

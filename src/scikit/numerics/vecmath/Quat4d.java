@@ -10,7 +10,7 @@
  * $State: Exp $
  */
 
-package scikit.vecmath;
+package scikit.numerics.vecmath;
 
 import java.lang.Math;
 

@@ -12,10 +12,10 @@ import javax.media.opengl.glu.GLUquadric;
 
 import com.sun.opengl.util.GLUT;
 
+import scikit.numerics.vecmath.Quat4d;
+import scikit.numerics.vecmath.VecHelper;
 import scikit.util.Bounds;
 import scikit.util.Point;
-import scikit.vecmath.Quat4d;
-import scikit.vecmath.VecHelper;
 
 public class Gfx3D {
 	private final GL _gl;

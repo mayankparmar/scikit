@@ -9,9 +9,9 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 
-import scikit.vecmath.Quat4d;
-import scikit.vecmath.VecHelper;
-import scikit.vecmath.Vector3d;
+import scikit.numerics.vecmath.Quat4d;
+import scikit.numerics.vecmath.VecHelper;
+import scikit.numerics.vecmath.Vector3d;
 
 import com.sun.opengl.util.BufferUtil;
 
