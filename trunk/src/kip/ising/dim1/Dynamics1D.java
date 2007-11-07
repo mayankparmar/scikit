@@ -1,7 +1,7 @@
 package kip.ising.dim1;
 
 import scikit.jobs.Job;
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 import kip.util.Random;
 import static java.lang.Math.*;
 

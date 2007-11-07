@@ -8,7 +8,7 @@ import scikit.graphics.dim3.Grid3D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.DoubleValue;
+import scikit.jobs.params.DoubleValue;
 
 public class ClumpGround3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");

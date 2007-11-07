@@ -2,9 +2,9 @@ package rachele.ising.dim1;
 
 import kip.util.Random;
 import scikit.dataset.Accumulator;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
-import scikit.params.Parameters;
 import static java.lang.Math.PI;
 import static java.lang.Math.log;
 import static java.lang.Math.rint;

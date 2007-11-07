@@ -10,8 +10,8 @@ import scikit.graphics.dim2.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
-import scikit.params.FileValue;
+import scikit.jobs.params.ChoiceValue;
+import scikit.jobs.params.FileValue;
 
 
 public class AnimateApp extends Simulation {

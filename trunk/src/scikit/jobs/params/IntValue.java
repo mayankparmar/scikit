@@ -1,4 +1,4 @@
-package scikit.params;
+package scikit.jobs.params;
 
 public class IntValue extends StringValue {
 	private int _lo = Integer.MIN_VALUE, _hi = Integer.MAX_VALUE;

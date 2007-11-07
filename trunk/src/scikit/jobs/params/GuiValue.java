@@ -1,4 +1,4 @@
-package scikit.params;
+package scikit.jobs.params;
 
 import java.util.Vector;
 import javax.swing.*;

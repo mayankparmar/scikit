@@ -7,7 +7,7 @@ import java.awt.Color;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.DoubleValue;
+import scikit.jobs.params.DoubleValue;
 import scikit.graphics.ColorPalette;
 import scikit.graphics.dim2.Grid;
 import kip.util.Complex;

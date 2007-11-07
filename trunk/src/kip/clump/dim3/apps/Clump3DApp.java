@@ -14,7 +14,7 @@ import scikit.graphics.dim3.Grid3D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
+import scikit.jobs.params.ChoiceValue;
 
 
 public class Clump3DApp extends Simulation {

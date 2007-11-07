@@ -6,13 +6,13 @@ import static scikit.util.Utilities.frameTogether;
 
 import java.awt.Color;
 
-import scikit.params.DoubleValue;
-import scikit.params.IntValue;
 import scikit.graphics.dim2.Plot;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
+import scikit.jobs.params.DoubleValue;
+import scikit.jobs.params.IntValue;
 
 
 public class PistonApp extends Simulation {

@@ -13,9 +13,9 @@ import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.sqr;
 import scikit.dataset.Accumulator;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT2D;
 import scikit.numerics.fn.Function2D;
-import scikit.params.Parameters;
 import scikit.util.DoubleArray;
 
 public class FieldClump2D extends AbstractClump2D {

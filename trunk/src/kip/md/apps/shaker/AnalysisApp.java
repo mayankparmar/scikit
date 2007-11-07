@@ -14,8 +14,8 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
-import scikit.params.DirectoryValue;
+import scikit.jobs.params.ChoiceValue;
+import scikit.jobs.params.DirectoryValue;
 
 
 public class AnalysisApp extends Simulation {

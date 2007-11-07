@@ -9,9 +9,9 @@ import scikit.graphics.dim2.Scene2D;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
-import scikit.params.DirectoryValue;
-import scikit.params.DoubleValue;
+import scikit.jobs.params.ChoiceValue;
+import scikit.jobs.params.DirectoryValue;
+import scikit.jobs.params.DoubleValue;
 import scikit.util.FileUtil;
 import static scikit.util.Utilities.*;
 

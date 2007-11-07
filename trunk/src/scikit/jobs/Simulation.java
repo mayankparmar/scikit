@@ -3,7 +3,7 @@ package scikit.jobs;
 import java.util.Set;
 import java.util.TreeSet;
 
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 
 public abstract class Simulation {
 	// parameters to be read and written by simulation

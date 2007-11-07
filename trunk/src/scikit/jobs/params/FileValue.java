@@ -1,4 +1,4 @@
-package scikit.params;
+package scikit.jobs.params;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -11,21 +11,21 @@ import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class DirectoryValue extends GuiValue {
+public class FileValue extends GuiValue {
 	JFileChooser chooser = new JFileChooser();
 	
-	public DirectoryValue() {
+	public FileValue() {
 		this(null);
 	}
 	
-	public DirectoryValue(String v) {
+	public FileValue(String v) {
 		super(defaultDirectory(v));
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(getValue()).getParentFile());
+		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		chooser.setSelectedFile(new File(getValue()));
 	}
 
 	protected boolean testValidity(String v) {
-		return (new File(v)).isDirectory();
+		return (new File(v)).isDirectory() || (new File(v)).isFile();
 	}
 	
 	protected JComponent createEditor() {
@@ -40,7 +40,7 @@ public class DirectoryValue extends GuiValue {
 		});
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				chooser.setCurrentDirectory(new File(getValue()).getParentFile());
+				chooser.setCurrentDirectory(new File(getValue()));
 				b.setText(getValue());
 			}
 		});
@@ -49,9 +49,9 @@ public class DirectoryValue extends GuiValue {
 	}
 	
 	private static String defaultDirectory(String v) {
-		if (v != null && (new File(v)).isDirectory())
+		if (v != null && new File(v).isDirectory() || new File(v).isFile())
 			return v;
 		else
 			return System.getProperty("user.home");
-	}
+	}	
 }

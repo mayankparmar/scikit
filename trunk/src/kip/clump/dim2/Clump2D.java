@@ -4,8 +4,8 @@ import static java.lang.Math.*;
 import static kip.util.MathPlus.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT2D;
-import scikit.params.Parameters;
 
 
 public class Clump2D extends AbstractClump2D {	

@@ -15,7 +15,7 @@ import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.DirectoryValue;
+import scikit.jobs.params.DirectoryValue;
 import scikit.util.FileUtil;
 
 public class AnimateApp extends Simulation {

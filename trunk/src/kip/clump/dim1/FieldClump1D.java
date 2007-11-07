@@ -7,9 +7,9 @@ import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.sqr;
 import scikit.dataset.Accumulator;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT1D;
 import scikit.numerics.fn.Function1D;
-import scikit.params.Parameters;
 import scikit.util.DoubleArray;
 
 public class FieldClump1D extends AbstractClump1D {

@@ -6,7 +6,8 @@ import javax.swing.event.ChangeListener;
 
 import java.awt.*;
 import java.awt.event.*;
-import scikit.params.GuiValue;
+
+import scikit.jobs.params.GuiValue;
 
 
 public class Control {
