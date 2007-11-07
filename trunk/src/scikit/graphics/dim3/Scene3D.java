@@ -15,8 +15,8 @@ import javax.swing.event.MouseInputListener;
 import scikit.graphics.Drawable;
 import scikit.graphics.GLHelper;
 import scikit.graphics.Scene;
-import scikit.vecmath.Quat4d;
-import scikit.vecmath.VecHelper;
+import scikit.numerics.vecmath.Quat4d;
+import scikit.numerics.vecmath.VecHelper;
 
 
 public class Scene3D extends Scene<Gfx3D> {

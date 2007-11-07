@@ -1,4 +1,4 @@
-package scikit.vecmath;
+package scikit.numerics.vecmath;
 
 public class VecHelper {
 	/**

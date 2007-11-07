@@ -18,5 +18,8 @@ public class Relaxation extends Optimizer {
 			p[i] += - dt * d_f[i];
 		}
 	}
-
+	
+	public void setStepSize(double dt) {
+		this.dt = dt;
+	}
 }

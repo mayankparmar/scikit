@@ -24,11 +24,11 @@ import javax.swing.event.ChangeListener;
 import scikit.graphics.ColorChooser;
 import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
+import scikit.numerics.vecmath.Quat4d;
+import scikit.numerics.vecmath.VecHelper;
 import scikit.util.Bounds;
 import scikit.util.DoubleArray;
 import scikit.util.FileUtil;
-import scikit.vecmath.Quat4d;
-import scikit.vecmath.VecHelper;
 
 
 public class Grid3D extends Scene3D {

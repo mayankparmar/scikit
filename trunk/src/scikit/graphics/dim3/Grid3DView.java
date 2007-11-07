@@ -1,7 +1,7 @@
 package scikit.graphics.dim3;
 
-import scikit.vecmath.Vector3d;
-import scikit.vecmath.Quat4d;
+import scikit.numerics.vecmath.Quat4d;
+import scikit.numerics.vecmath.Vector3d;
 
 abstract public class Grid3DView {
 	// normal vectors for each cube panel
