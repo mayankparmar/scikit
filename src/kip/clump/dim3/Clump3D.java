@@ -6,7 +6,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.floor;
 import static java.lang.Math.min;
 import scikit.jobs.Job;
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 
 
 public class Clump3D extends AbstractClump3D {

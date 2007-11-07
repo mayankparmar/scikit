@@ -5,7 +5,7 @@ import static java.lang.Math.min;
 import kip.ising.RewindableDynamics;
 import kip.ising.spinblock.SpinBlocks2D;
 import kip.util.Random;
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 
 
 public class IsingLR extends RewindableDynamics {

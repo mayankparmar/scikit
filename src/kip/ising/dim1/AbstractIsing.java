@@ -1,6 +1,6 @@
 package kip.ising.dim1;
 
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 import static java.lang.Math.*;
 
 

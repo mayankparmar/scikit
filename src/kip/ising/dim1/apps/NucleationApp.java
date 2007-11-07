@@ -8,13 +8,13 @@ import java.awt.Color;
 
 import kip.ising.dim1.Dynamics1D;
 import kip.ising.dim1.PhiFourth;
-import scikit.params.ChoiceValue;
 import scikit.graphics.dim2.Geom2D;
 import scikit.graphics.dim2.Plot;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
 import scikit.jobs.*;
+import scikit.jobs.params.ChoiceValue;
 
 public class NucleationApp extends Simulation {
 	Plot fieldPlot = new Plot("Fields");

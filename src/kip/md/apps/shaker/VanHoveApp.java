@@ -13,7 +13,7 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.DirectoryValue;
+import scikit.jobs.params.DirectoryValue;
 
 public class VanHoveApp extends Simulation {
 	Plot dist = new Plot("2*pi*r*G(r) versus r");

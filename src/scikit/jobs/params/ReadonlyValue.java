@@ -1,4 +1,4 @@
-package scikit.params;
+package scikit.jobs.params;
 
 import javax.swing.*;
 import javax.swing.event.*;

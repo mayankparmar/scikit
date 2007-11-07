@@ -9,8 +9,8 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.sqr;
 import kip.util.Random;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDouble3DFFT;
-import scikit.params.Parameters;
 import scikit.util.DoubleArray;
 
 public class ScalableFieldClump3D {

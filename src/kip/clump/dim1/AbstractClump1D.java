@@ -4,7 +4,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import kip.util.Random;
 import scikit.dataset.Accumulator;
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 
 abstract public class AbstractClump1D {
 	public double L, R, T, dx;

@@ -7,8 +7,8 @@ import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.j1;
 import static kip.util.MathPlus.sqr;
 import kip.util.Random;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDouble2DFFT;
-import scikit.params.Parameters;
 
 public class IsingLangevin {
 	public double L, R, T, dx, J, H;

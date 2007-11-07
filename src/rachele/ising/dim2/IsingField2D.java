@@ -14,9 +14,8 @@ import java.io.FileNotFoundException;
 import kip.util.Random;
 import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
+import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDouble2DFFT;
-import scikit.params.Parameters;
-//import java.io.*;
 
 public class IsingField2D {
 	public double L, R, T, dx, J, H, dT;

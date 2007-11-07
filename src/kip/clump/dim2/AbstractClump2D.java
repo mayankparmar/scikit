@@ -5,7 +5,7 @@ import static kip.util.MathPlus.j1;
 import static kip.util.MathPlus.jn;
 import kip.util.Random;
 import scikit.dataset.Accumulator;
-import scikit.params.Parameters;
+import scikit.jobs.params.Parameters;
 
 abstract public class AbstractClump2D {
 	public double L, R, T, dx;

@@ -10,7 +10,7 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
+import scikit.jobs.params.ChoiceValue;
 import static java.lang.Math.floor;
 import static scikit.util.Utilities.frameTogether;
 import static java.lang.Math.*;

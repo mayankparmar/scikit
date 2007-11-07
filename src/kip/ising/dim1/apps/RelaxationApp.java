@@ -5,10 +5,10 @@ import static scikit.util.Utilities.*;
 
 import java.awt.Color;
 
-import scikit.params.ChoiceValue;
 import scikit.dataset.*;
 import scikit.graphics.dim2.Plot;
 import scikit.jobs.*;
+import scikit.jobs.params.ChoiceValue;
 import kip.ising.dim1.AbstractIsing;
 import kip.ising.dim1.FieldIsing;
 import kip.ising.dim1.Ising;

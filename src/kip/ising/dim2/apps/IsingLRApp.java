@@ -4,7 +4,7 @@ import kip.ising.dim2.IsingLR;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
+import scikit.jobs.params.ChoiceValue;
 import scikit.graphics.dim2.Grid;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
