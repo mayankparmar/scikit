@@ -364,7 +364,8 @@ abstract public class LineMin {
 				&& 2*smallest > tolerance*smallestTol || f_1 == Double.POSITIVE_INFINITY || f_2 == Double.POSITIVE_INFINITY){
 				//&& x1 != x2 && x2 != x3){
 			iteration ++;
-//			System.out.println(x1 + " " + x2 + " " + x3);
+			if(iteration%100 == 0)
+			System.out.println("iteration = " + iteration);
 //			System.out.println(Math.abs(x3-x0) + " " + tolerance*(Math.abs(x1) + Math.abs(x2)));
 			
 
