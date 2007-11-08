@@ -1,5 +1,12 @@
 package scikit.numerics.opt;
 
+import static scikit.util.DoubleArray.dot;
+
+import java.util.ArrayList;
+
+import scikit.numerics.Jama.Matrix;
+import scikit.util.Pair;
+
 public class Relaxation extends Optimizer {
 	double dt;
 	
@@ -21,5 +28,43 @@ public class Relaxation extends Optimizer {
 	
 	public void setStepSize(double dt) {
 		this.dt = dt;
+	}
+	
+	/**
+	 *  Returns the gradient of the objective function after applying the constraints
+	 *  through appropriate Lagrange multipliers.
+	 *  @return the constrained gradient of the objective function
+	 */
+	protected double[] df_constrained(double[] p) {
+		
+		ArrayList<Constraint> cs = _constraints;
+		double[][] d_c = new double[cs.size()][];
+		double[] c = new double[cs.size()];
+		for (int i = 0; i < cs.size(); i++) {
+			Pair<Double, double[]> r = cs.get(i).calculate(p);
+			c[i] = r.fst();
+			d_c[i] = r.snd();
+		}
+		double[][] m = new double[cs.size()][cs.size()];
+		for (int i = 0; i < cs.size(); i++) {
+			for (int j = i; j < cs.size(); j++) {
+				m[i][j] = m[j][i] = dot(d_c[i], d_c[j]); 
+			}
+		}
+		Matrix M = new Matrix(m);
+		
+		double[] d_f = _f.grad(p);
+		Matrix B = new Matrix(cs.size(), 1);
+		for (int i = 0; i < cs.size(); i++) {
+			double stiffness = cs.get(i).stiffness();
+			B.set(i, 0, c[i]*stiffness*p.length/dt - dot(d_f, d_c[i]));
+		}
+		Matrix Lambda = M.solve(B);
+		
+		for (int i = 0; i < cs.size(); i++)
+			for (int x = 0; x < p.length; x++)
+				d_f[x] += Lambda.get(i, 0) * d_c[i][x];
+		
+		return d_f;
 	}
 }

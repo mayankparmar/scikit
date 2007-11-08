@@ -16,7 +16,7 @@ import scikit.jobs.params.ChoiceValue;
 import scikit.numerics.fft.util.FFT2D;
 import scikit.numerics.fn.C1Function;
 import scikit.numerics.fn.Function2D;
-//import scikit.numerics.opt.Constraint;
+import scikit.numerics.opt.Constraint;
 import scikit.numerics.opt.Relaxation;
 import scikit.util.DoubleArray;
 import scikit.util.Pair;
@@ -34,7 +34,7 @@ public class Saddle2App extends Simulation {
 	FFT2D fft;
 	double fe;
 	int time;
-	double targetVar;
+	double targetVariance;
 	
 	
 	public static void main(String[] args) {
@@ -46,7 +46,7 @@ public class Saddle2App extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("T", 0.05);
 		params.addm("dt", 0.1);
-		params.addm("var", 2);
+		params.addm("var", 0.01);
 		params.add("R", 1000.0);
 		params.add("L", 5000.0);
 		params.add("dim", 32);
@@ -58,7 +58,7 @@ public class Saddle2App extends Simulation {
 	public void animate() {
 		T = params.fget("T");
 		dt = params.fget("dt");
-		targetVar = params.fget("var"); 
+		targetVariance = params.fget("var"); 
 		
 		grid.setColors(new GrayScale());
 		if (params.sget("Zoom").equals("Yes"))
@@ -67,7 +67,8 @@ public class Saddle2App extends Simulation {
 			grid.setScale(0, 4);
 		grid.registerData(dim, dim, phi);
 		
-		params.set("F density", format(fe-0.5));
+//		params.set("F density", format(fe-0.5));
+		params.set("F density", format(varianceCst.eval(phi)));
 		params.set("Time", time);
 //		plot.registerLines("", new PointSet(0, 1, section), Color.BLUE);
 	}
@@ -76,6 +77,8 @@ public class Saddle2App extends Simulation {
 		grid.clear();
 		plot.clear();
 	}
+	
+	Constraint varianceCst;
 	
 	public void run() {
 		T = params.fget("T");
@@ -88,7 +91,7 @@ public class Saddle2App extends Simulation {
 		phi = new double[dim*dim];
 		phibar = new double[dim*dim];
 		for (int i = 0; i < dim*dim; i++)
-			phi[i] = 1 + 0.01*random.nextGaussian();
+			phi[i] = 1 + 0.1*random.nextGaussian();
 		
 		fft = new FFT2D(dim, dim);
 		fft.setLengths(L, L);
@@ -118,25 +121,23 @@ public class Saddle2App extends Simulation {
 			}
 		};
 		
-//		Constraint c = new Constraint() {
-//			double[] grad = new double[dim*dim];
-//			public double tolerance() {
-//				return 0.01;
-//			}
-//			public Pair<Double,double[]> calculate(double[] p) {
-//				double c = 0;
-//				for (int i = 0; i < p.length; i++) {
-//					c += (p[i]-1)*(p[i]-1) / p.length;
-//					grad[i] = 2*(p[i]-1);
-//				}
-//				c -= targetVar;
-//				return new Pair<Double,double[]>(c, grad);
-//			}
-//		};
+		varianceCst = new Constraint() {
+			double[] grad = new double[dim*dim];
+			public double stiffness() { return 0.1; }
+			public Pair<Double,double[]> calculate(double[] p) {
+				double c = 0;
+				for (int i = 0; i < p.length; i++) {
+					c += (p[i]-1)*(p[i]-1) / p.length;
+					grad[i] = 2*(p[i]-1);
+				}
+				c -= targetVariance;
+				return new Pair<Double,double[]>(c, grad);
+			}
+		};
 
 		Relaxation opt = new Relaxation(dim*dim, dt);
 		opt.setFunction(f);
-//		opt.addConstraint(c);
+		opt.addConstraint(varianceCst);
 		opt.initialize(phi);
 		
 		while(true) {
