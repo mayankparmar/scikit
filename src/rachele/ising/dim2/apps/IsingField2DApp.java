@@ -20,8 +20,8 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.params.ChoiceValue;
-import scikit.params.DoubleValue;
+import scikit.jobs.params.ChoiceValue;
+import scikit.jobs.params.DoubleValue;
 
 
 public class IsingField2DApp extends Simulation {
