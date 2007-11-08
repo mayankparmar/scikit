@@ -6,8 +6,6 @@ import java.util.ArrayList;
 
 import scikit.numerics.fn.C1Function;
 
-import static scikit.util.DoubleArray.dot;
-
 
 abstract public class Optimizer {
 	 // sqrt of double precision, see Numerical Recipes discussion
@@ -79,21 +77,5 @@ abstract public class Optimizer {
 	 */
 	public static boolean objectiveConverged(double f1, double f2) {
 		return 2*abs(f1-f2) <= FTOL*(abs(f1)+abs(f2)+EPS);
-	}
-	
-	/**
-	 *  Returns the gradient of the objective function after applying the constraints
-	 *  through appropriate Lagrange multipliers.
-	 *  @return the constrained gradient of the objective function
-	 */
-	protected double[] df_constrained(double[] p) {
-		double[] d_f = _f.grad(p);
-		for (Constraint c : _constraints) {
-			double[] d_g = c.grad(p);
-			double lambda = - dot(d_g, d_f) / dot(d_g, d_g);
-			for (int i = 0; i < p.length; i++)
-				d_f[i] += lambda*d_g[i];
-		}
-		return d_f;
 	}
 }

@@ -1,6 +1,7 @@
 package scikit.util;
 
 
+
 public class DoubleArray {
 	public static void copy(double src[], double dst[]) {
 		if (src.length != dst.length)
@@ -61,4 +62,26 @@ public class DoubleArray {
 			sum += a[i]*b[i];
 		return sum;
 	}
+	
+    /**
+     * Assigns (dst[i] = src1[i] + src2[i]) for each index i
+     * @param src1
+     * @param src2
+     * @param dst
+     */
+    public static final void add(double[] src1, double[] src2, double[] dst) {
+    	for (int i = 0; i < dst.length; i++)
+    		dst[i] = src1[i] + src2[i];
+    }
+
+    /**
+     * Assigns (dst[i] = src1[i] - src2[i]) for each index i
+     * @param src1
+     * @param src2
+     * @param dst
+     */
+    public static final void sub(double[] src1, double[] src2, double[] dst) {
+    	for (int i = 0; i < dst.length; i++)
+    		dst[i] = src1[i] - src2[i];
+    }
 }
