@@ -26,12 +26,19 @@ abstract public class Optimizer {
 	}
 	
 	/**
-	 * Adds a constraint which reduces the dimensionality of the configuration
-	 * space to be searched
+	 * Adds a constraint which reduces possible configuration space
 	 * @param c a constraint on the search space
 	 */
 	public void addConstraint(Constraint c) {
 		_constraints.add(c);
+	}
+	
+	/**
+	 * Removes a constraint which increases the possible configuration space
+	 * @param c a constraint on the search space
+	 */
+	public void removeConstraint(Constraint c) {
+		_constraints.remove(c);
 	}
 	
 	/**

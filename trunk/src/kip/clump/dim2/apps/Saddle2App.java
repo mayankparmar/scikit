@@ -1,8 +1,13 @@
 package kip.clump.dim2.apps;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.cos;
 import static java.lang.Math.log;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.j1;
+import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 import kip.util.Random;
@@ -44,12 +49,12 @@ public class Saddle2App extends Simulation {
 	public Saddle2App() {
 		frame(grid, plot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("T", 0.05);
+		params.addm("T", 0.14);
 		params.addm("dt", 0.1);
 		params.addm("var", 0.01);
 		params.add("R", 1000.0);
-		params.add("L", 5000.0);
-		params.add("dim", 32);
+		params.add("L", 20000.0);
+		params.add("dim", 64);
 		params.add("Random seed", 0);
 		params.add("Time");
 		params.add("F density");
@@ -58,7 +63,6 @@ public class Saddle2App extends Simulation {
 	public void animate() {
 		T = params.fget("T");
 		dt = params.fget("dt");
-		targetVariance = params.fget("var"); 
 		
 		grid.setColors(new GrayScale());
 		if (params.sget("Zoom").equals("Yes"))
@@ -67,8 +71,10 @@ public class Saddle2App extends Simulation {
 			grid.setScale(0, 4);
 		grid.registerData(dim, dim, phi);
 		
-//		params.set("F density", format(fe-0.5));
-		params.set("F density", format(varianceCst.eval(phi)));
+		params.set("var", format(targetVariance)); 
+//		targetVariance = params.fget("var");
+		
+		params.set("F density", format(fe-0.5));
 		params.set("Time", time);
 //		plot.registerLines("", new PointSet(0, 1, section), Color.BLUE);
 	}
@@ -78,72 +84,50 @@ public class Saddle2App extends Simulation {
 		plot.clear();
 	}
 	
-	Constraint varianceCst;
-	
 	public void run() {
 		T = params.fget("T");
 		dt = params.fget("dt");
 		R = params.fget("R");
 		L = params.fget("L");
 		dim = params.iget("dim");
+		targetVariance = params.fget("var");
 		time = 0;
 		
 		phi = new double[dim*dim];
 		phibar = new double[dim*dim];
-		for (int i = 0; i < dim*dim; i++)
-			phi[i] = 1 + 0.1*random.nextGaussian();
+		initializeField();
 		
 		fft = new FFT2D(dim, dim);
 		fft.setLengths(L, L);
 		
 		random.setSeed(params.iget("Random seed"));
 		
-		C1Function f = new C1Function() {
+		C1Function freeEnergy = new C1Function() {
 			double[] grad = new double[dim*dim];
 			public Pair<Double,double[]> calculate(final double[] p) {
-				final double[] pb = phibar;
-				fft.convolve(p, pb, potential);
-				double fe_acc = 0;
-				for (int i = 0; i < p.length; i++) {
-					if (p[i] <= 0) {
-						fe_acc = grad[i] = inf;
-					}
-					else {
-						fe_acc += (p[i]*pb[i]/2+T*p[i]*log(p[i])) / p.length;
-						grad[i] = pb[i]+T*log(p[i]);
-					}
-				}
-				double mu = DoubleArray.mean(grad);
-				for (int i = 0; i < p.length; i++) {
-					grad[i] -= mu;
-				}
-				return new Pair<Double,double[]>(fe_acc, grad);
+				return calculateFreeEnergy(p, grad);
 			}
 		};
 		
-		varianceCst = new Constraint() {
+		Constraint varianceCst = new Constraint() {
 			double[] grad = new double[dim*dim];
-			public double stiffness() { return 0.1; }
+			public double stiffness() { return 0.2; }
 			public Pair<Double,double[]> calculate(double[] p) {
-				double c = 0;
-				for (int i = 0; i < p.length; i++) {
-					c += (p[i]-1)*(p[i]-1) / p.length;
-					grad[i] = 2*(p[i]-1);
-				}
-				c -= targetVariance;
-				return new Pair<Double,double[]>(c, grad);
+				return calculateVariance(p, grad);
 			}
 		};
-
+		
 		Relaxation opt = new Relaxation(dim*dim, dt);
-		opt.setFunction(f);
+		opt.setFunction(freeEnergy);
 		opt.addConstraint(varianceCst);
 		opt.initialize(phi);
 		
 		while(true) {
 			opt.setStepSize(dt);
 			opt.step();
-			fe = f.eval(phi);
+			targetVariance -= dt * opt.dc_dt(phi, varianceCst);
+			fe = freeEnergy.eval(phi);
+			System.out.println("++ " + opt.dc_dt(phi, varianceCst) + " " + varianceCst.eval(phi));
 			time++;
 			Job.animate();
 		}
@@ -155,4 +139,56 @@ public class Saddle2App extends Simulation {
 			return kR == 0 ? 1 : 2*j1(kR)/kR;
 		}
 	};
+	
+	private void initializeField() {
+		for (int i = 0; i < dim*dim; i++) {
+			double dx = L/dim;
+			double x = dx*(i%dim - dim/2);
+			double y = dx*(i/dim - dim/2);
+			double r = sqrt(x*x+y*y);
+			double mag = 0.8 / (1+sqr(r/R));
+			
+			double KR_SP = 5.13562230184068255630140;
+			double kR = KR_SP; // it's fun to try different values
+			double x1 = x*cos(1*PI/6) + y*sin(1*PI/6);
+			double x2 = x*cos(3*PI/6) + y*sin(3*PI/6);
+			double x3 = x*cos(5*PI/6) + y*sin(5*PI/6);
+			phi[i] = 1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R));
+//			phi[i] = 1+mag*random.nextGaussian()/5;	// random initial condition
+		}
+		
+		double mean = DoubleArray.mean(phi);
+		for (int i = 0; i < dim*dim; i++)
+			phi[i] += 1-mean;
+	}
+	
+	public Pair<Double,double[]> calculateFreeEnergy(double[] p, double[] grad) {
+		final double[] pb = phibar;
+		fft.convolve(p, pb, potential);
+		double fe_acc = 0;
+		for (int i = 0; i < p.length; i++) {
+			if (p[i] <= 0) {
+				fe_acc = grad[i] = inf;
+			}
+			else {
+				fe_acc += (p[i]*pb[i]/2+T*p[i]*log(p[i])) / p.length;
+				grad[i] = pb[i]+T*log(p[i]);
+			}
+		}
+		double mu = DoubleArray.mean(grad);
+		for (int i = 0; i < p.length; i++) {
+			grad[i] -= mu;
+		}
+		return new Pair<Double,double[]>(fe_acc, grad);
+	}
+
+	public Pair<Double,double[]> calculateVariance(double[] p, double[] grad) {
+		double c = 0;
+		for (int i = 0; i < p.length; i++) {
+			c += (p[i]-1)*(p[i]-1) / p.length;
+			grad[i] = 2*(p[i]-1);
+		}
+		c -= targetVariance;
+		return new Pair<Double,double[]>(c, grad);
+	}
 }
