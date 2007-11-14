@@ -1,6 +1,5 @@
 package kip.clump.dim3;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.floor;
@@ -9,9 +8,12 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
+import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.sqr;
+import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.ComplexDouble3DFFT;
+import scikit.numerics.fft.util.FFT3D;
+import scikit.numerics.fn.Function3D;
 import scikit.util.DoubleArray;
 
 public class FieldClump3D extends AbstractClump3D {
@@ -20,9 +22,8 @@ public class FieldClump3D extends AbstractClump3D {
 	double[] phi, phi_bar, del_phi;
 	boolean[] onBoundary;
 	int elementsInsideBoundary;
-	ComplexDouble3DFFT fft;	// Object to perform transforms
-	double[] fftScratch;
-	
+	FFT3D fft;
+
 	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
@@ -192,7 +193,11 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	
 	public void simulate() {
-		convolveWithRange(phi, phi_bar, R);
+		fft.convolve(phi, phi_bar, new Function3D() {
+			public double eval(double k1, double k2, double k3) {
+				return potential(hypot(k1,k2,k3)*R);
+			}
+		});
 		
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
@@ -220,7 +225,12 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	public double dFdensity_dR() {
 		double[] dphibar_dR = phi_bar;
-		convolveWithRangeDerivative(phi, dphibar_dR, R);
+		fft.convolve(phi, phi_bar, new Function3D() {
+			public double eval(double k1, double k2, double k3) {
+				double k = hypot(k1, k2, k3);
+				return dpotential_dkR(k*R)*k;
+			}
+		});
 		double ret = 0;
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			ret += 0.5*phi[i]*dphibar_dR[i];
@@ -228,17 +238,24 @@ public class FieldClump3D extends AbstractClump3D {
 		return ret / (Lp*Lp*Lp);
 	}
 	
-	public StructureFactor3D newStructureFactor(double binWidth) {
+	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		return new StructureFactor3D(Lp, L, R, binWidth);
+		Accumulator ret = new Accumulator(binWidth);
+		ret.setAveraging(true);
+		return ret;
 	}
 	
-	
-	public void accumulateIntoStructureFactor(StructureFactor3D sf) {
-		sf.accumulate(phi);
-	}
-	
+	public void accumulateStructure(final Accumulator sf) {
+		fft.transform(phi, new FFT3D.MapFn() {
+			public void apply(double k1, double k2, double k3, double re, double im) {
+				double k = hypot(k1, k2, k3);
+				double kR = k*R;
+				if (kR > 0 && kR <= 4*KR_SP)
+					sf.accum(kR, (re*re+im*im)/(L*L*L));
+			}
+		});
+	}	
 	
 	public double[] coarseGrained() {
 		return phi;
@@ -261,8 +278,8 @@ public class FieldClump3D extends AbstractClump3D {
 		del_phi = new double[Lp*Lp*Lp];
 		onBoundary = new boolean[Lp*Lp*Lp];
 		elementsInsideBoundary = Lp*Lp*Lp;
-		fftScratch = new double[2*Lp*Lp*Lp];
-		fft = new ComplexDouble3DFFT(Lp, Lp, Lp);
+		fft = new FFT3D(Lp, Lp, Lp);
+		fft.setLengths(L, L, L);
 	}
 	
 	private double noise() {
@@ -293,55 +310,5 @@ public class FieldClump3D extends AbstractClump3D {
 				}
 			}
 		}
-	}
-	
-	private void convolveWithRange(double[] src, double[] dest, double R) {
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			fftScratch[2*i] = src[i];
-			fftScratch[2*i+1] = 0;
-		}
-		
-		fft.transform(fftScratch);
-		for (int z = -Lp/2; z < Lp/2; z++) {
-			for (int y = -Lp/2; y < Lp/2; y++) {
-				for (int x = -Lp/2; x < Lp/2; x++) {
-					int i = Lp*Lp*((z+Lp)%Lp) + Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-					double k = 2*PI*sqrt(x*x+y*y+z*z)/L;
-					double J = potential(k*R);
-					fftScratch[2*i] *= J;
-					fftScratch[2*i+1] *= J;
-				}
-			}
-		}
-		fft.backtransform(fftScratch);
-		
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			dest[i] = fftScratch[2*i] / (Lp*Lp*Lp);
-		}		
-	}
-
-	private void convolveWithRangeDerivative(double[] src, double[] dest, double R) {
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			fftScratch[2*i] = src[i];
-			fftScratch[2*i+1] = 0;
-		}
-		
-		fft.transform(fftScratch);
-		for (int z = -Lp/2; z < Lp/2; z++) {
-			for (int y = -Lp/2; y < Lp/2; y++) {
-				for (int x = -Lp/2; x < Lp/2; x++) {
-					int i = Lp*Lp*((z+Lp)%Lp) + Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-					double k = 2*PI*sqrt(x*x+y*y+z*z)/L;
-					double dJ_dR = dpotential_dkR(k*R)*k;
-					fftScratch[2*i] *= dJ_dR;
-					fftScratch[2*i+1] *= dJ_dR;
-				}
-			}
-		}
-		fft.backtransform(fftScratch);
-		
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			dest[i] = fftScratch[2*i] / (Lp*Lp*Lp);
-		}		
 	}
 }
