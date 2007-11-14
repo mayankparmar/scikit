@@ -156,6 +156,13 @@ public class IsingLangevin {
 		return var / (Lp*Lp);
 	}
 	
+	public double meanPhi(){
+		double sum = 0;
+		for (int i = 0; i < N; i ++)
+			sum += phi[i];
+		return sum/N;
+	}
+	
 	public double squarePotential(double kRx, double kRy){
 		return sin(kRx)*sin(kRy)/(kRx*kRy);
 	}

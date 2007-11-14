@@ -42,6 +42,7 @@ public class IsingField2DApp extends Simulation {
 	Plot landscape = new Plot("Free Energy Landscape");
 	Plot brLandscape = new Plot("Br Free Energy Landscape");
 	Plot ring = new Plot("Circle SF Ring");
+	Plot ringInput = new Plot("Input for Ring");
 	StructureFactor sf;
     IsingField2D ising;
     SteepestDescentMin opt;
@@ -58,8 +59,8 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid);
-		frame(ring);
+		frameTogether("Grids", grid, delPhiGrid, ringInput);
+		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		//frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
@@ -68,8 +69,8 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Conjugate Gradient Min", 
-				"Steepest Decent",  "Langevin Conserve M"));
+		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", "Conjugate Gradient Min", 
+				"Steepest Decent",  "Langevin No M Convervation"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable",
@@ -78,8 +79,8 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
-		params.addm("T", 0.05);
-		params.addm("H", 0.3);
+		params.addm("T", 0.075);
+		params.addm("H", 0.0);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -89,7 +90,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.0);
+		params.add("Magnetization", 0.6);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -167,7 +168,8 @@ public class IsingField2DApp extends Simulation {
 		freeEnergyPlot.registerLines("Free Energy", ising.getFreeEnergyAcc(), Color.MAGENTA);
 		
 		if(ising.circleInt() == true){
-			ring.registerLines("RING", sf.getRingFT(), Color.black);
+			//ring.registerLines("RING", sf.getRingFT(), Color.black);
+			ringInput.registerLines("Input", sf.getRingInput(), Color.black);
 			structurePeakV.registerLines("Peak Value", sf.getPeakC(), Color.BLACK);
 		}else{
 			structurePeakV.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
@@ -306,7 +308,7 @@ public class IsingField2DApp extends Simulation {
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
 
 			lastClear += 1;
-			if (ising.time()%1 == 0){
+			if (ising.time()%100 == 0){
 				sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				writeDataToFile();
 			}
@@ -421,44 +423,52 @@ public class IsingField2DApp extends Simulation {
 					PrintWriter outH = new PrintWriter(new FileWriter(fileH, true), true);
 					outH.println(" # SF vs H data ");
 					outV.println(" # SF vs V data ");
-					outV.println(" # Temperature = " + ising.T);
-					outH.println(" # Temperature = " + ising.T);
+//					outV.println(" # Temperature = " + ising.T);
+//					outH.println(" # Temperature = " + ising.T);
+					outV.println(" # Field = " + ising.H);
+					outH.println(" # Field = " + ising.H);
+					outV.println(" # Data = T, S(k*), Free Energy, time");
+					outH.println(" # Data = T, S(k*), Free Energy, time");
 					initFile = true;
 				}
 				File fileV = new File(dataFileV);
 				File fileH = new File(dataFileH);
 				PrintWriter outV = new PrintWriter(new FileWriter(fileV, true), true);
 				PrintWriter outH = new PrintWriter(new FileWriter(fileH, true), true);
-				outH.println(ising.H + " " + sf.peakValueH() + " " +ising.freeEnergy + " " + ising.time());
-				outV.println(ising.H + " " + sf.peakValueV() + " " +ising.freeEnergy + " " + ising.time());
+//				outH.println(ising.H + " " + sf.peakValueH() + " " +ising.freeEnergy + " " + ising.time());
+//				outV.println(ising.H + " " + sf.peakValueV() + " " +ising.freeEnergy + " " + ising.time());
+				outH.println(ising.T + " " + sf.peakValueH() + " " +ising.freeEnergy + " " + ising.time());
+				outV.println(ising.T + " " + sf.peakValueV() + " " +ising.freeEnergy + " " + ising.time());
 				System.out.println("Data written to file for time = " + ising.time());
 			} catch (IOException ex){
 				ex.printStackTrace();
 			}
 		}else if(params.sget("Interaction")== "Circle"){
 			try{
-				String dataFileMax = "../../../research/javaData/sfData/dataMax";
-				//String dataFileMin = "../../../research/javaData/sfData/dataMin";
+				String dataStripe = "../../../research/javaData/sfData/dataStripe";
+				String dataClump = "../../../research/javaData/sfData/dataClump";
 				if (initFile == false){
-					deleteFile(dataFileMax);
-					//deleteFile(dataFileMin);
-					File fileMax = new File(dataFileMax);
-					//File fileMin = new File(dataFileMin);
-					PrintWriter outMax = new PrintWriter(new FileWriter(fileMax, true), true);
-					//PrintWriter outMin = new PrintWriter(new FileWriter(fileMin, true), true);
-					outMax.println(" # SF vs H data  for circle interaction");
-					outMax.println(" # Temperature = " + ising.T);
-					//outMin.println(" # SF vs H data  for circle interaction");
-					//outMin.println(" # Temperature = " + ising.T);
+					deleteFile(dataStripe);
+					deleteFile(dataClump);
+					File fileS = new File(dataStripe);
+					File fileC = new File(dataClump);
+					PrintWriter outS = new PrintWriter(new FileWriter(fileS, true), true);
+					PrintWriter outC = new PrintWriter(new FileWriter(fileC, true), true);
+					outS.println(" # SF vs T data  for circle interaction");
+					outS.println(" # H = " + ising.H);
+					outS.println(" # density = " + ising.DENSITY);
+					outC.println(" # SF vs T data  for circle interaction");
+					outC.println(" # H = " + ising.H);
+					outC.println(" # density = " + ising.DENSITY);
 					initFile = true;
 				}
-				File fileMax = new File(dataFileMax);
-				//File fileMin = new File(dataFileMin);
-				PrintWriter outMax = new PrintWriter(new FileWriter(fileMax, true), true);
-				//PrintWriter outMin = new PrintWriter(new FileWriter(fileMin, true), true);
-				outMax.println(ising.H + " " + sf.peakValueC() + " " +ising.freeEnergy + " " + ising.time());
-				//outMin.println(ising.H + " " + sf.minC() + " " +ising.freeEnergy + " " + ising.time());
-				//System.out.println("Data written to file for time = " + ising.time());
+				File fileS = new File(dataStripe);
+				File fileC = new File(dataClump);
+				PrintWriter outC = new PrintWriter(new FileWriter(fileC, true), true);
+				PrintWriter outS = new PrintWriter(new FileWriter(fileS, true), true);
+				outC.println(ising.T + " " + sf.peakValueC() + " " +ising.freeEnergy + " " + ising.time());
+				outS.println(ising.T + " " + sf.peakValueS() + " " +ising.freeEnergy + " " + ising.time());
+				System.out.println("Data written to file for time = " + ising.time());
 			} catch (IOException ex){
 				ex.printStackTrace();
 			}

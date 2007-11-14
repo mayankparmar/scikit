@@ -24,7 +24,7 @@ public class StructureFactor {
 	static double squarePeakValue = 4.4934092;
 	static double circlePeakValue = 5.135622302;
 	int squarePeakInt, circlePeakInt;
-	double lastHpeak, lastVpeak, lastCpeak, lastCmax, lastCmin;
+	double lastHpeak, lastVpeak, lastCpeak, lastSpeak, lastCmax, lastCmin;
 	int noBins = 1024;	
 	
 	Accumulator accCircle;
@@ -40,6 +40,7 @@ public class StructureFactor {
 	Accumulator accPeakVslope;
 	Accumulator accPeakCslope;
 	Accumulator ringFT;
+	Accumulator ringData;
 	
 	public StructureFactor(int Lp, double L, double R, double kRbinWidth, double dt) {
 		this.Lp = Lp;
@@ -79,6 +80,7 @@ public class StructureFactor {
 		accPeakVslope = new Accumulator(dt);
 		accPeakCslope = new Accumulator(dt);
 		ringFT = new Accumulator(.01);
+		ringData = new Accumulator(1);
 		
 		accAvH.setAveraging(true);		
 		accAvV.setAveraging(true);
@@ -93,7 +95,8 @@ public class StructureFactor {
 		accPeakVslope.setAveraging(true);
 		accPeakCslope.setAveraging(true);
 		ringFT.setAveraging(true);
-				
+		ringData.setAveraging(true);
+		
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		fft1d = new FFT1D(noBins);
 		fftData = new double[2*Lp*Lp];
@@ -178,6 +181,11 @@ public class StructureFactor {
 		return lastCpeak;
 	}
 	
+	public double peakValueS(){
+		return lastSpeak;
+	}
+	
+	
 	public double minC(){
 		return lastCmin;
 	}
@@ -197,6 +205,10 @@ public class StructureFactor {
 	
 	public Accumulator getRingFT(){
 		return ringFT;
+	}
+
+	public Accumulator getRingInput(){
+		return ringData;
 	}
 	
 	public void setBounds(double kRmin, double kRmax) {
@@ -271,7 +283,10 @@ public class StructureFactor {
 			//circularly averaged	
 			//double binSize = 2*PI/noBins;
 			double [] ringBins = new double [noBins];
-			//double ringSum =0;
+			int clumpCt = 0;
+			double clumpSum = 0;
+			int stripeCt = 0; 
+			double stripeSum = 0;
 			ringFT.clear();
 			for (y = -Lp/2; y < Lp/2; y++) {
 				for (x = -Lp/2; x < Lp/2; x++) {
@@ -288,34 +303,50 @@ public class StructureFactor {
 									angle = 2*PI - angle;
 								if (angle == 2*PI)
 									angle = 0;
-//								ringFT.accum(angle*360/(2*PI),sFactor[i]);
+								double angleS = angle - .3190684;
+								if(angleS >= -.1 && angleS <= .1){
+									stripeCt +=1;
+									stripeSum += sFactor[i];	
+								}else if (angleS >= -.1 + PI && angleS <= .1 + PI){
+									stripeCt +=1;
+									stripeSum += sFactor[i];	
+								}else if(angleS >= -.1 + PI/3 && angleS <= .1 + PI/3){
+									clumpCt += 1;
+									clumpSum += sFactor[i];									
+								}else if(angleS >= -.1 + 2*PI/3 && angleS <= .1 + 2*PI/3){
+									clumpCt += 1;
+									clumpSum += sFactor[i];									
+								}else if(angleS >= -.1 + 4*PI/3 && angleS <= .1 + 4*PI/3){
+									clumpCt += 1;
+									clumpSum += sFactor[i];									
+								}else if(angleS >= -.1 + 5*PI/3 && angleS <= .1 + 5*PI/3){
+									clumpCt += 1;
+									clumpSum += sFactor[i];									
+								}
+									
+								
+//								ringFT.accum564(angle*360/(2*PI),sFactor[i]);
 								int j = (int)floor(angle*noBins/(2*PI));
 								ringBins[j] += sFactor[i];
-//								ringFT.accum(j,ringBins[j]);
+//								if(j==52 || j == 564){
+//									stripeCt +=1;
+//									stripeSum += sFactor[i];
+//								}else if(j == 256 || j== 416 || j == 768 || j == 928) {
+//									clumpCt += 1;
+//									clumpSum += sFactor[i];
+//								}
+
 						}
 					}	
 				}
 			}
-			
-			fft1d = new FFT1D(ringBins.length);
-			fft1d.setLength(2*PI);
-//			for (int j = 0; j < ringBins.length; j++){
-//				ringBins[j] = 0;
-//			}
-//			ringBins[5] = 1;
-//			ringBins[ringBins.length-1] = 1;
-//			ringBins[2] = 1;
-//			ringBins[3] = 1;
-//			ringBins[ringBins.length/2] = 1;
-			
-			ringFT.clear();
-			fft1d.transform(ringBins, new FFT1D.MapFn() {
-				public void apply(double k, double re, double im) {
-					if (0 < k && k*2*PI < 100)
-						ringFT.accum(k, (re));
-				}
-			});
-
+			lastCpeak = clumpSum/clumpCt;
+			lastSpeak = stripeSum/stripeCt;
+			ringData.clear();
+			for (int j = 0; j < noBins; j ++){
+				//System.out.println(j + " "+ ringBins[j]);
+				ringData.accum(j,ringBins[j]);
+			}
 	}
 	
 	public void accumulateAllAux(double t) {

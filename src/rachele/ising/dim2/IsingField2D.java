@@ -20,6 +20,7 @@ import scikit.numerics.fft.ComplexDouble2DFFT;
 public class IsingField2D {
 	public double L, R, T, dx, J, H, dT;
 	public int Lp, N;
+	public double DENSITY;
 	public double dt, t;
 	public double lastMu;
 	public double[] phi, phiVector;
@@ -65,14 +66,15 @@ public class IsingField2D {
 	public Accumulator accFreeEnergy;
 			
 	boolean noiselessDynamics = false;
-	boolean circleInteraction = true;
+	boolean circleInteraction = false;
+	boolean rectangleInteraction = false;
 	boolean magConservation = false;
 	int slowPower = 0;
 	String theory;
 	
 	Random random = new Random();
 	
-	double DENSITY;
+
 	
 	public IsingField2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
@@ -101,11 +103,10 @@ public class IsingField2D {
 		horizontalSlice = params.fget("Horizontal Slice");
 		verticalSlice = params.fget("Vertical Slice");
 		
-		if(params.sget("Interaction") == "Circle"){
+		if(params.sget("Interaction") == "Circle")
 			circleInteraction = true;
-		}else{
-			circleInteraction = false;
-		}
+		else if(params.sget("Interaction") == "Rectangle")
+			rectangleInteraction = true;
 
 		if(params.sget("Noise") == "Off"){
 			noiselessDynamics = true;
@@ -235,6 +236,10 @@ public class IsingField2D {
 		}else{
 			circleInteraction = false;
 		}
+		if(params.sget("Interaction") == "Rectangle")
+			rectangleInteraction = true;
+		else
+			rectangleInteraction = false;
 
 		if(params.sget("Noise") == "Off"){
 			noiselessDynamics = true;
@@ -279,6 +284,13 @@ public class IsingField2D {
 	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
+		double Rx, Ry;
+		if(rectangleInteraction == true){
+			Rx = R;
+			Ry = R*1.2;
+		}else{
+			Rx = Ry = R;
+		}
 		double V;
 		for (int i = 0; i < Lp*Lp; i++) {
 			fftScratch[2*i] = src[i];
@@ -293,8 +305,8 @@ public class IsingField2D {
 					double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
 					V = (kR == 0 ? 1 : 2*j1(kR)/kR);
 				}else{
-					double k_xR = (2*PI*x/L)*R;
-					double k_yR =(2*PI*y/L)*R;
+					double k_xR = (2*PI*x/L)*Rx;
+					double k_yR =(2*PI*y/L)*Ry;
 					V = (k_xR == 0 ? 1 : sin(k_xR)/k_xR);
 					V *= (k_yR == 0 ? 1 : sin(k_yR)/k_yR);
 				}
