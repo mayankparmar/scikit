@@ -103,7 +103,7 @@ public class LinearTheoryApp extends Simulation{
 	
 	public double linearTheory(double kR, double time){
 		double V = ising.Lp*ising.Lp;
-		double D = -ising.circlePotential(kR) - ising.T/ pow(1-pow(params.fget("Magnetization"),2),2);
+		double D = -ising.circlePotential(kR) - ising.T/ pow(1-params.fget("Magnetization"),2);
 		double sf = (exp(2*time*D)*(V + ising.T/D)-ising.T/D)/V;
 		return sf;
 	}
