@@ -3,6 +3,7 @@ package kip.clump.dim3;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import kip.util.Random;
+import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
 
 abstract public class AbstractClump3D {
@@ -26,8 +27,8 @@ abstract public class AbstractClump3D {
 	}
 	
 	abstract public void readParams(Parameters params);
-	abstract public StructureFactor3D newStructureFactor(double binWidth);
-	abstract public void accumulateIntoStructureFactor(StructureFactor3D sf);
+	abstract public Accumulator newStructureAccumulator(double binWidth);
+	abstract public void accumulateStructure(Accumulator sf);
 	abstract public void simulate();
 	abstract public double[] coarseGrained();
 	abstract public int numColumns();

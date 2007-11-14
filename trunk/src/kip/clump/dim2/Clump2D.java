@@ -137,7 +137,7 @@ public class Clump2D extends AbstractClump2D {
 			int i = (int)(Lp*ptsX[k]/L);
 			int j = (int)(Lp*ptsY[k]/L);
 			assert(i < Lp && j < Lp);
-			field[(Lp*j+i)] += 1/(dx*dx);
+			field[Lp*j+i] += 1/(dx*dx);
 		}
 	}
 }

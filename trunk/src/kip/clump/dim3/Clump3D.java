@@ -5,8 +5,11 @@ import static java.lang.Math.abs;
 import static java.lang.Math.exp;
 import static java.lang.Math.floor;
 import static java.lang.Math.min;
+import static kip.util.MathPlus.hypot;
+import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
 import scikit.jobs.params.Parameters;
+import scikit.numerics.fft.util.FFT3D;
 
 
 public class Clump3D extends AbstractClump3D {
@@ -14,6 +17,7 @@ public class Clump3D extends AbstractClump3D {
 	int t_cnt, numPts;
 	double dt;
 	double[] ptsX, ptsY, ptsZ;
+	FFT3D fft;
 
 	public Clump3D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
@@ -31,6 +35,10 @@ public class Clump3D extends AbstractClump3D {
 		ptsZ = new double[numPts];
 		randomizePts();
 		t_cnt = 0;
+		
+		int dim = (int)(2*L);
+		fft = new FFT3D(dim, dim, dim);
+		fft.setLengths(L, L, L);
 	}
 	
 	private void randomizePts() {
@@ -102,16 +110,29 @@ public class Clump3D extends AbstractClump3D {
 		}
 	}
 	
-	public StructureFactor3D newStructureFactor(double binWidth) {
+	
+	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		return new StructureFactor3D((int)(2*L), L, R, binWidth);
+		Accumulator ret = new Accumulator(binWidth);
+		ret.setAveraging(true);
+		return ret;
 	}
 	
-	public void accumulateIntoStructureFactor(StructureFactor3D sf) {
-		sf.accumulate(ptsX, ptsY, ptsZ);		
-	}
-	
+	public void accumulateStructure(final Accumulator sf) {
+		double[] scratch = fft.getScratch();
+		int Lp = fft.dim1;
+		performCoarseGraining(scratch, Lp);
+		fft.transform(scratch, new FFT3D.MapFn() {
+			public void apply(double k1, double k2, double k3, double re, double im) {
+				double k = hypot(k1, k2, k3);
+				double kR = k*R;
+				if (kR > 0 && kR <= 4*KR_SP)
+					sf.accum(kR, (re*re+im*im)/(L*L*L));
+			}
+		});
+	}	
+
 	public double[] coarseGrained() {
 		return pts.rawElements;
 	}
@@ -122,5 +143,18 @@ public class Clump3D extends AbstractClump3D {
 	
 	public double time() {
 		return (double)t_cnt/numPts;
+	}
+	
+	private void performCoarseGraining(double[] field, int Lp) {
+		double dx = L/Lp;
+		for (int i = 0; i < Lp*Lp*Lp; i++)
+			field[i] = 0;
+		for (int n = 0; n < ptsX.length; n++) {
+			int i1 = (int)(Lp*ptsX[n]/L);
+			int i2 = (int)(Lp*ptsY[n]/L);
+			int i3 = (int)(Lp*ptsZ[n]/L);
+			assert(i1 < Lp && i2 < Lp && i3 < Lp);
+			field[Lp*Lp*i3+Lp*i2+i1] += 1/(dx*dx*dx);
+		}
 	}
 }

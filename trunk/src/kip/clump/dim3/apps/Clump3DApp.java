@@ -7,7 +7,7 @@ import java.awt.Color;
 import kip.clump.dim3.AbstractClump3D;
 import kip.clump.dim3.Clump3D;
 import kip.clump.dim3.FieldClump3D;
-import kip.clump.dim3.StructureFactor3D;
+import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
@@ -20,9 +20,9 @@ import scikit.jobs.params.ChoiceValue;
 public class Clump3DApp extends Simulation {
     Plot plot = new Plot("Structure factor");
     Grid3D grid = new Grid3D("test");
-    StructureFactor3D sf;
+    Accumulator sf;
     AbstractClump3D clump;
-    boolean fieldDynamics = true;
+    boolean fieldDynamics = false;
 
 	public static void main(String[] args) {
 		new Control(new Clump3DApp(), "Clump Model");
@@ -53,14 +53,14 @@ public class Clump3DApp extends Simulation {
 		clump.readParams(params);
 
 		if (flags.contains("Clear S.F."))
-			sf.getAccumulator().clear();
+			sf.clear();
 		flags.clear();
 		
 		int nc = clump.numColumns();
 		grid.registerData(nc, nc, nc, clump.coarseGrained());
 		
-		plot.registerLines("Structure data", sf.getAccumulator(), Color.BLACK);
-		plot.registerLines("Structure theory", new Function(sf.kRmin(), sf.kRmax()) {
+		plot.registerLines("Structure data", sf, Color.BLACK);
+		plot.registerLines("Structure theory", new Function() {
         	public double eval(double kR) {
         		return 1/(clump.potential(kR)/clump.T+1);
 	        }
@@ -74,13 +74,12 @@ public class Clump3DApp extends Simulation {
 	
 	public void run() {
 		clump = fieldDynamics ? new FieldClump3D(params) : new Clump3D(params);
-        sf = clump.newStructureFactor(params.fget("kR bin-width"));
-		sf.setBounds(0.1, 14);
+        sf = clump.newStructureAccumulator(params.fget("kR bin-width"));
         
         while (true) {
 			params.set("Time", clump.time());
 			clump.simulate();
-			clump.accumulateIntoStructureFactor(sf);
+			clump.accumulateStructure(sf);
 			Job.animate();
 		}
  	}
