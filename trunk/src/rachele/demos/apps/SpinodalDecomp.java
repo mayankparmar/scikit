@@ -7,7 +7,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import static scikit.util.Utilities.*;
-import static scikit.util.Bounds.*;
+//import static scikit.util.Bounds.*;
 import static java.lang.Math.*;
 import java.awt.Color;
 import scikit.util.DoubleArray;
