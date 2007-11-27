@@ -18,14 +18,16 @@ import scikit.util.DoubleArray;
 
 public class FieldClump3D extends AbstractClump3D {
 	int Lp;
-	double dt, t;
+	double t;
 	double[] phi, phi_bar, del_phi;
 	boolean[] onBoundary;
 	int elementsInsideBoundary;
 	FFT3D fft;
-
 	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
+
+	public double dt;
+	public double Rx, Ry, Rz;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
 	public double rms_dF_dphi;
 	public double freeEnergyDensity;
@@ -34,7 +36,7 @@ public class FieldClump3D extends AbstractClump3D {
 	public FieldClump3D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 		
-		R = params.fget("R");
+		Rx = Ry = Rz = params.fget("R");
 		L = params.fget("L");
 		T = params.fget("T");
 		dx = params.fget("dx");
@@ -93,18 +95,19 @@ public class FieldClump3D extends AbstractClump3D {
 			if (onBoundary[i])
 				continue;
 			
+			double R = Rx;
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
 			double z = dx*((i/(Lp*Lp)) - Lp/2);
 			double field = 0;
-			double k = 1.3*KR_SP/R;
+			double k = KR_SP/R;
 			if (type.equals("BCC")) {
 				field = 0;
 				// BCC (reciprocal lattice is FCC)
-				field += cos(k * ( x + z) / sqrt(3.));
-				field += cos(k * (-x + z) / sqrt(3.));
-				field += cos(k * ( y + z) / sqrt(3.));
-				field += cos(k * (-y + z) / sqrt(3.));
+				field += cos(k * ( x + z) / sqrt(2));
+				field += cos(k * (-x + z) / sqrt(2));
+				field += cos(k * ( y + z) / sqrt(2));
+				field += cos(k * (-y + z) / sqrt(2));
 			}
 			else if (type.equals("Triangle")) {
 				double rad = 0.2*R;
@@ -156,8 +159,8 @@ public class FieldClump3D extends AbstractClump3D {
 //			scale = min(s1,s2);
 //		System.out.println(scale);
 		
-		double PHI_UB = 4;
-		double PHI_LB = 0.1;
+		double PHI_UB = 20;
+		double PHI_LB = 0.01;
 		for (int i = 0; i < Lp*Lp*Lp; i++)
 			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
 		rescaleClipped = DoubleArray.min(phi) < PHI_LB || DoubleArray.max(phi) > PHI_UB;
@@ -195,7 +198,7 @@ public class FieldClump3D extends AbstractClump3D {
 	public void simulate() {
 		fft.convolve(phi, phi_bar, new Function3D() {
 			public double eval(double k1, double k2, double k3) {
-				return potential(hypot(k1,k2,k3)*R);
+				return potential(hypot(k1*Rx,k2*Ry,k3*Rz));
 			}
 		});
 		
@@ -223,19 +226,40 @@ public class FieldClump3D extends AbstractClump3D {
 		t += dt;
 	}
 	
-	public double dFdensity_dR() {
+	public double dFdensity_dRx() {
 		double[] dphibar_dR = phi_bar;
 		fft.convolve(phi, phi_bar, new Function3D() {
 			public double eval(double k1, double k2, double k3) {
-				double k = hypot(k1, k2, k3);
-				return dpotential_dkR(k*R)*k;
+				double kR = hypot(k1*Rx, k2*Ry, k3*Rz);
+				double dkR_dRx = k1 == 0 ? 0 : (k1*k1*Rx / kR);
+				return dpotential_dkR(kR)*dkR_dRx;
 			}
 		});
-		double ret = 0;
-		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			ret += 0.5*phi[i]*dphibar_dR[i];
-		}
-		return ret / (Lp*Lp*Lp);
+		return DoubleArray.dot(phi, dphibar_dR) / (2*Lp*Lp*Lp);
+	}
+	
+	public double dFdensity_dRy() {
+		double[] dphibar_dR = phi_bar;
+		fft.convolve(phi, phi_bar, new Function3D() {
+			public double eval(double k1, double k2, double k3) {
+				double kR = hypot(k1*Rx, k2*Ry, k3*Rz);
+				double dkR_dRy = k2 == 0 ? 0 : (k2*k2*Ry / kR);
+				return dpotential_dkR(kR)*dkR_dRy;
+			}
+		});
+		return DoubleArray.dot(phi, dphibar_dR) / (2*Lp*Lp*Lp);
+	}
+	
+	public double dFdensity_dRz() {
+		double[] dphibar_dR = phi_bar;
+		fft.convolve(phi, phi_bar, new Function3D() {
+			public double eval(double k1, double k2, double k3) {
+				double kR = hypot(k1*Rx, k2*Ry, k3*Rz);
+				double dkR_dRz = k3 == 0 ? 0 : (k3*k3*Rz / kR);
+				return dpotential_dkR(kR)*dkR_dRz;
+			}
+		});
+		return DoubleArray.dot(phi, dphibar_dR) / (2*Lp*Lp*Lp);
 	}
 	
 	public Accumulator newStructureAccumulator(double binWidth) {
@@ -249,8 +273,7 @@ public class FieldClump3D extends AbstractClump3D {
 	public void accumulateStructure(final Accumulator sf) {
 		fft.transform(phi, new FFT3D.MapFn() {
 			public void apply(double k1, double k2, double k3, double re, double im) {
-				double k = hypot(k1, k2, k3);
-				double kR = k*R;
+				double kR = hypot(Rx*k1, Ry*k2, Rz*k3);
 				if (kR > 0 && kR <= 4*KR_SP)
 					sf.accum(kR, (re*re+im*im)/(L*L*L));
 			}
