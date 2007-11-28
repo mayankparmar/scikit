@@ -195,7 +195,8 @@ public class IsingField2D {
 	
 	public void randomizeField(double m) {
 		for (int i = 0; i < Lp*Lp; i++)
-			phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+			//phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+			phi[i] = random.nextGaussian()/(dx);
 	}
 	
 	public void readParams(Parameters params) {
@@ -303,10 +304,10 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
-			if(theory == "Stable"){
+			if(theory == "Exact"){
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
-				Lambda[i] = (1 - phi[i]*phi[i]);
+				Lambda[i] = 1;//(1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else{
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
@@ -336,6 +337,7 @@ public class IsingField2D {
 			phi[i] += delPhi[i]-Lambda[i]*mu*dt;
 			del_phiSquared += phi[i]*phi[i];
 		}
+		lastMu = mu;
 		//freeEnergy /= (Lp*Lp) ;
 		//accFreeEnergy.accum(t, freeEnergy);
 		t += dt;

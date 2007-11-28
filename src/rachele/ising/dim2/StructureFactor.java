@@ -387,53 +387,53 @@ public class StructureFactor {
 			sFactor[i] = (re*re + im*im)/(L*L);
 		}
 		
-//		//Instead of a circular average, we want the structure factor in the vertical and
-//		//horizontal directions.
-//
-//		//vertical component
-//		for (int y = -Lp/2; y < Lp/2; y++) {
-//			int x=0;
-//			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-//			if (kR >= kRmin && kR <= kRmax) {
-//				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-//				//accVertical.accum(kR, sFactor[i]);
-//				//accAvV.accum(kR, sFactor[i]);
-//				if(abs(y) == squarePeakInt){
-//					//accPeakV.accum(t, sFactor[i]);
-//					//dP_dt = (sFactor[i] - lastVpeak)/dt;
-//					lastVpeak = sFactor[i];
-//					//accPeakVslope.accum(t, dP_dt);
-//				}
-//				if(abs(y) == circlePeakInt){
-//					//accPeakC.accum(t, sFactor[i]);
-//					//System.out.println("accing");
-//				}
-//			}
-//		}
-//		
-//		//horizontal component
-//		for (int x = -Lp/2; x < Lp/2; x++) {
-//			int y=0;
-//			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-//			if (kR >= kRmin && kR <= kRmax) {
-//				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-//				//double re = fftData[2*i];
-//				//double im = fftData[2*i+1];
-//				//double sfValue = (re*re + im*im)/(L*L);
-//				//accHorizontal.accum(kR, sFactor[i]);
-//				//accAvH.accum(kR, sFactor[i]);
-//				if(abs(x) == squarePeakInt){
-//					//accPeakH.accum(t, sFactor[i]);
-//					//dP_dt = (sFactor[i] - lastHpeak)/dt;
-//					lastHpeak = sFactor[i];
-//					//accPeakHslope.accum(t, dP_dt);
-//				}
-//				if(abs(x) == circlePeakInt){
-//					//accPeakC.accum(t, sFactor[i]);
-//				}
-//			}
-//		}		
-//	
+		//Instead of a circular average, we want the structure factor in the vertical and
+		//horizontal directions.
+
+		//vertical component
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			int x=0;
+			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+			if (kR >= kRmin && kR <= kRmax) {
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+				//accVertical.accum(kR, sFactor[i]);
+				//accAvV.accum(kR, sFactor[i]);
+				if(abs(y) == squarePeakInt){
+					//accPeakV.accum(t, sFactor[i]);
+					//dP_dt = (sFactor[i] - lastVpeak)/dt;
+					lastVpeak = sFactor[i];
+					//accPeakVslope.accum(t, dP_dt);
+				}
+				if(abs(y) == circlePeakInt){
+					accPeakC.accum(t, sFactor[i]);
+					//System.out.println("accing");
+				}
+			}
+		}
+		
+		//horizontal component
+		for (int x = -Lp/2; x < Lp/2; x++) {
+			int y=0;
+			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+			if (kR >= kRmin && kR <= kRmax) {
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+				//double re = fftData[2*i];
+				//double im = fftData[2*i+1];
+				//double sfValue = (re*re + im*im)/(L*L);
+				//accHorizontal.accum(kR, sFactor[i]);
+				//accAvH.accum(kR, sFactor[i]);
+				if(abs(x) == squarePeakInt){
+					//accPeakH.accum(t, sFactor[i]);
+					//dP_dt = (sFactor[i] - lastHpeak)/dt;
+					lastHpeak = sFactor[i];
+					//accPeakHslope.accum(t, dP_dt);
+				}
+				if(abs(x) == circlePeakInt){
+					accPeakC.accum(t, sFactor[i]);
+				}
+			}
+		}		
+	
 		//circularly averaged	
 		//double [] sfValues = new double [Lp*Lp];
 		int count = 0;
