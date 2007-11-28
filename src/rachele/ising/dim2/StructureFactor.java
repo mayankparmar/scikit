@@ -60,7 +60,13 @@ public class StructureFactor {
 		double kRvalue = R*2*PI*squarePeakInt/L;
 		System.out.println("square kR = " + kRvalue + " target value = " + squarePeakValue);
 		
-
+		dblePeakLength = circlePeakValue*L/(2*PI*R);
+		circlePeakInt = (int)dblePeakLength;
+		if(abs(2*PI*circlePeakInt*R/L - circlePeakValue) >= abs(2*PI*(circlePeakInt+1)*R/L - circlePeakValue))
+			circlePeakInt = circlePeakInt + 1;
+		kRvalue = R*2*PI*circlePeakInt/L;
+		System.out.println("circle kR = " + kRvalue + " target value = " + circlePeakValue);		
+		System.out.println("circle int = " + circlePeakInt + " Square int = " + squarePeakInt);
 			//
 //		dblePeakLength = circlePeakValue*L/(2*PI*R);
 //		circlePeakInt = (int)dblePeakLength;
@@ -108,18 +114,21 @@ public class StructureFactor {
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-				if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
-					System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
+				if(kR >= circlePeakValue - PI*R/(0.5*L) && kR <= circlePeakValue + PI*R/(0.5*L)){
+					//System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
 					circleCount += 1;
 					kRSum += kR;
 				}
 			}
 		}
 		double kRAve = kRSum / circleCount;
+		//System.out.println("kR value = " + " " + kRAve);
 		return kRAve;
 	}
 	
-	
+	public double getCircleKR(){
+		return R*2*PI*circlePeakInt/L;
+	}
 	
 	public Accumulator getPeakV() {
 		return accPeakV;
@@ -216,26 +225,6 @@ public class StructureFactor {
 		this.kRmax = kRmax;
 	}
 	
-	public void accumulate(double[] xs, double[] ys) {
-		for (int i = 0; i < Lp*Lp; i++)
-			fftData[2*i] = fftData[2*i+1] = 0;
-		for (int k = 0; k < xs.length; k++) {
-			int i = (int)(Lp*xs[k]/L);
-			int j = (int)(Lp*ys[k]/L);
-			assert(i < Lp && j < Lp);
-			fftData[2*(Lp*j+i)]++;
-		}
-		accumulateAux();
-	}
-	
-	public void accumulate(double[] data) {
-		double dx = (L/Lp);
-		for (int i = 0; i < Lp*Lp; i++) {
-			fftData[2*i] = data[i]*dx*dx;
-			fftData[2*i+1] = 0;
-		}
-		accumulateAux();
-	}
 
 	public void accumulateAll(double t, double[] data) {
 		double dx = (L/Lp);
@@ -295,6 +284,7 @@ public class StructureFactor {
 						i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 						if(kR >= kRcircle - PI*R/(0.50*L) && kR <= kRcircle + PI*R/(0.50*L)){
 							double angle = atan((double)abs(y)/(double)abs(x));
+							double director = 0.244346095;
 								if (x <= 0 && y >=0)
 									angle = PI -angle;
 								else if (x <=0 && y<=0)
@@ -303,29 +293,37 @@ public class StructureFactor {
 									angle = 2*PI - angle;
 								if (angle == 2*PI)
 									angle = 0;
-								double angleS = angle - .3190684;
+								double angleS = angle - director;
 								if(angleS >= -.1 && angleS <= .1){
 									stripeCt +=1;
 									stripeSum += sFactor[i];	
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}else if (angleS >= -.1 + PI && angleS <= .1 + PI){
 									stripeCt +=1;
 									stripeSum += sFactor[i];	
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}else if(angleS >= -.1 + PI/3 && angleS <= .1 + PI/3){
 									clumpCt += 1;
-									clumpSum += sFactor[i];									
+									clumpSum += sFactor[i];						
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}else if(angleS >= -.1 + 2*PI/3 && angleS <= .1 + 2*PI/3){
 									clumpCt += 1;
-									clumpSum += sFactor[i];									
+									clumpSum += sFactor[i];						
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}else if(angleS >= -.1 + 4*PI/3 && angleS <= .1 + 4*PI/3){
 									clumpCt += 1;
-									clumpSum += sFactor[i];									
+									clumpSum += sFactor[i];						
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}else if(angleS >= -.1 + 5*PI/3 && angleS <= .1 + 5*PI/3){
 									clumpCt += 1;
-									clumpSum += sFactor[i];									
+									clumpSum += sFactor[i];						
+									//System.out.println(angleS+ " " + sFactor[i]);
 								}
 									
 								
-//								ringFT.accum564(angle*360/(2*PI),sFactor[i]);
+//								ringFT.accum(angle*360/(2*PI),sFactor[i]);
+								ringFT.accum(angle,sFactor[i]);
+								//System.out.println(sFactor[i]);
 								int j = (int)floor(angle*noBins/(2*PI));
 								ringBins[j] += sFactor[i];
 //								if(j==52 || j == 564){
@@ -343,17 +341,45 @@ public class StructureFactor {
 			lastCpeak = clumpSum/clumpCt;
 			lastSpeak = stripeSum/stripeCt;
 			ringData.clear();
-			for (int j = 0; j < noBins; j ++){
-				//System.out.println(j + " "+ ringBins[j]);
-				ringData.accum(j,ringBins[j]);
-			}
+//			for (int j = 0; j < noBins; j ++){
+//				//System.out.println(j + " "+ ringBins[j]);
+//				ringData.accum(j,ringBins[j]);
+//			}
+	}
+	
+	public double getSF(double [] data){
+		double dx = (L/Lp);
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftData[2*i] = data[i]*dx*dx;
+			fftData[2*i+1] = 0;
+		}
+		fft.transform(fftData);
+		fftData = fft.toWraparoundOrder(fftData);
+		for (int i=0; i < Lp*Lp; i++){
+			double re = fftData[2*i];
+			double im = fftData[2*i+1];
+			sFactor[i] = (re*re + im*im)/(L*L);
+		}
+		double sf = 0;
+		for (int y = -squarePeakInt; y < 3*squarePeakInt; y = y + 2*squarePeakInt) {
+			int x=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			sf += sFactor[i];	
+		}		
+		for (int x = -squarePeakInt; x < 3*squarePeakInt; x = x + 2*squarePeakInt) {
+			int y=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			sf += sFactor[i];	
+		}		
+		sf /= 4;
+		return sf;
 	}
 	
 	public void accumulateAllAux(double t) {
 		// compute fourier transform
 		fft.transform(fftData);
 		fftData = fft.toWraparoundOrder(fftData);
-		double dP_dt;
+		//double dP_dt;
 		
 		for (int i=0; i < Lp*Lp; i++){
 			double re = fftData[2*i];
@@ -361,50 +387,57 @@ public class StructureFactor {
 			sFactor[i] = (re*re + im*im)/(L*L);
 		}
 		
-		//Instead of a circular average, we want the structure factor in the vertical and
-		//horizontal directions.
-
-		//vertical component
-		for (int y = -Lp/2; y < Lp/2; y++) {
-			
-			int x=0;
-			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-			if (kR >= kRmin && kR <= kRmax) {
-				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				accVertical.accum(kR, sFactor[i]);
-				accAvV.accum(kR, sFactor[i]);
-				if(abs(y) == squarePeakInt){
-					accPeakV.accum(t, sFactor[i]);
-					dP_dt = (sFactor[i] - lastVpeak)/dt;
-					lastVpeak = sFactor[i];
-					//accPeakVslope.accum(t, dP_dt);
-				}
-			}
-		}
-		
-		//horizontal component
-		for (int x = -Lp/2; x < Lp/2; x++) {
-			int y=0;
-			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-			if (kR >= kRmin && kR <= kRmax) {
-				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				//double re = fftData[2*i];
-				//double im = fftData[2*i+1];
-				//double sfValue = (re*re + im*im)/(L*L);
-				accHorizontal.accum(kR, sFactor[i]);
-				accAvH.accum(kR, sFactor[i]);
-				if(abs(x) == squarePeakInt){
-					accPeakH.accum(t, sFactor[i]);
-					dP_dt = (sFactor[i] - lastHpeak)/dt;
-					lastHpeak = sFactor[i];
-					//accPeakHslope.accum(t, dP_dt);
-				}
-			}
-		}		
-	
+//		//Instead of a circular average, we want the structure factor in the vertical and
+//		//horizontal directions.
+//
+//		//vertical component
+//		for (int y = -Lp/2; y < Lp/2; y++) {
+//			int x=0;
+//			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+//			if (kR >= kRmin && kR <= kRmax) {
+//				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+//				//accVertical.accum(kR, sFactor[i]);
+//				//accAvV.accum(kR, sFactor[i]);
+//				if(abs(y) == squarePeakInt){
+//					//accPeakV.accum(t, sFactor[i]);
+//					//dP_dt = (sFactor[i] - lastVpeak)/dt;
+//					lastVpeak = sFactor[i];
+//					//accPeakVslope.accum(t, dP_dt);
+//				}
+//				if(abs(y) == circlePeakInt){
+//					//accPeakC.accum(t, sFactor[i]);
+//					//System.out.println("accing");
+//				}
+//			}
+//		}
+//		
+//		//horizontal component
+//		for (int x = -Lp/2; x < Lp/2; x++) {
+//			int y=0;
+//			double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+//			if (kR >= kRmin && kR <= kRmax) {
+//				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+//				//double re = fftData[2*i];
+//				//double im = fftData[2*i+1];
+//				//double sfValue = (re*re + im*im)/(L*L);
+//				//accHorizontal.accum(kR, sFactor[i]);
+//				//accAvH.accum(kR, sFactor[i]);
+//				if(abs(x) == squarePeakInt){
+//					//accPeakH.accum(t, sFactor[i]);
+//					//dP_dt = (sFactor[i] - lastHpeak)/dt;
+//					lastHpeak = sFactor[i];
+//					//accPeakHslope.accum(t, dP_dt);
+//				}
+//				if(abs(x) == circlePeakInt){
+//					//accPeakC.accum(t, sFactor[i]);
+//				}
+//			}
+//		}		
+//	
 		//circularly averaged	
-		double [] sfValues = new double [Lp*Lp];
+		//double [] sfValues = new double [Lp*Lp];
 		int count = 0;
+		lastCpeak = 0;
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
@@ -413,66 +446,38 @@ public class StructureFactor {
 //					double re = fftData[2*i];
 //					double im = fftData[2*i+1];
 //					double sfValue = (re*re + im*im)/(L*L);
-					accCircle.accum(kR, sFactor[i]);
-					accAvC.accum(kR, sFactor[i]);
-					sfValues[count] = sFactor[i];
-					count += 1;
-					if(kR >= circlePeakValue - PI*R/(3.0*L) && kR <= circlePeakValue + PI*R/(3.0*L)){
-						accPeakC.accum(t, sFactor[i]);
-						dP_dt = (sFactor[i] - lastCpeak)/dt;
-						lastCpeak = sFactor[i];
-						accPeakCslope.accum(t, dP_dt);
+					//accCircle.accum(kR, sFactor[i]);
+					//accAvC.accum(kR, sFactor[i]);
+					//sfValues[count] = sFactor[i];
+
+					if(kR >= circlePeakValue - PI*R/(0.5*L) && kR <= circlePeakValue + PI*R/(0.5*L)){
+						count += 1;
+						//accPeakC.accum(t, sFactor[i]);
+						//dP_dt = (sFactor[i] - lastCpeak)/dt;
+						lastCpeak += sFactor[i];
+						//accPeakCslope.accum(t, dP_dt);
 						//System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
 					}
 				}
 			}
 		}
-		
+		lastCpeak /= count;
 		sFactor[0] = 0;
 		
-		//shift sfactor so that origin is in center
-		double [] temp = new double [Lp*Lp];
-		for (int i = 0; i<Lp*Lp; i++){
-			int x = i%Lp;
-			int y = i/Lp;
-			x += Lp/2; y += Lp/2;
-			x = x%Lp; y = y%Lp;
-			int j = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-			temp[j] = sFactor[i];
-		}
-		for(int i = 0; i<Lp*Lp; i++)
-			sFactor[i] = temp[i];
+//		//shift sfactor so that origin is in center
+//		double [] temp = new double [Lp*Lp];
+//		for (int i = 0; i<Lp*Lp; i++){
+//			int x = i%Lp;
+//			int y = i/Lp;
+//			x += Lp/2; y += Lp/2;
+//			x = x%Lp; y = y%Lp;
+//			int j = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+//			temp[j] = sFactor[i];
+//		}
+//		for(int i = 0; i<Lp*Lp; i++)
+//			sFactor[i] = temp[i];
 		
 	}
 		
-	public void accumulateAux() {
-		// compute fourier transform
-		fft.transform(fftData);
-		fftData = fft.toWraparoundOrder(fftData);
-		
-		// verify imaginary component of structure factor is zero
-		/*
-		for (int y = -Lp/2; y < Lp/2; y++) {
-			for (int x = -Lp/2; x < Lp/2; x++) {
-				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-				int j = Lp*((-y+Lp)%Lp) + (-x+Lp)%Lp;
-				assert(abs(fftData[2*i+1] + fftData[2*j+1]) < 1e-11);
-			}
-		}
-		*/
-		
-		// We calculate the structure factor s(k) by summing the fourier transform information
-		// over all frequencies with equal magnitude (k).
-		for (int y = -Lp/2; y < Lp/2; y++) {
-			for (int x = -Lp/2; x < Lp/2; x++) {
-				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-				if (kR >= kRmin && kR <= kRmax) {
-					int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-					double re = fftData[2*i];
-					double im = fftData[2*i+1];
-					accCircle.accum(kR, (re*re + im*im)/(L*L));
-				}
-			}
-		}
-	}
+
 }
