@@ -79,8 +79,6 @@ public class LinearTheoryApp extends Simulation{
 		}else{
 			structurePeakV.registerLines("Vertical Peak", sf.getPeakV(), Color.CYAN);
 		}	
-
-			
 	}
 
 	public void clear() {
@@ -100,6 +98,7 @@ public class LinearTheoryApp extends Simulation{
 		varianceAcc.setAveraging(true);
 		meanPhiAcc = new Accumulator(params.fget("dt"));
 		meanPhiAcc.setAveraging(true);
+		double kR = sf.getCircleKR();
 		int reps = 0;
 		while (true) {
 			ising.randomizeField(density);
@@ -107,7 +106,7 @@ public class LinearTheoryApp extends Simulation{
 				params.set("Time", t);
 				params.set("Mean Phi", ising.mean(ising.phi));
 				ising.simulate();
-				//accumTheoryPoint(t);
+				//accumTheoryPoint(kR, t);
 				sf.accumulateAll(t, ising.coarseGrained());
 				varianceAcc.accum(t, ising.phiVariance());
 				meanPhiAcc.accum(t,ising.mean(ising.phi));
@@ -119,16 +118,24 @@ public class LinearTheoryApp extends Simulation{
 		}
 	}
 	
+	private void accumTheoryPoint(double kR, double t) {
+		sfTheoryAcc.accum(t, linearTheory(kR, ising.lastMu, t));
+	}
+
 	public double findMeanPhi(){
 		for (double t = 0.0; t < 50.0; t = t + params.fget("dt"))
 		ising.simulate();
 		return ising.mean(ising.phi);
 	}
 	
-	public double linearTheory(double kR, double density, double time){
+	public double linearTheory(double kR, double mu, double time){
 		//double V = ising.Lp*ising.Lp;
-		double D = -circlePotential(kR) - ising.T/ (1-pow(ising.DENSITY,2));
+		double rho = ising.DENSITY;
+		double D = -circlePotential(kR) - ising.T/ (1-rho*rho);
+		D *= pow(1-rho*rho,2);
 		//double sf = (exp(2*time*D)*(V + ising.T/D)-ising.T/D)/V;
+		//double sf = (exp(2*time*D)*(V + ising.T/D)-ising.T/D)/V;
+		
 		double sf = exp(2*time*D);
 		return sf;
 	}
@@ -138,7 +145,7 @@ public class LinearTheoryApp extends Simulation{
 		//double kR = sf.circlekRValue();
 		double kR = sf.getCircleKR();
 		for(double time = 0.0; time < params.fget("Max Time"); time = time + params.fget("dt"))
-		sfTheoryAcc.accum(time, linearTheory(kR, density, time));
+		sfTheoryAcc.accum(time, linearTheory(kR, 0, time));
 	}
 	
 	public double circlePotential(double kR){
