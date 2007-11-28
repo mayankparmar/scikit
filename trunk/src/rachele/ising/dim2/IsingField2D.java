@@ -67,7 +67,6 @@ public class IsingField2D {
 			
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = false;
-	boolean rectangleInteraction = false;
 	boolean magConservation = false;
 	int slowPower = 0;
 	String theory;
@@ -86,7 +85,7 @@ public class IsingField2D {
 		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
-		dT = params.fget("dT");
+		//dT = params.fget("dT");
 		//double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
 
@@ -100,38 +99,27 @@ public class IsingField2D {
 		accFreeEnergy = new Accumulator(dt);
 		accFreeEnergy.setAveraging(true);
 		
-		horizontalSlice = params.fget("Horizontal Slice");
-		verticalSlice = params.fget("Vertical Slice");
+		//horizontalSlice = params.fget("Horizontal Slice");
+		//verticalSlice = params.fget("Vertical Slice");
 		
 		if(params.sget("Interaction") == "Circle")
 			circleInteraction = true;
-		else if(params.sget("Interaction") == "Rectangle")
-			rectangleInteraction = true;
 
 		if(params.sget("Noise") == "Off"){
 			noiselessDynamics = true;
 		}else{
 			noiselessDynamics = false;
 		}
-
-		if(params.sget("Slow CG?") == "Yes, lots") slowPower = 4;
-		else if(params.sget("Slow CG?") == "Yes, some") slowPower = 2;
-		else if(params.sget("Slow CG?") == "No") slowPower = 0;
-		
+		slowPower = 2;
 		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation") magConservation = false;
-		
-		
 		theory = params.sget("Approx");
-				
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		double RoverDx = R/dx;
 		params.set("R/dx", RoverDx);
-		params.set("Lp", Lp);
+		//params.set("Lp", Lp);
 		N = Lp*Lp;
-		
-
 		lineminDirection = new double [N];
 		xi = new double [N];
 		g = new double [N];
@@ -149,7 +137,7 @@ public class IsingField2D {
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
-		String init = params.sget("Init Conditions");
+		String init = "Random Gaussian";
 		if(init == "Random Gaussian"){
 			randomizeField(DENSITY);
 			System.out.println("Random Gaussian");
@@ -178,12 +166,7 @@ public class IsingField2D {
 				}
 			}
 			
-		}else
-			System.out.println("no init conditions");
-		for (int i = 0; i < Lp*Lp; i ++){
-			A[i] = Math.log(phi[i]);
 		}
-		
 	}
 	
 	public void readInitialConfiguration(){
@@ -216,7 +199,7 @@ public class IsingField2D {
 	}
 	
 	public void readParams(Parameters params) {
-		if (params.sget("Plot FEvT") == "Off") T = params.fget("T");
+		//if (params.sget("Plot FEvT") == "Off") T = params.fget("T");
 		dt = params.fget("dt");
 		H = params.fget("H");
 		J = params.fget("J");
@@ -225,21 +208,18 @@ public class IsingField2D {
 		dx = R/params.fget("R/dx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
-		dT = params.fget("dT");
+		T = params.fget("T");
+		//dT = params.fget("dT");
 		
 		params.set("R/dx", R/dx);
-		params.set("Lp", Lp);
-		params.set("Free Energy", freeEnergy);
+		//params.set("Lp", Lp);
+		//params.set("Free Energy", freeEnergy);
 		
 		if(params.sget("Interaction") == "Circle"){
 			circleInteraction = true;
 		}else{
 			circleInteraction = false;
 		}
-		if(params.sget("Interaction") == "Rectangle")
-			rectangleInteraction = true;
-		else
-			rectangleInteraction = false;
 
 		if(params.sget("Noise") == "Off"){
 			noiselessDynamics = true;
@@ -254,12 +234,8 @@ public class IsingField2D {
 		
 		theory = params.sget("Approx");
 		
-		horizontalSlice = params.fget("Horizontal Slice");
-		verticalSlice = params.fget("Vertical Slice");
-		
-		if(params.sget("Slow CG?") == "Yes, lots") slowPower = 4;
-		else if(params.sget("Slow CG?") == "Yes, some") slowPower = 2;
-		else if(params.sget("Slow CG?") == "No") slowPower = 0;
+		//horizontalSlice = params.fget("Horizontal Slice");
+		//verticalSlice = params.fget("Vertical Slice");
 	}
 	
 	public void initializeFieldWithSeed() {
@@ -284,13 +260,6 @@ public class IsingField2D {
 	}
 	
 	void convolveWithRange(double[] src, double[] dest, double R) {
-		double Rx, Ry;
-		if(rectangleInteraction == true){
-			Rx = R;
-			Ry = R*1.2;
-		}else{
-			Rx = Ry = R;
-		}
 		double V;
 		for (int i = 0; i < Lp*Lp; i++) {
 			fftScratch[2*i] = src[i];
@@ -305,10 +274,11 @@ public class IsingField2D {
 					double kR = (2*PI*sqrt(x*x+y*y)/L) * R;
 					V = (kR == 0 ? 1 : 2*j1(kR)/kR);
 				}else{
-					double k_xR = (2*PI*x/L)*Rx;
-					double k_yR =(2*PI*y/L)*Ry;
+					double k_xR = (2*PI*x/L)*R;
+					double k_yR =(2*PI*y/L)*R;
 					V = (k_xR == 0 ? 1 : sin(k_xR)/k_xR);
 					V *= (k_yR == 0 ? 1 : sin(k_yR)/k_yR);
+					
 				}
 				fftScratch[2*i] *= V*J;
 				fftScratch[2*i+1] *= V*J;
@@ -333,25 +303,11 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
-			if(theory == "Exact" || theory == "Avoid Boundaries"){
-				//dF_dPhi = -phi_bar[i] -T*log(1.0-phi[i])/2.0+T*log(1.0+phi[i])/2.0 - H;
-				dF_dPhi = -phi_bar[i] +T* kip.util.MathPlus.atanh(phi[i])- H;
-				Lambda[i] = 1;
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			}else if(theory == "Exact Semi-Stable"){
+			if(theory == "Stable"){
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
 				Lambda[i] = (1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			}else if(theory == "Phi4"){
-				dF_dPhi = -phi_bar[i]-T*(+2.0*phi[i]+pow(phi[i],3))/2.0 - H;
-				//Lambda[i] = sqr(1 - phi[i]*phi[i]);
-				Lambda[i] = 1;
-				entropy = (sqr(phi[i]) + sqr(sqr(phi[i]))/4.0)/2.0;
-			}else if(theory == "Linear"){
-				dF_dPhi = -phi_bar[i] - T*phi[i] -H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);
-				entropy = (sqr(phi[i]))/2.0;
 			}else{
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
@@ -369,10 +325,7 @@ public class IsingField2D {
 
 			freeEnergy += potential - T*entropy - H*phi[i];
 
-		}
-		
-		//freeEnergy = isingFreeEnergyCalc(phi);
-		
+		}		
 		meanLambda /= Lp*Lp;
 		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
 		mu /= dt;
@@ -380,27 +333,11 @@ public class IsingField2D {
 			mu = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			freeEnergy +=  -mu*phi[i];
-			if (theory == "Avoid Boundaries"){
-				double tempPhi = phi[i] + delPhi[i]-Lambda[i]*mu*dt;
-				if(Math.abs(tempPhi) > .99){
-					//System.out.println("high");
-					double halfMove = phi[i] + (Math.signum(phi[i]) - phi[i])/2.0;
-					phi[i] = Math.signum(phi[i])*Math.min(Math.abs(tempPhi), Math.abs(halfMove));
-				}else{
-					phi[i] = tempPhi;
-				}
-			}else{
-				phi[i] += delPhi[i]-Lambda[i]*mu*dt;
-			}
+			phi[i] += delPhi[i]-Lambda[i]*mu*dt;
 			del_phiSquared += phi[i]*phi[i];
 		}
-		
-		freeEnergy /= (Lp*Lp) ;
-		//remove the following line
-		//freeEnergy = isingFreeEnergyCalc(phi);
-		potAccum /= (Lp*Lp);
-		entAccum /= (Lp*Lp);
-		accFreeEnergy.accum(t, freeEnergy);
+		//freeEnergy /= (Lp*Lp) ;
+		//accFreeEnergy.accum(t, freeEnergy);
 		t += dt;
 	}
 	
