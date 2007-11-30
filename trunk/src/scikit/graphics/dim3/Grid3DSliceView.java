@@ -19,7 +19,6 @@ public class Grid3DSliceView extends Grid3DView {
 	private final int CUBE_SIDES=6;
 	private final int PANELS=7;
 	
-	private double _depth = 0.5;
 	private Quat4d _rotation = new Quat4d(0, 0, 0, 1);
 	private Grid3D _grid;
 	private int[] _dim;
@@ -31,14 +30,6 @@ public class Grid3DSliceView extends Grid3DView {
 	public void rotateStructure(Quat4d q) {
 		_rotation.mul(q, _rotation);
 		_rotation.normalize();
-	}
-	
-	public double getDisplayParam() {
-		return _depth;
-	}
-
-	public void setDisplayParam(double x) {
-		_depth = (x*2-1)*0.96;
 	}
 
 	public void draw(Gfx3D g) {
@@ -54,16 +45,16 @@ public class Grid3DSliceView extends Grid3DView {
 					_panel[side][0], _panel[side][1], _panel[side][2], _panel[side][3]);
 			Vector3d n = new Vector3d(0, 0, 1);
 			VecHelper.rotate(_rotation, n);
-			p.intersect(n, _depth);
+			p.intersect(n, getDepth());
 			gl.glBindTexture(GL.GL_TEXTURE_2D, textures[side]);
 			p.draw(gl, _normal[side]);
 		}
 		
 		double r3 = sqrt(3);
-		Vector3d v0 = new Vector3d(-r3, -r3, _depth);
-		Vector3d v1 = new Vector3d(+r3, -r3, _depth);
-		Vector3d v2 = new Vector3d(+r3, +r3, _depth);
-		Vector3d v3 = new Vector3d(-r3, +r3, _depth);
+		Vector3d v0 = new Vector3d(-r3, -r3, getDepth());
+		Vector3d v1 = new Vector3d(+r3, -r3, getDepth());
+		Vector3d v2 = new Vector3d(+r3, +r3, getDepth());
+		Vector3d v3 = new Vector3d(-r3, +r3, getDepth());
 		Vector3d n = new Vector3d(0, 0, 1);
 		VecHelper.rotate(_rotation, v0);
 		VecHelper.rotate(_rotation, v1);
@@ -81,6 +72,10 @@ public class Grid3DSliceView extends Grid3DView {
 		gl.glDisable(GL.GL_TEXTURE_2D);		
 
 		p.drawOutline(gl);
+	}
+	
+	private double getDepth() {
+		 return (getDisplayParam()*2-1)*0.96;
 	}
 	
 	private void putColor(ByteBuffer buffer, Color c) {
@@ -108,9 +103,9 @@ public class Grid3DSliceView extends Grid3DView {
 		}
 		else {
 			double r3 = sqrt(3);
-			v0 = new Vector3d(-r3, -r3, _depth);
-			v1 = new Vector3d(+r3, -r3, _depth);
-			v3 = new Vector3d(-r3, +r3, _depth);
+			v0 = new Vector3d(-r3, -r3, getDepth());
+			v1 = new Vector3d(+r3, -r3, getDepth());
+			v3 = new Vector3d(-r3, +r3, getDepth());
 			n = new Vector3d(0, 0, 1);
 			VecHelper.rotate(_rotation, v0);
 			VecHelper.rotate(_rotation, v1);
