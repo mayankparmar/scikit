@@ -36,6 +36,7 @@ public class StructureFactor {
 	Accumulator accPeakH;
 	Accumulator accPeakV;
 	Accumulator accPeakC;
+	Accumulator acc2PeakC;
 	Accumulator accPeakHslope;
 	Accumulator accPeakVslope;
 	Accumulator accPeakCslope;
@@ -82,6 +83,7 @@ public class StructureFactor {
 		accPeakH = new Accumulator(dt);
 		accPeakV = new Accumulator(dt);
 		accPeakC = new Accumulator(dt);
+		acc2PeakC = new Accumulator(dt);
 		accPeakHslope = new Accumulator(dt);
 		accPeakVslope = new Accumulator(dt);
 		accPeakCslope = new Accumulator(dt);
@@ -97,6 +99,7 @@ public class StructureFactor {
 		accPeakH.setAveraging(true);
 		accPeakV.setAveraging(true);
 		accPeakC.setAveraging(true);
+		acc2PeakC.setAveraging(true);
 		accPeakHslope.setAveraging(true);
 		accPeakVslope.setAveraging(true);
 		accPeakCslope.setAveraging(true);
@@ -141,7 +144,11 @@ public class StructureFactor {
 	public Accumulator getPeakC() {
 		return accPeakC;
 	}
-
+	
+	public Accumulator get2PeakC() {
+		return acc2PeakC;
+	}
+	
 	public Accumulator getPeakVslope() {
 		return accPeakCslope;
 	}
@@ -226,6 +233,8 @@ public class StructureFactor {
 	}
 	
 
+	
+	
 	public void accumulateAll(double t, double[] data) {
 		double dx = (L/Lp);
 		for (int i = 0; i < Lp*Lp; i++) {
@@ -438,15 +447,17 @@ public class StructureFactor {
 		//double [] sfValues = new double [Lp*Lp];
 		int count = 0;
 		lastCpeak = 0;
+		accCircle.clear();
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			for (int x = -Lp/2; x < Lp/2; x++) {
 				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
-				if (kR >= kRmin && kR <= kRmax) {
+				//if (kR >= kRmin && kR <= kRmax) {
+				if(kR > 0){
 					int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
 //					double re = fftData[2*i];
 //					double im = fftData[2*i+1];
 //					double sfValue = (re*re + im*im)/(L*L);
-					//accCircle.accum(kR, sFactor[i]);
+					accCircle.accum(kR, sFactor[i]);
 					//accAvC.accum(kR, sFactor[i]);
 					//sfValues[count] = sFactor[i];
 
@@ -459,6 +470,7 @@ public class StructureFactor {
 						//System.out.println("Circle kR value = " + kR + "Target value = " + circlePeakValue);
 					}
 				}
+				//}
 			}
 		}
 		lastCpeak /= count;
@@ -478,6 +490,37 @@ public class StructureFactor {
 //			sFactor[i] = temp[i];
 		
 	}
+	
+	public void accumExact(double t, double[] data, int kR1int, int kR2int) {
+		double dx = (L/Lp);
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftData[2*i] = data[i]*dx*dx;
+			fftData[2*i+1] = 0;
+		}
+		fft.transform(fftData);
+		fftData = fft.toWraparoundOrder(fftData);
+		//double dP_dt;
 		
+		for (int i=0; i < Lp*Lp; i++){
+			double re = fftData[2*i];
+			double im = fftData[2*i+1];
+			sFactor[i] = (re*re + im*im)/(L*L);
+		}
 
+		//vertical component
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			int x=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			if(abs(y) == kR1int)	accPeakC.accum(t, sFactor[i]);
+			if(abs(y) == kR2int)    acc2PeakC.accum(t, sFactor[i]);
+		}
+
+		//horizontal component
+		for (int x = -Lp/2; x < Lp/2; x++) {
+			int y=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			if(abs(y) == kR1int)	accPeakC.accum(t, sFactor[i]);
+			if(abs(y) == kR2int)    acc2PeakC.accum(t, sFactor[i]);
+		}		
+	}		
 }
