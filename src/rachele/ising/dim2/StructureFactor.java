@@ -56,8 +56,8 @@ public class StructureFactor {
 		
 		double dblePeakLength = squarePeakValue*L/(2*PI*R);
 		squarePeakInt = (int)dblePeakLength;
-		if(abs(2*PI*squarePeakInt*R/L - squarePeakValue) >= abs(2*PI*(squarePeakInt+1)*R/L - squarePeakValue))
-			squarePeakInt = squarePeakInt + 1;
+		//if(abs(2*PI*squarePeakInt*R/L - squarePeakValue) >= abs(2*PI*(squarePeakInt+1)*R/L - squarePeakValue))
+			//squarePeakInt = squarePeakInt + 1;
 		double kRvalue = R*2*PI*squarePeakInt/L;
 		System.out.println("square kR = " + kRvalue + " target value = " + squarePeakValue);
 		
@@ -395,10 +395,9 @@ public class StructureFactor {
 			double im = fftData[2*i+1];
 			sFactor[i] = (re*re + im*im)/(L*L);
 		}
-		
 		//Instead of a circular average, we want the structure factor in the vertical and
 		//horizontal directions.
-
+		
 		//vertical component
 		for (int y = -Lp/2; y < Lp/2; y++) {
 			int x=0;
@@ -414,7 +413,7 @@ public class StructureFactor {
 					//accPeakVslope.accum(t, dP_dt);
 				}
 				if(abs(y) == circlePeakInt){
-					accPeakC.accum(t, sFactor[i]);
+					//accPeakC.accum(t, sFactor[i]);
 					//System.out.println("accing");
 				}
 			}
@@ -437,9 +436,9 @@ public class StructureFactor {
 					lastHpeak = sFactor[i];
 					//accPeakHslope.accum(t, dP_dt);
 				}
-				if(abs(x) == circlePeakInt){
-					accPeakC.accum(t, sFactor[i]);
-				}
+//				if(abs(x) == circlePeakInt){
+//					//accPeakC.accum(t, sFactor[i]);
+//				}
 			}
 		}		
 	
@@ -457,7 +456,7 @@ public class StructureFactor {
 //					double re = fftData[2*i];
 //					double im = fftData[2*i+1];
 //					double sfValue = (re*re + im*im)/(L*L);
-					accCircle.accum(kR, sFactor[i]);
+					//accCircle.accum(kR, sFactor[i]);
 					//accAvC.accum(kR, sFactor[i]);
 					//sfValues[count] = sFactor[i];
 
@@ -489,6 +488,93 @@ public class StructureFactor {
 //		for(int i = 0; i<Lp*Lp; i++)
 //			sFactor[i] = temp[i];
 		
+	}
+
+	public void takeFT(double[] data){
+		double dx = (L/Lp);
+		for (int i = 0; i < Lp*Lp; i++) {
+			fftData[2*i] = data[i]*dx*dx;
+			fftData[2*i+1] = 0;
+		}
+		fft.transform(fftData);
+		fftData = fft.toWraparoundOrder(fftData);
+		for (int i=0; i < Lp*Lp; i++){
+			double re = fftData[2*i];
+			double im = fftData[2*i+1];
+			sFactor[i] = (re*re + im*im)/(L*L);
+		}		
+	}
+	
+	public void accumulateMelt(boolean circleOn, double[] data, int maxi) {
+		takeFT(data);
+		if (circleOn==false){
+		//vertical component
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			int x=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			if(abs(y) == squarePeakInt){
+				lastVpeak = sFactor[i];
+			}
+		}
+		
+		//horizontal component
+		for (int x = -Lp/2; x < Lp/2; x++) {
+			int y=0;
+			int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			if(abs(x) == squarePeakInt){
+				lastHpeak = sFactor[i];
+			}
+		}		
+		}else{
+		//circularly averaged	
+		//int count = 0;
+		lastCpeak = 0;
+		accCircle.clear();
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			for (int x = -Lp/2; x < Lp/2; x++) {
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+				if(i==maxi)
+						lastCpeak += sFactor[i];
+				}
+			}
+		}
+		
+	}	
+
+	public boolean findStripeDirection(double [] data){
+		boolean verticalStripes=true;
+		takeFT(data);
+			int vert = Lp*((squarePeakInt+Lp)%Lp) + (Lp)%Lp;
+			int hor = Lp*((Lp)%Lp) + (squarePeakInt+Lp)%Lp;
+			if(sFactor[vert] > sFactor[hor]){
+				verticalStripes=false;
+			}else{
+				verticalStripes=true;
+			}
+		return verticalStripes;
+	}
+
+	public int clumpsOrStripes(double [] data){
+		int maxi=1;
+		double maxsf=0.0;
+		double maxkR = 0.0;
+		takeFT(data);
+		for (int y = -Lp/2; y < Lp/2; y++) {
+			for (int x = -Lp/2; x < Lp/2; x++) {
+				double kR = (2*PI*sqrt(x*x+y*y)/L)*R;
+				if(kR >= circlePeakValue - PI*R/(0.5*L) && kR <= circlePeakValue + PI*R/(0.5*L)){
+				int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+				if(sFactor[i] > maxsf){
+					maxsf=sFactor[i];
+					maxi=i;
+					maxkR=kR;
+					System.out.println(sFactor[i]+" "+ maxsf + " maxi " + maxi + " kr " +kR);
+				}
+				}
+			}
+		}
+		System.out.println(" maxi = " +maxi  + " maxkR = " + maxkR);
+		return maxi;
 	}
 	
 	public void accumExact(double t, double[] data, int kR1int, int kR2int) {

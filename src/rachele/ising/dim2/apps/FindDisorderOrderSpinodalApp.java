@@ -62,7 +62,8 @@ public class FindDisorderOrderSpinodalApp  extends Simulation{
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);	
 		while (true) {
-			for (double h = -.95; h < .95; h = h + .01){
+			for (double h = -.95; h < .95; h = h + .05){
+				System.out.println("h = " + h);
 				ising.H = h;
 				boolean downDir = true;
 				ising.T = .25;
@@ -71,12 +72,28 @@ public class FindDisorderOrderSpinodalApp  extends Simulation{
 				double dwLim = 0;
 				while(upLim - dwLim > .001){
 					ising.randomizeField(ising.DENSITY);
-					for(int i = 0; i < 100; i ++) ising.simulate();
+					for(int i = 0; i < 100; i ++){
+						//System.out.println(i);
+						//params.set("Time",ising.time());
+						ising.simulate();
+					}
 					double sf1 = sf.getSF(ising.phi);
 					for (double t = 0.0; t < 2; t = t + params.fget("dt"))
 						ising.simulate();	
 					double sf2 = sf.getSF(ising.phi);
-					if(sf2-sf1 > 0){
+					double di = sf2-sf1;
+					System.out.println(di);
+					if(sf2-sf1 < 0 || sf2 < pow(10,-15)){
+						//above spinodal
+						if(downDir==false){
+							upLim = ising.T;
+							dT /= 10;
+							downDir=true;
+							//System.out.println("upLim = " + upLim + " at " + ising.T);
+						}
+						ising.T -= dT;	
+						
+					}else{
 						//under spinodal
 						if(downDir==true){
 							dwLim = ising.T;
@@ -85,18 +102,9 @@ public class FindDisorderOrderSpinodalApp  extends Simulation{
 							//System.out.println("dwnLim = " + dwLim + " at " + ising.T);
 						}
 						ising.T += dT;
-					}else{
-						//above spinodal
-						if(downDir==false){
-							upLim = ising.T;
-							dT /= 10;
-							downDir=true;
-							//System.out.println("upLim = " + upLim + " at " + ising.T);
-						}
-						ising.T -= dT;					
 					}
 				}	
-				System.out.println("DONE:  Spinodal Temp  for density " +ising.DENSITY + " = "+ising.T);
+				System.out.println("DONE:  Spinodal Temp  for h " +h + " = "+ising.T);
 				writeDataToFile(ising.H, ising.T);
 			}
 		}

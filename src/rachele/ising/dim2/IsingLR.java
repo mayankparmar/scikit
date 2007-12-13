@@ -8,6 +8,7 @@ import kip.util.Random;
 import scikit.jobs.params.Parameters;
 
 
+
 public class IsingLR extends RewindableDynamics {
 	public SpinBlocks2D spins;
 
@@ -146,6 +147,20 @@ public class IsingLR extends RewindableDynamics {
 	
 	public double dTime(){
 		return dt;
+	}
+	
+	public double CountInteractions(){
+		double intsPerSpin;
+		int intCount = 0;
+		for(int x = 0; x < L; x++){
+			for (int y = 0; y < L; y ++){
+				intCount += (spins.sumInRange(x,y)+(2*R+1)*(2*R+1))/2;
+			}
+		}
+		intCount /= 2;
+		intsPerSpin = (double)intCount/(L*L);
+		intsPerSpin /=(R*R);
+		return intsPerSpin;
 	}
 	
 }
