@@ -58,7 +58,7 @@ public class MeltSpinodalApp extends Simulation{
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
-		params.add("L/R", 7.0);
+		params.add("L/R", 6.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
@@ -105,13 +105,13 @@ public class MeltSpinodalApp extends Simulation{
 		double dT = .001;
 		//double kR =5.135622302;
 		String meltFile = "../../../research/javaData/sfData/Smelt";
-		for (double den = -0.7; den < .95; den = den + .1){
+		for (double den = -0.8; den < .95; den = den + .1){
 			//double h=.2;
 			params.set("Magnetization", den);
 			ising.DENSITY = den;
 			ising.randomizeField(0);
 			double spinTemp=findOrderSpinodal(den);
-			double temp=setTemp(spinTemp);
+			double temp=setTemp(spinTemp,dT);
 			//Equilibrate			
 			double lastSfValue = 0;
 			for(int i = 0; i < 5000; i ++){
@@ -153,49 +153,32 @@ public class MeltSpinodalApp extends Simulation{
 				lastSfValue = sfValue;
 				sf.accumulateMelt(circleOn,ising.phi,maxi);
 				sfValue = findSfValue(vertStripes);
-				if (temp>spinTemp){
-					while(abs(sfValue-lastSfValue) > 10000){
-						//while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*(.1)){
-						lastSfValue = sfValue;
-						for(int i = 0; i < 1000; i ++){
-							ising.simulate();
-							params.set("time", ising.time());
-							Job.animate();
-						}
-						sf.accumulateMelt(circleOn,ising.phi,maxi);
-						writeDataToFile();
-//						System.out.println(sf.peakValueH());
-						sfValue = findSfValue(vertStripes);
-						double diff = abs(sfValue-lastSfValue);
-						System.out.println("diff = " + diff);
+				while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*.001){
+					//while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*(.1)){
+					lastSfValue = sfValue;
+					for(int i = 0; i < 1000; i ++){
+						ising.simulate();
+						params.set("time", ising.time());
 						Job.animate();
 					}
-				}else{
-					while(abs(sfValue-lastSfValue) > 1000000){
-						//while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*(.1)){
-						lastSfValue = sfValue;
-						for(int i = 0; i < 1000; i ++){
-							ising.simulate();
-							params.set("time", ising.time());
-							Job.animate();
-						}
-						sf.accumulateMelt(circleOn,ising.phi,maxi);
-						writeDataToFile();
-//						System.out.println(sf.peakValueH());
-						sfValue = findSfValue(vertStripes);
-						double diff = abs(sfValue-lastSfValue);
-						System.out.println("diff = " + diff);
-						Job.animate();
-					}						
+					sf.accumulateMelt(circleOn,ising.phi,maxi);
+					writeDataToFile();
+					sfValue = findSfValue(vertStripes);
+					double diff = abs(sfValue-lastSfValue);
+					System.out.println("diff = " + diff);
+					Job.animate();
 				}
-					
+				String equilFile="../../../research/javaData/sfData/equil";
+				double kR = findkRvalue(maxi);
+				FileUtil.printlnToFile(equilFile, ising.T, sf.peakValueC(), ising.freeEnergy, kR);
 				temp += dT;
 				ising.T = temp;
 				System.out.println("temp = " + temp);
 			}
-			System.out.println("DONE:  Spinodal Temp  for density " +ising.DENSITY + " = "+ising.T + " " + sfValue + " " + ising.t);
-			double meltTemp = temp -dT/2;
+
+			double meltTemp = temp -dT -dT/2;
 			double error = dT/2;
+			System.out.println("DONE:  Spinodal Temp  for density " +ising.DENSITY + " = "+meltTemp + " " + sfValue + " " + ising.t);
 			double kR = findkRvalue(maxi);
 			FileUtil.printlnToFile(meltFile, den, meltTemp, error, kR);
 			}
@@ -230,7 +213,7 @@ public class MeltSpinodalApp extends Simulation{
 		return sfvalue;
 	}
 	
-	private double setTemp(double Ts) {
+	private double setTemp(double Ts, double dT) {
 //		double sub = .003;
 //		double temp = Ts-sub;
 //		while(temp < 0){
@@ -239,6 +222,9 @@ public class MeltSpinodalApp extends Simulation{
 //		}
 		System.out.println(Ts);
 		double temp = (5.0/6.0)*Ts;
+		temp /= dT;
+		temp = (double)(int)temp;
+		temp *= dT;
 		ising.T = temp;
 		params.set("T", temp);
 

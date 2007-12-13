@@ -53,7 +53,7 @@ public class IsingField2DApp extends Simulation {
     Accumulator landscapeFiller;
     Accumulator brLandscapeFiller;
     public int lastClear;
-
+    public int maxi=0;
     
 	public static void main(String[] args) {
 		new Control(new IsingField2DApp(), "Ising Field");
@@ -211,8 +211,10 @@ public class IsingField2DApp extends Simulation {
 			lastClear = 0;
 		}
 		if(flags.contains("SF")){
-			writeDataToFile();
-			System.out.println("SF clicked");
+			for (int i = 0; i < 5000; i ++){
+				ising.simulate();
+			}
+			maxi=sf.clumpsOrStripes(ising.phi);
 		}
 		flags.clear();
 
@@ -238,23 +240,30 @@ public class IsingField2DApp extends Simulation {
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
 		
-		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
-			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalc(point);
-			}
-			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalc(point);
-			}
-		};
+		for (int i = 0; i < 5000; i ++){
+			ising.simulate();
+			Job.animate();
+		}
+		maxi=sf.clumpsOrStripes(ising.phi);
 		
-		min = new ConjugateGradientMin(ising.phi,ising.verticalSlice, ising.horizontalSlice, ising.dx) {
-			public double freeEnergyCalc(double[] point) {
-				return ising.isingFreeEnergyCalc(point);
-			}
-			public double[] steepestAscentCalc(double[] point) {
-				return ising.steepestAscentCalc(point);
-			}
-		};
+//		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
+//			public double freeEnergyCalc(double[] point) {
+//				return ising.isingFreeEnergyCalc(point);
+//			}
+//			public double[] steepestAscentCalc(double[] point) {
+//				return ising.steepestAscentCalc(point);
+//			}
+//		};
+//		
+//		min = new ConjugateGradientMin(ising.phi,ising.verticalSlice, ising.horizontalSlice, ising.dx) {
+//			public double freeEnergyCalc(double[] point) {
+//				return ising.isingFreeEnergyCalc(point);
+//			}
+//			public double[] steepestAscentCalc(double[] point) {
+//				return ising.steepestAscentCalc(point);
+//			}
+//		};
+		
         while (true) {
         	ising.readParams(params);
         	if (flags.contains("Write Config"))	writeConfiguration();
@@ -286,8 +295,10 @@ public class IsingField2DApp extends Simulation {
 			//sf.getAccumulatorH().clear();
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
 			if (ising.time()%100 == 0){
-				sf.accumulateAll(ising.time(), ising.coarseGrained());
-//				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
+				//sf.accumulateAll(ising.time(), ising.coarseGrained());
+				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
+				boolean circleOn=true;
+				sf.accumulateMelt(circleOn, ising.phi, maxi);
 				writeDataToFile();
 			}
 			Job.animate();
