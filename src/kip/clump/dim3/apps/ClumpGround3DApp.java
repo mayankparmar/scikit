@@ -1,5 +1,7 @@
 package kip.clump.dim3.apps;
 
+import static kip.util.MathPlus.max;
+import static kip.util.MathPlus.min;
 import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
@@ -18,6 +20,8 @@ import scikit.jobs.Simulation;
 public class ClumpGround3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");
 	Plot feplot = new Plot("Free energy");
+	Plot relplot = new Plot("Relaxation");
+	Accumulator rel;
 	Accumulator fe_bcc, fe_fcc;
 	
 	FieldClump3D clump;
@@ -27,12 +31,12 @@ public class ClumpGround3DApp extends Simulation {
 	}
 	
 	public ClumpGround3DApp() {
-		frame(grid, feplot);
+		frame(grid, feplot, relplot);
 		params.add("dt", 0.1);
 		params.add("R", 1300.0);
 		params.add("L", 2000.0);
 		params.add("dx", 100.0);
-		params.add("T");
+		params.add("T", 0.0);
 //		params.add("Random seed", 0);
 		params.add("Time");
 		params.add("F density");
@@ -49,6 +53,8 @@ public class ClumpGround3DApp extends Simulation {
 		feplot.registerPoints("BCC", fe_bcc, Color.RED);
 		feplot.registerPoints("FCC", fe_fcc, Color.BLUE);
 		
+		relplot.registerPoints("", rel, Color.BLACK);
+		
 		params.set("dx", clump.dx);
 		params.set("Time", format(clump.time()));
 		params.set("F density", format(clump.freeEnergyDensity));
@@ -63,9 +69,13 @@ public class ClumpGround3DApp extends Simulation {
 	}
 
 	public void run() {		
-		fe_bcc = new Accumulator(0.01);
-		fe_fcc = new Accumulator(0.01);
-		params.set("T", 0.02);
+		rel = new Accumulator(1);
+		rel.setAveraging(true);
+		
+		fe_bcc = new Accumulator(0.0001);
+		fe_bcc.setAveraging(true);
+		fe_fcc = new Accumulator(0.0001);
+		fe_fcc.setAveraging(true);
 		
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed("BCC");
@@ -73,18 +83,58 @@ public class ClumpGround3DApp extends Simulation {
 		clump.useFixedBoundaryConditions(false);
 		Job.animate();
 		
-		for (int i = 0; i < 200; i++) {
-//			clump.T += 0.01;
-			params.set("T", clump.T);
+		setTemperature(0.09);
+		simulate(0.5, 500);
+		setTemperature(0.1);
+		for (int i = 0; i < 14; i++) {
 			relax();
-			fe_bcc.accum(clump.time(), clump.freeEnergyDensity);
+			setTemperature(clump.T + 0.001);
+		}
+		
+		clump.Rx = clump.Ry = 1400;
+		clump.Rz = 1000;
+		setTemperature(0.08);
+		simulate(0.5, 500);
+		setTemperature(0.1);
+		for (int i = 0; i < 14; i++) {
+			relax();
+			setTemperature(clump.T + 0.001);
 		}
 	}
 	
+	void setTemperature(double T) {
+		params.set("T", format(T));
+		clump.T = T;
+	}
+	
+	public void accumFE() {
+		double rmax = max(clump.Rx, clump.Ry, clump.Rz);
+		double rmin = min(clump.Rx, clump.Ry, clump.Rz);
+		if (rmax / rmin > 1.4)
+			fe_fcc.accum(clump.T, clump.freeEnergyDensity);
+		else if (rmax / rmin < 1.02) {
+			System.out.println(clump.T +  " " + clump.freeEnergyDensity);
+			fe_bcc.accum(clump.T, clump.freeEnergyDensity);
+		}
+		else
+			System.out.println("Weird configuration, Rmax="+rmax+" Rmin="+rmin);
+	}
+	
 	public void relax() {
+		rel.clear();
+		simulate(0.5, 2000);
+		simulate(0.01, 10);
+		simulate(0.001, 1);
+		accumFE();
+	}
+	
+	void simulate(double dt, double time) {
+		clump.dt = dt;
 		double t1 = clump.time();
-		while (clump.time() - t1 < 10)
+		while (clump.time() - t1 < time) {
 			step();
+			rel.accum(clump.time(), clump.freeEnergyDensity);
+		}
 	}
 	
 	public void step() {

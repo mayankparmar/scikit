@@ -90,6 +90,13 @@ public final class MathPlus extends Object {
     ** Function Methods
     */
 
+	static public double max(double x1, double x2, double x3) {
+		return Math.max(x1, Math.max(x2, x3));
+	}
+	
+	static public double min(double x1, double x2, double x3) {
+		return Math.min(x1, Math.min(x2, x3));
+	}
 	
 	/**
 	 * @param x a double value
