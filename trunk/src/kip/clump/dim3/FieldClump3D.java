@@ -126,7 +126,7 @@ public class FieldClump3D extends AbstractClump3D {
 				field = random.nextGaussian();
 			}
 			double r = sqrt(x*x+y*y+z*z);
-			double mag = 0.1 / (1+sqr(r/R));
+			double mag = 0.2 / (1+sqr(r/R));
 			phi[i] = DENSITY*(1+mag*field);
 		}
 	}
