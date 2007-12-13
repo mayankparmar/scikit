@@ -1,6 +1,8 @@
 package rachele.ising.dim2.apps;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.floor;
+import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.j1;
 import static scikit.util.Utilities.frame;
 import java.io.DataInputStream;
@@ -37,7 +39,7 @@ public class MeltSpinodalApp extends Simulation{
 		
 		frame(grid);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Interaction", new ChoiceValue("Square", "Circle" ));
 		params.addm("Noise", new ChoiceValue("Off","On"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", "Conjugate Gradient Min", 
 				"Steepest Decent",  "Langevin No M Convervation"));
@@ -56,7 +58,7 @@ public class MeltSpinodalApp extends Simulation{
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
-		params.add("L/R", 5.0);
+		params.add("L/R", 7.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
@@ -103,73 +105,123 @@ public class MeltSpinodalApp extends Simulation{
 		double dT = .001;
 		//double kR =5.135622302;
 		String meltFile = "../../../research/javaData/sfData/Smelt";
-		for (double den = -.7; den < .95; den = den + .1){
+		for (double den = -0.4; den < .95; den = den + .1){
+			//double h=.2;
 			params.set("Magnetization", den);
 			ising.DENSITY = den;
-			ising.randomizeField(ising.DENSITY);
-			double Ts = findOrderSpinodal(den);
-			System.out.println("Ts = " + Ts);
-			double temp = setTemp(Ts);
+			ising.randomizeField(0);
+			double spinTemp=findOrderSpinodal(den);
+			double temp=setTemp(spinTemp);
+			//Equilibrate			
 			double lastSfValue = 0;
 			for(int i = 0; i < 5000; i ++){
 				ising.simulate();
 				Job.animate();
-				if(ising.t%100 == 0){
-					sf.accumulateAll(1.0, ising.phi);
-					writeDataToFile();
-				}
+//				if(ising.t%100 == 0){
+//					sf.accumulateMelt(ising.phi);
+//					writeDataToFile();
+//				}
+			}	
+			boolean circleOn;
+			if(params.sget("Interaction")=="Circle")
+							circleOn=true;
+			else
+				circleOn=false;
+			boolean vertStripes = true;
+			int maxi=1;
+			if(params.sget("Interaction")=="Square"){
+				vertStripes = sf.findStripeDirection(ising.phi);
+				if(vertStripes==true)
+					System.out.println("Square interaction: vertical Stripes");
+				else
+					System.out.println("Square interaction: horizontal Stripes");
+			}else{
+				maxi = sf.clumpsOrStripes(ising.phi);
 			}
-
-			//sf.accumMin(ising.coarseGrained(), kR);
-			sf.accumulateAll(1.0, ising.phi);
-			double sfValue = findSfValue();
+			sf.accumulateMelt(circleOn,ising.phi,maxi);
+			double sfValue = findSfValue(vertStripes);
 			System.out.println(sfValue);
-			while(sfValue > 1){
+			while(sfValue > 100){
 				for(int i = 0; i < 5000; i ++){
 					ising.simulate();
 					Job.animate();
 					if(ising.time()%100 == 0){
-						sf.accumulateAll(1.0, ising.phi);
+						sf.accumulateMelt(circleOn,ising.phi,maxi);
 						writeDataToFile();
 					}
 				}
-				System.out.println("temp = " + temp);
 				lastSfValue = sfValue;
-				sf.accumulateAll(1.0, ising.phi);
-				sfValue = findSfValue();
-				while(abs(sfValue-lastSfValue) > 100000){
+				sf.accumulateMelt(circleOn,ising.phi,maxi);
+				sfValue = findSfValue(vertStripes);
+				if (temp>spinTemp){
+					while(abs(sfValue-lastSfValue) > 100000){
 					lastSfValue = sfValue;
 					for(int i = 0; i < 1000; i ++){
 						ising.simulate();
 						params.set("time", ising.time());
 						Job.animate();
 					}
-					//sf.accumMin(ising.coarseGrained(), kR);
-					sf.accumulateAll(1.0, ising.phi);
+					sf.accumulateMelt(circleOn,ising.phi,maxi);
 					writeDataToFile();
-					sfValue = findSfValue();
+//					System.out.println(sf.peakValueH());
+					sfValue = findSfValue(vertStripes);
 					double diff = abs(sfValue-lastSfValue);
 					System.out.println("diff = " + diff);
 					Job.animate();
-				}	
+					}
+				}else{	
+					while(abs(sfValue-lastSfValue) > 10000000){
+						lastSfValue = sfValue;
+						for(int i = 0; i < 1000; i ++){
+							ising.simulate();
+							params.set("time", ising.time());
+							Job.animate();
+						}
+						sf.accumulateMelt(circleOn,ising.phi,maxi);
+						writeDataToFile();
+//						System.out.println(sf.peakValueH());
+						sfValue = findSfValue(vertStripes);
+						double diff = abs(sfValue-lastSfValue);
+						System.out.println("diff = " + diff);
+						Job.animate();
+						}					
+				}
 				temp += dT;
 				ising.T = temp;
+				System.out.println("temp = " + temp);
 			}
 			System.out.println("DONE:  Spinodal Temp  for density " +ising.DENSITY + " = "+ising.T + " " + sfValue + " " + ising.t);
-			double meltTemp = temp - dT/2;
+			double meltTemp = temp + dT/2;
 			double error = dT/2;
-			FileUtil.printlnToFile(meltFile, den, meltTemp, error);
+			double kR = findkRvalue(maxi);
+			FileUtil.printlnToFile(meltFile, den, meltTemp, error, kR);
 		}		
         
  	}
 	
+	private double findkRvalue(int maxi){
+		double kRvalue=0;
+		for (int y = -ising.Lp/2; y < ising.Lp/2; y++) {
+			for (int x = -ising.Lp/2; x < ising.Lp/2; x++) {
+				double kR = (2*PI*sqrt(x*x+y*y)/ising.L)*ising.R;
+				int i = ising.Lp*((y+ising.Lp)%ising.Lp) + (x+ising.Lp)%ising.Lp;
+				if (i==maxi)
+					kRvalue=kR;
+				
+			}
+		}
+		return kRvalue;
+	}
 
-	private double findSfValue(){
+	private double findSfValue(boolean veticalStripes){
 		double sfvalue=0;
 		if(params.sget("Interaction")=="Circle"){
 			sfvalue = sf.peakValueC();	
 		}else if(params.sget("Interaction")=="Square"){
-			sfvalue = sf.peakValueH();
+			if(veticalStripes==true)
+				sfvalue = sf.peakValueH();
+			else
+				sfvalue = sf.peakValueV();
 		}		
 		return sfvalue;
 	}
@@ -205,7 +257,7 @@ public class MeltSpinodalApp extends Simulation{
 	}
 
 	private double squarePotential(double kR){
-		return 2*sin(kR)/kR;
+		return sin(kR)/kR;
 	}
 	
 	public void readInputParams(String FileName){

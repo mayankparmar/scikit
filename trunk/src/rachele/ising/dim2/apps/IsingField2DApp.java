@@ -60,18 +60,19 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-		frame(grid);
-		//frame(ring);
+		frameTogether("Grids", grid, delPhiGrid);
+		//frame(grid);
 		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		//frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
 		//frameTogether("SF", structurePeakV, 
-		//		 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
+			//	 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
+		frameTogether("SF", structurePeakV, structurePeakH);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M", "Conjugate Gradient Min", 
+		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M","Langevin No M Convervation", "Conjugate Gradient Min", 
 				"Steepest Decent" ));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
@@ -81,7 +82,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
-		params.addm("T", 0.06);
+		params.addm("T", 0.09);
 		params.addm("H", 0.0);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
@@ -92,7 +93,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.0);
+		params.add("Magnetization", 0.7);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -284,11 +285,11 @@ public class IsingField2DApp extends Simulation {
 			//sf.getAccumulatorV().clear();
 			//sf.getAccumulatorH().clear();
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
-//			if (ising.time()%100 == 0){
-//				//sf.accumulateAll(ising.time(), ising.coarseGrained());
+			if (ising.time()%100 == 0){
+				sf.accumulateAll(ising.time(), ising.coarseGrained());
 //				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
-//				//writeDataToFile();
-//			}
+				writeDataToFile();
+			}
 			Job.animate();
 		}
  	}
