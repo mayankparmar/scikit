@@ -39,7 +39,7 @@ public class MeltSpinodalApp extends Simulation{
 		
 		frame(grid);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Square", "Circle" ));
+		params.addm("Interaction", new ChoiceValue( "Circle","Square"));
 		params.addm("Noise", new ChoiceValue("Off","On"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M", "Conjugate Gradient Min", 
 				"Steepest Decent",  "Langevin No M Convervation"));
@@ -105,7 +105,7 @@ public class MeltSpinodalApp extends Simulation{
 		double dT = .001;
 		//double kR =5.135622302;
 		String meltFile = "../../../research/javaData/sfData/Smelt";
-		for (double den = -0.4; den < .95; den = den + .1){
+		for (double den = -0.7; den < .95; den = den + .1){
 			//double h=.2;
 			params.set("Magnetization", den);
 			ising.DENSITY = den;
@@ -154,23 +154,8 @@ public class MeltSpinodalApp extends Simulation{
 				sf.accumulateMelt(circleOn,ising.phi,maxi);
 				sfValue = findSfValue(vertStripes);
 				if (temp>spinTemp){
-					while(abs(sfValue-lastSfValue) > 100000){
-					lastSfValue = sfValue;
-					for(int i = 0; i < 1000; i ++){
-						ising.simulate();
-						params.set("time", ising.time());
-						Job.animate();
-					}
-					sf.accumulateMelt(circleOn,ising.phi,maxi);
-					writeDataToFile();
-//					System.out.println(sf.peakValueH());
-					sfValue = findSfValue(vertStripes);
-					double diff = abs(sfValue-lastSfValue);
-					System.out.println("diff = " + diff);
-					Job.animate();
-					}
-				}else{	
-					while(abs(sfValue-lastSfValue) > 10000000){
+					while(abs(sfValue-lastSfValue) > 10000){
+						//while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*(.1)){
 						lastSfValue = sfValue;
 						for(int i = 0; i < 1000; i ++){
 							ising.simulate();
@@ -184,18 +169,37 @@ public class MeltSpinodalApp extends Simulation{
 						double diff = abs(sfValue-lastSfValue);
 						System.out.println("diff = " + diff);
 						Job.animate();
-						}					
+					}
+				}else{
+					while(abs(sfValue-lastSfValue) > 1000000){
+						//while(abs(sfValue-lastSfValue) > (sfValue+lastSfValue)*(.1)){
+						lastSfValue = sfValue;
+						for(int i = 0; i < 1000; i ++){
+							ising.simulate();
+							params.set("time", ising.time());
+							Job.animate();
+						}
+						sf.accumulateMelt(circleOn,ising.phi,maxi);
+						writeDataToFile();
+//						System.out.println(sf.peakValueH());
+						sfValue = findSfValue(vertStripes);
+						double diff = abs(sfValue-lastSfValue);
+						System.out.println("diff = " + diff);
+						Job.animate();
+					}						
 				}
+					
 				temp += dT;
 				ising.T = temp;
 				System.out.println("temp = " + temp);
 			}
 			System.out.println("DONE:  Spinodal Temp  for density " +ising.DENSITY + " = "+ising.T + " " + sfValue + " " + ising.t);
-			double meltTemp = temp + dT/2;
+			double meltTemp = temp -dT/2;
 			double error = dT/2;
 			double kR = findkRvalue(maxi);
 			FileUtil.printlnToFile(meltFile, den, meltTemp, error, kR);
-		}		
+			}
+					
         
  	}
 	
