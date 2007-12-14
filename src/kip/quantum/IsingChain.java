@@ -1,56 +1,128 @@
 package kip.quantum;
 
-import kip.util.Complex;
-
 public class IsingChain {
-	int n = 3;
+	int n = 5;
 	int mask = (1 << n) - 1;
-	Complex[] ground;
+	double[] ground;
+	double[] ground_deriv;
+	double g = 1; // coupling
 	
 	public IsingChain() {
-		ground = new Complex[1<<n];
-		for (int i = 0; i < 1<<n; i++)
-			ground[i] = new Complex(Math.random()-0.5, Math.random()-0.5);
+		ground = new double[1<<n];
+		ground_deriv = new double[1<<n];
+		
+//		for (int c = 0; c < 1<<n; c++)
+//			ground[c] = Math.random()-0.5;
+		
+		for (int c = 0; c < 1<<n; c++)
+			ground[c] = 1;
 	}
 	
-//	Complex trialHamiltonian(int i) {
-//		
-//	}
-//	
-//	double hamiltonianDistance() {
-//		
-//	}
-	
-	int rotateOne(int s) {
-		s = s & mask;
-		return ((s << 1) & mask) | (s >> (n-1));
+	double sqr(double x) {
+		return x*x;
 	}
 	
-	int classicalEnergy(int s) {
-		int cnt = Integer.bitCount(s ^ rotateOne(s));
+	int rotateOne(int c) {
+		c = c & mask;
+		return ((c << 1) & mask) | (c >> (n-1));
+	}
+	
+	double classicalEnergy(int c) {
+		int cnt = Integer.bitCount(c ^ rotateOne(c));
 		return 2*cnt - n;
 	}
 	
-	int hamiltonian(int i, int j) {
-		if (i == j)
-			return classicalEnergy(i);
-		else if (Integer.bitCount(i ^ j) == 1) 
-			return 1;
+	double hamiltonian(int c1, int c2) {
+		if (c1 == c2)
+			return classicalEnergy(c1);
+		else if (Integer.bitCount(c1 ^ c2) == 1) 
+			return g;
 		else
 			return 0;
 	}
 	
+	double trialHamiltonian(int c) {
+		double ret = 0;
+		for (int i = 0; i < n; i++) {
+			ret += ground[c ^ (1 << i)];
+		}
+		return -g * ret / ground[c];
+	}
+	
+	double energyEstimate() {
+		double dh_mean = 0;
+		for (int c = 0; c < (1<<n); c++) {
+			double hp = trialHamiltonian(c);
+			double h = hamiltonian(c,c);
+			dh_mean += h - hp;
+		}
+		return dh_mean / (1<<n);
+	}
+	
+	double hamiltonianDistance() {
+		double dh_mean = energyEstimate();
+		double ret = 0;
+		for (int c = 0; c < (1<<n); c++) {
+			double hp = trialHamiltonian(c);
+			double h = hamiltonian(c,c);
+			ret += sqr((h - hp) - dh_mean);
+		}
+		return ret / (1<<n);
+	}
+	
+	void calc_grad() {
+		double dh_mean = energyEstimate();
+		
+		for (int c = 0; c < (1<<n); c++) {
+			// d <(Del H)^2> / d A_c
+			ground_deriv[c] = 0;
+			double gs_sum = 0;
+			
+			// contribution from neighbors
+			for (int i = 0; i < n; i++) {
+				int c2 = (c ^ (1 << i));
+				double hp = trialHamiltonian(c2);
+				double h = hamiltonian(c2,c2);
+				ground_deriv[c] += -2*g*(h - hp - dh_mean) / ground[c2];
+				gs_sum += ground[c2];
+			}
+			// contribution from self term
+			double hp = trialHamiltonian(c);
+			double h = hamiltonian(c,c);
+			ground_deriv[c] += 2*g*(h - hp - dh_mean) * gs_sum / sqr(ground[c]);
+		}
+	}
+	
+	void step() {
+		calc_grad();
+		
+		double dt = 0.0001;
+		for (int c = 0; c < (1<<n); c++) {
+			ground[c] += dt * ground_deriv[c];
+		}
+	}
+	
 	void printHamiltonian() {
-		for (int i = 0; i < (1<<n); i++) {
-			for (int j = 0; j < (1<<n); j++) {
-				System.out.print(hamiltonian(i, j) + "    ");
+		for (int c1 = 0; c1 < (1<<n); c1++) {
+			for (int c2 = 0; c2 < (1<<n); c2++) {
+				System.out.print(hamiltonian(c1, c2) + "    ");
 			}
 			System.out.println();
 		}
 	}
 	
+	void printHamiltonianDistance() { 
+		System.out.println(energyEstimate());
+		System.out.println(hamiltonianDistance());
+	}
+	
 	public static void main(String[] args) {
 		IsingChain chain = new IsingChain();
-		chain.printHamiltonian();
+		
+		for (int i = 0; i < 10000; i++) {
+			chain.step();
+		}
+		
+		chain.printHamiltonianDistance();
 	}
 }
