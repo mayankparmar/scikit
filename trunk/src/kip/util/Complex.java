@@ -42,6 +42,15 @@ public class Complex extends Object {
     }
     
     /**
+        Modulus squared of this Complex number
+        (the distance squared from the origin in polar coordinates).
+        @return |z|^2 where z is this Complex number.
+     */
+    public double mod2() {
+    	return x*x+y*y;
+    }
+
+    /**
         Modulus of this Complex number
         (the distance from the origin in polar coordinates).
         @return |z| where z is this Complex number.
@@ -72,6 +81,15 @@ public class Complex extends Object {
         return new Complex(x,-y);
     }
     
+    /**
+        Inverse of this Complex number
+        @return 1/z where z is this Complex number.
+     */
+    public Complex inv() {
+    	double den = mod2();
+    	return new Complex(x/den,-y/den);
+    }
+
     /**
         Addition of Complex numbers (doesn't change this Complex number).
         <br>(x+i*y) + (s+i*t) = (x+s)+i*(y+t).
@@ -108,7 +126,7 @@ public class Complex extends Object {
         @return new Complex number z/w where z is this Complex number  
     */
     public Complex div(Complex w) {
-        double den=Math.pow(w.mod(),2);
+        double den=w.mod2();
         return new Complex((x*w.re()+y*w.im())/den,(y*w.re()-x*w.im())/den);
     }
     
