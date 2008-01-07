@@ -5,9 +5,10 @@ import static scikit.util.DoubleArray.dot;
 import java.util.ArrayList;
 
 import scikit.numerics.Jama.Matrix;
+import scikit.numerics.fn.C1Function;
 import scikit.util.Pair;
 
-public class Relaxation extends Optimizer {
+public class Relaxation extends Optimizer<C1Function> {
 	double dt;
 	
 	public Relaxation(int dim, double dt) {
