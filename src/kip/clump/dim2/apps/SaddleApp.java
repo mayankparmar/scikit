@@ -1,6 +1,5 @@
 package kip.clump.dim2.apps;
 
-import static kip.util.MathPlus.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 
@@ -71,7 +70,6 @@ public class SaddleApp extends Simulation {
 		plot.registerLines("", new PointSet(0, 1, section), Color.BLUE);
 		
 		params.set("dx", clump.dx);
-		params.set("R", clump.R);
 		params.set("Time", format(clump.time()));
 		params.set("F density", format(clump.freeEnergyDensity));
 		params.set("dF/dphi", format(clump.rms_dF_dphi));
@@ -86,7 +84,7 @@ public class SaddleApp extends Simulation {
 	public void run() {
 		clump = new FieldClump2D(params);
 		clump.useNoiselessDynamics(true);
-		clump.initializeFieldWithSeed();
+		clump.initializeFieldWithRandomSeed();
 		Job.animate();
 		
 		while (true) {
@@ -100,9 +98,6 @@ public class SaddleApp extends Simulation {
 			}
 			if (params.sget("Circular").equals("Yes")) {
 				clump.circularAverage();
-			}
-			if (periodic) {
-				clump.R -= sqr(clump.R)*clump.dFdensity_dR();
 			}
 			Job.animate();
 		}

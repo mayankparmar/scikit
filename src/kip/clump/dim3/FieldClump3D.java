@@ -273,7 +273,7 @@ public class FieldClump3D extends AbstractClump3D {
 	public void accumulateStructure(final Accumulator sf) {
 		fft.transform(phi, new FFT3D.MapFn() {
 			public void apply(double k1, double k2, double k3, double re, double im) {
-				double kR = hypot(Rx*k1, Ry*k2, Rz*k3);
+				double kR = hypot(k1*Rx, k2*Ry, k3*Rz);
 				if (kR > 0 && kR <= 4*KR_SP)
 					sf.accum(kR, (re*re+im*im)/(L*L*L));
 			}
@@ -318,7 +318,7 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	private void fixBoundaryConditions() {
 		elementsInsideBoundary = Lp*Lp*Lp;
-		int thickness = (int)ceil(0.5*R/dx);
+		int thickness = (int)ceil(0.5*Rx/dx);
 		
 		for (int x = 0; x < Lp; x++) {
 			for (int y = 0; y < Lp; y++) {
