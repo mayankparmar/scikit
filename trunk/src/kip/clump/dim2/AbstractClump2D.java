@@ -24,7 +24,8 @@ abstract public class AbstractClump2D {
 	}
 	
 	public double dpotential_dkR(double kR) {
-		return (kR == 0) ? 0 : (-2*j1(kR)/kR + j0(kR) - jn(2,kR));
+		double kR2 = kR*kR;
+		return (kR == 0) ? 0 : j0(kR)/kR - 2*j1(kR)/kR2  - jn(2,kR)/kR;
 	}
 	
 	abstract public void readParams(Parameters params);

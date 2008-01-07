@@ -1,6 +1,5 @@
 package kip.clump.dim2;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.floor;
@@ -8,7 +7,6 @@ import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.rint;
-import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.sqr;
@@ -20,15 +18,16 @@ import scikit.util.DoubleArray;
 
 public class FieldClump2D extends AbstractClump2D {
 	int Lp;
-	double dt, t;
-	double[] del_phi;
+	double t;
+	double[] phi, phi_bar, del_phi;
 	boolean[] onBoundary;
 	int elementsInsideBoundary;
 	FFT2D fft;
 	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
 	
-	public double[] phi, phi_bar;
+	public double dt;
+	public double Rx, Ry;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
 	public double rms_dF_dphi;
 	public double freeEnergyDensity;
@@ -37,7 +36,7 @@ public class FieldClump2D extends AbstractClump2D {
 	public FieldClump2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 		
-		R = params.fget("R");
+		Rx = Ry = params.fget("R");
 		L = params.fget("L");
 		T = params.fget("T");
 		dx = params.fget("dx");
@@ -87,33 +86,41 @@ public class FieldClump2D extends AbstractClump2D {
 	}
 	
 	
-	public void initializeFieldWithSeed() {
+	public void initializeFieldWithRandomSeed() {
 		for (int i = 0; i < Lp*Lp; i++) {
 			if (onBoundary[i])
 				continue;
 			
+			double R = Rx;
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*(i/Lp - Lp/2);
 			double r = sqrt(x*x+y*y);
 			double mag = 0.8 / (1+sqr(r/R));
-			
-			double kR = KR_SP; // it's fun to try different values
-			double x1 = x*cos(1*PI/6) + y*sin(1*PI/6);
-			double x2 = x*cos(3*PI/6) + y*sin(3*PI/6);
-			double x3 = x*cos(5*PI/6) + y*sin(5*PI/6);
-			phi[i] = DENSITY*(1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
-			
-			// uncomment for four fold symmetry 
-//			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(y*kR/R)));
-			
-			// uncomment for random initial condition
 			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
-		
-		double mean = mean(phi);
-		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
-				phi[i] += (DENSITY-mean);
+		shiftField();
+	}
+	
+	public void initializeFieldWithHexSeed() {
+ 		for (int i = 0; i < Lp*Lp; i++) {
+			if (onBoundary[i])
+				continue;
+
+			double R = Rx;
+			double x = dx*(i%Lp - Lp/2);
+			double y = dx*(i/Lp - Lp/2);
+			double field = 0;
+			double k = KR_SP/R;
+			field = 0;
+			field += cos(k * (1*x + 0*y));
+			field += cos(k * (0.5*x + 0.5*sqrt(3)*y));
+			field += cos(k * (-0.5*x + 0.5*sqrt(3)*y));
+
+			double r = sqrt(x*x+y*y);
+			double mag = 0.5 / (1+sqr(r/R));
+			phi[i] = DENSITY*(1+mag*field);
+		}
+ 		shiftField();
 	}
 	
 	public void useNoiselessDynamics(boolean b) {
@@ -183,7 +190,7 @@ public class FieldClump2D extends AbstractClump2D {
 	public void simulate() {
 		fft.convolve(phi, phi_bar, new Function2D() {
 			public double eval(double k1, double k2) {
-				return potential(hypot(k1,k2)*R);
+				return potential(hypot(k1*Rx,k2*Ry));
 			}
 		});
 		
@@ -210,22 +217,31 @@ public class FieldClump2D extends AbstractClump2D {
 		freeEnergyDensity -= 0.5;
 		t += dt;
 	}
-	
-	public double dFdensity_dR() {
+
+	public double dFdensity_dRx() {
 		double[] dphibar_dR = phi_bar;
 		fft.convolve(phi, phi_bar, new Function2D() {
 			public double eval(double k1, double k2) {
-				double k = hypot(k1, k2);
-				return dpotential_dkR(k*R)*k;
+				double kR = hypot(k1*Rx, k2*Ry);
+				double dkR_dRx = k1 == 0 ? 0 : (k1*k1*Rx / kR);
+				return dpotential_dkR(kR)*dkR_dRx;
 			}
 		});
-		double ret = 0;
-		for (int i = 0; i < Lp*Lp; i++) {
-			ret += 0.5*phi[i]*dphibar_dR[i];
-		}
-		return ret / (Lp*Lp);
+		return DoubleArray.dot(phi, dphibar_dR) / (2*Lp*Lp);
 	}
 	
+	public double dFdensity_dRy() {
+		double[] dphibar_dR = phi_bar;
+		fft.convolve(phi, phi_bar, new Function2D() {
+			public double eval(double k1, double k2) {
+				double kR = hypot(k1*Rx, k2*Ry);
+				double dkR_dRy = k2 == 0 ? 0 : (k2*k2*Ry / kR);
+				return dpotential_dkR(kR)*dkR_dRy;
+			}
+		});
+		return DoubleArray.dot(phi, dphibar_dR) / (2*Lp*Lp);
+	}
+
 	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
@@ -237,8 +253,7 @@ public class FieldClump2D extends AbstractClump2D {
 	public void accumulateStructure(final Accumulator sf) {
 		fft.transform(phi, new FFT2D.MapFn() {
 			public void apply(double k1, double k2, double re, double im) {
-				double k = hypot(k1, k2);
-				double kR = k*R;
+				double kR = hypot(k1*Rx, k2*Ry);
 				if (kR > 0 && kR <= 4*KR_SP)
 					sf.accum(kR, (re*re+im*im)/(L*L));
 			}
@@ -272,8 +287,15 @@ public class FieldClump2D extends AbstractClump2D {
 		return noiselessDynamics ? 0 : random.nextGaussian();
 	}
 	
+	private void shiftField() {
+		double mean = mean(phi);
+		for (int i = 0; i < Lp*Lp; i++)
+			if (!onBoundary[i])
+				phi[i] += (DENSITY-mean);
+	}
+	
 	private void fixBoundaryConditions() {
-		int thickness = (int)ceil(0.5*R/dx);
+		int thickness = (int)ceil(0.5*Rx/dx);
 		for (int i = 0; i < thickness; i++) {
 			int j = Lp-thickness+i;
 			for (int k = 0; k < Lp; k++) {
