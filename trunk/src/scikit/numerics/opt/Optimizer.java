@@ -4,15 +4,15 @@ import static java.lang.Math.abs;
 
 import java.util.ArrayList;
 
-import scikit.numerics.fn.C1Function;
+import scikit.numerics.fn.Function;
 
 
-abstract public class Optimizer {
+abstract public class Optimizer<Fn extends Function> {
 	 // sqrt of double precision, see Numerical Recipes discussion
 	protected static final double FTOL = 3e-8;
 	protected static final double EPS = 1e-12;
 	protected int _dim;
-	protected C1Function _f;
+	protected Fn _f;
 	protected ArrayList<Constraint> _constraints = new ArrayList<Constraint>();
 	protected boolean _finished;
 	protected double[] p;
@@ -45,7 +45,7 @@ abstract public class Optimizer {
 	 * Sets the objective function to be minimized
 	 * @param f the objective function
 	 */
-	public void setFunction(C1Function f) {
+	public void setFunction(Fn f) {
 		_f = f;
 	}
 	

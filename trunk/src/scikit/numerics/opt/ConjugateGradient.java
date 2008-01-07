@@ -2,11 +2,12 @@ package scikit.numerics.opt;
 
 import static scikit.util.DoubleArray.dot;
 import static java.lang.Math.sqrt;
+import scikit.numerics.fn.C1Function;
 import scikit.numerics.fn.C1Function1D;
 import scikit.util.Pair;
 
 
-public class ConjugateGradient extends Optimizer {
+public class ConjugateGradient extends Optimizer<C1Function> {
 	double[] temp;
 	double[] g, h;
 	double fp;
