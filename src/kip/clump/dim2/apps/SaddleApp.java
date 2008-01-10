@@ -14,6 +14,7 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.jobs.params.ChoiceValue;
+import scikit.util.DoubleArray;
 
 
 public class SaddleApp extends Simulation {
@@ -42,6 +43,7 @@ public class SaddleApp extends Simulation {
 		params.add("F density");
 		params.add("dF/dphi");
 		params.add("Valid profile");
+		params.add("phi max");
 		flags.add("Res up");
 		flags.add("Res down");
 	}
@@ -74,6 +76,7 @@ public class SaddleApp extends Simulation {
 		params.set("F density", format(clump.freeEnergyDensity));
 		params.set("dF/dphi", format(clump.rms_dF_dphi));
 		params.set("Valid profile", !clump.rescaleClipped);
+		params.set("phi max", DoubleArray.max(clump.coarseGrained()));
 	}
 	
 	public void clear() {
