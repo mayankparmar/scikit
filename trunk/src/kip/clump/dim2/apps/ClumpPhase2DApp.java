@@ -16,14 +16,16 @@ import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
+import scikit.util.DoubleArray;
 
 
 public class ClumpPhase2DApp extends Simulation {
 	Grid grid = new Grid("Grid");
 	Plot feplot = new Plot("Free energy");
 	Plot relplot = new Plot("Relaxation");
-	Accumulator rel;
+	Accumulator fe_relax;
 	Accumulator fe_hex;
+	Accumulator mag_hex; 
 	
 	FieldClump2D clump;
 
@@ -51,8 +53,9 @@ public class ClumpPhase2DApp extends Simulation {
 		grid.registerData(Lp, Lp, clump.coarseGrained());
 		
 		feplot.registerPoints("Hex", fe_hex, Color.RED);
+//		feplot.registerPoints("Magnitude", mag_hex, Color.BLUE);
 		
-		relplot.registerPoints("", rel, Color.BLACK);
+		relplot.registerPoints("", fe_relax, Color.BLACK);
 		
 		params.set("dx", clump.dx);
 		params.set("Time", format(clump.time()));
@@ -67,11 +70,14 @@ public class ClumpPhase2DApp extends Simulation {
 	}
 
 	public void run() {		
-		rel = new Accumulator(1);
-		rel.setAveraging(true);
+		fe_relax = new Accumulator(1);
+		fe_relax.setAveraging(true);
 		
 		fe_hex = new Accumulator(0.0001);
 		fe_hex.setAveraging(true);
+		
+		mag_hex = new Accumulator(0.0001);
+		mag_hex.setAveraging(true);
 		
 		clump = new FieldClump2D(params);
 		clump.initializeFieldWithHexSeed();
@@ -100,8 +106,10 @@ public class ClumpPhase2DApp extends Simulation {
 	public void accumFE() {
 		double rmax = max(clump.Rx, clump.Ry);
 		double rmin = min(clump.Rx, clump.Ry);
-		if (rmax / rmin > 1.15)
+		if (rmax / rmin > 1.15) {
 			fe_hex.accum(clump.T, clump.freeEnergyDensity);
+			mag_hex.accum(clump.T, DoubleArray.max(clump.coarseGrained()));
+		}
 		else if (rmax / rmin < 1.02)
 			System.out.println("In stable phase!");
 		else
@@ -109,7 +117,7 @@ public class ClumpPhase2DApp extends Simulation {
 	}
 	
 	public void relax() {
-		rel.clear();
+		fe_relax.clear();
 		simulate(0.5, 1000);
 		accumFE();
 	}
@@ -119,7 +127,7 @@ public class ClumpPhase2DApp extends Simulation {
 		double t1 = clump.time();
 		while (clump.time() - t1 < time) {
 			step();
-			rel.accum(clump.time(), clump.freeEnergyDensity);
+			fe_relax.accum(clump.time(), clump.freeEnergyDensity);
 		}
 	}
 	
