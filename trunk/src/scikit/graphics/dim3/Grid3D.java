@@ -33,8 +33,8 @@ import scikit.util.FileUtil;
 
 public class Grid3D extends Scene3D {
 	private static final Color CLEAR = new Color(0, 0, 0, 0);
-	private static String[] VIEW_STRS = new String[] {"Slice", "Surface"};
-	private Grid3DView[] _views = new Grid3DView[] {new Grid3DSliceView(this), new Grid3DSurfaceView(this)};
+	private static String[] VIEW_STRS = new String[] {"Surface", "Slice"};
+	private Grid3DView[] _views = new Grid3DView[] {new Grid3DSurfaceView(this), new Grid3DSliceView(this)};
 	private int _curView;
 	private JComboBox _viewCombo;
 	private ColorChooser _colors = new ColorGradient();
