@@ -84,6 +84,27 @@ public class FieldClump3D extends AbstractClump3D {
 		fixBoundaryConditions();
 	}
 	
+	public void duplicateBlock() {
+		int Lp2 = Lp;
+		double[] old_phi = phi;
+		L *= 2;
+		Lp *= 2;
+		allocate();
+		for (int z = 0; z < Lp; z++) {
+			for (int y = 0; y < Lp; y++) {
+				for (int x = 0; x < Lp; x++) {
+					phi[z*Lp*Lp + y*Lp + x] = old_phi[(z%Lp2)*Lp2*Lp2 + (y%Lp2)*Lp2 + (x%Lp2)];
+					
+					double r = dx * hypot((z-Lp/2), (y-Lp/2), (x-Lp/2)) / Rx;
+					double p = phi[z*Lp*Lp + y*Lp + x];
+					p = (p - DENSITY) / (1 + 0.1*r*r) + DENSITY;
+					phi[z*Lp*Lp + y*Lp + x] = p;
+				}
+			}
+		}
+		fixBoundaryConditions();
+	}
+	
 	public void readParams(Parameters params) {
 		T = params.fget("T");
 		dt = params.fget("dt");
@@ -278,7 +299,7 @@ public class FieldClump3D extends AbstractClump3D {
 					sf.accum(kR, (re*re+im*im)/(L*L*L));
 			}
 		});
-	}	
+	}
 	
 	public double[] coarseGrained() {
 		return phi;
