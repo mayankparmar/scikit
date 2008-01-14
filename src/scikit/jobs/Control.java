@@ -1,13 +1,29 @@
 package scikit.jobs;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import java.awt.*;
-import java.awt.event.*;
-
 import scikit.jobs.params.GuiValue;
+import scikit.util.Utilities;
 
 
 public class Control {
@@ -31,8 +47,14 @@ public class Control {
 	
 	public Control(Simulation sim, String title) {
 		this(sim);
-		JFrame frame = scikit.util.Utilities.frame(_panel, title);
+		
+		JFrame frame = new JFrame(title);
+		Utilities.staggerFrame(frame);
+		frame.getContentPane().add(_panel);
 		frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+		frame.setJMenuBar(createMenuBar());
+		frame.pack();
+		frame.setVisible(true);
 	}
 	
 	/**
@@ -173,5 +195,38 @@ public class Control {
 		// a scroll pane. the disadvantage is that you don't always want the scroll
 		// pane to appear when minimizing the control
 		return new JScrollPane(panel);
+	}
+	
+	private JMenuBar createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		
+		JMenuItem openParamsItem = new JMenuItem("Open params");
+		openParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("open params");
+			}
+		});
+		JMenuItem saveParamsItem = new JMenuItem("Save params");
+		saveParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("save params");
+			}
+		});
+		JMenu fileMenu = new JMenu("File");
+		fileMenu.add(openParamsItem);
+		fileMenu.add(saveParamsItem);
+		menuBar.add(fileMenu);
+		
+		JMenuItem consoleItem = new JMenuItem("Open console");
+		consoleItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("go");
+			}
+		});
+		JMenu windowMenu = new JMenu("Window");
+		windowMenu.add(consoleItem);
+		menuBar.add(windowMenu);
+		
+		return menuBar;
 	}
 }
