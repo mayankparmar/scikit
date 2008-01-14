@@ -20,7 +20,7 @@ public class Saddle3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");
     Plot slice = new Plot("Slice");
 	FieldClump3D clump;
-	boolean periodic;
+	boolean adjustR;
 	boolean findSaddle;
     
 	double kRmin = 0.1;
@@ -35,7 +35,7 @@ public class Saddle3DApp extends Simulation {
 	public Saddle3DApp() {
 		frame(grid, slice);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
-		params.addm("Periodic", new ChoiceValue("Yes", "No"));
+		params.addm("Adjust R", new ChoiceValue("No", "Yes"));
 		params.addm("T", new DoubleValue(0.09, 0.0, 0.15).withSlider());
 		params.addm("dt", 0.5);
 		params.add("Seed", new ChoiceValue("BCC", "Triangle", "Noise"));
@@ -55,6 +55,7 @@ public class Saddle3DApp extends Simulation {
 		params.add("Rz");
 		flags.add("Res up");
 		flags.add("Res down");
+		flags.add("Dup");
 		flags.add("Get R");
 		flags.add("Load config.");
 	}
@@ -65,6 +66,9 @@ public class Saddle3DApp extends Simulation {
 		}
 		if (flags.contains("Res down")) {
 			clump.halveResolution();
+		}
+		if (flags.contains("Dup")) {
+			clump.duplicateBlock();
 		}
 		if (flags.contains("Load config.")) {
 			grid.extractData(clump.coarseGrained());
@@ -77,10 +81,9 @@ public class Saddle3DApp extends Simulation {
 		flags.clear();
 		
 		findSaddle = params.sget("Saddle").equals("Yes");
-		periodic = params.sget("Periodic").equals("Yes");
+		adjustR = params.sget("Adjust R").equals("Yes");
 		
 		clump.useNoiselessDynamics(findSaddle);
-		clump.useFixedBoundaryConditions(!periodic);		
 		clump.readParams(params);
 
 		int Lp = clump.numColumns();
@@ -108,7 +111,8 @@ public class Saddle3DApp extends Simulation {
 	public void run() {
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed(params.sget("Seed"));
-        
+		clump.useFixedBoundaryConditions(false);
+
 		Job.animate();
 		
 		while (true) {
@@ -118,7 +122,7 @@ public class Saddle3DApp extends Simulation {
 			double scale = var1/var2;
 			if (findSaddle)
 				clump.scaleField(scale);
-			if (periodic) {
+			if (adjustR) {
 				clump.Rx -= clump.dt*sqr(clump.Rx)*clump.dFdensity_dRx();
 				clump.Ry -= clump.dt*sqr(clump.Ry)*clump.dFdensity_dRy();
 				clump.Rz -= clump.dt*sqr(clump.Rz)*clump.dFdensity_dRz();
