@@ -1,7 +1,11 @@
 package scikit.util;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.ceil;
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
+
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -15,10 +19,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-
-import scikit.graphics.dim2.Plot;
-
-import static java.lang.Math.*;
 
 
 public class Utilities {
@@ -57,23 +57,13 @@ public class Utilities {
 	public static <T> List<T> asList(T o1, T o2, T o3) {
 		return Arrays.asList(o1, o2, o3);
 	}
-		
-	// utility method for quickly viewing data.
-	private static Plot debugPlot;
-	public static void plot(double[] data) {
-		if (debugPlot == null) {
-			debugPlot = new Plot("Debug plot");
-		}
-		debugPlot.registerPoints("", new scikit.dataset.PointSet(0, 1, data), Color.BLACK);
-		Thread.yield();
-	}
 	
 	
-	private static int _frameStagger = 100;
+	private static int _framePosition = 100;
 	
 	public static void staggerFrame(JFrame frame) {
-		frame.setLocation(_frameStagger, _frameStagger);		
-		_frameStagger += 60;		
+		frame.setLocation(_framePosition, _framePosition);		
+		_framePosition += 24;		
 	}
 	
 	public static JFrame frame(Component comp, String title) {

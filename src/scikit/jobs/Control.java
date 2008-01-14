@@ -2,6 +2,7 @@ package scikit.jobs;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -23,7 +24,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import scikit.jobs.params.GuiValue;
+import scikit.util.Commands;
 import scikit.util.Utilities;
+import bsh.Capabilities;
+import bsh.EvalError;
+import bsh.Interpreter;
+import bsh.Capabilities.Unavailable;
+import bsh.util.JConsole;
 
 
 public class Control {
@@ -31,7 +38,8 @@ public class Control {
 	private Job _job;
 	private JButton _startStopButton;
 	private JButton _stepButton;	
-	private JButton _resetButton;	
+	private JButton _resetButton;
+	
 	
 	public Control(Simulation sim) {
 		_panel = new JPanel();
@@ -56,6 +64,7 @@ public class Control {
 		frame.pack();
 		frame.setVisible(true);
 	}
+	
 	
 	/**
 	 * Returns the Job corresponding to this control
@@ -200,13 +209,13 @@ public class Control {
 	private JMenuBar createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
 		
-		JMenuItem openParamsItem = new JMenuItem("Open params");
+		JMenuItem openParamsItem = new JMenuItem("Open Params");
 		openParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("open params");
 			}
 		});
-		JMenuItem saveParamsItem = new JMenuItem("Save params");
+		JMenuItem saveParamsItem = new JMenuItem("Save Params");
 		saveParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("save params");
@@ -217,10 +226,10 @@ public class Control {
 		fileMenu.add(saveParamsItem);
 		menuBar.add(fileMenu);
 		
-		JMenuItem consoleItem = new JMenuItem("Open console");
+		JMenuItem consoleItem = new JMenuItem("New Console");
 		consoleItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("go");
+				createConsole();
 			}
 		});
 		JMenu windowMenu = new JMenu("Window");
@@ -228,5 +237,24 @@ public class Control {
 		menuBar.add(windowMenu);
 		
 		return menuBar;
+	}
+	
+	
+	private void createConsole() {
+		JConsole console = new JConsole();
+		console.setPreferredSize(new Dimension(400, 400));
+		Interpreter interpreter = new Interpreter(console);
+		interpreter.setShowResults(true);
+		new Thread(interpreter).start();
+		try {
+			Capabilities.setAccessibility(true);
+			interpreter.set("sim", _job.sim());
+			interpreter.getNameSpace().importStatic(Commands.class);
+		} catch (Unavailable exc) {
+			System.err.print("Beanshell reflection not available.");
+		} catch (EvalError exc) {
+			System.err.println("Beanshell evaluation error.");
+		}
+		Utilities.frame(console, "Console");
 	}
 }
