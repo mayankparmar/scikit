@@ -70,14 +70,19 @@ public class Utilities {
 	
 	
 	private static int _frameStagger = 100;
+	
+	public static void staggerFrame(JFrame frame) {
+		frame.setLocation(_frameStagger, _frameStagger);		
+		_frameStagger += 60;		
+	}
+	
 	public static JFrame frame(Component comp, String title) {
 		JFrame frame = new JFrame(title);
+		staggerFrame(frame);
 		frame.getContentPane().add(comp);
-		frame.setLocation(_frameStagger, _frameStagger);		
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.pack();
 		frame.setVisible(true);
-		_frameStagger += 60;		
 		return frame;
 	}
 	
