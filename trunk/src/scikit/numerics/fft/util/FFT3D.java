@@ -29,18 +29,21 @@ public class FFT3D {
 		dx3 = L3/dim3;
 	}
 	
+	public void transform(double[] phi, double[] dst) {
+		for (int i = dim1*dim2*dim3-1; i >= 0; i--) {
+			dst[2*i+0] = phi[i]*dx1*dx2*dx3;
+			dst[2*i+1] = 0;
+		}
+		fft.transform(dst);
+		fft.toWraparoundOrder(dst);
+	}
+	
 	public void transform(double[] phi, MapFn fn) {
+		transform(phi, scratch);
+		
 		double L1 = dim1*dx1;
 		double L2 = dim2*dx2;
 		double L3 = dim3*dx3;
-		for (int i = dim1*dim2*dim3-1; i >= 0; i--) {
-			scratch[2*i+0] = phi[i]*dx1*dx2*dx3;
-			scratch[2*i+1] = 0;
-		}
-		
-		fft.transform(scratch);
-		scratch = fft.toWraparoundOrder(scratch);
-		
 		for (int x3 = -dim3/2; x3 < dim3/2; x3++) {
 			for (int x2 = -dim2/2; x2 < dim2/2; x2++) {
 				for (int x1 = -dim1/2; x1 < dim1/2; x1++) {
@@ -55,17 +58,11 @@ public class FFT3D {
 	}
 	
 	public void convolve(double[] src, double[] dst, Function3D fn) {
+		transform(src, scratch);
+		
 		double L1 = dim1*dx1;
 		double L2 = dim2*dx2;
 		double L3 = dim3*dx3;
-		for (int i = dim1*dim2*dim3-1; i >= 0; i--) {
-			scratch[2*i+0] = src[i]*dx1*dx2*dx3;
-			scratch[2*i+1] = 0;
-		}
-		
-		fft.transform(scratch);
-		scratch = fft.toWraparoundOrder(scratch);
-
 		for (int x3 = -dim3/2; x3 < dim3/2; x3++) {
 			for (int x2 = -dim2/2; x2 < dim2/2; x2++) {
 				for (int x1 = -dim1/2; x1 < dim1/2; x1++) {
