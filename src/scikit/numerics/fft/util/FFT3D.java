@@ -57,6 +57,13 @@ public class FFT3D {
 		}
 	}
 	
+	/**
+	 * Convolves source array src with function fn into destination dst
+	 * It is permissible for src and dst to reference the same array.
+	 * @param src
+	 * @param dst
+	 * @param fn
+	 */
 	public void convolve(double[] src, double[] dst, Function3D fn) {
 		transform(src, scratch);
 		
