@@ -34,8 +34,13 @@ public class ClumpRadialApp extends Simulation {
 	public void animate() {
 		clump.readParams(params);
 		clump.convolveWithRange(clump.phi, clump.phibar, clump.R);
-		plot.registerLines("", new PointSet(0, clump.dx, clump.phi), Color.BLACK);
-		plot.registerLines("ba", new PointSet(0, clump.dx, clump.phibar), Color.RED);
+		plot.registerLines("phi", new PointSet(0, clump.dx, clump.phi), Color.BLACK);
+		plot.registerLines("bar", new PointSet(0, clump.dx, clump.phibar), Color.RED);
+		
+		// double[] temp = new double[clump.phi.length];
+		// clump.convolveWithRangeSlow(clump.phi, temp, clump.R);
+		// plot.registerLines("bar2", new PointSet(0, clump.dx, temp), Color.BLUE);
+		
 		params.set("time", format(clump.t));
 	}
 	
