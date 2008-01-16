@@ -10,6 +10,14 @@ import static kip.util.MathPlus.sqr;
 import scikit.jobs.params.Parameters;
 import scikit.util.DoubleArray;
 
+//import static kip.util.MathPlus.hypot;
+//import kip.clump.dim3.AbstractClump3D;
+//import kip.util.MathPlus;
+//import scikit.dataset.Accumulator;
+//import scikit.numerics.fft.util.FFT3D;
+//import scikit.numerics.fn.Function3D;
+//import scikit.util.Commands;
+
 public class ClumpRadial {
 	double DENSITY = 1;
 	int dim;
@@ -38,6 +46,7 @@ public class ClumpRadial {
 		sqr_dF_dphi = new double[Lp];
 		
 		for (int i = 0; i < Lp; i++) {
+			// phi[i] = (i*dx < R/2.) ? 1 : 0;
 			phi[i] = 0.1/(1+sqr(i*dx/R)) + DENSITY;
 		}
 		t = 0;
@@ -49,7 +58,7 @@ public class ClumpRadial {
 	}
 	
 	public void simulate() {
-		convolveWithRange(phi, phibar, R);		
+		convolveWithRange(phi, phibar, R);
 
 		for (int ap = 1; ap < Lp; ap++) {
 			del_phi[ap] = - dt*(phibar[ap]+T*log(phi[ap]));
@@ -132,4 +141,60 @@ public class ClumpRadial {
 		}
 		dst[0] = dst[1]; // for aesthetics
 	}
+	
+	
+//	int fLp = 128;
+//	double[] scratch = new double[fLp*fLp*fLp];
+//	FFT3D fft = new FFT3D(fLp, fLp, fLp);
+//	
+//	public void convolveWithRangeSlow(double[] src, double[] dst, final double R) {
+//		double fL = L*2.5;
+//		double fdx = fL/fLp;
+//		
+//		for (int zp = 0; zp < fLp; zp++) {
+//			for (int yp = 0; yp < fLp; yp++) {
+//				for (int xp = 0; xp < fLp; xp++) {
+//					double x = fdx*(xp-fLp/2);
+//					double y = fdx*(yp-fLp/2);
+//					double z = fdx*(zp-fLp/2);
+//					double r = MathPlus.hypot(x, y, z);
+//					int ip = (int)(r/dx);
+//					double phi = (ip >= Lp) ? DENSITY : src[ip];
+//					scratch[zp*fLp*fLp + yp*fLp + xp] = phi;
+//				}
+//			}
+//		}
+//		
+//		fft.setLengths(fL,fL,fL);
+//		fft.convolve(scratch, scratch, new Function3D() {
+//			public double eval(double k1, double k2, double k3) {
+//				return AbstractClump3D.potential(hypot(k1*R,k2*R,k3*R));
+//			}
+//		});
+//		
+//		// Commands.grid3d(fLp,fLp,fLp,scratch);
+//
+//		Accumulator acc = new Accumulator(1*dx);
+//		acc.setAveraging(true);
+//		for (int zp = 0; zp < fLp; zp++) {
+//			for (int yp = 0; yp < fLp; yp++) {
+//				for (int xp = 0; xp < fLp; xp++) {
+//					double x = fdx*(xp-fLp/2);
+//					double y = fdx*(yp-fLp/2);
+//					double z = fdx*(zp-fLp/2);
+//					double r = MathPlus.hypot(x, y, z);
+//					double phi = scratch[zp*fLp*fLp + yp*fLp + xp];
+//					acc.accum(r, phi);
+//				}
+//			}
+//		}
+//		
+//		for (int ap = 0; ap < Lp; ap++) {
+//			double v = acc.eval(ap*dx);
+//			dst[ap] = Double.isNaN(v) ? dst[ap-1] : v;
+//		}
+//		
+//		// Commands.plot(dst);		
+//	}
+	
 }

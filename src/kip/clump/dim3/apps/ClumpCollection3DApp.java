@@ -5,6 +5,7 @@ import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
+import kip.clump.dim3.AbstractClump3D;
 import kip.clump.dim3.Clump3D;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
@@ -51,7 +52,7 @@ public class ClumpCollection3DApp extends Simulation {
         plot.registerLines("Structure factor", sf, Color.BLACK);
         plot.registerLines("Structure data", new Function() {
         	public double eval(double kR) {
-        		return 1/(clump.potential(kR)/clump.T+1);
+        		return 1/(AbstractClump3D.potential(kR)/clump.T+1);
         	}
         }, Color.BLUE);		
 	}

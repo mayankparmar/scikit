@@ -62,7 +62,7 @@ public class Clump3DApp extends Simulation {
 		plot.registerLines("Structure data", sf, Color.BLACK);
 		plot.registerLines("Structure theory", new Function() {
         	public double eval(double kR) {
-        		return 1/(clump.potential(kR)/clump.T+1);
+        		return 1/(AbstractClump3D.potential(kR)/clump.T+1);
 	        }
 		}, Color.BLUE);
 	}

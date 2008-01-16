@@ -15,11 +15,11 @@ abstract public class AbstractClump3D {
 	public static final double T_SP = 0.08617089416190739793014991;
 
 	
-	public double potential(double kR) {
+	public static double potential(double kR) {
 		return (kR == 0) ? 1 : (3/(kR*kR))*(sin(kR)/kR - cos(kR));
 	}
 	
-	public double dpotential_dkR(double kR) {
+	public static double dpotential_dkR(double kR) {
 		double kR2 = kR*kR;
 		double kR3 = kR2*kR;
 		double kR4 = kR2*kR2;
