@@ -8,6 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -25,6 +27,7 @@ import javax.swing.event.ChangeListener;
 
 import scikit.jobs.params.GuiValue;
 import scikit.util.Commands;
+import scikit.util.FileUtil;
 import scikit.util.Utilities;
 import bsh.Capabilities;
 import bsh.EvalError;
@@ -212,13 +215,13 @@ public class Control {
 		JMenuItem openParamsItem = new JMenuItem("Open Params");
 		openParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("open params");
+				openParams();
 			}
 		});
 		JMenuItem saveParamsItem = new JMenuItem("Save Params");
 		saveParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("save params");
+				saveParams();
 			}
 		});
 		JMenu fileMenu = new JMenu("File");
@@ -239,17 +242,31 @@ public class Control {
 		return menuBar;
 	}
 	
+	private void saveParams() {
+		try {
+			String fname = FileUtil.saveDialog(_panel, "params.txt");
+			if (fname != null) {
+				PrintWriter pw = FileUtil.pwFromString(fname);
+				pw.write(_job.sim().params.toString());
+				pw.close();
+			}
+		} catch (IOException exc) {}
+	}
+	
+	private void openParams() {
+		System.out.println("open params");
+	}
 	
 	private void createConsole() {
 		JConsole console = new JConsole();
 		console.setPreferredSize(new Dimension(400, 400));
 		Interpreter interpreter = new Interpreter(console);
 		interpreter.setShowResults(true);
+		interpreter.getNameSpace().importStatic(Commands.class);
 		new Thread(interpreter).start();
 		try {
 			Capabilities.setAccessibility(true);
 			interpreter.set("sim", _job.sim());
-			interpreter.getNameSpace().importStatic(Commands.class);
 		} catch (Unavailable exc) {
 			System.err.print("Beanshell reflection not available.");
 		} catch (EvalError exc) {
