@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import javax.swing.JDialog;
 
+import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
 import scikit.numerics.fft.util.FFT3D;
@@ -19,7 +20,7 @@ public class Commands {
 	// utility method for quickly viewing data.
 	public static void plot(double[] data) {
 		Plot plot = new Plot("Quick Plot");
-		plot.registerPoints("", new scikit.dataset.PointSet(0, 1, data), Color.BLUE);
+		plot.registerPoints("", new PointSet(0, 1, DoubleArray.clone(data)), Color.BLUE);
 		Utilities.frame(plot);
 	}
 	
