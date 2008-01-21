@@ -22,21 +22,21 @@ public class ClumpRadialApp extends Simulation {
 	public ClumpRadialApp() {
 		frame(plot);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
-		params.addm("Dimension", new ChoiceValue("2", "3"));
+		params.add("Dimension", new ChoiceValue("3", "2"));
 		params.addm("T", 0.09);
-		params.addm("dt", 0.1);
-		params.addm("R", 1000.);
-		params.add("L", 4000.);
+		params.addm("dt", 0.5);
+		params.add("R", 1000.);
+		params.add("L", 40000.);
 		params.add("dx", 20.);
 		params.add("time");
 	}
 	
 	public void animate() {
 		clump.readParams(params);
-		clump.convolveWithRange(clump.phi, clump.phibar, clump.R);
 		plot.registerLines("phi", new PointSet(0, clump.dx, clump.phi), Color.BLACK);
 		plot.registerLines("bar", new PointSet(0, clump.dx, clump.phibar), Color.RED);
 		
+		// clump.convolveWithRange(clump.phi, clump.phibar, clump.R);
 		// double[] temp = new double[clump.phi.length];
 		// clump.convolveWithRangeSlow(clump.phi, temp, clump.R);
 		// plot.registerLines("bar2", new PointSet(0, clump.dx, temp), Color.BLUE);
