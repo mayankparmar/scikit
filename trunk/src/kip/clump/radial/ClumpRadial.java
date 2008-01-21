@@ -130,8 +130,14 @@ public class ClumpRadial {
 				double a = ap*dx;
 				double b = bp*dx;
 				double cos_theta = max((a*a+b*b-R*R)/(2*a*b), -1);
-				double theta = acos(cos_theta);
-				double shell = dx * (dim == 2 ? 2*theta*b : (1-cos_theta)*2*PI*b*b); 
+				double shell;
+				if (dim == 2) {
+					double theta = acos(cos_theta);
+					shell = dx * 2*theta*b;
+				}
+				else {
+					shell = dx * (1-cos_theta)*2*PI*b*b;
+				}
 				dst[ap] += shell * (bp >= Lp ? DENSITY : src[bp]);
 				vol += shell;
 			}
