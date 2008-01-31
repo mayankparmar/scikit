@@ -20,7 +20,6 @@ import scikit.util.DoubleArray;
 public class SaddleApp extends Simulation {
 	Grid grid = new Grid("Grid");
 	FieldClump2D clump;
-	boolean periodic;
 	Plot plot = new Plot("");
 	
 	public static void main(String[] args) {
@@ -29,7 +28,6 @@ public class SaddleApp extends Simulation {
 
 	public SaddleApp() {
 		frame(grid, plot);
-		params.addm("Periodic", new ChoiceValue("Yes", "No"));
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
 		params.addm("Circular", new ChoiceValue("No", "Yes"));
@@ -54,9 +52,6 @@ public class SaddleApp extends Simulation {
 		if (flags.contains("Res down"))
 			clump.halveResolution();
 		flags.clear();
-		
-		periodic = params.sget("Periodic").equals("Yes");
-		clump.useFixedBoundaryConditions(!periodic);
 		clump.readParams(params);
 		
 		grid.setColors(new GrayScale());

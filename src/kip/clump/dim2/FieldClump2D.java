@@ -1,6 +1,5 @@
 package kip.clump.dim2;
 
-import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
@@ -10,6 +9,8 @@ import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.sqr;
+import static scikit.util.DoubleArray.mean;
+import static scikit.util.DoubleArray.variance;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT2D;
@@ -20,10 +21,7 @@ public class FieldClump2D extends AbstractClump2D {
 	int Lp;
 	double t;
 	double[] phi, phi_bar, del_phi;
-	boolean[] onBoundary;
-	int elementsInsideBoundary;
 	FFT2D fft;
-	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
 	
 	public double dt;
@@ -63,7 +61,6 @@ public class FieldClump2D extends AbstractClump2D {
 				phi[y*Lp+x] = old_phi[2*y*old_Lp + 2*x];
 			}
 		}
-		fixBoundaryConditions();
 	}
 	
 	public void doubleResolution() {
@@ -77,7 +74,6 @@ public class FieldClump2D extends AbstractClump2D {
 				phi[y*Lp+x] = old_phi[(y/2)*old_Lp + (x/2)];
 			}
 		}
-		fixBoundaryConditions();
 	}
 	
 	public void readParams(Parameters params) {
@@ -88,9 +84,6 @@ public class FieldClump2D extends AbstractClump2D {
 	
 	public void initializeFieldWithRandomSeed() {
 		for (int i = 0; i < Lp*Lp; i++) {
-			if (onBoundary[i])
-				continue;
-			
 			double R = Rx;
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*(i/Lp - Lp/2);
@@ -103,9 +96,6 @@ public class FieldClump2D extends AbstractClump2D {
 	
 	public void initializeFieldWithHexSeed() {
  		for (int i = 0; i < Lp*Lp; i++) {
-			if (onBoundary[i])
-				continue;
-
 			double R = Rx;
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*(i/Lp - Lp/2);
@@ -125,20 +115,11 @@ public class FieldClump2D extends AbstractClump2D {
 	
 	public void useNoiselessDynamics(boolean b) {
 		noiselessDynamics = b;
-	}
-	
-	public void useFixedBoundaryConditions(boolean b) {
-		fixedBoundary = b;
-		fixBoundaryConditions();
-	}
+	}	
 	
 	public double phiVariance() {
-		double var = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-			var += sqr(phi[i]-DENSITY);
-		return var / (Lp*Lp);
+		return variance(phi);
 	}
-	
 	
 	public void scaleField(double scale) {
 		// phi will not be scaled above PHI_UB or below PHI_LB
@@ -169,24 +150,6 @@ public class FieldClump2D extends AbstractClump2D {
 		}
 	}
 	
-	public double mean(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
-				sum += a[i];
-		return sum/elementsInsideBoundary; 
-	}
-	
-	
-	public double meanSquared(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
-				sum += a[i]*a[i];
-		return sum/elementsInsideBoundary;
-	}
-	
-	
 	public void simulate() {
 		fft.convolve(phi, phi_bar, new Function2D() {
 			public double eval(double k1, double k2) {
@@ -206,14 +169,12 @@ public class FieldClump2D extends AbstractClump2D {
 		rms_dF_dphi = 0;
 		freeEnergyDensity = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
-			if (!onBoundary[i]) {
-				rms_dF_dphi += sqr(del_phi[i] / dt);
-				freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
-				phi[i] += del_phi[i];
-			}
+			rms_dF_dphi += sqr(del_phi[i] / dt);
+			freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
+			phi[i] += del_phi[i];
 		}
-		rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
-		freeEnergyDensity /= elementsInsideBoundary;
+		rms_dF_dphi = sqrt(rms_dF_dphi/(Lp*Lp));
+		freeEnergyDensity /= (Lp*Lp);
 		freeEnergyDensity -= 0.5;
 		t += dt;
 	}
@@ -277,8 +238,6 @@ public class FieldClump2D extends AbstractClump2D {
 		phi = new double[Lp*Lp];
 		phi_bar = new double[Lp*Lp];
 		del_phi = new double[Lp*Lp];
-		onBoundary = new boolean[Lp*Lp];
-		elementsInsideBoundary = Lp*Lp;
 		fft = new FFT2D(Lp, Lp);
 		fft.setLengths(L, L);
 	}
@@ -290,25 +249,6 @@ public class FieldClump2D extends AbstractClump2D {
 	private void shiftField() {
 		double mean = mean(phi);
 		for (int i = 0; i < Lp*Lp; i++)
-			if (!onBoundary[i])
-				phi[i] += (DENSITY-mean);
-	}
-	
-	private void fixBoundaryConditions() {
-		int thickness = (int)ceil(0.5*Rx/dx);
-		for (int i = 0; i < thickness; i++) {
-			int j = Lp-thickness+i;
-			for (int k = 0; k < Lp; k++) {
-				onBoundary[i*Lp+k] = onBoundary[j*Lp+k] = fixedBoundary;
-				onBoundary[k*Lp+i] = onBoundary[k*Lp+j] = fixedBoundary;
-			}
-		}
-		elementsInsideBoundary = Lp*Lp;
-		for (int i = 0; i < Lp*Lp; i++) {
-			if (onBoundary[i]) {
-				phi[i] = DENSITY;
-				elementsInsideBoundary--;
-			}
-		}
+			phi[i] += (DENSITY-mean);
 	}
 }
