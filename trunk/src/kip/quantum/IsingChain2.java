@@ -7,9 +7,9 @@ import scikit.util.DoubleArray;
 import scikit.util.Pair;
 
 public class IsingChain2 {
-	int n = 8;
+	int n = 6;
 	int dim = n/2;
-	double dt = 0.001;
+	double dt = 0.0001;
 	
 	Random r = new Random(1);
 	
@@ -18,28 +18,32 @@ public class IsingChain2 {
 		opt.setFunction(energyFn);
 
 		double[] a = new double[dim]; // coeff
-		for (int i = 0; i < dim; i++)
+		for (int i = 0; i < dim; i++) {
 			a[i] = r.nextDouble()-0.5;
+//			a[i] = 0.1;
+		}
 		opt.initialize(a);
+		opt.setStepSize(dt);
 		
 		while(true) {
-			opt.setStepSize(dt);
+			for (int i = 1; i < dim; i++)
+				System.out.print(a[i] + " " );
+			System.out.println();
+			
+			System.out.println(energyFn.eval(a));
 			opt.step();
-			System.out.println(energyFn.eval(a) + " " + a[0] + " " + a[1] + " " + a[2]);
 		}
-
 	}
 	
 	C1Function energyFn = new C1Function() {
-		double e;
 		double[] grad = new double[dim];
 		
 		double J = 1;
-		double lambda = 0; //0.5;
+		double lambda = 100;
 		
 		double[] a;
 		double[] spin = new double[n];
-		double weight; // a_ij s_i s_j
+		double action; // a_ij s_i s_j
 		
 		double e_acc;
 		double[] corr_acc = new double[dim];
@@ -50,21 +54,16 @@ public class IsingChain2 {
 			this.a = a;
 			for (int i = 0; i < n; i++)
 				spin[i] = -1;
-			weight = calcWeight();
+			action = calcAction();
 			
 			e_acc = 0;
 			DoubleArray.zero(corr_acc);
 			DoubleArray.zero(e_corr_acc);
 			
-			int mcs;
-			for (mcs = 0; mcs < 10000; mcs++) {
-				for (int i = 0; i < n; i++) {
-					trySpinFlip(r.nextInt(n));
-				}
-				accumulate();
-			}
+			boolean mc = false;
+			int mcs = mc ? mcAccumulate() : enumAccumulate();
 			
-			e = e_acc/mcs; 
+			double e = e_acc / mcs; 
 			for (int i = 0; i < dim; i++) {
 				double corr = corr_acc[i] / mcs;
 				double e_corr = e_corr_acc[i] / mcs;
@@ -72,43 +71,72 @@ public class IsingChain2 {
 			}
 			return new Pair<Double,double[]>(e, grad);
 		}
+
+		int mcAccumulate() {
+			int mcs;
+			for (mcs = 0; mcs < 1000; mcs++) {
+				for (int i = 0; i < n; i++) {
+					int j = r.nextInt(n);
+					trySpinFlip(j);
+				}
+				accumulateConfig(1);
+			}
+			return mcs;
+		}
+
+		int enumAccumulate() {
+			double norm = 0;
+			for (int c = 0; c < 1<<n; c++) {
+				for (int i = 0; i < n; i++)
+					spin[i] = ((c & (1<<i)) == 0) ? 1 : -1;
+				norm += Math.exp(2*calcAction());
+			}
+			
+			for (int c = 0; c < 1<<n; c++) {
+				for (int i = 0; i < n; i++)
+					spin[i] = ((c & (1<<i)) == 0) ? 1 : -1;
+				double weight = Math.exp(2*calcAction()) / norm;
+				accumulateConfig(weight);
+			}
+			return 1;
+		}
 		
-		double calcWeight() {
-			double weight = 0;
+		double calcAction() {
+			double action = 0;
 			for (int i = 0; i < n; i++) {
 				for (int d = 0; d < dim; d++) { 
 					int ip = (i+d)%n;
-					weight += a[d] * spin[i] * spin[ip];
+					action += a[d] * spin[i] * spin[ip];
 				}
 			}
-			return weight;
+			return action;
 		}
 		
-		double weightAfterFlip(int i) {
-			double weightp = weight;
+		double actionAfterFlip(int i) {
+			double actionp = action;
 			for (int j = i-dim+1; j < i+dim; j++) {
 				if (i != j) {
 					int d = Math.abs(j - i);
 					int jp = (j+n)%n;
-					weightp -= 2 * a[d] * spin[i] * spin[jp];
+					actionp -= 2 * a[d] * spin[i] * spin[jp];
 				}
 			}
 			
 //			spin[i] *= -1;
-//			assert(Math.abs(weightp - calcWeight()) > 1e-12);
+//			assert(Math.abs(weightp - calcWeight()) < 1e-12);
 //			spin[i] *= -1;
 			
-			return weightp;
+			return actionp;
 		}
 		
 		void trySpinFlip(int i) {
-			double weightp = weightAfterFlip(i);
+			double actionp = actionAfterFlip(i);
 			
-			double p1 = Math.exp(2*weight);
-			double p2 = Math.exp(2*weightp);
+			double p1 = Math.exp(2*action);
+			double p2 = Math.exp(2*actionp);
 			if (p2 > p1 || r.nextDouble() < p2/p1) {
 				spin[i] *= -1;
-				weight = weightp;
+				action = actionp;
 			}
 		}
 		
@@ -130,19 +158,19 @@ public class IsingChain2 {
 			return corr/n;
 		}
 		
-		void accumulate() {
+		void accumulateConfig(double w) {
 			double e = classicalEnergy();
 			for (int i = 0; i < n; i++) {
-				double f = Math.exp(weight);
-				double fp = Math.exp(weightAfterFlip(i));
+				double f = Math.exp(action);
+				double fp = Math.exp(actionAfterFlip(i));
 				e += lambda * fp / f;
 			}
 			
-			e_acc += e;
+			e_acc += w*e;
 			for (int d = 0; d < dim; d++) {
 				double corr = classicalCorrelation(d);
-				corr_acc[d] += corr;
-				e_corr_acc[d] += e*corr;
+				corr_acc[d] += w*corr;
+				e_corr_acc[d] += w*e*corr;
 			}
 		}
 	};
