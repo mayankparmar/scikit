@@ -82,7 +82,6 @@ public class ClumpPhase2DApp extends Simulation {
 		clump = new FieldClump2D(params);
 		clump.initializeFieldWithHexSeed();
 		clump.useNoiselessDynamics(true);
-		clump.useFixedBoundaryConditions(false);
 		Job.animate();
 		
 		clump.Rx = 1700;

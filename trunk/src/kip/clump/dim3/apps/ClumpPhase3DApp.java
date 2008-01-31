@@ -80,7 +80,6 @@ public class ClumpPhase3DApp extends Simulation {
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed("BCC");
 		clump.useNoiselessDynamics(true);
-		clump.useFixedBoundaryConditions(false);
 		Job.animate();
 		
 		setTemperature(0.09);

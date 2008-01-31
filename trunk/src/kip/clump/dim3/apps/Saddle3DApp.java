@@ -47,17 +47,12 @@ public class Saddle3DApp extends Simulation {
 		params.add("F density");
 		params.add("dF/dphi");
 		params.add("Valid profile");
-		params.addm("Rx_", 0.);
-		params.addm("Ry_", 0.);
-		params.addm("Rz_", 0.);
 		params.add("Rx");
 		params.add("Ry");
 		params.add("Rz");
 		flags.add("Res up");
 		flags.add("Res down");
 		flags.add("Dup");
-		flags.add("Get R");
-		flags.add("Load config.");
 	}
 	
 	public void animate() {
@@ -69,14 +64,6 @@ public class Saddle3DApp extends Simulation {
 		}
 		if (flags.contains("Dup")) {
 			clump.duplicateBlock();
-		}
-		if (flags.contains("Load config.")) {
-			grid.extractData(clump.coarseGrained());
-		}
-		if (flags.contains("Get R")) {
-			clump.Rx = params.fget("Rx_");
-			clump.Ry = params.fget("Ry_");
-			clump.Rz = params.fget("Rz_");
 		}
 		flags.clear();
 		
@@ -111,7 +98,6 @@ public class Saddle3DApp extends Simulation {
 	public void run() {
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed(params.sget("Seed"));
-		clump.useFixedBoundaryConditions(false);
 
 		Job.animate();
 		

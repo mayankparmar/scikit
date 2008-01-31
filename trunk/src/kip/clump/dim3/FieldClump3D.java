@@ -1,6 +1,5 @@
 package kip.clump.dim3;
 
-import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.floor;
 import static java.lang.Math.log;
@@ -10,6 +9,8 @@ import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
 import static kip.util.MathPlus.hypot;
 import static kip.util.MathPlus.sqr;
+import static scikit.util.DoubleArray.mean;
+import static scikit.util.DoubleArray.variance;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT3D;
@@ -20,10 +21,7 @@ public class FieldClump3D extends AbstractClump3D {
 	int Lp;
 	double t;
 	double[] phi, phi_bar, del_phi;
-	boolean[] onBoundary;
-	int elementsInsideBoundary;
 	FFT3D fft;
-	boolean fixedBoundary = false;
 	boolean noiselessDynamics = false;
 
 	public double dt;
@@ -65,7 +63,6 @@ public class FieldClump3D extends AbstractClump3D {
 				}
 			}
 		}
-		fixBoundaryConditions();
 	}
 	
 	public void doubleResolution() {
@@ -81,7 +78,6 @@ public class FieldClump3D extends AbstractClump3D {
 				}
 			}
 		}
-		fixBoundaryConditions();
 	}
 	
 	public void duplicateBlock() {
@@ -102,7 +98,6 @@ public class FieldClump3D extends AbstractClump3D {
 				}
 			}
 		}
-		fixBoundaryConditions();
 	}
 	
 	public void readParams(Parameters params) {
@@ -113,9 +108,6 @@ public class FieldClump3D extends AbstractClump3D {
 	
 	public void initializeFieldWithSeed(String type) {
   		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			if (onBoundary[i])
-				continue;
-			
 			double R = Rx;
 			double x = dx*(i%Lp - Lp/2);
 			double y = dx*((i%(Lp*Lp))/Lp - Lp/2);
@@ -156,63 +148,22 @@ public class FieldClump3D extends AbstractClump3D {
 		noiselessDynamics = b;
 	}
 	
-	public void useFixedBoundaryConditions(boolean b) {
-		fixedBoundary = b;
-		fixBoundaryConditions();
-	}
-	
 	public double phiVariance() {
-		double var = 0;
-		for (int i = 0; i < Lp*Lp*Lp; i++)
-			var += sqr(phi[i]-DENSITY);
-		return var / (Lp*Lp*Lp);
+		return variance(phi);
 	}
-	
 	
 	public void scaleField(double scale) {
 		// phi will not be scaled above PHI_UB or below PHI_LB
-//		double PHI_UB = 1.5*DENSITY;
-//		double PHI_LB = 0.5*DENSITY;
-//		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
-//		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
-//		rescaleClipped = scale > min(s1,s2);
-//		if (rescaleClipped)
-//			scale = min(s1,s2);
-//		System.out.println(scale);
-		
-		double PHI_UB = 20;
-		double PHI_LB = 0.01;
-		for (int i = 0; i < Lp*Lp*Lp; i++)
+		double PHI_UB = 20*DENSITY;
+		double PHI_LB = 0.01*DENSITY;
+		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
+		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
+		rescaleClipped = scale > min(s1,s2);
+		if (rescaleClipped)
+			scale = min(s1,s2);
+		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
-		rescaleClipped = DoubleArray.min(phi) < PHI_LB || DoubleArray.max(phi) > PHI_UB;
-		if (rescaleClipped) {
-			for (int i = 0; i < Lp*Lp*Lp; i++)
-				phi[i] = min(max(phi[i], PHI_LB), PHI_UB);
-//			double mean = DoubleArray.mean(phi);
-//			for (int i = 0; i < Lp*Lp*Lp; i++)
-//				phi[i] = DENSITY + (phi[i] - mean);
 		}
-//		if (DoubleArray.min(phi) < PHI_LB || DoubleArray.max(phi) > PHI_UB) {
-//			throw new IllegalArgumentException("doh");
-//		}
-	}
-	
-	
-	public double mean(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp*Lp; i++)
-			if (!onBoundary[i])
-				sum += a[i];
-		return sum/elementsInsideBoundary; 
-	}
-	
-	
-	public double meanSquared(double[] a) {
-		double sum = 0;
-		for (int i = 0; i < Lp*Lp*Lp; i++)
-			if (!onBoundary[i])
-				sum += a[i]*a[i];
-		return sum/elementsInsideBoundary;
 	}
 	
 	
@@ -235,14 +186,12 @@ public class FieldClump3D extends AbstractClump3D {
 		rms_dF_dphi = 0;
 		freeEnergyDensity = 0;
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			if (!onBoundary[i]) {
-				rms_dF_dphi += sqr(del_phi[i] / dt);
-				freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
-				phi[i] += del_phi[i];
-			}
+			rms_dF_dphi += sqr(del_phi[i] / dt);
+			freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
+			phi[i] += del_phi[i];
 		}
-		rms_dF_dphi = sqrt(rms_dF_dphi/elementsInsideBoundary);
-		freeEnergyDensity /= elementsInsideBoundary;
+		rms_dF_dphi = sqrt(rms_dF_dphi/(Lp*Lp*Lp));
+		freeEnergyDensity /= (Lp*Lp*Lp);
 		freeEnergyDensity -= 0.5;
 		t += dt;
 	}
@@ -315,44 +264,15 @@ public class FieldClump3D extends AbstractClump3D {
 		return t;
 	}
 	
-	
 	private void allocate() {
 		phi = new double[Lp*Lp*Lp];
 		phi_bar = new double[Lp*Lp*Lp];
 		del_phi = new double[Lp*Lp*Lp];
-		onBoundary = new boolean[Lp*Lp*Lp];
-		elementsInsideBoundary = Lp*Lp*Lp;
 		fft = new FFT3D(Lp, Lp, Lp);
 		fft.setLengths(L, L, L);
 	}
 	
 	private double noise() {
 		return noiselessDynamics ? 0 : random.nextGaussian();
-	}
-
-	static private int minSeq(Integer... vals) {
-		int ret = Integer.MAX_VALUE;
-		for (int v : vals)
-			ret = Math.min(ret, v);
-		return ret;
-	}
-	
-	private void fixBoundaryConditions() {
-		elementsInsideBoundary = Lp*Lp*Lp;
-		int thickness = (int)ceil(0.5*Rx/dx);
-		
-		for (int x = 0; x < Lp; x++) {
-			for (int y = 0; y < Lp; y++) {
-				for (int z = 0; z < Lp; z++) {
-					int d = minSeq(x, y, z, Lp-x, Lp-y, Lp-z);
-					if (d < thickness && fixedBoundary) {
-						int i = Lp*Lp*z + Lp*y + x;
-						onBoundary[i] = true;
-						phi[i] = DENSITY;
-						elementsInsideBoundary--;
-					}
-				}
-			}
-		}
 	}
 }
