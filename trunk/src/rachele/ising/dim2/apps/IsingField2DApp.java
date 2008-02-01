@@ -60,7 +60,7 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid);
+		frameTogether("Grids", grid, delPhiGrid, sfGrid);
 		//frame(grid);
 		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
@@ -71,29 +71,30 @@ public class IsingField2DApp extends Simulation {
 		frameTogether("SF", structurePeakV, structurePeakH);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
-		params.addm("Noise", new ChoiceValue("Off","On"));
+		//params.addm("Noise", new ChoiceValue("Off","On"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M","Langevin No M Convervation", "Conjugate Gradient Min", 
 				"Steepest Decent" ));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
 		params.addm("Approx", new ChoiceValue("Exact Stable",
 				"Avoid Boundaries", "Exact SemiStable", "Exact", "Linear",  "Phi4"));
-		params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
+		//params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
+		params.addm("Noise", new DoubleValue(0.0, 0.0, 1.0).withSlider());
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
-		params.addm("T", 0.09);
+		params.addm("T", 0.06);
 		params.addm("H", 0.0);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
-		params.add("L/R", 5.0);
+		params.add("L/R", 10.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
-		params.add("Magnetization", 0.7);
+		params.add("Magnetization", 0.6);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -233,17 +234,16 @@ public class IsingField2DApp extends Simulation {
 	public void run() {
 		if(params.sget("Init Conditions") == "Read From File")
 			readInputParams("../../../research/javaData/configs/inputParams");
-			
 		ising = new IsingField2D(params);
 		double binWidth = params.fget("kR bin-width");
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
 		
-		for (int i = 0; i < 5000; i ++){
-			ising.simulate();
-			Job.animate();
-		}
+//		for (int i = 0; i < 100; i ++){
+//			ising.simulate();
+//			Job.animate();
+//		}
 		maxi=sf.clumpsOrStripes(ising.phi);
 		
 //		opt = new SteepestDescentMin(ising.phi, ising.verticalSlice, ising.horizontalSlice, ising.dx) {
@@ -291,16 +291,17 @@ public class IsingField2DApp extends Simulation {
 				cgInitialized = false;
 				ising.simulate();
 			}
-			//sf.getAccumulatorV().clear();
-			//sf.getAccumulatorH().clear();
-			//sf.accumulateAll(ising.time(), ising.coarseGrained());
-			if (ising.time()%100 == 0){
-				//sf.accumulateAll(ising.time(), ising.coarseGrained());
+			sf.getAccumulatorV().clear();
+			sf.getAccumulatorH().clear();
+			sf.accumulateAll(ising.time(), ising.coarseGrained());
+			if (ising.time()%10 == 0){
+
 				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				boolean circleOn=true;
 				sf.accumulateMelt(circleOn, ising.phi, maxi);
 				writeDataToFile();
 			}
+			//sf.accumulateAll(ising.time(), ising.coarseGrained());
 			Job.animate();
 		}
  	}
@@ -349,6 +350,7 @@ public class IsingField2DApp extends Simulation {
 		FileUtil.deleteFile(inputFileName);
 		writeInputParams(inputFileName);	
 		writeConfigToFile(configFileName);
+		System.out.println("Config writtern to file");
 	}
 	
 	public void writeConfigToFile(String FileName){
@@ -404,7 +406,7 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public void writeDataToFile(){
-		boolean SvH = true;
+		boolean SvH = false;
 		if (params.sget("Interaction")=="Square"){
 				String dataFileV = "../../../research/javaData/sfData/dataFileV";
 				String dataFileH = "../../../research/javaData/sfData/dataFileH";

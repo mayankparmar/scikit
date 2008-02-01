@@ -65,7 +65,8 @@ public class IsingField2D {
 	Accumulator accEitherFreeEnergy;
 	public Accumulator accFreeEnergy;
 			
-	boolean noiselessDynamics = false;
+	//boolean noiselessDynamics = false;
+	double noiseParameter;
 	boolean circleInteraction = false;
 	boolean magConservation = false;
 	int slowPower = 0;
@@ -105,15 +106,19 @@ public class IsingField2D {
 		if(params.sget("Interaction") == "Circle")
 			circleInteraction = true;
 
-		if(params.sget("Noise") == "Off"){
-			noiselessDynamics = true;
-		}else{
-			noiselessDynamics = false;
-		}
+//		if(params.sget("Noise") == "Off"){
+//			noiselessDynamics = true;
+//		}else{
+//			noiselessDynamics = false;
+//		}
+		noiseParameter = params.fget("Noise");
+		
 		slowPower = 2;
 		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation") magConservation = false;
-		theory = params.sget("Approx");
+		if(params.sget("Approx") == "Exact") theory ="Exact";
+		else theory = "Slow";
+		//theory = params.sget("Approx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		double RoverDx = R/dx;
@@ -137,7 +142,8 @@ public class IsingField2D {
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		
-		String init = "Random Gaussian";
+		//String init = "Random Gaussian";
+		String init = params.sget("Init Conditions");
 		if(init == "Random Gaussian"){
 			randomizeField(DENSITY);
 			System.out.println("Random Gaussian");
@@ -195,8 +201,10 @@ public class IsingField2D {
 	
 	public void randomizeField(double m) {
 		for (int i = 0; i < Lp*Lp; i++)
-			//phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
 			phi[i] = random.nextGaussian()/(dx);
+			//phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+			//whether or not you start the system at the specified density doesn't matter too much because
+			//the mag conservation algorithm will quickly take it to the correct density
 	}
 	
 	public void readParams(Parameters params) {
@@ -222,18 +230,19 @@ public class IsingField2D {
 			circleInteraction = false;
 		}
 
-		if(params.sget("Noise") == "Off"){
-			noiselessDynamics = true;
-		}else{
-			noiselessDynamics = false;
-		}
-
+//		if(params.sget("Noise") == "Off"){
+//			noiselessDynamics = true;
+//		}else{
+//			noiselessDynamics = false;
+//		}
+		noiseParameter = params.fget("Noise");
 		if(params.sget("Dynamics?") == "Langevin Conserve M")
 			magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
 			magConservation = false;
-		
-		theory = params.sget("Approx");
+		if(params.sget("Approx") == "Exact") theory ="Exact";
+		else theory = "Slow";		
+//		theory = params.sget("Approx");
 		
 		//horizontalSlice = params.fget("Horizontal Slice");
 		//verticalSlice = params.fget("Vertical Slice");
@@ -297,6 +306,7 @@ public class IsingField2D {
 		double potAccum = 0;
 		double entAccum = 0;
 		double del_phiSquared = 0;
+		//theory = "Exact";//use exact for halfStep rules- halfStep does not allow phi to change more than 1/2 way to singularity
 		
 		convolveWithRange(phi, phi_bar, R);
 		
@@ -334,7 +344,19 @@ public class IsingField2D {
 			mu = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			freeEnergy +=  -mu*phi[i];
-			phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+			delPhi[i] -= Lambda[i]*mu*dt;
+			double testPhi = phi[i]+ delPhi[i];
+			if(theory == "Exact"){
+				if(abs(testPhi) >= 1){
+					if(testPhi>=1)
+						testPhi=phi[i]+(1-phi[i])/2.0;
+					else if(testPhi<=-1)
+						testPhi=phi[i]+(-1-phi[i])/2.0;
+				}
+			}	
+			//phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+			//phi[i] += delPhi[i];
+			phi[i]=testPhi;
 			del_phiSquared += phi[i]*phi[i];
 		}
 		lastMu = mu;
@@ -360,9 +382,9 @@ public class IsingField2D {
 		accEitherFreeEnergy.accum(T, freeEnergy);
 	}
 	
-	public void useNoiselessDynamics() {
-		noiselessDynamics = true;
-	}	
+//	public void useNoiselessDynamics() {
+//		noiselessDynamics = true;
+//	}	
 	
 	public double phiVariance() {
 		double var = 0;
@@ -372,7 +394,8 @@ public class IsingField2D {
 	}
 	
 	double noise() {
-		return noiselessDynamics ? 0 : random.nextGaussian();
+		//return noiselessDynamics ? 0 : random.nextGaussian();
+		return noiseParameter*random.nextGaussian();
 	}
 	
 	public double mean(double[] a) {
@@ -456,7 +479,6 @@ public class IsingField2D {
 	public Accumulator getEitherFreeEnergyAcc() {
 		return accEitherFreeEnergy;
 	}
-
 	
 	public void initializeConjGrad(){
     	// Initializations:
@@ -472,8 +494,6 @@ public class IsingField2D {
     	}		
 	}
 	
-	
-		
 	public double isingFreeEnergyCalc(double [] config){
 		convolveWithRange(config, phi_bar, R);
 		freeEnergy = 0;
@@ -489,6 +509,7 @@ public class IsingField2D {
 			return Double.POSITIVE_INFINITY;
 		return freeEnergy;
 	}
+
 	public double [] steepestAscentCalc(double [] config){
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);

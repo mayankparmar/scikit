@@ -29,11 +29,9 @@ public class IsingField2Dopt {
 	boolean noiselessDynamics = false;
 	boolean circleInteraction = false;
 	boolean magConservation = false;
-	String theory;
+	//String theory;
 	
 	Random random = new Random();
-	
-
 	
 	public IsingField2Dopt(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
@@ -55,7 +53,7 @@ public class IsingField2Dopt {
 		}
 		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation") magConservation = false;
-		theory = params.sget("Approx");
+		//theory = params.sget("Approx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		double RoverDx = R/dx;
@@ -69,7 +67,6 @@ public class IsingField2Dopt {
 		delPhi = new double[Lp*Lp];
 		Lambda = new double [Lp*Lp];
 		phiVector = new double[Lp*Lp];
-//		A = new double [Lp*Lp];	
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		randomizeField(DENSITY);
@@ -77,8 +74,8 @@ public class IsingField2Dopt {
 	
 	public void randomizeField(double m) {
 		for (int i = 0; i < Lp*Lp; i++)
-			//phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
-			phi[i] = random.nextGaussian()/(dx);
+			phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+			//phi[i] = random.nextGaussian()/(dx);
 	}
 	
 	public void readParams(Parameters params) {
@@ -115,7 +112,7 @@ public class IsingField2Dopt {
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
 			magConservation = false;
 		
-		theory = params.sget("Approx");
+		//theory = params.sget("Approx");
 	}
 	
 	
@@ -163,28 +160,17 @@ public class IsingField2Dopt {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
-			if(theory == "Exact"){
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
-				Lambda[i] = 1;//(1 - phi[i]*phi[i]);
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			}else{
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
-			}
-	
+			//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+			dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
+			Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+			entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 			phiVector[i] = delPhi[i];
 			meanLambda += Lambda[i];
-			
 			double potential = -(phi[i]*phi_bar[i])/2.0;
 			potAccum += potential;
 			entAccum -= T*entropy;
-
 			freeEnergy += potential - T*entropy - H*phi[i];
-
 		}		
 		meanLambda /= Lp*Lp;
 		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;

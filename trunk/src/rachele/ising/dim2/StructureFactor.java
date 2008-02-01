@@ -475,18 +475,18 @@ public class StructureFactor {
 		lastCpeak /= count;
 		sFactor[0] = 0;
 		
-//		//shift sfactor so that origin is in center
-//		double [] temp = new double [Lp*Lp];
-//		for (int i = 0; i<Lp*Lp; i++){
-//			int x = i%Lp;
-//			int y = i/Lp;
-//			x += Lp/2; y += Lp/2;
-//			x = x%Lp; y = y%Lp;
-//			int j = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-//			temp[j] = sFactor[i];
-//		}
-//		for(int i = 0; i<Lp*Lp; i++)
-//			sFactor[i] = temp[i];
+		//shift sfactor so that origin is in center
+		double [] temp = new double [Lp*Lp];
+		for (int i = 0; i<Lp*Lp; i++){
+			int x = i%Lp;
+			int y = i/Lp;
+			x += Lp/2; y += Lp/2;
+			x = x%Lp; y = y%Lp;
+			int j = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
+			temp[j] = sFactor[i];
+		}
+		for(int i = 0; i<Lp*Lp; i++)
+			sFactor[i] = temp[i];
 		
 	}
 
