@@ -17,8 +17,8 @@ import bsh.util.JConsole;
 public class Terminal {
 	private Interpreter interpreter;
 	private JConsole console;
+	@SuppressWarnings("unused")
 	private Object banner = new Object() {
-		@SuppressWarnings("unused")
 		public void printBanner() {
 			console.print(
 					"SciKit",
@@ -26,24 +26,26 @@ public class Terminal {
 					new Color(20,100,20));
 			console.print(" scikit.googlecode.com\n",
 					new Color(20,20,100));
-			console.print(greeting());
+			console.print("Type 'help();' for usage.\n\n",
+					new Font("Monaco", Font.ITALIC, 8));
+		}
+		
+		public void help() {
+			println(help);
 		}
 	};
+	public String help = "Based on the BeanShell scripting language.\n  www.beanshell.org";
 	
-	protected String greeting() {
-		return "";
-	}
-	
-	protected void importObject(Object o) {
-		interpreter.getNameSpace().importObject(o);
-	}
 	
 	public Terminal() {
 		console = new JConsole();
-		console.setPreferredSize(new Dimension(400, 400));
+		console.setPreferredSize(new Dimension(640, 480));
 		interpreter = new Interpreter(console);
 		interpreter.setShowResults(true);
 		NameSpace namespace = interpreter.getNameSpace();
+		namespace.importStatic(Math.class);
+		namespace.importStatic(kip.util.MathPlus.class);
+		namespace.importStatic(scikit.util.DoubleArray.class);
 		namespace.importStatic(Commands.class);
 		namespace.importObject(banner);
 		new Thread(interpreter).start();
@@ -54,11 +56,23 @@ public class Terminal {
 		}
 	}
 	
-	public JConsole console() {
+	public void print(Object obj) {
+		console.print(obj, new Color(20,20,100));
+	}
+	
+	public void println(Object obj) {
+		print(obj + "\n");
+	}
+	
+	public void importObject(Object o) {
+		interpreter.getNameSpace().importObject(o);
+	}
+	
+	public JConsole getConsole() {
 		return console;
 	}
 	
-	public Interpreter interpreter() {
+	public Interpreter getInterpreter() {
 		return interpreter;
 	}
 	
@@ -70,7 +84,7 @@ public class Terminal {
 			}
 		});
 	}
-
+	
 	public static void main(String[] args) {
 		new Terminal().runApplication();
 	}
