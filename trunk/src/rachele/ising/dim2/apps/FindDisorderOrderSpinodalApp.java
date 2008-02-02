@@ -3,7 +3,7 @@ package rachele.ising.dim2.apps;
 import static java.lang.Math.exp;
 import static java.lang.Math.floor;
 import static java.lang.Math.pow;
-import static kip.util.MathPlus.j1;
+import static scikit.numerics.Math2.j1;
 import rachele.ising.dim2.IsingField2D;
 import rachele.ising.dim2.IsingLangevin;
 import rachele.ising.dim2.StructureFactor;

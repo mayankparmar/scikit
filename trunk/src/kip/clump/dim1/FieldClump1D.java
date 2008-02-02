@@ -5,7 +5,7 @@ import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.util.FFT1D;

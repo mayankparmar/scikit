@@ -1,7 +1,7 @@
 package kip.clump.dim2;
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.hypot;
+import static scikit.numerics.Math2.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
 import scikit.jobs.params.Parameters;

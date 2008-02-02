@@ -1,7 +1,7 @@
 package scikit.graphics.dim3;
 
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 
 import java.awt.Color;
 

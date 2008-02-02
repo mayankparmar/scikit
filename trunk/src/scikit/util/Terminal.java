@@ -44,7 +44,7 @@ public class Terminal {
 		interpreter.setShowResults(true);
 		NameSpace namespace = interpreter.getNameSpace();
 		namespace.importStatic(Math.class);
-		namespace.importStatic(kip.util.MathPlus.class);
+		namespace.importStatic(scikit.numerics.Math2.class);
 		namespace.importStatic(scikit.util.DoubleArray.class);
 		namespace.importStatic(Commands.class);
 		namespace.importObject(banner);

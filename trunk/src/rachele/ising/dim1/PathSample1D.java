@@ -5,7 +5,7 @@ import java.io.*;
 //import java.util.*;
 
 import kip.util.Random;
-import static kip.util.MathPlus.*;
+import static scikit.numerics.Math2.*;
 import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;

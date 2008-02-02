@@ -4,8 +4,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 
-import kip.util.MathPlus;
 
+import scikit.numerics.Math2;
 import scikit.numerics.fn.Function3D;
 
 public class Array3d implements Cloneable {
@@ -84,7 +84,7 @@ public class Array3d implements Cloneable {
 				x = Math.min(x, _lx-x);
 				y = Math.min(y, _ly-y);
 				z = Math.min(z, _lz-z);
-				double r = MathPlus.hypot(x,y,z);
+				double r = Math2.hypot(x,y,z);
 				return (Math.abs(k-r) < width/2.) ? 1 : 0;
 			}
 		});

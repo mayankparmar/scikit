@@ -5,7 +5,7 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.periodicOffset;
 
 import java.awt.Color;

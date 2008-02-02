@@ -10,7 +10,7 @@ import static java.lang.Math.log;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.atanh;
+import static scikit.numerics.Math2.atanh;
 import static scikit.util.DoubleArray.*;
 
 //import java.util.*;

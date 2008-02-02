@@ -1,8 +1,8 @@
 package kip.clump.dim2;
 
-import static kip.util.MathPlus.j0;
-import static kip.util.MathPlus.j1;
-import static kip.util.MathPlus.jn;
+import static scikit.numerics.Math2.j0;
+import static scikit.numerics.Math2.j1;
+import static scikit.numerics.Math2.jn;
 import kip.util.Random;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
