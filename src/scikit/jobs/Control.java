@@ -254,9 +254,9 @@ public class Control {
 	
 	private void createConsole() {
 		Terminal term = new Terminal();
-		Utilities.frame(term.console(), "Console");
+		Utilities.frame(term.getConsole(), "Console");
 		try {
-			term.interpreter().set("sim", _job.sim());
+			term.getInterpreter().set("sim", _job.sim());
 		} catch (EvalError exc) {
 			System.err.println("Beanshell evaluation error.");
 		}

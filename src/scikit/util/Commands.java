@@ -8,7 +8,9 @@ import java.io.IOException;
 
 import javax.swing.JDialog;
 
+import scikit.dataset.DataSet;
 import scikit.dataset.PointSet;
+import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
 import scikit.numerics.fft.util.FFT3D;
@@ -17,21 +19,30 @@ import bsh.util.ClassBrowser;
 
 public class Commands {
 	
-	// utility method for quickly viewing data.
 	public static void plot(double[] data) {
-		Plot plot = new Plot("Quick Plot");
-		plot.registerPoints("", new PointSet(0, 1, DoubleArray.clone(data)), Color.BLUE);
-		Utilities.frame(plot);
+		plot(new PointSet(0, 1, DoubleArray.clone(data)));
 	}
 	
-	public static void grid3d(int w, int h, int d, double[] data) {
+	public static void plot(DataSet data) {
+		Plot plot = new Plot("Quick Plot");
+		plot.registerPoints("", data, Color.BLUE);
+		Utilities.frame(plot);	
+	}
+	
+	public static void grid(int w, int h, double[] data) {
+		Grid grid = new Grid("Quick Grid");
+		grid.registerData(w, h, data);
+		Utilities.frame(grid);
+	}
+	
+	public static void grid(int w, int h, int d, double[] data) {
 		Grid3D grid = new Grid3D("Quick Grid");
 		grid.registerData(w, h, d, data);
 		Utilities.frame(grid);
 	}
 	
-	public static void grid3d(Array3d a) {
-		grid3d(a.nx(), a.ny(), a.nz(), a.array());
+	public static void grid(Array3d a) {
+		grid(a.nx(), a.ny(), a.nz(), a.array());
 	}
 	
 	public static void classBrowser() { 
