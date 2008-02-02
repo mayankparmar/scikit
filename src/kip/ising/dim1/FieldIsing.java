@@ -4,7 +4,7 @@ import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDoubleFFT;
 import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
+import static scikit.numerics.Math2.*;
 
 
 public class FieldIsing extends AbstractIsing {

@@ -1,7 +1,6 @@
 package kip.md.apps.shaker;
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
 import java.awt.Color;
 import java.io.File;
 
@@ -12,6 +11,7 @@ import scikit.jobs.Simulation;
 import scikit.jobs.params.ChoiceValue;
 import scikit.jobs.params.DirectoryValue;
 import scikit.util.FileUtil;
+import static scikit.numerics.Math2.*;
 import static scikit.util.Utilities.*;
 
 import kip.md.LJParticle2D;

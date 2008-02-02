@@ -3,7 +3,7 @@ package rachele.ising.dim2;
 /* This is a slight modification of kip.clump.dim2.FieldClump2D.java  */
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
+import static scikit.numerics.Math2.*;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -316,12 +316,12 @@ public class IsingField2D {
 			double dF_dPhi = 0, entropy = 0;
 			if(theory == "Exact"){
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i]) - H;
+				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
 				Lambda[i] = 1;//(1 - phi[i]*phi[i]);
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}else{
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
+				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
 				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
 			}
@@ -514,7 +514,7 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* kip.util.MathPlus.atanh(config[i])- H);
+			steepestAscentDir[i] = (-phi_bar[i] +T* scikit.numerics.Math2.atanh(config[i])- H);
 			steepestAscentDir[i] *= (pow(1 - phi[i]*phi[i], slowPower));
 		}
 		return steepestAscentDir;		
@@ -545,7 +545,7 @@ public class IsingField2D {
 			double boundaryTerm =  exp(-sqr(1-config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1-config[i])))/(1-config[i]);
 			//boundaryTerm -=        exp(-sqr(1+config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1+config[i])))/(1+config[i]);
 			//System.out.println("Boundary term = " + boundaryTerm);
-			steepestAscentDir[i] = (-phi_bar[i] +T*100* kip.util.MathPlus.atanh(config[i])- H + boundaryTerm);
+			steepestAscentDir[i] = (-phi_bar[i] +T*100* scikit.numerics.Math2.atanh(config[i])- H + boundaryTerm);
 			//steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H + boundaryTerm);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		

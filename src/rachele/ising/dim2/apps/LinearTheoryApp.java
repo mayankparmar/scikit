@@ -13,9 +13,9 @@ import scikit.jobs.params.ChoiceValue;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.floor;
+import static scikit.numerics.Math2.j1;
 import static scikit.util.Utilities.frameTogether;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.j1;
 
 public class LinearTheoryApp extends Simulation{
     Grid grid = new Grid("Phi(x)");

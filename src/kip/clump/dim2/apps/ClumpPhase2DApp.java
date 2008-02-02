@@ -3,7 +3,7 @@ package kip.clump.dim2.apps;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 

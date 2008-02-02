@@ -1,7 +1,7 @@
 package kip.util;
 
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
+import static scikit.numerics.Math2.*;
 
 
 /**

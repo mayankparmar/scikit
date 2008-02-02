@@ -8,7 +8,7 @@ import kip.util.Vec3;
 
 import com.sun.opengl.impl.GLUquadricImpl;
 import static java.lang.Math.*;
-import static kip.util.MathPlus.*;
+import static scikit.numerics.Math2.*;
 
 public class Car {
 	final GLU glu = new GLU();

@@ -30,7 +30,7 @@
 *************************************************************************/
 
 
-package kip.util;
+package scikit.numerics;
 
 
 
@@ -53,7 +53,7 @@ import java.lang.ArithmeticException;
  */
 
 
-public final class MathPlus extends Object {
+public final class Math2 extends Object {
 
     /*
     ** machine constants
@@ -84,7 +84,7 @@ public final class MathPlus extends Object {
     /**
      * Don't let anyone instantiate this class.
      */
-    private MathPlus() {}
+    private Math2() {}
 
     /*
     ** Function Methods

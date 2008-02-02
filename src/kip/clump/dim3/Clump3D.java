@@ -5,7 +5,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.exp;
 import static java.lang.Math.floor;
 import static java.lang.Math.min;
-import static kip.util.MathPlus.hypot;
+import static scikit.numerics.Math2.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
 import scikit.jobs.params.Parameters;

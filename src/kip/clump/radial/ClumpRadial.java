@@ -6,7 +6,7 @@ import static java.lang.Math.log;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 import scikit.jobs.params.Parameters;
 import scikit.util.DoubleArray;
 

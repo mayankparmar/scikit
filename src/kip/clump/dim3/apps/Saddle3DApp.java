@@ -1,6 +1,6 @@
 package kip.clump.dim3.apps;
 
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
 

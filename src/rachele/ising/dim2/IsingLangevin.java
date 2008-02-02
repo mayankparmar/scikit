@@ -4,8 +4,8 @@ import static java.lang.Math.PI;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.j1;
-import static kip.util.MathPlus.sqr;
+import static scikit.numerics.Math2.j1;
+import static scikit.numerics.Math2.sqr;
 import kip.util.Random;
 import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.ComplexDouble2DFFT;
@@ -129,7 +129,7 @@ public class IsingLangevin {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0;
 			//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-			dF_dPhi = -phi_bar[i]+T* kip.util.MathPlus.atanh(phi[i])- H;
+			dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
 			Lambda[i] = 1; //shouldn't need lambda for linear theory
 			delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 			meanLambda += Lambda[i];

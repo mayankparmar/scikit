@@ -3,7 +3,7 @@ package rachele.ising.dim2.apps;
 import static java.lang.Math.PI;
 import static java.lang.Math.floor;
 import static java.lang.Math.sqrt;
-import static kip.util.MathPlus.j1;
+import static scikit.numerics.Math2.j1;
 import static scikit.util.Utilities.frame;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
