@@ -2,7 +2,6 @@ package scikit.jobs;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -26,14 +25,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import scikit.jobs.params.GuiValue;
-import scikit.util.Commands;
+import scikit.util.Terminal;
 import scikit.util.FileUtil;
 import scikit.util.Utilities;
-import bsh.Capabilities;
 import bsh.EvalError;
-import bsh.Interpreter;
-import bsh.Capabilities.Unavailable;
-import bsh.util.JConsole;
 
 
 public class Control {
@@ -258,20 +253,12 @@ public class Control {
 	}
 	
 	private void createConsole() {
-		JConsole console = new JConsole();
-		console.setPreferredSize(new Dimension(400, 400));
-		Interpreter interpreter = new Interpreter(console);
-		interpreter.setShowResults(true);
-		interpreter.getNameSpace().importStatic(Commands.class);
-		new Thread(interpreter).start();
+		Terminal term = new Terminal();
+		Utilities.frame(term.console(), "Console");
 		try {
-			Capabilities.setAccessibility(true);
-			interpreter.set("sim", _job.sim());
-		} catch (Unavailable exc) {
-			System.err.print("Beanshell reflection not available.");
+			term.interpreter().set("sim", _job.sim());
 		} catch (EvalError exc) {
 			System.err.println("Beanshell evaluation error.");
 		}
-		Utilities.frame(console, "Console");
 	}
 }
