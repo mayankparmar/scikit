@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -84,7 +85,9 @@ public class Control {
 	 */
 	public void frame(Window... ws) {
 		for (Window w : ws) {
-			_frames.add(Utilities.frame(w.getComponent(), w.getTitle()));
+			JFrame f = Utilities.frame(w.getComponent(), w.getTitle());
+			f.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+			_frames.add(f);
 			_windows.add(w);
 		}
 	}
@@ -94,7 +97,9 @@ public class Control {
 	 * @param f
 	 */
 	public void frameTogether(String title, Window... ws) {
-		_frames.add(Utilities.frameTogether(title, ws));
+		JFrame f = Utilities.frameTogether(title, ws);
+		f.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		_frames.add(f);
 		for (Window w : ws) {
 			_windows.add(w);
 		}
