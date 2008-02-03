@@ -10,13 +10,20 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
@@ -66,9 +73,24 @@ public class Utilities {
 		_framePosition += 24;		
 	}
 	
+	public static void addFrameShortcuts(final JFrame frame) {
+	      JRootPane rootPane = frame.getRootPane();
+	      int menuShortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+	      KeyStroke w = KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKey);
+	      ActionListener listener = new ActionListener() {
+	    	  public void actionPerformed(ActionEvent e) {
+	    		  if("ACTION_CLOSE".equals(e.getActionCommand())) {
+	    			  frame.setVisible(false);
+	    		  }
+	    	  }
+	      };
+	      rootPane.registerKeyboardAction(listener, "ACTION_CLOSE", w, JComponent.WHEN_IN_FOCUSED_WINDOW);
+	}
+	
 	public static JFrame frame(Component comp, String title) {
 		JFrame frame = new JFrame(title);
 		staggerFrame(frame);
+		addFrameShortcuts(frame);
 		frame.getContentPane().add(comp);
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.pack();
