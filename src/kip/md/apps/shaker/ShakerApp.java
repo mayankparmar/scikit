@@ -150,8 +150,6 @@ class Commands {
 		
 		Accumulator x2 = new Accumulator(1);
 		Accumulator x4 = new Accumulator(1);
-		x2.setAveraging(true);
-		x4.setAveraging(true);
 		
 		while (data.hasRemaining()) {
 			Particle p = data.nextParticle();

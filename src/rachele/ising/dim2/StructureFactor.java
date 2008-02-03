@@ -90,22 +90,6 @@ public class StructureFactor {
 		ringFT = new Accumulator(.01);
 		ringData = new Accumulator(1);
 		
-		accAvH.setAveraging(true);		
-		accAvV.setAveraging(true);
-		accAvC.setAveraging(true);
-		accCircle.setAveraging(true);
-		accHorizontal.setAveraging(true);
-		accVertical.setAveraging(true);
-		accPeakH.setAveraging(true);
-		accPeakV.setAveraging(true);
-		accPeakC.setAveraging(true);
-		acc2PeakC.setAveraging(true);
-		accPeakHslope.setAveraging(true);
-		accPeakVslope.setAveraging(true);
-		accPeakCslope.setAveraging(true);
-		ringFT.setAveraging(true);
-		ringData.setAveraging(true);
-		
 		fft = new ComplexDouble2DFFT(Lp, Lp);
 		fft1d = new FFT1D(noBins);
 		fftData = new double[2*Lp*Lp];

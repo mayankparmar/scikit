@@ -92,9 +92,7 @@ public class LinearTheoryApp extends Simulation{
 	public void run() {
 		ising = new IsingField2D(params);
 		sfTheoryAcc = new Accumulator(ising.dt);
-		sfTheoryAcc.setAveraging(true);
 		sfTheory2Acc = new Accumulator(ising.dt);
-		sfTheory2Acc.setAveraging(true);
 		double binWidth = params.fget("kR bin-width");
 		binWidth = IsingLangevin.KR_SP / floor(IsingLangevin.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
@@ -104,9 +102,7 @@ public class LinearTheoryApp extends Simulation{
 		int kR2int = getkRint(11.6198);
 		fillTheoryAccum(density, kR1int, kR2int);
 		varianceAcc = new Accumulator(params.fget("dt"));
-		varianceAcc.setAveraging(true);
 		meanPhiAcc = new Accumulator(params.fget("dt"));
-		meanPhiAcc.setAveraging(true);
 		//double kR = sf.getCircleKR();
 
 		int reps = 0;

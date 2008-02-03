@@ -92,13 +92,9 @@ public class IsingField2D {
 
 		
 		accStripeFreeEnergy = new Accumulator(0.0001);
-		accStripeFreeEnergy.setAveraging(true);
 		accClumpFreeEnergy = new Accumulator(0.0001);
-		accClumpFreeEnergy.setAveraging(true);
 		accEitherFreeEnergy = new Accumulator(0.0001);
-		accEitherFreeEnergy.setAveraging(true);
 		accFreeEnergy = new Accumulator(dt);
-		accFreeEnergy.setAveraging(true);
 		
 		//horizontalSlice = params.fget("Horizontal Slice");
 		//verticalSlice = params.fget("Vertical Slice");

@@ -11,8 +11,8 @@ import java.awt.Color;
 
 import kip.clump.dim2.FieldClump2D;
 import scikit.dataset.Accumulator;
-import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim2.Grid;
+import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
@@ -71,13 +71,8 @@ public class ClumpPhase2DApp extends Simulation {
 
 	public void run() {		
 		fe_relax = new Accumulator(1);
-		fe_relax.setAveraging(true);
-		
 		fe_hex = new Accumulator(0.0001);
-		fe_hex.setAveraging(true);
-		
 		mag_hex = new Accumulator(0.0001);
-		mag_hex.setAveraging(true);
 		
 		clump = new FieldClump2D(params);
 		clump.initializeFieldWithHexSeed();

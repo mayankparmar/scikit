@@ -1,40 +1,41 @@
 package scikit.dataset;
 
-
 import java.util.*;
+
 import static java.lang.Math.*;
 
 
 public class Accumulator extends DataSet {
-	// two accumulators are used internally. the "orig" accumulator
-	// may use a possibly smaller binwidth that the regular accumulator.
-	// by storing the "orig" accumulator, no information is lost when
-	// the binwidth is increased.
-	private double _origBinWidth, _binWidth;
-    // each bin holds an array of two numbers.  the first is
-    // total accumulated value for this bin.  the second is a
-    // count of the accumulation operations performed, in case
-    // averaging is desired.
-	private AbstractMap<Double, double[]> _origHash, _hash;
-    private double _fullSum = 0;
-	private boolean _avg = false;
-	private boolean _norm = false;
+	private double _binWidth;
+    // maps keys to an array of two numbers. the first is
+    // total accumulated value for this bin. the second is a
+    // count of the accumulation operations performed.
+	private AbstractMap<Double, double[]> _hash;
     
 	public Accumulator(double binWidth) {
-		_origHash = new TreeMap<Double, double[]>();
 		_hash = new TreeMap<Double, double[]>();
-		_origBinWidth = _binWidth = binWidth;
+		_binWidth = binWidth;
+	}
+	
+	public Accumulator(double binWidth, Accumulator that) {
+		this(binWidth);
+		for (Double k : that.keys()) {
+			double[] v1 = _hash.get(k);
+			double[] v2 = that._hash.get(k);
+			double[] v = (v1 == null) ?
+						new double[]{v2[0], v2[1]} :
+						new double[]{v1[0]+v2[0], v1[1]+v2[1]};
+			_hash.put(k, v);
+		}
 	}
 	
 	public void clear() {
-		_origHash = new TreeMap<Double, double[]>();
 		_hash = new TreeMap<Double, double[]>();
 	}
 	
 	public double[] copyData() {
 		int i = 0;
 		double[] ret = new double[2*_hash.size()];
-        
         for (Double k : _hash.keySet()) {
 			ret[i] = k;
             ret[i+1] = eval(k);
@@ -47,61 +48,25 @@ public class Accumulator extends DataSet {
 		return _hash.keySet();
 	}
 	
-	public void setBinWidth(double binWidth) {
-		if (binWidth != _binWidth) {
-			_binWidth = max(binWidth, _origBinWidth);
-			_hash = new TreeMap<Double, double[]>();
-			for (Double k : _origHash.keySet()) {
-				accumAux(_hash, _binWidth, k, _origHash.get(k)[0], _origHash.get(k)[1]);
-			}
-		}
-	}
-	
-	public double getBinWidth() {
-		return _binWidth;
-	}
-	
-	public void setAveraging(boolean avg) {
-		_avg = avg;
-	}
-    
-    public void setNormalizing(boolean norm) {
-        _norm = norm;
-    }
-	
 	public double eval(double x) {
-		double[] val = _hash.get(key(x, _binWidth));
+		double[] val = _hash.get(key(x));
+		return (val == null) ? Double.NaN : val[0]/val[1];
+	}
+	
+	public void accum(double x, double y) {
+		double[] val = _hash.get(key(x));
 		if (val == null)
-			return Double.NaN;
-        if (_norm)
-            return val[0] / (_binWidth * _fullSum);
-        else if (_avg)
-            return val[0] / val[1];
-        else
-        	return val[0];
-	}
-
-	public void accum(double x) {
-		accum(x, 1.0);
+			val = new double[] {y, 1};
+		else {
+			val[0] += y;
+			val[1] += 1;
+		}
+		_hash.put(key(x), val);
 	}
 	
-	public void accum(double x, double v) {
-		accumAux(_origHash, _origBinWidth, x, v, 1);
-		accumAux(_hash, _binWidth, x, v, 1);
-        _fullSum += v;
-	}
-	
-	private static double key(double x, double bw) {
+	private double key(double x) {
+		double bw = _binWidth;
 		double k = bw * rint(x/bw); // each binning cell is labeled by its center coordinate, key().
 		return k == -0 ? +0 : k;    // +-0 have different representations.  choose +0. 
-	}
-	
-	private static void accumAux(AbstractMap<Double,double[]> h, double bw, double x, double v, double cnt) {
-		double[] val = h.get(key(x, bw));
-		if (val == null)
-			val = new double[] {0, 0};
-		val[0] += v;
-		val[1] += cnt;
-		h.put(key(x, bw), val);
 	}
 }

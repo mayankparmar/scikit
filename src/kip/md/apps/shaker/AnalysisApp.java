@@ -6,7 +6,6 @@ import java.awt.Color;
 
 import kip.md.Particle;
 import kip.md.ParticleContext;
-
 import scikit.dataset.Accumulator;
 import scikit.dataset.DataSet;
 import scikit.dataset.DynamicArray;
@@ -56,9 +55,7 @@ public class AnalysisApp extends Simulation {
 		int id = params.iget("Particle ID");
 		
 		dx2 = new Accumulator(0.1);
-		dx2.setAveraging(true);
 		dx4 = new Accumulator(0.1);
-		dx4.setAveraging(true);
 		
 		for (int i = 0; i < 150; i++) {
 			double tf = snapshots.endTime() - 0.1*i;

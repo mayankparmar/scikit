@@ -70,12 +70,8 @@ public class ClumpPhase3DApp extends Simulation {
 
 	public void run() {		
 		rel = new Accumulator(1);
-		rel.setAveraging(true);
-		
 		fe_bcc = new Accumulator(0.0001);
-		fe_bcc.setAveraging(true);
 		fe_fcc = new Accumulator(0.0001);
-		fe_fcc.setAveraging(true);
 		
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed("BCC");

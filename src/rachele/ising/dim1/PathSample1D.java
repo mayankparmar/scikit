@@ -70,7 +70,6 @@ public class PathSample1D {
 		else
 			sampleNoise = false;
 		action = new Accumulator(10.0*du);
-		action.setAveraging(true);
 
 		fftScratch = new double[2*Lp];
 		fft = new ComplexDoubleFFT_Mixed(Lp);

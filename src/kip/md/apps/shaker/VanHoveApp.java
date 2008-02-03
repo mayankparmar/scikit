@@ -7,7 +7,7 @@ import java.awt.Color;
 
 import kip.md.Particle;
 import kip.md.ParticleContext;
-import scikit.dataset.Accumulator;
+import scikit.dataset.Histogram;
 import scikit.dataset.Function;
 import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
@@ -19,7 +19,7 @@ public class VanHoveApp extends Simulation {
 	Plot dist = new Plot("2*pi*r*G(r) versus r");
 	SimulationTrajectory snapshots;
 	ParticleContext pc;
-	Accumulator acc;
+	Histogram acc;
 	
 	public static void main(String[] args) {
 		new Control(new VanHoveApp(), "Van Hove Analysis");
@@ -55,7 +55,7 @@ public class VanHoveApp extends Simulation {
 		double tstar = params.fget("t*");
 		
 
-		acc = new Accumulator(0.05);
+		acc = new Histogram(0.05);
 		acc.setNormalizing(true);
 
 		for (int i = 0; i < 150; i++) {

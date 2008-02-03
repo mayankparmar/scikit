@@ -34,9 +34,7 @@ abstract public class LineMin {
 		this.lineminPoint = lineminPoint;
 		this.lineminDirection = lineminDirection;
 		landscape = new Accumulator (tolerance);
-		landscape.setAveraging(true);
 		bracketLandscape = new Accumulator (tolerance);
-		bracketLandscape.setAveraging(true);
 		
     	double [] initBracket = new double [3]; 
      	// Make up two initial configurations and find an initial bracket

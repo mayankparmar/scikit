@@ -23,7 +23,6 @@ public class ConjugateGradientMinApp extends Simulation{
 	public ConjugateGradientMinApp() {
 		frame(function);
 		params.addm("Minimization", new ChoiceValue("Conjugate Gradient", "SteepestDecent"));
-		acc.setAveraging(true);
 	}
 	
 	public static void main(String[] args) {
