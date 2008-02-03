@@ -1,16 +1,22 @@
 package kip.fun;
 
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.exp;
+import static java.lang.Math.random;
+import static java.lang.Math.sqrt;
 import static scikit.util.Utilities.frameTogether;
 
 import java.awt.Color;
 
-import scikit.graphics.dim2.Plot;
+import scikit.dataset.Histogram;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
-import scikit.jobs.*;
+import scikit.graphics.dim2.Plot;
+import scikit.jobs.Control;
+import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 import scikit.jobs.params.DoubleValue;
 import scikit.jobs.params.IntValue;
 
@@ -65,7 +71,7 @@ public class PistonApp extends Simulation {
 		enthalpy.registerLines("Work", workAcc, Color.BLUE);
 		enthalpy.registerLines("Energy", energyAcc, Color.RED);
 		
-		Accumulator velocities = new Accumulator(params.fget("Bin width"));
+		Histogram velocities = new Histogram(params.fget("Bin width"));
 		velocities.setNormalizing(true);
 		for (double vi : v)
 			velocities.accum(vi);
@@ -97,10 +103,6 @@ public class PistonApp extends Simulation {
 		kineticAcc = new Accumulator(bw);
 		workAcc = new Accumulator(bw);
 		energyAcc = new Accumulator(bw);
-		idealGasAcc.setAveraging(true);
-		kineticAcc.setAveraging(true);
-		workAcc.setAveraging(true);
-		energyAcc.setAveraging(true);
 		
 		t = 0;
 		v = new double[N];

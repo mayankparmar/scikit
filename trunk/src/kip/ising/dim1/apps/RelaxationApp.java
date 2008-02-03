@@ -1,17 +1,26 @@
 package kip.ising.dim1.apps;
 
-import static java.lang.Math.*;
-import static scikit.util.Utilities.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.cosh;
+import static java.lang.Math.exp;
+import static java.lang.Math.sinh;
+import static java.lang.Math.tanh;
+import static scikit.util.Utilities.format;
+import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
-import scikit.dataset.*;
-import scikit.graphics.dim2.Plot;
-import scikit.jobs.*;
-import scikit.jobs.params.ChoiceValue;
 import kip.ising.dim1.AbstractIsing;
 import kip.ising.dim1.FieldIsing;
 import kip.ising.dim1.Ising;
+import scikit.dataset.Accumulator;
+import scikit.dataset.Derivative;
+import scikit.dataset.Function;
+import scikit.graphics.dim2.Plot;
+import scikit.jobs.Control;
+import scikit.jobs.Job;
+import scikit.jobs.Simulation;
+import scikit.jobs.params.ChoiceValue;
 
 
 public class RelaxationApp extends Simulation {
@@ -75,7 +84,6 @@ public class RelaxationApp extends Simulation {
 		sim = type.equals("Ising") ? new Ising(params) : new FieldIsing(params);
 		
 		magnetization = new Accumulator(sim.dt);
-		magnetization.setAveraging(true);
 		
 		params.set("cnt", 0);
 		for (int cnt = 0; cnt < 2000; cnt++) {

@@ -10,6 +10,7 @@ import kip.ising.dim1.Dynamics1D;
 import kip.ising.dim1.PhiFourth;
 import scikit.graphics.dim2.Geom2D;
 import scikit.graphics.dim2.Plot;
+import scikit.dataset.Histogram;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
 import scikit.dataset.PointSet;
@@ -20,7 +21,8 @@ public class NucleationApp extends Simulation {
 	Plot fieldPlot = new Plot("Fields");
 	Plot profilePlot = new Plot("Average Droplet Profile");
 	Plot nucTimes = new Plot("Nucleation Times"); // bw 0.1
-    Accumulator nucTimesAcc, droplet;
+    Histogram nucTimesAcc;
+    Accumulator droplet;
     Function saddleProfile;
     
 	boolean phifour = true;
@@ -57,8 +59,8 @@ public class NucleationApp extends Simulation {
 	public void animate() {
 		sim.setParameters(params);
 		
-		nucTimesAcc.setBinWidth(params.fget("Bin width"));
-		nucTimes.registerBars("Nucleation times", nucTimesAcc, Color.RED);
+		double bw = params.fget("Bin width");
+		nucTimes.registerBars("Nucleation times", new Histogram(bw, nucTimesAcc), Color.RED);
         
 		double N_R = (double)sim.N/sim.R;
 		fieldPlot.registerLines("Field", new PointSet(0, (double)sim.dx/sim.R, sim.copyField()), Color.BLACK);
@@ -128,10 +130,9 @@ public class NucleationApp extends Simulation {
 		sim.initialize(params);
 		saddleProfile = sim.clone().saddleProfile();
 		
-		nucTimesAcc = new Accumulator(params.fget("Bin width"));
+		nucTimesAcc = new Histogram(params.fget("Bin width"));
         nucTimesAcc.setNormalizing(true);
         droplet = new Accumulator((double)sim.dx/sim.R);
-        droplet.setAveraging(true);
         
 		while (params.iget("Profile count") < params.iget("Max count")) {
             sim.initialize(params);

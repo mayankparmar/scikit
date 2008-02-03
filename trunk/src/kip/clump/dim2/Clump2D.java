@@ -1,6 +1,10 @@
 package kip.clump.dim2;
 
-import static java.lang.Math.*;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.exp;
+import static java.lang.Math.floor;
+import static java.lang.Math.min;
 import static scikit.numerics.Math2.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
@@ -98,9 +102,7 @@ public class Clump2D extends AbstractClump2D {
 	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		Accumulator ret = new Accumulator(binWidth);
-		ret.setAveraging(true);
-		return ret;
+		return new Accumulator(binWidth);
 	}
 	
 	public void accumulateStructure(final Accumulator sf) {

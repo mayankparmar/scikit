@@ -14,6 +14,7 @@ import kip.ising.dim1.Ising;
 import static java.lang.Math.*;
 
 
+// TODO redundant
 class Structure {
 	int Lp;
 	double L;
@@ -78,9 +79,9 @@ class Structure {
 	}
 	
 	
+	// TODO use function
 	public Accumulator coarseGrainedTheory(AbstractIsing sim, double binWidth) {
 		Accumulator ret = new Accumulator(binWidth);
-		ret.setAveraging(true);
 		for (int i = 0; i < Lp/2; i++) {
 			double kR = 2*PI*i*R/L;
 			if (kR >= kRmin && kR <= kRmax)
@@ -146,7 +147,6 @@ public class OrderingApp extends Simulation {
 		binWidth = params.fget("kR bin width");
 		for (int i = 0; i < numSteps; i++) {
 			structData[i] = new Accumulator(binWidth);
-			structData[i].setAveraging(true);
 		}
 		
 		while (true) {

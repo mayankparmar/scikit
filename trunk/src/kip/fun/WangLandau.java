@@ -141,7 +141,6 @@ public class WangLandau extends Simulation {
 		DynamicArray densityData = new DynamicArray();
 		DynamicArray histogramData = new DynamicArray();
 		Accumulator heatData = new Accumulator(0.02);
-		heatData.setAveraging(true);
 
 		for (int e = 0; e <= 4*N; e++) {
 			if (g[e] > 0) {

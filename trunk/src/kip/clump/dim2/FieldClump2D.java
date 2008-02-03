@@ -137,7 +137,6 @@ public class FieldClump2D extends AbstractClump2D {
 	
 	public void circularAverage() {
 		Accumulator acc = new Accumulator(1);
-		acc.setAveraging(true);
 		for (int i = 0; i < Lp*Lp; i++) {
 			double x = i%Lp - Lp/2.;
 			double y = i/Lp - Lp/2.;
@@ -206,9 +205,7 @@ public class FieldClump2D extends AbstractClump2D {
 	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		Accumulator ret = new Accumulator(binWidth);
-		ret.setAveraging(true);
-		return ret;
+		return new Accumulator(binWidth);
 	}
 	
 	public void accumulateStructure(final Accumulator sf) {

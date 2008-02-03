@@ -107,9 +107,7 @@ public class FieldClump1D extends AbstractClump1D {
 	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		Accumulator ret = new Accumulator(binWidth);
-		ret.setAveraging(true);
-		return ret;
+		return new Accumulator(binWidth);
 	}
 	
 	

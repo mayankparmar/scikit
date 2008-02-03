@@ -28,7 +28,6 @@ public class StructureFactor1D {
 		kRmin = (2*PI*2/L)*R; // explicitly exclude constant (k=0) mode
 		kRmax = (2*PI*(Lp/2)/L)*R;
 		acc = new Accumulator(kRbinWidth);
-		acc.setAveraging(true);
 		//fft = new RealDoubleFFT_Radix2(Lp);
 		fft = new ComplexDoubleFFT_Mixed(Lp);
 		fftData = new double[2*Lp];

@@ -1,8 +1,8 @@
 package kip.clump.dim3.apps;
 
 import static java.lang.Math.cos;
-import static java.lang.Math.sqrt;
 import static java.lang.Math.exp;
+import static java.lang.Math.sqrt;
 import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.frame;
 

@@ -114,9 +114,7 @@ public class Clump3D extends AbstractClump3D {
 	public Accumulator newStructureAccumulator(double binWidth) {
 		// round binwidth down so that it divides KR_SP without remainder.
 		binWidth = KR_SP / floor(KR_SP/binWidth);
-		Accumulator ret = new Accumulator(binWidth);
-		ret.setAveraging(true);
-		return ret;
+		return new Accumulator(binWidth);
 	}
 	
 	public void accumulateStructure(final Accumulator sf) {
