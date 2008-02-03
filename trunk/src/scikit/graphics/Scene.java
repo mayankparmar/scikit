@@ -17,11 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import scikit.util.Bounds;
-import scikit.util.Frameable;
+import scikit.util.Window;
 import scikit.util.Utilities;
 
 
-abstract public class Scene<T> implements Frameable {
+abstract public class Scene<T> implements Window {
 	protected Component _component; // contains scene and possible other GUI objects
 	protected Component _canvas;    // the canvas on which scene is drawn
 	protected Bounds _curBounds = new Bounds();

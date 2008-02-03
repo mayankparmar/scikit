@@ -76,22 +76,22 @@ public class Utilities {
 		return frame;
 	}
 	
-	public static void frame(Frameable... fs) {
-		for (Frameable f : fs)
-			frame(f.getComponent(), f.getTitle());
+	public static void frame(Window... ws) {
+		for (Window w : ws)
+			frame(w.getComponent(), w.getTitle());
 	}
 	
-	public static JFrame frameTogether(String title, Frameable... fs) {
-		int n = fs.length;
+	public static JFrame frameTogether(String title, Window... ws) {
+		int n = ws.length;
 		int cols = (int)ceil(sqrt(n));
 		int rows = (int)ceil((double)n/cols);
 		int hgap = 2, vgap = 2;
 		JPanel panel = new JPanel(new GridLayout(rows, cols, hgap, vgap));
 		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-		for (Frameable f : fs) {
+		for (Window w : ws) {
 			JPanel item = new JPanel(new BorderLayout());
-			item.setBorder(BorderFactory.createTitledBorder(f.getTitle()));
-			item.add(f.getComponent());
+			item.setBorder(BorderFactory.createTitledBorder(w.getTitle()));
+			item.add(w.getComponent());
 			panel.add(item);
 		}
 		// adjust panel's preferred size to be closer to OPTIMAL_FRAME_SIZE

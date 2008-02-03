@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -20,13 +22,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import scikit.jobs.params.GuiValue;
-import scikit.util.Terminal;
 import scikit.util.FileUtil;
+import scikit.util.Window;
+import scikit.util.Terminal;
 import scikit.util.Utilities;
 import bsh.EvalError;
 
@@ -37,15 +41,16 @@ public class Control {
 	private JButton _startStopButton;
 	private JButton _stepButton;	
 	private JButton _resetButton;
-	
+	private List<JFrame> _frames = new ArrayList<JFrame>();
+	private List<Window> _windows = new ArrayList<Window>();
 	
 	public Control(Simulation sim) {
-		_panel = new JPanel();
 		_job = new Job(sim);
+		sim.load(this);
 		
 		JComponent paramPane = createParameterPane();
 		JPanel buttonPanel = createButtonPanel();
-		
+		_panel = new JPanel();
 		_panel.setLayout(new BorderLayout());
 		_panel.add(paramPane, BorderLayout.CENTER);
 		_panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -70,6 +75,29 @@ public class Control {
 	 */
 	public Job getJob() {
 		return _job;
+	}
+	
+	
+	/**
+	 * Creates frames for one or more windows. Manages each window.
+	 * @param ws The windows
+	 */
+	public void frame(Window... ws) {
+		for (Window w : ws) {
+			_frames.add(Utilities.frame(w.getComponent(), w.getTitle()));
+			_windows.add(w);
+		}
+	}
+	
+	/**
+	 * Creates a single frame for multiple windows. Manages each window.
+	 * @param f
+	 */
+	public void frameTogether(String title, Window... ws) {
+		_frames.add(Utilities.frameTogether(title, ws));
+		for (Window w : ws) {
+			_windows.add(w);
+		}
 	}
 	
 	private ActionListener _actionListener = new ActionListener() {
@@ -206,7 +234,12 @@ public class Control {
 	
 	private JMenuBar createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
-		
+		menuBar.add(createFileMenu());
+		menuBar.add(createWindowMenu());
+		return menuBar;
+	}
+	
+	private JMenu createFileMenu() {
 		JMenuItem openParamsItem = new JMenuItem("Open Params");
 		openParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -222,8 +255,10 @@ public class Control {
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.add(openParamsItem);
 		fileMenu.add(saveParamsItem);
-		menuBar.add(fileMenu);
-		
+		return fileMenu;
+	}
+	
+	private JMenu createWindowMenu() {
 		JMenuItem consoleItem = new JMenuItem("New Console");
 		consoleItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -232,9 +267,17 @@ public class Control {
 		});
 		JMenu windowMenu = new JMenu("Window");
 		windowMenu.add(consoleItem);
-		menuBar.add(windowMenu);
-		
-		return menuBar;
+		windowMenu.add(new JSeparator());
+		for (final JFrame f : _frames) {
+			JMenuItem item = new JMenuItem(f.getTitle());
+			item.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					f.setVisible(true);
+				}
+			});
+			windowMenu.add(item);
+		}
+		return windowMenu;
 	}
 	
 	private void saveParams() {
