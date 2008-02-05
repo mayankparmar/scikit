@@ -1,6 +1,8 @@
 package kip.md.apps.shaker;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.exp;
+import static java.lang.Math.sqrt;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.nio.channels.FileChannel;
 
 import scikit.dataset.Accumulator;
 import scikit.dataset.DynamicArray;
+import scikit.dataset.Function;
 import scikit.dataset.Histogram;
 import scikit.util.FileUtil;
 import scikit.util.Terminal;
@@ -131,10 +134,10 @@ class Alpha {
 	public Accumulator alpha;
 }
 
-
 class Commands {
 	Terminal term;
 	int minFrames = 500;
+	int frameJump = 100;
 	
 	public Commands(Terminal term) {
 		this.term = term;
@@ -167,12 +170,6 @@ class Commands {
 		return len;
 	}
 	
-	private void accumulate(Particle p, Accumulator x2, Accumulator x4, int i, int j) {
-		double d2 = p.dist2(i, j);
-		x2.accum(j-i, d2);
-		x4.accum(j-i, d2*d2);
-	}
-	
 	public Alpha analyze(Data data) {
 		int nsteps = 500;
 		int[] steps = new int[nsteps];
@@ -188,11 +185,13 @@ class Commands {
 			Particle p = data.nextParticle();
 			if (p.t.size() < minFrames) continue;
 			
-			for (int i = 0; i < p.size(); i += 100) {
+			for (int i = 0; i < p.size(); i += frameJump) {
 				for (int s = 0; s < nsteps; s++) {
 					int j = i+steps[s];
 					if (j >= p.size()) break;
-					accumulate(p, x2, x4, i, j);
+					double d2 = p.dist2(i, j);
+					x2.accum(j-i, d2);
+					x4.accum(j-i, d2*d2);
 				}
 			}
 		}
@@ -211,6 +210,33 @@ class Commands {
 		ret.alpha = alpha;
 		return ret;
 	}
+	
+	public Histogram vanHove(Data data, int tstar) {
+		Histogram ret = new Histogram(0.05);
+		ret.setNormalizing(true);
+		data.reset();
+		while (data.hasRemaining()) {
+			Particle p = data.nextParticle();
+			if (p.t.size() < minFrames) continue;
+			
+			for (int i = 0; i < p.size(); i += frameJump) {
+				int j = i + tstar;
+				if (j >= p.size()) break;
+				double r = sqrt(p.dist2(i, j));
+				ret.accum(r, 2*PI*r);
+			}
+		}
+		return ret;
+	}
+	
+	public Function vanHoveTheory(int tstar, double diffusion) {
+		final double sig2 = diffusion*tstar;
+		return new Function() {
+			public double eval(double r) {
+				return (2*PI*r)*(1/(sig2*2*PI))*exp(-(r*r)/(2*sig2));
+			}
+		};
+	}
 }
 
 public class ShakerApp extends Terminal {
@@ -222,9 +248,15 @@ public class ShakerApp extends Terminal {
 			"\tplot(trajectoryDistribution(data));\n"+
 			"\t// neglect particles tracked for less than, e.g., 500 frames\n"+
 			"\tdata.minFrames = 500; // default 500\n"+
+			"\t// smaller frameJump means more averages and slower to process\n"+
+			"\tdata.frameJump = 100; // default 100\n"+
 			"\ta = analyze(data);\n"+
 			"\tplot(a.x2);\n"+
 			"\tplot(a.alpha);\n"+
+			"\t// do van-hove calculation with t* = 1000\n"+
+			"\tplot(vanHove(data, 1000), \"Experiment\");\n"+
+			"\t// compare to gaussian with t* = 1000, diffusion coef = 0.003\n"+
+			"\treplot(vanHoveTheory(1000, 0.003), \"Theory\");\n"+
 			"(Right click in the plot windows to enable log scale and save data)";
 		term.importObject(new Commands(term));
 		term.runApplication();
