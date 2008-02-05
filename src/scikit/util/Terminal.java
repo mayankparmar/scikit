@@ -3,12 +3,14 @@ package scikit.util;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.IOException;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import bsh.Capabilities;
+import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.NameSpace;
 import bsh.Capabilities.Unavailable;
@@ -33,7 +35,19 @@ public class Terminal {
 		public void help() {
 			println(help);
 		}
+		
+		public void source() {
+			String fname;
+			try {
+				fname = FileUtil.loadDialog(console, "Load Beanshell Source");
+				if (fname != null)
+					interpreter.source(fname);
+			}
+			catch (IOException e) { e.printStackTrace(); }
+			catch (EvalError e) { e.printStackTrace(); }
+		}
 	};
+	
 	public String help = "Based on the BeanShell scripting language.\n  www.beanshell.org";
 	
 	
