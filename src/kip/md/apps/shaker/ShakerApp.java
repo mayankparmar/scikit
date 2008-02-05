@@ -1,5 +1,7 @@
 package kip.md.apps.shaker;
 
+import static java.lang.Math.exp;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -10,6 +12,7 @@ import java.nio.channels.FileChannel;
 
 import scikit.dataset.Accumulator;
 import scikit.dataset.DynamicArray;
+import scikit.dataset.Histogram;
 import scikit.util.FileUtil;
 import scikit.util.Terminal;
 
@@ -117,6 +120,7 @@ class Data {
         		break;
         	}
     	}
+    	cnt++;
 		return ret;
 	}
 }
@@ -130,14 +134,21 @@ class Alpha {
 
 class Commands {
 	Terminal term;
+	int minFrames = 500;
 	
 	public Commands(Terminal term) {
 		this.term = term;
 	}
 	
-	public Data loadFile() {
+	public Data loadData(String fname) {
+		term.println("Opening " + fname);
+		return new Data(fname);
+	}
+	
+	public Data loadData() {
 		try {
 			String fname = FileUtil.loadDialog(term.getConsole(), "Open Shaker Data");
+			term.println("Opening " + fname);
 			return new Data(fname);
 		} catch(IOException e) {
 			term.println(e);
@@ -145,26 +156,59 @@ class Commands {
 		} 
 	}
 	
-	public Alpha analyze(Data data) {
+	public Histogram trajectoryDistribution(Data data) {
 		data.reset();
-		
-		Accumulator x2 = new Accumulator(1);
-		Accumulator x4 = new Accumulator(1);
-		
+		Histogram len = new Histogram(100);
 		while (data.hasRemaining()) {
 			Particle p = data.nextParticle();
-			for (int i = 0; i < p.size(); i++) {
-				for (int j = i+1; j < p.size(); j++) {
-					double d2 = p.dist2(i, j);
-					x2.accum(j-i, d2);
-					x4.accum(j-1, d2*d2);
+			len.accum(p.t.size());
+		}
+		term.println(data.cnt + " trajectories");
+		return len;
+	}
+	
+	private void accumulate(Particle p, Accumulator x2, Accumulator x4, int i, int j) {
+		double d2 = p.dist2(i, j);
+		x2.accum(j-i, d2);
+		x4.accum(j-i, d2*d2);
+	}
+	
+	public Alpha analyze(Data data) {
+		int nsteps = 500;
+		int[] steps = new int[nsteps];
+		for (int i = 0; i < nsteps; i++) {
+			steps[i] = (int)exp(i*0.1);
+		}
+		
+		data.reset();
+		double bw = 1;
+		Accumulator x2 = new Accumulator(bw);
+		Accumulator x4 = new Accumulator(bw);
+		while (data.hasRemaining()) {
+			Particle p = data.nextParticle();
+			if (p.t.size() < minFrames) continue;
+			
+			for (int i = 0; i < p.size(); i += 100) {
+				for (int s = 0; s < nsteps; s++) {
+					int j = i+steps[s];
+					if (j >= p.size()) break;
+					accumulate(p, x2, x4, i, j);
 				}
 			}
 		}
 		
+		Accumulator alpha = new Accumulator(bw);		
+		for (double t : x2.keys()) {
+			double d = 2;
+			double d2 = x2.eval(t);
+			double d4 = x4.eval(t);
+			alpha.accum(t, (1/(1.+2./d)) * (d4/(d2*d2)) - 1.0);
+		}
+
 		Alpha ret = new Alpha();
 		ret.x2 = x2;
 		ret.x4 = x4;
+		ret.alpha = alpha;
 		return ret;
 	}
 }
@@ -173,12 +217,15 @@ public class ShakerApp extends Terminal {
 	public static void main(String[] args) {
 		ShakerApp term = new ShakerApp();
 		term.help = "Suggested command sequence:\n"+
-			"\tdata = loadFile();\n"+
-			"\tdata.maxCnt = 100; // # of particles to analyze\n"+
+			"\tdata = loadData();\n"+
+			"\t// plot distribution of particle tracking duration\n"+
+			"\tplot(trajectoryDistribution(data));\n"+
+			"\t// neglect particles tracked for less than, e.g., 500 frames\n"+
+			"\tdata.minFrames = 500; // default 500\n"+
 			"\ta = analyze(data);\n"+
-			"\tplot(a.x2)\n"+
-			"\tplot(a.alpha)\n"+
-			"(Right click in the plot windows to save data)";
+			"\tplot(a.x2);\n"+
+			"\tplot(a.alpha);\n"+
+			"(Right click in the plot windows to enable log scale and save data)";
 		term.importObject(new Commands(term));
 		term.runApplication();
 	}
