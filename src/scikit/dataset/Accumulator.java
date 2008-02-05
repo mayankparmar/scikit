@@ -17,16 +17,17 @@ public class Accumulator extends DataSet {
 		_binWidth = binWidth;
 	}
 	
-	public Accumulator(double binWidth, Accumulator that) {
-		this(binWidth);
-		for (Double k : that.keys()) {
-			double[] v1 = _hash.get(k);
-			double[] v2 = that._hash.get(k);
+	public Accumulator rebin(double binWidth) {
+		Accumulator ret = new Accumulator(binWidth);
+		for (Double k : keys()) {
+			double[] v1 = ret._hash.get(k);
+			double[] v2 = _hash.get(k);
 			double[] v = (v1 == null) ?
 						new double[]{v2[0], v2[1]} :
 						new double[]{v1[0]+v2[0], v1[1]+v2[1]};
-			_hash.put(k, v);
+			ret._hash.put(ret.key(k), v);
 		}
+		return ret;
 	}
 	
 	public void clear() {

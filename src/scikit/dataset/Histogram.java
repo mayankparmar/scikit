@@ -17,17 +17,18 @@ public class Histogram extends DataSet {
 		_hash = new TreeMap<Double, Double>();
 		_binWidth = binWidth;
 	}
-
-	public Histogram(double binWidth, Histogram that) {
-		this(binWidth);
-		_fullSum = that._fullSum;
-		_norm = that._norm;
-		for (Double k : that.keys()) {
-			Double y = _hash.get(k);
+	
+	public Histogram rebin(double binWidth) {
+		Histogram ret = new Histogram(binWidth);
+		ret._fullSum = _fullSum;
+		ret._norm = _norm;
+		for (Double k : keys()) {
+			Double y = ret._hash.get(k);
 			if (y == null)
 				y = 0.0;
-			_hash.put(k, that._hash.get(k)+y);
+			ret._hash.put(ret.key(k), _hash.get(k)+y);
 		}
+		return ret;
 	}
 	
 	public void clear() {
@@ -55,8 +56,9 @@ public class Histogram extends DataSet {
 	
 	public double eval(double x) {
 		Double y = _hash.get(key(x));
-		if (y == null)
+		if (y == null) {
 			return Double.NaN;
+		}
 		else if (_norm)
             return y / (_binWidth * _fullSum);
         else

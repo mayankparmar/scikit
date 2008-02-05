@@ -60,10 +60,11 @@ public class NucleationApp extends Simulation {
 		sim.setParameters(params);
 		
 		double bw = params.fget("Bin width");
-		nucTimes.registerBars("Nucleation times", new Histogram(bw, nucTimesAcc), Color.RED);
+		nucTimes.registerBars("Nucleation times", nucTimesAcc.rebin(bw), Color.RED);
         
+		double dx_R = (double)sim.dx/sim.R;
 		double N_R = (double)sim.N/sim.R;
-		fieldPlot.registerLines("Field", new PointSet(0, (double)sim.dx/sim.R, sim.copyField()), Color.BLACK);
+		fieldPlot.registerLines("Field", new PointSet(0, dx_R, sim.copyField()), Color.BLACK);
 		fieldPlot.setDrawables(asList(Geom2D.line(0., 0., N_R, 0., Color.BLUE)));
         
 		profilePlot.registerLines("Data", droplet, Color.RED);
