@@ -110,7 +110,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
 		public void mouseClicked(MouseEvent event) {
-			if (boundsIsValid() && event.getClickCount() > 1) {
+			if (event.getClickCount() > 1) {
 				_selectionActive = false;
 				zoomToFitData();
 			}
