@@ -78,7 +78,28 @@ public class IsingField2Dopt {
 		t = 0;
 
 		allocate();
-		randomizeField(DENSITY);
+		initializeFieldWithHexSeed();
+		//randomizeField(DENSITY);
+	}
+	
+	public void initializeFieldWithHexSeed() {
+ 		for (int i = 0; i < Lp*Lp; i++) {
+			double R = Rx;
+			double x = dx*(i%Lp - Lp/2);
+			double y = dx*(i/Lp - Lp/2);
+			double field = 0;
+			double k = KR_SP/R;
+			field = 0;
+			field += cos(k * (1*x + 0*y));
+			field += cos(k * (0.5*x + 0.5*sqrt(3)*y));
+			field += cos(k * (-0.5*x + 0.5*sqrt(3)*y));
+
+			double r = sqrt(x*x+y*y);
+			double mag = 0.5 / (1+sqr(r/R));
+			phi[i] = DENSITY*(1+mag*field);
+			System.out.println(phi[i]);
+		}
+ 	//	shiftField();
 	}
 	
 	public void randomizeField(double m) {
