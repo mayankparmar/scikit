@@ -1,6 +1,7 @@
 package kip.ising.dim1.apps;
 
 import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 import java.awt.Color;
 
@@ -20,15 +21,17 @@ public class LGSaddleApp extends Simulation{
 	public static void main (String[] args) {
 		new Control(new LGSaddleApp(), "Landau Ginzburg Saddle");
 	}
-
+	
+	// phi0 -0.32055757614
+	// eps 0.1
 	public void load(Control c) {
 		c.frame(profile, free);
 		profile.setAutoScale(true);
 		free.setAutoScale(true);
-		params.addm("phi0", new DoubleValue(-0.1, -20, 0).withSlider());
+		params.addm("phi0", new DoubleValue(-0.03196, -1, 0).withSlider());
 		params.addm("eps", 0.01);
-		params.addm("dim", 8);
-		params.addm("dt", 0.001);
+		params.addm("dim", 3);
+		params.addm("dt", 0.01);
 		params.add("len", 10000);
 	}
 	
@@ -48,11 +51,12 @@ public class LGSaddleApp extends Simulation{
 			double a = -((dim-1)/t)*v + x*x - eps*x;
 			v += a*dt; 
 			x += v*dt;
-			xs[i] = x;
+			x = Math.min(x, 10);
+			xs[i] = x/eps;
 			fe[i] = dt*(freeEnergy(x, v, eps)-freeEnergy(eps,0, eps))*pow(t, dim-1);
 		}
 		
-		profile.registerLines("profile", new PointSet(0, dt, xs), Color.BLACK);
+		profile.registerLines("profile", new PointSet(0, dt*sqrt(eps), xs), Color.BLACK);
 		free.registerLines("free", new PointSet(0, dt, fe), Color.RED);
 	}
 
