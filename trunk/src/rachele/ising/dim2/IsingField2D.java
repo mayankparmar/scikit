@@ -356,8 +356,8 @@ public class IsingField2D {
 			del_phiSquared += phi[i]*phi[i];
 		}
 		lastMu = mu;
-		//freeEnergy /= (Lp*Lp) ;
-		//accFreeEnergy.accum(t, freeEnergy);
+		freeEnergy /= (Lp*Lp) ;
+		accFreeEnergy.accum(t, freeEnergy);
 		t += dt;
 	}
 	
