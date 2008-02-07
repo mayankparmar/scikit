@@ -60,7 +60,7 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid, sfGrid);
+		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
 		//frame(grid);
 		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
@@ -139,7 +139,8 @@ public class IsingField2DApp extends Simulation {
 		sfHor.setAutoScale(true);
 		ring.setAutoScale(true);
 		
-
+		params.set("Free Energy", ising.freeEnergy);
+		
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		String dyn = params.sget("Dynamics?");
