@@ -3,7 +3,9 @@ package rachele.ising.dim2.apps;
 
 import static java.lang.Math.floor;
 import static scikit.util.Utilities.*;
+//import rachele.ising.dim2.IsingField2D;
 import rachele.ising.dim2.IsingField2Dopt;
+import rachele.ising.dim2.StructureFactor;
 import rachele.util.FileUtil;
 //import rachele.ising.dim2.StructureFactor;
 //import rachele.util.FileUtil;
@@ -11,21 +13,21 @@ import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.dataset.Accumulator;
+//import scikit.dataset.Accumulator;
 import scikit.jobs.params.ChoiceValue;
 import scikit.jobs.params.DoubleValue;
 import scikit.graphics.dim2.Plot;
-import java.awt.Color;
+//import java.awt.Color;
 
 public class IsingField2DoptApp extends Simulation{
     Grid grid = new Grid("Phi(x)");
     Grid delPhiGrid = new Grid("delPhi(x)");
     Grid sfGrid = new Grid("S(k)");
     Plot fePlot = new Plot("Free Energy");
-	//StructureFactor sf;
+	StructureFactor sf;
     IsingField2Dopt ising;
 	boolean initFile = false;
-	Accumulator freeEnergy;
+	//Accumulator freeEnergy;
     
     public static void main(String[] args) {
 		new Control(new IsingField2DoptApp(), "Ising Field");
@@ -62,8 +64,8 @@ public class IsingField2DoptApp extends Simulation{
 		if (params.sget("Zoom").equals("Yes"))grid.setAutoScale();
 		else grid.setScale(-1, 1);
 		fePlot.setAutoScale(true);
-		freeEnergy.accum(ising.t, ising.freeEnergy);
-		fePlot.registerLines("FE", freeEnergy, Color.RED);
+		//freeEnergy.accum(ising.t, ising.freeEnergy);
+		//fePlot.registerLines("FE", freeEnergy, Color.RED);
 		//sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		delPhiGrid.registerData(ising.Lp, ising.Lp, ising.phiVector);
@@ -72,8 +74,8 @@ public class IsingField2DoptApp extends Simulation{
 		params.set("Free Energy", ising.freeEnergy);
 		params.set("Pot", ising.potAccum);
 		params.set("Ent", ising.entAccum);
-		if(flags.contains("Clear")) freeEnergy.clear();
-		if(flags.contains("Record FE")) recordTvsFE();
+		//if(flags.contains("Clear")) freeEnergy.clear();
+		//if(flags.contains("Record FE")) recordTvsFE();
 		flags.clear();
 	}
 	
@@ -82,19 +84,22 @@ public class IsingField2DoptApp extends Simulation{
 	
 	public void run() {
 		ising = new IsingField2Dopt(params);
-		freeEnergy = new Accumulator(1.0);
 		double binWidth = 0.1;//params.fget("kR bin-width");
 		binWidth = IsingField2Dopt.KR_SP / floor(IsingField2Dopt.KR_SP/binWidth);
-        //sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
-		//sf.setBounds(0.1, 14);
-		
+        sf = new StructureFactor(ising.Lp, ising.L, ising.Rx, binWidth, ising.dt);
+		sf.setBounds(0.1, 14);
+		//int maxi=sf.clumpsOrStripes(ising.phi);
+		//freeEnergy = new Accumulator(1.0);		
         while (true) {
         	ising.readParams(params);
 			params.set("Time", ising.time());
 			ising.simulate();
 			ising.adjustRanges();
-			//writeDataToFile();
-			//sf.accumulateAll(ising.time(), ising.coarseGrained());
+//			if (ising.time()%10 == 0){
+//				boolean circleOn=false;
+//				sf.accumulateMelt(circleOn, ising.phi, maxi);
+//				writeDataToFile();
+//			}
 			Job.animate();
 		}
  	}
@@ -103,5 +108,56 @@ public class IsingField2DoptApp extends Simulation{
 		String file = "../../../research/javaData/feData/fe";
 		FileUtil.printlnToFile(file, ising.T, ising.freeEnergy);
 		System.out.println("Wrote to file: T = " + ising.T + " FE = " + ising.freeEnergy);
+	}
+	
+	public void writeDataToFile(){
+		boolean SvH = false;
+		if (params.sget("Interaction")=="Square"){
+				String dataFileV = "../../../research/javaData/sfData/dataFileV";
+				String dataFileH = "../../../research/javaData/sfData/dataFileH";
+				if (initFile == false){
+					initFile(dataFileV, SvH);
+					initFile(dataFileH, SvH);
+					initFile = true;
+				}
+				if (SvH){
+					FileUtil.printlnToFile(dataFileH, ising.H, sf.peakValueH(), ising.freeEnergy, ising.time());
+					FileUtil.printlnToFile(dataFileV, ising.H, sf.peakValueV(), ising.freeEnergy, ising.time());					
+				}else{
+					FileUtil.printlnToFile(dataFileH, ising.T, sf.peakValueH(), ising.freeEnergy, ising.time());
+					FileUtil.printlnToFile(dataFileV, ising.T, sf.peakValueV(), ising.freeEnergy, ising.time());
+				}			
+				System.out.println("Data written to file for time = " + ising.time());
+		}else if(params.sget("Interaction")== "Circle"){
+			String dataStripe = "../../../research/javaData/sfData/dataStripe";
+			String dataClump = "../../../research/javaData/sfData/dataClump";
+			if (initFile == false){
+				initFile(dataStripe, SvH);
+				initFile(dataClump, SvH);
+				initFile = true;
+			}
+			if(SvH){
+				FileUtil.printlnToFile(dataClump, ising.H, sf.peakValueC(), ising.freeEnergy, ising.time());
+				FileUtil.printlnToFile(dataStripe, ising.H, sf.peakValueS(), ising.freeEnergy, ising.time());					
+			}else{
+				FileUtil.printlnToFile(dataClump, ising.T, sf.peakValueC(), ising.freeEnergy, ising.time());
+				FileUtil.printlnToFile(dataStripe, ising.T, sf.peakValueS(), ising.freeEnergy, ising.time());
+			}
+			System.out.println("Data written to file for time = " + ising.time());
+		}
+	}
+	
+	public void initFile(String file, boolean SvH){
+		FileUtil.deleteFile(file);
+		if(SvH){
+			FileUtil.printlnToFile(file, " # SF vs H data ");			
+			FileUtil.printlnToFile(file, " # Temperature = ", ising.T);
+			FileUtil.printlnToFile(file, " # Data = H, S(k*), Free Energy, time");
+		}else{
+			FileUtil.printlnToFile(file, " # SF vs T data ");				
+			FileUtil.printlnToFile(file, " # External field = ", ising.H);
+			FileUtil.printlnToFile(file, " # Data = H, S(k*), Free Energy, time");
+		}
+		FileUtil.printlnToFile(file, " # Density = ", ising.DENSITY);		
 	}
 }
