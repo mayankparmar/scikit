@@ -357,7 +357,7 @@ public class IsingField2D {
 		}
 		lastMu = mu;
 		freeEnergy /= (Lp*Lp) ;
-		accFreeEnergy.accum(t, freeEnergy);
+		//accFreeEnergy.accum(t, freeEnergy);
 		t += dt;
 	}
 	

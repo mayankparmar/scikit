@@ -125,11 +125,9 @@ public class IsingField2Dopt {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0;
 			if(theory == "Exact"){
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
 				Lambda[i] = 1;
 			}else{
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
 				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
 			}
