@@ -1,5 +1,6 @@
 package scikit.jobs.params;
 
+import static java.lang.Math.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import static scikit.util.Utilities.*;
@@ -14,9 +15,12 @@ public class DoubleValue extends StringValue {
 	}
 	
 	public DoubleValue(double x, double lo, double hi) {
-		super(x);
+		super(min(max(x, lo), hi));
 		_lo = lo;
 		_hi = hi;
+		if (x < lo || x > hi) {
+			System.err.println("Double value "+x+" is not in the range ["+lo+","+hi+"]");
+		}
 	}
 	
 	public DoubleValue withSlider() {
