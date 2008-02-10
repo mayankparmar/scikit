@@ -23,7 +23,8 @@ public class FieldClump3D extends AbstractClump3D {
 	double[] phi, phi_bar, del_phi;
 	FFT3D fft;
 	boolean noiselessDynamics = false;
-
+	
+	public double packingFraction = 0;
 	public double dt;
 	public double Rx, Ry, Rz;
 	public boolean rescaleClipped = false; // indicates saddle point invalid
@@ -166,6 +167,29 @@ public class FieldClump3D extends AbstractClump3D {
 		}
 	}
 	
+	public double entropy(double phi) {
+		if (packingFraction > 0) {
+			double a = 1/packingFraction;
+			return phi*log(phi) + (a-phi)*log(a-phi);
+		}
+		else {
+			return phi*log(phi);
+		}
+	}
+	
+	public double dentropy_dphi(double phi) {
+		if (packingFraction > 0) {
+			double a = 1/packingFraction;
+			return log(phi) - log(a-phi);
+		}
+		else {
+			return log(phi);
+		}
+	}
+	
+	public double freeEnergyBackground() {
+		return 0.5*sqr(DENSITY) + T*entropy(DENSITY);
+	}
 	
 	public void simulate() {
 		fft.convolve(phi, phi_bar, new Function3D() {
@@ -175,7 +199,7 @@ public class FieldClump3D extends AbstractClump3D {
 		});
 		
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			del_phi[i] = - dt*(phi_bar[i]+T*log(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
+			del_phi[i] = - dt*(phi_bar[i]+T*dentropy_dphi(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
@@ -187,12 +211,12 @@ public class FieldClump3D extends AbstractClump3D {
 		freeEnergyDensity = 0;
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			rms_dF_dphi += sqr(del_phi[i] / dt);
-			freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*phi[i]*log(phi[i]);
+			freeEnergyDensity += 0.5*phi[i]*phi_bar[i]+T*entropy(phi[i]);
 			phi[i] += del_phi[i];
 		}
 		rms_dF_dphi = sqrt(rms_dF_dphi/(Lp*Lp*Lp));
 		freeEnergyDensity /= (Lp*Lp*Lp);
-		freeEnergyDensity -= 0.5;
+		freeEnergyDensity -= freeEnergyBackground();
 		t += dt;
 	}
 	
