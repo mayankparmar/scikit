@@ -35,7 +35,7 @@ public class ClumpPhase3DApp extends Simulation {
 		params.add("dt", 0.1);
 		params.add("R", 1300.0);
 		params.add("L", 2000.0);
-		params.add("dx", 100.0);
+		params.add("dx", 200.0);
 		params.add("T", 0.0);
 //		params.add("Random seed", 0);
 		params.add("Time");
@@ -69,31 +69,43 @@ public class ClumpPhase3DApp extends Simulation {
 	}
 
 	public void run() {		
-		rel = new Accumulator(1);
+		rel = new Accumulator(0.1);
 		fe_bcc = new Accumulator(0.0001);
 		fe_fcc = new Accumulator(0.0001);
 		
 		clump = new FieldClump3D(params);
-		clump.initializeFieldWithSeed("BCC");
 		clump.useNoiselessDynamics(true);
 		Job.animate();
 		
-		setTemperature(0.09);
+//		clump.packingFraction = 0.05;
+//		collectBCC(0.08, 0.082, 0.1025);
+//		collectFCC(0.07, 0.082, 0.1025);
+//		
+		clump.packingFraction = 0.0;
+		collectBCC(0.09, 0.1, 0.1135);
+		collectFCC(0.08, 0.1, 0.1135);		
+	}
+	
+	void collectBCC(double Teq, double Tlo, double Thi) {
+		clump.Rx = clump.Ry = clump.Rz = 1300;
+		clump.initializeFieldWithSeed("BCC");
+		setTemperature(Teq);
 		simulate(0.5, 500);
-		setTemperature(0.1);
-		for (int i = 0; i < 14; i++) {
+		for (double T = Tlo; T < Thi; T += 0.001) {
+			setTemperature(T);
 			relax();
-			setTemperature(clump.T + 0.001);
 		}
-		
+	}
+	
+	void collectFCC(double Teq, double Tlo, double Thi) {
 		clump.Rx = clump.Ry = 1400;
 		clump.Rz = 1000;
-		setTemperature(0.08);
+		clump.initializeFieldWithSeed("BCC");
+		setTemperature(Teq);
 		simulate(0.5, 500);
-		setTemperature(0.1);
-		for (int i = 0; i < 14; i++) {
+		for (double T = Tlo; T < Thi; T += 0.001) {
+			setTemperature(T);
 			relax();
-			setTemperature(clump.T + 0.001);
 		}
 	}
 	
@@ -107,19 +119,20 @@ public class ClumpPhase3DApp extends Simulation {
 		double rmin = min(clump.Rx, clump.Ry, clump.Rz);
 		if (rmax / rmin > 1.4)
 			fe_fcc.accum(clump.T, clump.freeEnergyDensity);
-		else if (rmax / rmin < 1.02) {
-			System.out.println(clump.T +  " " + clump.freeEnergyDensity);
+		else if (rmax / rmin < 1.02)
 			fe_bcc.accum(clump.T, clump.freeEnergyDensity);
-		}
 		else
 			System.out.println("Weird configuration, Rmax="+rmax+" Rmin="+rmin);
 	}
 	
 	public void relax() {
 		rel.clear();
-		simulate(0.5, 2000);
-		simulate(0.01, 10);
-		simulate(0.001, 1);
+//		simulate(0.5, 2000);
+//		simulate(0.01, 10);
+//		simulate(0.001, 1);
+		simulate(0.5, 500);
+		simulate(0.01, 1);
+		simulate(0.001, 0.1);
 		accumFE();
 	}
 	
