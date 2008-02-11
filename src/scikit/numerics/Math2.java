@@ -106,7 +106,16 @@ public final class Math2 extends Object {
 	static public double sqr(double x) {
 		return x*x;
 	}
-	
+
+	/**
+	 * @param x a double value
+	 * @return x cubed
+	 * @author kip
+	 */
+	static public double cube(double x) {
+		return x*x*x;
+	}
+
 	/**
 	 * @param x a double value
 	 * @return |x|/x
