@@ -116,7 +116,6 @@ public class FieldClump3D extends AbstractClump3D {
 			double field = 0;
 			double k = KR_SP/R;
 			if (type.equals("BCC")) {
-				field = 0;
 				// BCC (reciprocal lattice is FCC)
 				field += cos(k * ( x + z) / sqrt(2));
 				field += cos(k * (-x + z) / sqrt(2));
@@ -124,10 +123,10 @@ public class FieldClump3D extends AbstractClump3D {
 				field += cos(k * (-y + z) / sqrt(2));
 			}
 			else if (type.equals("Triangle")) {
-				double rad = 0.2*R;
-				double sigma = 0.05*R;
+				double rad = 0.5*R;
+				double sigma = 0.1*R;
 				double x0 = rad, y0 = 0, z0 = 0;
-				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));				
+				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));
 				x0 = rad*cos(2*Math.PI/3);
 				y0 = rad*Math.sin(2*Math.PI/3);
 				field += Math.exp((-sqr(x-x0)-sqr(y-y0)-sqr(z-z0))/(2*sqr(sigma)));

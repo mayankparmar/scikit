@@ -1,5 +1,6 @@
 package kip.clump.dim3.apps;
 
+import static scikit.numerics.Math2.cube;
 import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.format;
 import static scikit.util.Utilities.frame;
@@ -36,15 +37,16 @@ public class Saddle3DApp extends Simulation {
 		frame(grid, slice);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
 		params.addm("Adjust R", new ChoiceValue("No", "Yes"));
-		params.addm("T", new DoubleValue(0.09, 0.0, 0.15).withSlider());
+		params.addm("T", new DoubleValue(0.097, 0.0, 0.15).withSlider());
 		params.addm("dt", 0.5);
+		params.add("Packing", 0.05);
 		params.add("Seed", new ChoiceValue("BCC", "Triangle", "Noise"));
 		params.add("R", 1300.0);
-		params.add("L", 2000.0);
-		params.add("dx", 100.0);
+		params.add("L", 16000.0);
+		params.add("dx", 250.0);
 		params.add("Random seed", 0);
 		params.add("Time");
-		params.add("F density");
+		params.add("F / R^3");
 		params.add("dF/dphi");
 		params.add("Valid profile");
 		params.add("Rx");
@@ -72,7 +74,8 @@ public class Saddle3DApp extends Simulation {
 		
 		clump.useNoiselessDynamics(findSaddle);
 		clump.readParams(params);
-
+		clump.packingFraction = params.fget("Packing");
+		
 		int Lp = clump.numColumns();
 		grid.registerData(Lp, Lp, Lp, clump.coarseGrained());
 		
@@ -80,12 +83,13 @@ public class Saddle3DApp extends Simulation {
 		System.arraycopy(clump.coarseGrained(), (Lp*Lp)*(Lp/2)+Lp*(Lp/2), sliceData, 0, Lp);
 		slice.registerLines("Slice", new PointSet(0, 1, sliceData), Color.BLACK);
 		
+		double F_R3 = clump.freeEnergyDensity*cube(clump.L)/(clump.Rx*clump.Ry*clump.Rz);
 		params.set("dx", clump.dx);
 		params.set("Rx", format(clump.Rx));
 		params.set("Ry", format(clump.Ry));
 		params.set("Rz", format(clump.Rz));
 		params.set("Time", format(clump.time()));
-		params.set("F density", format(clump.freeEnergyDensity));
+		params.set("F / R^3", format(F_R3));
 		params.set("dF/dphi", format(clump.rms_dF_dphi));
 		params.set("Valid profile", !clump.rescaleClipped);
 	}
