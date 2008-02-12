@@ -7,6 +7,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 import static scikit.numerics.Math2.sqr;
+import kip.clump.dim2.AbstractClump2D;
+import kip.clump.dim3.AbstractClump3D;
 import scikit.jobs.params.Parameters;
 import scikit.util.DoubleArray;
 
@@ -119,6 +121,15 @@ public class ClumpRadial {
 		// 2D: vol -> Pi Lp^2 as dx -> 0
 		// 3D: vol -> 4/3 Pi Lp^3
 		return acc/vol - sqr(rmean(src));
+	}
+	
+	public double reducedTemperature() {
+		double T_sp = (dim == 2) ? AbstractClump2D.T_SP : AbstractClump3D.T_SP;
+		return (T-T_sp)/T_sp;
+	}
+	
+	public double KR_SP() {
+		return (dim == 2) ? AbstractClump2D.KR_SP : AbstractClump3D.KR_SP;
 	}
 	
 	public void convolveWithRange(double[] src, double[] dst, double R) {
