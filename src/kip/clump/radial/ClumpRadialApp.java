@@ -26,6 +26,8 @@ public class ClumpRadialApp extends Simulation {
 		new Control(new ClumpRadialApp(), "Radial Clump");
 	}
 	
+	// dim 2: T = 0.133
+	// dim 3: T = 0.0865
 	public ClumpRadialApp() {
 		frame(plot);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
@@ -33,8 +35,8 @@ public class ClumpRadialApp extends Simulation {
 		params.addm("T", 0.0865);
 		params.addm("dt", 0.5);
 		params.add("R", 1.);
-		params.add("L", 40.);
-		params.add("dx", 0.01);
+		params.add("L", 20.);
+		params.add("dx", 0.02);
 		params.add("eps");
 		params.add("time");
 	}

@@ -28,6 +28,8 @@ public class ClumpRadial {
 	double[] phi, phibar, del_phi;
 	double[] freeEnergy, sqr_dF_dphi;
 	double rms_dF_dphi, freeEnergyDensity;
+	double[][] shell;
+	
 	
 	public ClumpRadial(Parameters params) {
 		dim = params.iget("Dimension");
@@ -52,6 +54,8 @@ public class ClumpRadial {
 			phi[i] = 0.1/(1+sqr(i*dx/R)) + DENSITY;
 		}
 		t = 0;
+		
+		buildConvolutionMatrix(R);
 	}
 	
 	public void readParams(Parameters params) {
@@ -132,25 +136,39 @@ public class ClumpRadial {
 		return (dim == 2) ? AbstractClump2D.KR_SP : AbstractClump3D.KR_SP;
 	}
 	
+	
+	void buildConvolutionMatrix(double R) {
+		shell = new double[Lp][];
+		int Rp = (int)(R/dx);
+		for (int ap = 1; ap < Lp; ap++) {
+			int b0 = max(1, ap-Rp);
+			int bf = ap+Rp;
+			shell[ap] = new double[bf-b0];
+			for (int bp = b0; bp < bf; bp++) {
+				double a = ap*dx;
+				double b = bp*dx;
+				double cos_theta = min(max((a*a+b*b-R*R)/(2*a*b), -1), 1);
+				if (dim == 2) {
+					double theta = acos(cos_theta);
+					shell[ap][bp-b0] = dx * 2*theta*b;
+				}
+				else {
+					shell[ap][bp-b0] = dx * (1-cos_theta)*2*PI*b*b;
+				}
+			}
+		}
+	}
+	
 	public void convolveWithRange(double[] src, double[] dst, double R) {
 		int Rp = (int)(R/dx);
 		for (int ap = 1; ap < Lp; ap++) {
 			dst[ap] = 0;
 			double vol = 0;
-			for (int bp = max(1, ap-Rp); bp < ap+Rp; bp++) {
-				double a = ap*dx;
-				double b = bp*dx;
-				double cos_theta = max((a*a+b*b-R*R)/(2*a*b), -1);
-				double shell;
-				if (dim == 2) {
-					double theta = acos(cos_theta);
-					shell = dx * 2*theta*b;
-				}
-				else {
-					shell = dx * (1-cos_theta)*2*PI*b*b;
-				}
-				dst[ap] += shell * (bp >= Lp ? DENSITY : src[bp]);
-				vol += shell;
+			int b0 = max(1, ap-Rp);
+			int bf = ap+Rp;
+			for (int bp = b0; bp < bf; bp++) {
+				dst[ap] += shell[ap][bp-b0] * (bp >= Lp ? DENSITY : src[bp]);
+				vol += shell[ap][bp-b0];
 			}
 			// 2D: vol -> Pi R^2 as dx -> 0
 			// 3D: vol -> 4/3 Pi R^3
@@ -158,6 +176,33 @@ public class ClumpRadial {
 		}
 		dst[0] = dst[1]; // for aesthetics
 	}
+
+//	public void convolveWithRange2(double[] src, double[] dst, double R) {
+//		int Rp = (int)(R/dx);
+//		for (int ap = 1; ap < Lp; ap++) {
+//			dst[ap] = 0;
+//			double vol = 0;
+//			for (int bp = max(1, ap-Rp); bp < ap+Rp; bp++) {
+//				double a = ap*dx;
+//				double b = bp*dx;
+//				double cos_theta = min(max((a*a+b*b-R*R)/(2*a*b), -1), 1);
+//				double shell;
+//				if (dim == 2) {
+//					double theta = acos(cos_theta);
+//					shell = dx * 2*theta*b;
+//				}
+//				else {
+//					shell = dx * (1-cos_theta)*2*PI*b*b;
+//				}
+//				dst[ap] += shell * (bp >= Lp ? DENSITY : src[bp]);
+//				vol += shell;
+//			}
+//			// 2D: vol -> Pi R^2 as dx -> 0
+//			// 3D: vol -> 4/3 Pi R^3
+//			dst[ap] /= vol;
+//		}
+//		dst[0] = dst[1]; // for aesthetics
+//	}
 	
 	
 //	int fLp = 128;
