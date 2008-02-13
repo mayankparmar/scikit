@@ -90,7 +90,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
-		params.add("L/R", 10.0);
+		params.add("L/R", 4.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
 		params.add("Random seed", 0);
