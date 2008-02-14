@@ -37,7 +37,7 @@ public class IsingField2DoptApp extends Simulation{
 		frameTogether("Grids", grid, sfGrid, delPhiGrid, fePlot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
-		params.addm("Theory", new ChoiceValue("Exact", "Slow Near Edge"));
+		params.addm("Theory", new ChoiceValue("Exact", "Slow Near Edge","Dynamic dt"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M"));
 		params.addm("Noise", new DoubleValue(0, 0, 1.0).withSlider());
 		params.addm("T", 0.03);
