@@ -443,4 +443,4 @@ public class IsingField2DApp extends Simulation {
 		}
 	}
 }
- 
+ //		params.add("L/R", 4.0);
