@@ -124,45 +124,66 @@ public class IsingField2Dopt {
 		double meanLambda = 0;
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0;
-			if(theory == "Exact"){
-				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
-				Lambda[i] = 1;
+			dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
+			if(theory == "Slow Near Edge"){			
+				Lambda[i] = sqr(1 - phi[i]*phi[i]);	
 			}else{
-				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+				Lambda[i] = 1;				
 			}
-			delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
-			phiVector[i] = delPhi[i];
-			meanLambda += Lambda[i];
-			double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;	
-			double potential = -J*(phi[i]*phi_bar[i])/2.0;
-			potAccum += potential;
-			entAccum -= T*entropy;
-			freeEnergy += potential - T*entropy - H*phi[i];
-		}		
-		meanLambda /= Lp*Lp;
-		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
-		mu /= dt;
-		if (magConservation == false)
-			mu = 0;
-		for (int i = 0; i < Lp*Lp; i++) {
-			freeEnergy +=  -mu*phi[i];
-			delPhi[i] -= Lambda[i]*mu*dt;
-			double testPhi = phi[i]+ delPhi[i];
-			if(theory == "Exact"){
-				if(abs(testPhi) >= 1){
-					if(testPhi>=1)
-						testPhi=phi[i]+(1-phi[i])/2.0;
-					else if(testPhi<=-1)
-						testPhi=phi[i]+(-1-phi[i])/2.0;
+//			if(theory == "Exact"){
+//				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
+//				Lambda[i] = 1;
+//			}else{
+//				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
+//				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+//			}
+			if(theory == "Dynamic dt"){
+				//test to see if forbidden zone is crossed.
+				double testPhi = - dt*dF_dPhi;
+				if(testPhi >= 1){
+					
+				}else if(testPhi <= 1){
+					
+				}else{
+					phi[i] = - dt*dF_dPhi;
 				}
-			}	
-			//phi[i] += delPhi[i]-Lambda[i]*mu*dt;
-			//phi[i] += delPhi[i];
-			phi[i]=testPhi;
-			del_phiSquared += phi[i]*phi[i];
+					
+			}else{
+				delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
+				phiVector[i] = delPhi[i];
+				meanLambda += Lambda[i];
+				double entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;	
+				double potential = -J*(phi[i]*phi_bar[i])/2.0;
+				potAccum += potential;
+				entAccum -= T*entropy;
+				freeEnergy += potential - T*entropy - H*phi[i];
+			}
+		}		
+		if(theory != "Dynamic dt"){
+			meanLambda /= Lp*Lp;
+			double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
+			mu /= dt;
+			if (magConservation == false)
+				mu = 0;
+			for (int i = 0; i < Lp*Lp; i++) {
+				freeEnergy +=  -mu*phi[i];
+				delPhi[i] -= Lambda[i]*mu*dt;
+				double testPhi = phi[i]+ delPhi[i];
+				if(theory == "Exact"){
+					if(abs(testPhi) >= 1){
+						if(testPhi>=1)
+							testPhi=phi[i]+(1-phi[i])/2.0;
+						else if(testPhi<=-1)
+							testPhi=phi[i]+(-1-phi[i])/2.0;
+					}	
+				}	
+				//phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+				//phi[i] += delPhi[i];
+				phi[i]=testPhi;
+				del_phiSquared += phi[i]*phi[i];
+			}
+			t += dt;
 		}
-		t += dt;
 	}
 	
 	public void adjustRanges(){

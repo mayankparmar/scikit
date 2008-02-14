@@ -59,8 +59,8 @@ public class IsingField2DApp extends Simulation {
 		new Control(new IsingField2DApp(), "Ising Field");
 	}
 	
-	public IsingField2DApp() {
-		frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
+	public void load(Control c) {
+		c.frameTogether("Grids", grid, delPhiGrid, sfGrid, freeEnergyPlot);
 		//frame(grid);
 		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
@@ -68,7 +68,7 @@ public class IsingField2DApp extends Simulation {
 		//frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
 		//frameTogether("SF", structurePeakV, 
 			//	 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
-		frameTogether("SF", structurePeakV, structurePeakH);
+		c.frameTogether("SF", structurePeakV, structurePeakH);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		//params.addm("Noise", new ChoiceValue("Off","On"));
