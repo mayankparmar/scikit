@@ -124,10 +124,10 @@ public class PtsGrid {
 		// rounding.
 		double r_lo = R/dx-sqrt(2)-1e-8;
 		double r_hi = R/dx+sqrt(2)+1e-8;
-		neigh1 = new LatticeNeighbors(gridCols, gridCols, 0, r_lo);
-		neigh2 = new LatticeNeighbors(gridCols, gridCols, r_lo, r_hi);
+		neigh1 = new LatticeNeighbors(gridCols, gridCols, 0, r_lo, LatticeNeighbors.Type.PERIODIC);
+		neigh2 = new LatticeNeighbors(gridCols, gridCols, r_lo, r_hi, LatticeNeighbors.Type.PERIODIC);
 		nlist1 = new int[gridCols*gridCols][];
-		nlist2 = new int[gridCols*gridCols][];		
+		nlist2 = new int[gridCols*gridCols][];
 	}
 	
 	// rounding errors here are ok, as long as they occur in just this

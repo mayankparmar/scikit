@@ -13,13 +13,14 @@ public class LatticeNeighbors {
 	 * PERIODIC -- Indices on the edges have fewer neighbors.
 	 * BORDERED -- Indices on the edges wrap around.
 	 */
-	public static final int BORDERED = 0, PERIODIC = 1;
+	public static enum Type {BORDERED, PERIODIC};
 
-	public LatticeNeighbors(int Nx, int Ny, double r_lo, double r_hi) {
+	public LatticeNeighbors(int Nx, int Ny, double r_lo, double r_hi, Type type) {
 		this.Nx = Nx;
 		this.Ny = Ny;
 		this.r_lo = r_lo;
 		this.r_hi = r_hi;
+		this.type = type; 
 		int d = (int)r_hi*2 + 1;
 		list = new int[d*d];
 	}
@@ -55,7 +56,7 @@ public class LatticeNeighbors {
 
 	int Nx, Ny;    // lattice size
 	double r_lo, r_hi; // neighbor list range
-	int type = PERIODIC; // type -- BORDERED | PERIODIC
+	Type type;
 
 	// These variables are set be calculateNeighborList()
 	int[] list;    // most recently computed neighbor list
