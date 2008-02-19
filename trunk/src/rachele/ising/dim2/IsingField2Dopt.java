@@ -1,15 +1,11 @@
 package rachele.ising.dim2;
 
-//import static java.lang.Math.PI;
-//import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.log;
 import static java.lang.Math.rint;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
-//import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-//import static scikit.numerics.Math2.hypot;
 import static scikit.numerics.Math2.hypot;
 import static scikit.numerics.Math2.j0;
 import static scikit.numerics.Math2.j1;
@@ -41,6 +37,9 @@ public class IsingField2Dopt {
 	
 	boolean circleInteraction = false;
 	boolean magConservation = false;
+	public boolean recordTvsFE = false;
+	public boolean recordHvsFE = false;
+	double lastFreeEnergy = 0.0;
 	String theory;
 	
 	Random random = new Random();
@@ -130,25 +129,7 @@ public class IsingField2Dopt {
 			}else{
 				Lambda[i] = 1;				
 			}
-//			if(theory == "Exact"){
-//				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
-//				Lambda[i] = 1;
-//			}else{
-//				dF_dPhi = -J*phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
-//				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
-//			}
-			if(theory == "Dynamic dt"){
-				//test to see if forbidden zone is crossed.
-				double testPhi = - dt*dF_dPhi;
-				if(testPhi >= 1){
-					
-				}else if(testPhi <= 1){
-					
-				}else{
-					phi[i] = - dt*dF_dPhi;
-				}
-					
-			}else{
+
 				delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 				phiVector[i] = delPhi[i];
 				meanLambda += Lambda[i];
@@ -158,32 +139,34 @@ public class IsingField2Dopt {
 				entAccum -= T*entropy;
 				freeEnergy += potential - T*entropy - H*phi[i];
 			}
-		}		
-		if(theory != "Dynamic dt"){
-			meanLambda /= Lp*Lp;
-			double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
-			mu /= dt;
-			if (magConservation == false)
-				mu = 0;
-			for (int i = 0; i < Lp*Lp; i++) {
-				freeEnergy +=  -mu*phi[i];
-				delPhi[i] -= Lambda[i]*mu*dt;
-				double testPhi = phi[i]+ delPhi[i];
-				if(theory == "Exact"){
-					if(abs(testPhi) >= 1){
-						if(testPhi>=1)
-							testPhi=phi[i]+(1-phi[i])/2.0;
-						else if(testPhi<=-1)
-							testPhi=phi[i]+(-1-phi[i])/2.0;
+		meanLambda /= Lp*Lp;
+		double mu = (mean(delPhi)-(DENSITY-mean(phi)))/meanLambda;
+		mu /= dt;
+		if (magConservation == false) mu = 0;
+		for (int i = 0; i < Lp*Lp; i++) {
+			freeEnergy +=  -mu*phi[i];
+			delPhi[i] -= Lambda[i]*mu*dt;
+			double testPhi = phi[i]+ delPhi[i];
+			if(theory == "Exact"){
+				if(abs(testPhi) >= 1){
+					if(testPhi>=1)
+						testPhi=phi[i]+(1-phi[i])/2.0;
+					else if(testPhi<=-1)
+						testPhi=phi[i]+(-1-phi[i])/2.0;
 					}	
-				}	
-				//phi[i] += delPhi[i]-Lambda[i]*mu*dt;
-				//phi[i] += delPhi[i];
-				phi[i]=testPhi;
-				del_phiSquared += phi[i]*phi[i];
-			}
-			t += dt;
+			}	
+			//phi[i] += delPhi[i]-Lambda[i]*mu*dt;
+			//phi[i] += delPhi[i];
+			phi[i]=testPhi;
+			del_phiSquared += phi[i]*phi[i];
 		}
+
+		dt = mean(Lambda);
+		double slope = (freeEnergy - lastFreeEnergy)/dt;
+		if (abs(slope) < .001) recordHvsFE = true;//recordTvsFE = true;
+		t += dt;	
+		lastFreeEnergy = freeEnergy;
+		
 	}
 	
 	public void adjustRanges(){

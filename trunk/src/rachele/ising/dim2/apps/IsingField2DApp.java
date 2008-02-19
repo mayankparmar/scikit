@@ -65,7 +65,7 @@ public class IsingField2DApp extends Simulation {
 		//frameTogether("ring", ring, ringInput);
 		//frameTogether("landscapes", landscape, brLandscape);
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
-		//frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
+		frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
 		//frameTogether("SF", structurePeakV, 
 			//	 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
 		c.frameTogether("SF", structurePeakV, structurePeakH);
@@ -295,7 +295,7 @@ public class IsingField2DApp extends Simulation {
 			sf.getAccumulatorV().clear();
 			sf.getAccumulatorH().clear();
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
-			if (ising.time()%100 == 0){
+			if (ising.time()%10 == 0){
 
 				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				boolean circleOn=true;
