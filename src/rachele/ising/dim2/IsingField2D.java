@@ -96,8 +96,8 @@ public class IsingField2D {
 		accEitherFreeEnergy = new Accumulator(0.0001);
 		accFreeEnergy = new Accumulator(dt);
 		
-		//horizontalSlice = params.fget("Horizontal Slice");
-		//verticalSlice = params.fget("Vertical Slice");
+		horizontalSlice = params.fget("Horizontal Slice");
+		verticalSlice = params.fget("Vertical Slice");
 		
 		if(params.sget("Interaction") == "Circle")
 			circleInteraction = true;

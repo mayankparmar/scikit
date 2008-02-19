@@ -36,12 +36,12 @@ public class IsingField2DoptApp extends Simulation{
 	public IsingField2DoptApp(){
 		frameTogether("Grids", grid, sfGrid, delPhiGrid, fePlot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
-		params.addm("Theory", new ChoiceValue("Exact", "Slow Near Edge","Dynamic dt"));
+		params.addm("Interaction", new ChoiceValue("Circle", "Square"));
+		params.addm("Theory", new ChoiceValue("Slow Near Edge", "Exact", "Dynamic dt"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M"));
 		params.addm("Noise", new DoubleValue(0, 0, 1.0).withSlider());
-		params.addm("T", 0.03);
-		params.addm("H", 0.7);
+		params.addm("T", 0.08);
+		params.addm("H", 0.0);
 		params.addm("Rx", 400.0);
 		params.addm("Ry", 400.0);
 		params.add("L", 1000.0);
@@ -49,6 +49,7 @@ public class IsingField2DoptApp extends Simulation{
 		params.add("Random seed", 0);
 		params.add("Magnetization", 0.0);
 		params.addm("range change", 0.01);
+		params.add("dt", 1.0);
 		params.add("Time");
 		params.add("Free Energy");
 		params.add("Pot");
@@ -74,8 +75,20 @@ public class IsingField2DoptApp extends Simulation{
 		params.set("Free Energy", ising.freeEnergy);
 		params.set("Pot", ising.potAccum);
 		params.set("Ent", ising.entAccum);
+		params.set("dt", ising.dt);
 		//if(flags.contains("Clear")) freeEnergy.clear();
-		//if(flags.contains("Record FE")) recordTvsFE();
+		if(flags.contains("Record FE")) recordTvsFE();
+		if(ising.recordTvsFE == true){
+			recordTvsFE();
+			double newT = ising.T - 0.001;
+			params.set("T", newT);			
+			ising.recordTvsFE = false;
+		}else if(ising.recordHvsFE){
+			recordHvsFE();
+			double newH = ising.H - 0.001;
+			params.set("H", newH);			
+			ising.recordHvsFE = false;			
+		}
 		flags.clear();
 	}
 	
@@ -89,7 +102,14 @@ public class IsingField2DoptApp extends Simulation{
         sf = new StructureFactor(ising.Lp, ising.L, ising.Rx, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
 		//int maxi=sf.clumpsOrStripes(ising.phi);
-		//freeEnergy = new Accumulator(1.0);		
+		//freeEnergy = new Accumulator(1.0);
+		int steps = 1;
+		if (ising.t < 500.0){
+			params.set("Time", ising.time());
+			ising.simulate();
+			ising.adjustRanges();			
+		}
+		steps = 500;
         while (true) {
         	ising.readParams(params);
 			params.set("Time", ising.time());
@@ -100,7 +120,10 @@ public class IsingField2DoptApp extends Simulation{
 //				sf.accumulateMelt(circleOn, ising.phi, maxi);
 //				writeDataToFile();
 //			}
-			Job.animate();
+			if (ising.t > steps){
+				Job.animate();
+				steps += 1;
+			}
 		}
  	}
 	
@@ -108,6 +131,12 @@ public class IsingField2DoptApp extends Simulation{
 		String file = "../../../research/javaData/feData/fe";
 		FileUtil.printlnToFile(file, ising.T, ising.freeEnergy);
 		System.out.println("Wrote to file: T = " + ising.T + " FE = " + ising.freeEnergy);
+	}
+
+	public void recordHvsFE(){
+		String file = "../../../research/javaData/feData/fe";
+		FileUtil.printlnToFile(file, ising.H, ising.freeEnergy);
+		System.out.println("Wrote to file: H = " + ising.H + " FE = " + ising.freeEnergy);
 	}
 	
 	public void writeDataToFile(){
