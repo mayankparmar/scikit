@@ -41,6 +41,7 @@ public class IsingField2Dopt {
 	public boolean recordHvsFE = false;
 	double lastFreeEnergy = 0.0;
 	String theory;
+	double slopeTolerance = 0.000000001;
 	
 	Random random = new Random();
 	
@@ -163,7 +164,7 @@ public class IsingField2Dopt {
 
 		dt = mean(Lambda);
 		double slope = (freeEnergy - lastFreeEnergy)/dt;
-		if (abs(slope) < .001) recordHvsFE = true;//recordTvsFE = true;
+		if (abs(slope) < slopeTolerance) recordHvsFE = true;//recordTvsFE = true;
 		t += dt;	
 		lastFreeEnergy = freeEnergy;
 		

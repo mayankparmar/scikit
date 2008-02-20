@@ -40,10 +40,10 @@ public class IsingField2DoptApp extends Simulation{
 		params.addm("Theory", new ChoiceValue("Slow Near Edge", "Exact", "Dynamic dt"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M"));
 		params.addm("Noise", new DoubleValue(0, 0, 1.0).withSlider());
-		params.addm("T", 0.08);
+		params.addm("T", 0.07);
 		params.addm("H", 0.0);
 		params.addm("Rx", 400.0);
-		params.addm("Ry", 400.0);
+		params.addm("Ry", 350.0);
 		params.add("L", 1000.0);
 		params.add("dx", 10.0);
 		params.add("Random seed", 0);
@@ -85,7 +85,7 @@ public class IsingField2DoptApp extends Simulation{
 			ising.recordTvsFE = false;
 		}else if(ising.recordHvsFE){
 			recordHvsFE();
-			double newH = ising.H - 0.001;
+			double newH = ising.H + 0.005;
 			params.set("H", newH);			
 			ising.recordHvsFE = false;			
 		}
@@ -104,12 +104,12 @@ public class IsingField2DoptApp extends Simulation{
 		//int maxi=sf.clumpsOrStripes(ising.phi);
 		//freeEnergy = new Accumulator(1.0);
 		int steps = 1;
-		if (ising.t < 500.0){
-			params.set("Time", ising.time());
-			ising.simulate();
-			ising.adjustRanges();			
-		}
-		steps = 500;
+//		if (ising.t < 500.0){
+//			params.set("Time", ising.time());
+//			ising.simulate();
+//			ising.adjustRanges();			
+//		}
+//		steps = 500;
         while (true) {
         	ising.readParams(params);
 			params.set("Time", ising.time());
