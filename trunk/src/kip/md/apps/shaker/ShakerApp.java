@@ -231,7 +231,7 @@ class Commands {
 	
 	public Function vanHoveTheory(int tstar, double diffusion) {
 		final double sig2 = diffusion*tstar;
-		return new Function() {
+		return new Function(0, 5*sqrt(sig2)) {
 			public double eval(double r) {
 				return (2*PI*r)*(1/(sig2*2*PI))*exp(-(r*r)/(2*sig2));
 			}
