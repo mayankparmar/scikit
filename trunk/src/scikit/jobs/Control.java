@@ -245,6 +245,12 @@ public class Control {
 	}
 	
 	private JMenu createFileMenu() {
+		JMenuItem terminalItem = new JMenuItem("New Terminal");
+		terminalItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				createConsole();
+			}
+		});
 		JMenuItem openParamsItem = new JMenuItem("Open Params");
 		openParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -258,21 +264,15 @@ public class Control {
 			}
 		});
 		JMenu fileMenu = new JMenu("File");
+		fileMenu.add(terminalItem);
+		fileMenu.add(new JSeparator());
 		fileMenu.add(openParamsItem);
 		fileMenu.add(saveParamsItem);
 		return fileMenu;
 	}
 	
 	private JMenu createWindowMenu() {
-		JMenuItem consoleItem = new JMenuItem("New Console");
-		consoleItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				createConsole();
-			}
-		});
 		JMenu windowMenu = new JMenu("Window");
-		windowMenu.add(consoleItem);
-		windowMenu.add(new JSeparator());
 		for (final JFrame f : _frames) {
 			JMenuItem item = new JMenuItem(f.getTitle());
 			item.addActionListener(new ActionListener() {
