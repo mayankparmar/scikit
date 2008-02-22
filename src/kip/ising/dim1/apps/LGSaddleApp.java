@@ -10,7 +10,6 @@ import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
-import scikit.jobs.params.DoubleValue;
 import scikit.util.Utilities;
 
 public class LGSaddleApp extends Simulation{
@@ -18,25 +17,26 @@ public class LGSaddleApp extends Simulation{
 	Plot free = new Plot("Free energy");
 	double[] fe;
 	double[] xs; 
+	double dim, dt;
 	double eps, u;
 	
-	public static void main (String[] args) {
+	public static void main(String[] args) {
 		new Control(new LGSaddleApp(), "Landau Ginzburg Saddle");
 	}
 	
-	// phi0 -0.32055757614
-	// eps 0.1
 	public void load(Control c) {
 		c.frame(profile, free);
 		profile.setAutoScale(true);
 		free.setAutoScale(true);
-		params.addm("phi0", new DoubleValue(-0.03196, -2, 0).withSlider());
+		
+		params.addm("phi0", -0.1);
 		params.addm("eps", 1.0);
 		params.addm("u", 1.0);
 		params.addm("dim", 7.0);
 		params.addm("dt", 0.002);
 		params.add("len", 10000);
 		params.add("free energy");
+		flags.add("Optimize");
 	}
 	
 	// solution to (u x^2 + x - eps = 0)
@@ -54,10 +54,14 @@ public class LGSaddleApp extends Simulation{
 	public void animate() {
 		eps = params.fget("eps");
 		u = params.fget("u");
-		double dim = params.fget("dim");
-		double dt = params.fget("dt");
+		dim = params.fget("dim");
+		dt = params.fget("dt");
 		double fe_net = 0;
 		double freeEnergy_bg = freeEnergy(background(), 0);
+		
+		if (flags.contains("Optimize"))
+			params.set("phi0", optimize(-1000, 0));
+		flags.clear();
 		
 		double x = params.fget("phi0");
 		double v = 0;
@@ -83,6 +87,39 @@ public class LGSaddleApp extends Simulation{
 		
 		while (true)
 			Job.animate();
+	}
+	
+	private double optimize(double xlo, double xhi) {
+		if (isLow(xhi) || !isLow(xlo))
+			throw new IllegalArgumentException();
+		double x = (xlo+xhi)/2;
+		while (xhi - xlo > 1e-12) {
+			if (isLow(x))
+				xlo = x;
+			else
+				xhi = x;
+			x = (xlo+xhi)/2;
+		}
+		return x;
+	}
+	
+	private boolean isLow(double x0) {
+		if (x0 == 0)
+			return false;
+		double bg = background();
+		double x = x0;
+		double v = 0;
+		for (int i = 0; i < xs.length; i++) {
+			double t = (i+1)*dt;
+			double a = -((dim-1)/t)*v - eps*x + x*x + u*x*x*x;
+			v += a*dt; 
+			x += v*dt;
+			if (x > bg || x < 1.1*x0)
+				return true;
+			if (x > 0 && v < 0)
+				return false;
+		}
+		throw new IllegalStateException("Need larger system size.");
 	}
 	
 	public void clear() {
