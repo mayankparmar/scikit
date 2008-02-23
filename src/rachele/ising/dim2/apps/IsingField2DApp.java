@@ -7,7 +7,7 @@ package rachele.ising.dim2.apps;
 import static java.lang.Math.floor;
 import static scikit.util.Utilities.*;
 import scikit.dataset.Accumulator;
-
+//import kip.util.Random;
 import java.awt.Color;
 import java.io.*;
 import rachele.ising.dim2.ConjugateGradientMin;
@@ -90,19 +90,19 @@ public class IsingField2DApp extends Simulation {
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
 		params.addm("R", 1000000.0);
+		params.addm("Random seed", 0);
 		params.add("L/R", 4.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
-		params.add("Random seed", 0);
 		params.add("Magnetization", 0.6);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
 		params.add("Free Energy");
-
 		flags.add("Write Config");
 		flags.add("Clear");
 		flags.add("SF");
+		flags.add("new RS");
 		//flags.add("Stripe");
 		//flags.add("Clump");
 		//flags.add("ClearFT");
@@ -218,6 +218,7 @@ public class IsingField2DApp extends Simulation {
 			}
 			maxi=sf.clumpsOrStripes(ising.phi);
 		}
+		if(flags.contains("new RS")) ising.randomizeSeed(params.iget("Random seed", 0));
 		flags.clear();
 
 //		if(flags.contains("ClearFT")){
@@ -300,7 +301,8 @@ public class IsingField2DApp extends Simulation {
 				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				boolean circleOn=true;
 				sf.accumulateMelt(circleOn, ising.phi, maxi);
-				writeDataToFile();
+				recordSFvTime();
+				//writeDataToFile();
 			}
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
 			Job.animate();
@@ -404,6 +406,31 @@ public class IsingField2DApp extends Simulation {
 			FileUtil.printlnToFile(file, " # Data = H, S(k*), Free Energy, time");
 		}
 		FileUtil.printlnToFile(file, " # Density = ", ising.DENSITY);		
+	}
+	
+	public void initSFvTimeFile(String file){
+		FileUtil.deleteFile(file);
+		FileUtil.printlnToFile(file, " # SF vs time data ");			
+		FileUtil.printlnToFile(file, " # Temperature = ", ising.T);
+		FileUtil.printlnToFile(file, " # H", ising.H);
+		FileUtil.printlnToFile(file, " # Density = ", ising.DENSITY);		
+	}
+	
+	public void recordSFvTime(){
+		if (params.sget("Interaction")=="Square"){
+			String dataFileV = "../../../research/javaData/sfData/sfv";
+			String dataFileH = "../../../research/javaData/sfData/sfh";
+			if (initFile == false){
+				initSFvTimeFile(dataFileV);
+				initSFvTimeFile(dataFileH);
+				initFile = true;
+			}
+			FileUtil.printlnToFile(dataFileH, ising.time(), sf.peakValueH());
+			FileUtil.printlnToFile(dataFileV, ising.time(), sf.peakValueV());					
+			System.out.println("Data written to file for time = " + ising.time());
+		}else{
+			System.out.println("no write to file for non-square yet");
+		}
 	}
 	
 	public void writeDataToFile(){

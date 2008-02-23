@@ -4,13 +4,11 @@ package rachele.ising.dim2;
 
 import static java.lang.Math.*;
 import static scikit.numerics.Math2.*;
-
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-
 import kip.util.Random;
 import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
@@ -545,5 +543,9 @@ public class IsingField2D {
 			//steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H + boundaryTerm);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		
+	}
+	
+	public void randomizeSeed(int newSeed){
+		random.setSeed(newSeed);		
 	}
 }
