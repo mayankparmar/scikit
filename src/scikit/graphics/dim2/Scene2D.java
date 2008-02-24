@@ -33,8 +33,8 @@ public class Scene2D extends Scene<Gfx2D> {
 	}
 	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
-	// uses reflection to avoid referring directly to the classes GLCapabities or GraphicsGL -- otherwise
-	// we could get an uncatchable NoClassDefFoundError.
+	// uses reflection to avoid referring directly to the classes GLCapabilities or Gfx2DGL, otherwise
+	// an uncatchable NoClassDefFoundError may be thrown when the Scene2D class is loaded.
 	protected Component createCanvas() {
 		try {
 			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
