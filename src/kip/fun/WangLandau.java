@@ -1,10 +1,13 @@
 package kip.fun;
 
-import scikit.jobs.*;
-import scikit.graphics.dim2.Plot;
-import scikit.dataset.*;
 import java.awt.Color;
-import static scikit.util.Utilities.frame;
+
+import scikit.dataset.Accumulator;
+import scikit.dataset.DynamicArray;
+import scikit.graphics.dim2.Plot;
+import scikit.jobs.Control;
+import scikit.jobs.Job;
+import scikit.jobs.Simulation;
 
 public class WangLandau extends Simulation {
 	Plot histogramPlot = new Plot("Histogram vs. Energy");
@@ -25,9 +28,9 @@ public class WangLandau extends Simulation {
 	public static void main (String[] args) {
 		new Control(new WangLandau(), "Wang Landau");
 	}
-
-	public WangLandau() {
-		frame(histogramPlot, densityPlot, heatPlot);
+	
+	public void load(Control c) {
+		c.frame(histogramPlot, densityPlot, heatPlot);
 		params.add("L", 16);
 		params.add("Impurity density", 0.2);
 		params.add("mcs");
