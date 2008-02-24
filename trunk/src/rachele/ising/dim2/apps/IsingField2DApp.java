@@ -72,7 +72,7 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
 		//params.addm("Noise", new ChoiceValue("Off","On"));
-		params.addm("Dynamics?", new ChoiceValue("Langevin Conserve M","Langevin No M Convervation", "Conjugate Gradient Min", 
+		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M","Conjugate Gradient Min", 
 				"Steepest Decent" ));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
@@ -83,8 +83,8 @@ public class IsingField2DApp extends Simulation {
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
-		params.addm("T", 0.06);
-		params.addm("H", 0.0);
+		params.addm("T", 0.04);
+		params.addm("H", 0.80);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -94,7 +94,7 @@ public class IsingField2DApp extends Simulation {
 		params.add("L/R", 4.0);
 		params.add("R/dx", 16.0);
 		params.add("kR bin-width", 0.1);
-		params.add("Magnetization", 0.6);
+		params.add("Magnetization", 0.0);
 		params.add("Time");
 		params.add("Mean Phi");
 		params.add("Lp");
@@ -296,7 +296,7 @@ public class IsingField2DApp extends Simulation {
 			sf.getAccumulatorV().clear();
 			sf.getAccumulatorH().clear();
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
-			if (ising.time()%10 == 0){
+			if (ising.time()%100 == 0){
 
 				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				boolean circleOn=true;

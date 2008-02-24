@@ -59,8 +59,10 @@ public class StructureFactor {
 		//if(abs(2*PI*squarePeakInt*R/L - squarePeakValue) >= abs(2*PI*(squarePeakInt+1)*R/L - squarePeakValue))
 			//squarePeakInt = squarePeakInt + 1;
 		double kRvalue = R*2*PI*squarePeakInt/L;
+		double kRvalue2 = R*2*PI*(squarePeakInt+1)/L;
 		System.out.println("square kR = " + kRvalue + " target value = " + squarePeakValue);
-		
+		System.out.println("square kR 2 = " + kRvalue2 + " target value = " + squarePeakValue);	
+		squarePeakInt += 1;
 		dblePeakLength = circlePeakValue*L/(2*PI*R);
 		circlePeakInt = (int)dblePeakLength;
 		if(abs(2*PI*circlePeakInt*R/L - circlePeakValue) >= abs(2*PI*(circlePeakInt+1)*R/L - circlePeakValue))
