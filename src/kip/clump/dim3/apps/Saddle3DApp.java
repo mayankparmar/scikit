@@ -3,7 +3,6 @@ package kip.clump.dim3.apps;
 import static scikit.numerics.Math2.cube;
 import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.format;
-import static scikit.util.Utilities.frame;
 
 import java.awt.Color;
 
@@ -16,6 +15,8 @@ import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.jobs.params.ChoiceValue;
 import scikit.jobs.params.DoubleValue;
+import scikit.util.Array3d;
+import scikit.util.Commands;
 
 public class Saddle3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");
@@ -33,8 +34,8 @@ public class Saddle3DApp extends Simulation {
 		new Control(new Saddle3DApp(), "3D Clump Saddle Profile");
 	}
 
-	public Saddle3DApp() {
-		frame(grid, slice);
+	public void load(Control c) {
+		c.frame(grid, slice);
 		params.addm("Saddle", new ChoiceValue("Yes", "No"));
 		params.addm("Adjust R", new ChoiceValue("No", "Yes"));
 		params.addm("T", new DoubleValue(0.097, 0.0, 0.15).withSlider());
@@ -46,6 +47,7 @@ public class Saddle3DApp extends Simulation {
 		params.add("dx", 250.0);
 		params.add("Random seed", 0);
 		params.add("Time");
+		params.add("F density");
 		params.add("F / R^3");
 		params.add("dF/dphi");
 		params.add("Valid profile");
@@ -83,12 +85,14 @@ public class Saddle3DApp extends Simulation {
 		System.arraycopy(clump.coarseGrained(), (Lp*Lp)*(Lp/2)+Lp*(Lp/2), sliceData, 0, Lp);
 		slice.registerLines("Slice", new PointSet(0, 1, sliceData), Color.BLACK);
 		
-		double F_R3 = clump.freeEnergyDensity*cube(clump.L)/(clump.Rx*clump.Ry*clump.Rz);
+		double f = clump.freeEnergyDensity;
+		double F_R3 = f*cube(clump.L)/(clump.Rx*clump.Ry*clump.Rz);
 		params.set("dx", clump.dx);
 		params.set("Rx", format(clump.Rx));
 		params.set("Ry", format(clump.Ry));
 		params.set("Rz", format(clump.Rz));
 		params.set("Time", format(clump.time()));
+		params.set("F density", format(f));
 		params.set("F / R^3", format(F_R3));
 		params.set("dF/dphi", format(clump.rms_dF_dphi));
 		params.set("Valid profile", !clump.rescaleClipped);
@@ -107,6 +111,7 @@ public class Saddle3DApp extends Simulation {
 		
 		while (true) {
 			double var1 = clump.phiVariance();
+//			double t1 = System.currentTimeMillis();
 			clump.simulate();
 			double var2 = clump.phiVariance();
 			double scale = var1/var2;
@@ -117,7 +122,15 @@ public class Saddle3DApp extends Simulation {
 				clump.Ry -= clump.dt*sqr(clump.Ry)*clump.dFdensity_dRy();
 				clump.Rz -= clump.dt*sqr(clump.Rz)*clump.dFdensity_dRz();
 			}
+//			double t2 = System.currentTimeMillis();;
+//			System.out.println((t2-t1)/1000.);
 			Job.animate();
 		}
+	}
+	
+	public void setField() {
+		Array3d a = Commands.load3d();
+		int len = clump.numColumns();
+		System.arraycopy(a.array(), 0, clump.coarseGrained(), 0, len*len*len);
 	}
 }
