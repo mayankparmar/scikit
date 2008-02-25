@@ -28,11 +28,12 @@ public class StructureFactorOpt {
 		}
 		fft.transform(fftData);
 		fftData = fft.toWraparoundOrder(fftData);
-		for (int i=0; i < Lp*Lp; i++){
+		for (int i=1; i < Lp*Lp; i++){
 			double re = fftData[2*i];
 			double im = fftData[2*i+1];
 			sFactor[i] = (re*re + im*im)/(L*L);
 		}
+
 		shiftSFactor();
 	}
 	
@@ -52,24 +53,21 @@ public class StructureFactorOpt {
 	
 	public double findSquarePeak(double R, boolean xdirection){
 		double peakValue;
-		int i;
+		int x,y;
 		shiftSFactor();
 		int kInt = findBestSquareInt(R);
 		double kValue = 2*PI*kInt*R/L;
 		double difference = kValue - squarePeakValue;
-
-		
 		if(xdirection){
-			int x = kInt;
-			int y=0;
-			i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;
-			System.out.println("k difference x direction = " + difference);
+			x = kInt;
+			y=0;
+			System.out.println("kx = " + kInt + " difference = " + difference);
 		}else{
-			int x=0;
-			int y = kInt;
-			i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;	
-			System.out.println("k difference y direction = " + difference);
+			x=0;
+			y = kInt;
+			System.out.println("ky = " + kInt + " difference = " + difference);
 		}
+		int i = Lp*((y+Lp)%Lp) + (x+Lp)%Lp;	
 		peakValue = sFactor[i];
 		return peakValue;
 	}
@@ -77,8 +75,6 @@ public class StructureFactorOpt {
 	private int findBestSquareInt(double R){
 		double bestValue = L*squarePeakValue/(2.0*PI*R);
 		int bestInt = (int)Math.floor(bestValue + 0.5d);
-
 		return bestInt;
-		
 	}
 }

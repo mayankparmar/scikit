@@ -2,8 +2,7 @@ package rachele.ising.dim2.apps;
 
 
 import static java.lang.Math.floor;
-import static scikit.util.Utilities.*;
-
+//import static scikit.util.Utilities.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -12,11 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-//import rachele.ising.dim2.IsingField2D;
 import rachele.ising.dim2.IsingField2Dopt;
 import rachele.util.FileUtil;
 import rachele.ising.dim2.StructureFactorOpt;
-//import rachele.util.FileUtil;
 import scikit.graphics.dim2.Grid;
 import scikit.jobs.Control;
 import scikit.jobs.Job;
@@ -26,7 +23,6 @@ import scikit.jobs.params.ChoiceValue;
 import scikit.jobs.params.DoubleValue;
 import scikit.graphics.dim2.Plot;
 import java.awt.Color;
-//import rachele.util.FileUtil;
 
 public class IsingField2DoptApp extends Simulation{
     Grid grid = new Grid("Phi(x)");
@@ -34,7 +30,7 @@ public class IsingField2DoptApp extends Simulation{
     Grid sfGrid = new Grid("S(k)");
     Plot fePlot = new Plot("Free Energy");
 	StructureFactorOpt sf;
-    IsingField2Dopt ising;
+	IsingField2Dopt ising;
 	boolean initFile = false;
 	boolean showFE = false;
 	Accumulator freeEnergy;
@@ -43,9 +39,9 @@ public class IsingField2DoptApp extends Simulation{
 		new Control(new IsingField2DoptApp(), "Ising Field");
 	}
 	
-	public IsingField2DoptApp(){
-		frameTogether("Grids", grid, sfGrid, delPhiGrid);
-		if (showFE) frame(fePlot);
+	public void load(Control c){
+		c.frameTogether("Grids", grid, sfGrid, delPhiGrid);
+		if (showFE) c.frame(fePlot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle" ));
 		params.addm("Theory", new ChoiceValue("Slow Near Edge", "Exact", "Dynamic dt"));
@@ -78,8 +74,10 @@ public class IsingField2DoptApp extends Simulation{
 		if (params.sget("Zoom").equals("Yes"))grid.setAutoScale();
 		else grid.setScale(-1, 1);
 		fePlot.setAutoScale(true);
-		if(showFE) freeEnergy.accum(ising.t, ising.freeEnergy);
-		if(showFE) fePlot.registerLines("FE", freeEnergy, Color.RED);
+		if(showFE){
+			freeEnergy.accum(ising.t, ising.freeEnergy);
+			fePlot.registerLines("FE", freeEnergy, Color.RED);
+		}
 		sfGrid.registerData(ising.Lp, ising.Lp, sf.sFactor);
 		grid.registerData(ising.Lp, ising.Lp, ising.phi);
 		delPhiGrid.registerData(ising.Lp, ising.Lp, ising.phiVector);
@@ -113,10 +111,10 @@ public class IsingField2DoptApp extends Simulation{
 		boolean recordSFtoFile = true;
 		ising = new IsingField2Dopt(params);
 		if(params.sget("Init Conditions") == "Read From File") readInitialConfiguration();
-		double binWidth = 0.1;//params.fget("kR bin-width");
+		double binWidth = 0.1;
 		binWidth = IsingField2Dopt.KR_SP / floor(IsingField2Dopt.KR_SP/binWidth);
         sf = new StructureFactorOpt(ising.Lp, ising.L);
-		if(showFE) freeEnergy = new Accumulator(1.0);
+        if(showFE) freeEnergy = new Accumulator(1.0);
 		int steps = 1;
 		int recordSteps = 10;
 //		if (ising.t < 500.0){
