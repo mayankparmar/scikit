@@ -62,7 +62,7 @@ public class StructureFactor {
 		double kRvalue2 = R*2*PI*(squarePeakInt+1)/L;
 		System.out.println("square kR = " + kRvalue + " target value = " + squarePeakValue);
 		System.out.println("square kR 2 = " + kRvalue2 + " target value = " + squarePeakValue);	
-		squarePeakInt += 1;
+		//squarePeakInt += 1;
 		dblePeakLength = circlePeakValue*L/(2*PI*R);
 		circlePeakInt = (int)dblePeakLength;
 		if(abs(2*PI*circlePeakInt*R/L - circlePeakValue) >= abs(2*PI*(circlePeakInt+1)*R/L - circlePeakValue))
