@@ -67,17 +67,16 @@ public class IsingField2DApp extends Simulation {
 		//frameTogether("Plots", vSlice, sfPlot, structurePeakV, hSlice, sfHPlot, structurePeakH, del_hSlice, del_vSlice, landscape);
 		frameTogether("Slices", vSlice, hSlice, del_hSlice, del_vSlice);
 		//frameTogether("SF", structurePeakV, 
-			//	 structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
-		c.frameTogether("SF", structurePeakV, structurePeakH);
+		//structurePeakH, freeEnergyPlot, sfPeakBoth, sfHor, sfVert);
+		//c.frameTogether("SF", structurePeakV, structurePeakH);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
 		params.addm("Interaction", new ChoiceValue("Square", "Circle"));
-		//params.addm("Noise", new ChoiceValue("Off","On"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M","Conjugate Gradient Min", 
 				"Steepest Decent" ));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
-		params.addm("Approx", new ChoiceValue("Exact Stable",
-				"Avoid Boundaries", "Exact SemiStable", "Exact", "Linear",  "Phi4"));
+		params.addm("Approx", new ChoiceValue("Slow",
+				"HalfStep", "Phi4","Phi4HalfStep"));
 		//params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Noise", new DoubleValue(0.0, 0.0, 1.0).withSlider());
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
@@ -89,10 +88,10 @@ public class IsingField2DApp extends Simulation {
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
 		params.addm("J", -1.0);
-		params.addm("R", 1000000.0);
+		params.addm("R", 2000000.0);
 		params.addm("Random seed", 0);
-		params.add("L/R", 4.0);
-		params.add("R/dx", 16.0);
+		params.add("L/R", 3.0);
+		params.add("R/dx", 21.40);
 		params.add("kR bin-width", 0.1);
 		params.add("Magnetization", 0.0);
 		params.add("Time");

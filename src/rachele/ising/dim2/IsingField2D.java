@@ -110,8 +110,8 @@ public class IsingField2D {
 		slowPower = 2;
 		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation") magConservation = false;
-		if(params.sget("Approx") == "Exact") theory ="Exact";
-		else theory = "Slow";
+		theory = params.sget("Approx");
+
 		//theory = params.sget("Approx");
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
@@ -213,7 +213,6 @@ public class IsingField2D {
 		dx = L / Lp;
 		T = params.fget("T");
 		//dT = params.fget("dT");
-		
 		params.set("R/dx", R/dx);
 		//params.set("Lp", Lp);
 		//params.set("Free Energy", freeEnergy);
@@ -223,23 +222,14 @@ public class IsingField2D {
 		}else{
 			circleInteraction = false;
 		}
-
-//		if(params.sget("Noise") == "Off"){
-//			noiselessDynamics = true;
-//		}else{
-//			noiselessDynamics = false;
-//		}
 		noiseParameter = params.fget("Noise");
 		if(params.sget("Dynamics?") == "Langevin Conserve M")
 			magConservation = true;
 		else if(params.sget("Dynamics?") == "Langevin No M Conservation")
 			magConservation = false;
-		if(params.sget("Approx") == "Exact") theory ="Exact";
-		else theory = "Slow";		
-//		theory = params.sget("Approx");
-		
-		//horizontalSlice = params.fget("Horizontal Slice");
-		//verticalSlice = params.fget("Vertical Slice");
+		theory = params.sget("Approx");
+		horizontalSlice = params.fget("Horizontal Slice");
+		verticalSlice = params.fget("Vertical Slice");
 	}
 	
 	public void initializeFieldWithSeed() {
@@ -253,13 +243,7 @@ public class IsingField2D {
 			double x1 = x*cos(1*PI/6) + y*sin(1*PI/6);
 			double x2 = x*cos(3*PI/6) + y*sin(3*PI/6);
 			double x3 = x*cos(5*PI/6) + y*sin(5*PI/6);
-			phi[i] = DENSITY*(1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));
-			
-			// uncomment for four fold symmetry 
-//			phi[i] = DENSITY*(1+mag*(cos(x*kR/R) + cos(y*kR/R)));
-			
-			// uncomment for random initial condition
-//			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
+			phi[i] = DENSITY*(1+mag*(cos(x1*kR/R) + cos(x2*kR/R) + cos(x3*kR/R)));			
 		}
 	}
 	
@@ -308,26 +292,26 @@ public class IsingField2D {
 		
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
-			if(theory == "Exact"){
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
-				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i]) - H;
-				Lambda[i] = 1;//(1 - phi[i]*phi[i]);
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+			if (theory == "Phi4" || theory == "Phi4HalfStep"){
+				dF_dPhi = -phi_bar[i]+T*(phi[i]+pow(phi[i],3)) - H;	
+				Lambda[i] = 1;
 			}else{
-				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
-				Lambda[i] = sqr(1 - phi[i]*phi[i]);				
-				entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
+				if(theory == "HalfStep"){
+					Lambda[i] = 1;
+					entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+				}else{
+					Lambda[i] = sqr(1 - phi[i]*phi[i]);				
+					entropy = -((1.0 + phi[i])*log(1.0 + phi[i]) +(1.0 - phi[i])*log(1.0 - phi[i]))/2.0;
+				}
 			}
-	
 			delPhi[i] = - dt*Lambda[i]*dF_dPhi + sqrt(Lambda[i]*(dt*2*T)/dx)*noise();
 			phiVector[i] = delPhi[i];
 			meanLambda += Lambda[i];
-			
 			double potential = -(phi[i]*phi_bar[i])/2.0;
 			potAccum += potential;
 			entAccum -= T*entropy;
-
 			freeEnergy += potential - T*entropy - H*phi[i];
 
 		}		
@@ -340,7 +324,7 @@ public class IsingField2D {
 			freeEnergy +=  -mu*phi[i];
 			delPhi[i] -= Lambda[i]*mu*dt;
 			double testPhi = phi[i]+ delPhi[i];
-			if(theory == "Exact"){
+			if(theory == "HalfStep" || theory == "Phi4HalfStep"){
 				if(abs(testPhi) >= 1){
 					if(testPhi>=1)
 						testPhi=phi[i]+(1-phi[i])/2.0;
