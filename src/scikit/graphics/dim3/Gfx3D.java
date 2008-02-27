@@ -32,7 +32,7 @@ public class Gfx3D {
 	public Gfx3D(GLAutoDrawable glDrawable, Scene3D scene) {
 		this._gl = glDrawable.getGL();
 		_pixBds = new Bounds(0, glDrawable.getWidth(), 0, glDrawable.getHeight());
-		_viewBds = scene.viewBounds();
+		_viewBds = scene.dataBounds();
 		_rotation = scene.getRotation();
 	}
 	

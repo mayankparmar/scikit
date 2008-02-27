@@ -17,9 +17,18 @@ import scikit.graphics.Scene;
 import scikit.util.*;
 
 
-public class Scene2D extends Scene<Gfx2D> {	
+public class Scene2D extends Scene<Gfx2D> {
+	// the bounds which is currently visible to the user
+	protected Bounds _curBounds = new Bounds();
+	// is the view zoomed in?  this will disable autoscale
+	protected boolean _zoomed = false;
+	// if false, bounds will zoom out to fit data; if true, will zoom both in and out
+	protected boolean _autoScale = false;
+	// view bounds can be scaled to include additional buffer space
+	protected double _visibleBoundsBufferScale = 1;
 	// is the mouse selection active?
 	protected boolean _selectionActive = false;
+	// corners of the rectangular region selected by dragging
 	protected Point _selectionStart = new Point(), _selectionEnd = new Point();
 	
 	public Scene2D(String title) {
@@ -30,6 +39,26 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	public void setAutoScale(boolean autoScale) {
 		_autoScale = autoScale;
+	}
+	
+	public void animate() {
+		if (!_zoomed)
+			_curBounds = calculateVisibleBounds(_autoScale ? new Bounds() : _curBounds);
+		super.animate();
+	}
+	
+	public void clear() {
+		_zoomed = false;
+		_curBounds = new Bounds();
+		super.clear();
+	}
+	
+	/**
+	 * Returns the current viewing bounds for the same, in data coordinates.
+	 * @return current scene view bounds
+	 */
+	public Bounds viewBounds() {
+		return _curBounds.clone();
 	}
 	
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
@@ -92,6 +121,17 @@ public class Scene2D extends Scene<Gfx2D> {
 		});
 		ret.add(item);
 		return ret;
+	}
+	
+	/**
+	 * Calculates the visible bounds for the scene. These bounds are big enough
+	 * to contain all data in the scene, as well as possibly some buffer space.
+	 */
+	private Bounds calculateVisibleBounds(Bounds oldBds) {
+		Bounds datBds = dataBounds();
+		double eps = 0.001;
+		double s = _visibleBoundsBufferScale;
+		return oldBds.scale(1/(s+eps)).union(datBds).scale(s).union(oldBds);
 	}
 	
 	private boolean boundsIsValid() {
