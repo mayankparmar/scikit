@@ -35,7 +35,7 @@ public class Plot extends Scene2D {
 	public void animate() {
 		// if it is invalid to display the system on a log scale then use a linear scale.
 		// in this case, clear current view bounds so that super.animate() can start fresh.
-		Bounds bds = calculateDataBounds();
+		Bounds bds = dataBounds();
 		if (bds.xmin == Double.NEGATIVE_INFINITY) {
 			_logScaleX = false;
 			_curBounds = new Bounds();
@@ -129,8 +129,8 @@ public class Plot extends Scene2D {
 		// add log/linear scale menu items
 		JMenuItem itemX = new JMenuItem(_logScaleX ? "Set Linear in X" : "Set Logarithmic in X");
 		JMenuItem itemY = new JMenuItem(_logScaleY ? "Set Linear in Y" : "Set Logarithmic in Y");
-		itemX.setEnabled(_logScaleX || calculateDataBounds().xmin > 0);
-		itemY.setEnabled(_logScaleY || calculateDataBounds().ymin > 0);
+		itemX.setEnabled(_logScaleX || dataBounds().xmin > 0);
+		itemY.setEnabled(_logScaleY || dataBounds().ymin > 0);
 		itemX.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setLogScale(!_logScaleX, _logScaleY);
