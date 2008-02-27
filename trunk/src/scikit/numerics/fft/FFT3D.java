@@ -20,7 +20,7 @@ public abstract class FFT3D {
 	
 	public static FFT3D create(int dim1, int dim2, int dim3) {
 		try {
-			Class<?> c = Class.forName("scikit.numerics.fft.FFT3DManaged");
+			Class<?> c = Class.forName("scikit.numerics.fft.FFT3DNative");
 			return (FFT3D)c.getConstructor(int.class, int.class, int.class).newInstance(dim1, dim2, dim3);
 		}
 		catch (InvocationTargetException e) {
