@@ -18,6 +18,10 @@ import scikit.numerics.fn.Function3D;
 import scikit.util.DoubleArray;
 
 public class FieldClump3D extends AbstractClump3D {
+	// phi will not be scaled above PHI_UB or below PHI_LB
+	double PHI_UB = 19*DENSITY;
+	double PHI_LB = 0.001*DENSITY;
+	
 	int Lp;
 	double t;
 	double[] phi, phi_bar, del_phi;
@@ -153,9 +157,6 @@ public class FieldClump3D extends AbstractClump3D {
 	}
 	
 	public void scaleField(double scale) {
-		// phi will not be scaled above PHI_UB or below PHI_LB
-		double PHI_UB = 20*DENSITY;
-		double PHI_LB = 0.01*DENSITY;
 		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
 		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
 		rescaleClipped = scale > min(s1,s2);
@@ -164,6 +165,15 @@ public class FieldClump3D extends AbstractClump3D {
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
 			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
 		}
+		
+//		rescaleClipped = false;
+//		for (int i = 0; i < Lp*Lp*Lp; i++) {
+//			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
+//			if (phi[i] < PHI_LB || PHI_UB < phi[i]) {
+//				rescaleClipped = true;
+//				phi[i] = max(min(phi[i], PHI_UB), PHI_LB);
+//			}
+//		}
 	}
 	
 	public double entropy(double phi) {
