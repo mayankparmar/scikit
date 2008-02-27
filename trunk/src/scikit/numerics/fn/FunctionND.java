@@ -1,5 +1,5 @@
 package scikit.numerics.fn;
 
-public interface Function {
+public interface FunctionND {
 	public double eval(double[] x);
 }

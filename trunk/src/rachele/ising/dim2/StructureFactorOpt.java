@@ -1,7 +1,7 @@
 package rachele.ising.dim2;
 
 import static java.lang.Math.PI;
-import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 
 public class StructureFactorOpt {
 	ComplexDouble2DFFT fft;

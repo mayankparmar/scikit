@@ -21,7 +21,7 @@ class Structure {
 	double R;
 	double kRmin = 0, kRmax = Double.MAX_VALUE;
 	
-	scikit.numerics.fft.RealDoubleFFT fft;
+	scikit.numerics.fft.managed.RealDoubleFFT fft;
 	private double[] fftScratch;
 	
 	public Structure(int Lp, double L, int R) {
@@ -29,7 +29,7 @@ class Structure {
 		this.L = L;
 		this.R = R;
 		fftScratch = new double[Lp];
-		fft = new scikit.numerics.fft.RealDoubleFFT_Radix2(Lp);
+		fft = new scikit.numerics.fft.managed.RealDoubleFFT_Radix2(Lp);
 	}
 
 	public void setBounds(double kRmin, double kRmax) {

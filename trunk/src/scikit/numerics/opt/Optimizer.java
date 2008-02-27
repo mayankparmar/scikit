@@ -4,10 +4,10 @@ import static java.lang.Math.abs;
 
 import java.util.ArrayList;
 
-import scikit.numerics.fn.Function;
+import scikit.numerics.fn.FunctionND;
 
 
-abstract public class Optimizer<Fn extends Function> {
+abstract public class Optimizer<Fn extends FunctionND> {
 	 // sqrt of double precision, see Numerical Recipes discussion
 	protected static final double FTOL = 3e-8;
 	protected static final double EPS = 1e-12;

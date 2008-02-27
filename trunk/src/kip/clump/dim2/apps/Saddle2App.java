@@ -18,8 +18,8 @@ import scikit.jobs.Control;
 import scikit.jobs.Job;
 import scikit.jobs.Simulation;
 import scikit.jobs.params.ChoiceValue;
-import scikit.numerics.fft.util.FFT2D;
-import scikit.numerics.fn.C1Function;
+import scikit.numerics.fft.FFT2D;
+import scikit.numerics.fn.C1FunctionND;
 import scikit.numerics.fn.Function2D;
 import scikit.numerics.opt.Constraint;
 import scikit.numerics.opt.Relaxation;
@@ -102,7 +102,7 @@ public class Saddle2App extends Simulation {
 		
 		random.setSeed(params.iget("Random seed"));
 		
-		C1Function freeEnergy = new C1Function() {
+		C1FunctionND freeEnergy = new C1FunctionND() {
 			double[] grad = new double[dim*dim];
 			public Pair<Double,double[]> calculate(final double[] p) {
 				return calculateFreeEnergy(p, grad);

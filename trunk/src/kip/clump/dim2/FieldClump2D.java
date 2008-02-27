@@ -13,7 +13,7 @@ import static scikit.util.DoubleArray.mean;
 import static scikit.util.DoubleArray.variance;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.util.FFT2D;
+import scikit.numerics.fft.FFT2D;
 import scikit.numerics.fn.Function2D;
 import scikit.util.DoubleArray;
 

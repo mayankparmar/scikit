@@ -8,7 +8,7 @@ import static java.lang.Math.sqrt;
 import static scikit.numerics.Math2.sqr;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.util.FFT1D;
+import scikit.numerics.fft.FFT1D;
 import scikit.numerics.fn.Function1D;
 import scikit.util.DoubleArray;
 

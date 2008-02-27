@@ -9,7 +9,7 @@ import static scikit.numerics.Math2.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.util.FFT2D;
+import scikit.numerics.fft.FFT2D;
 
 
 public class Clump2D extends AbstractClump2D {	

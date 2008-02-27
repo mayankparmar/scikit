@@ -1,7 +1,7 @@
 package kip.quantum;
 
 import kip.util.Random;
-import scikit.numerics.fn.C1Function;
+import scikit.numerics.fn.C1FunctionND;
 import scikit.numerics.opt.Relaxation;
 import scikit.util.DoubleArray;
 import scikit.util.Pair;
@@ -35,7 +35,7 @@ public class IsingChain2 {
 		}
 	}
 	
-	C1Function energyFn = new C1Function() {
+	C1FunctionND energyFn = new C1FunctionND() {
 		double[] grad = new double[dim];
 		
 		double J = 1;

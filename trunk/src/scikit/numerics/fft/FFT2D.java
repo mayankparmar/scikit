@@ -1,7 +1,7 @@
-package scikit.numerics.fft.util;
+package scikit.numerics.fft;
 
 import static java.lang.Math.PI;
-import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 import scikit.numerics.fn.Function2D;
 
 public class FFT2D {

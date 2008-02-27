@@ -1,4 +1,4 @@
-package scikit.numerics.fft;
+package scikit.numerics.fft.managed;
 /** Abstract Class representing FFT's of real, double precision data.
   * Concrete classes are typically named RealDoubleFFT_<i>method</i>, implement the
   * FFT using some particular method.
