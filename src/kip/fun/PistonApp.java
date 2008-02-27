@@ -5,13 +5,12 @@ import static java.lang.Math.PI;
 import static java.lang.Math.exp;
 import static java.lang.Math.random;
 import static java.lang.Math.sqrt;
-import static scikit.util.Utilities.frameTogether;
 
 import java.awt.Color;
 
-import scikit.dataset.Histogram;
 import scikit.dataset.Accumulator;
 import scikit.dataset.Function;
+import scikit.dataset.Histogram;
 import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Plot;
 import scikit.jobs.Control;
@@ -44,8 +43,8 @@ public class PistonApp extends Simulation {
 	double m = 1;	// gas mass
 	
 	
-	public PistonApp() {
-		frameTogether("Plots", particles, enthalpy, idealGas, distrib);
+	public void load(Control c) {
+		c.frameTogether("Plots", particles, enthalpy, idealGas, distrib);
 		params.add("Initial piston position", new DoubleValue(10.0, 0, 100));
 		params.add("Initial piston velocity", new DoubleValue(0.0, -1, 1));
 		params.add("# of particles", new IntValue(1000, 1, 5000));
@@ -77,8 +76,9 @@ public class PistonApp extends Simulation {
 			velocities.accum(vi);
 		distrib.registerBars("Velocity distribution", velocities, Color.RED);
 		distrib.registerLines("Gaussian distribution", new Function() {
+			final double beta = 1 / kT();
 			public double eval(double v) {
-				return velocityProbability(v);
+				return velocityProbability(v, beta);
 			}
 		}, Color.BLACK);
 	}
@@ -172,8 +172,7 @@ public class PistonApp extends Simulation {
 	// Probability density P particle velocity lies within [v, v+dv]
 	// Boltzmann velocity distribution: P*dv ~ e^(beta*m*v^2 / 2)
 	// Normalize by integral[P*dv, v=-inf..inf] = sqrt(2*pi / beta*m)
-	private double velocityProbability(double v) {
-		double beta = 1 / kT();
+	private double velocityProbability(double v, double beta) {
 		return sqrt(beta*m/(2*PI))*exp(-beta*m*v*v/2);
 	}
 }
