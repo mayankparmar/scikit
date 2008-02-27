@@ -1,7 +1,7 @@
 package scikit.numerics.opt;
 
-import scikit.numerics.fn.C1Function;
+import scikit.numerics.fn.C1FunctionND;
 
-abstract public class Constraint extends C1Function {
+abstract public class Constraint extends C1FunctionND {
 	abstract public double stiffness();
 }

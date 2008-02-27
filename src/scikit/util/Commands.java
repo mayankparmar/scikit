@@ -14,7 +14,7 @@ import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
-import scikit.numerics.fft.util.FFT3D;
+import scikit.numerics.fft.FFT3D;
 import bsh.ClassPathException;
 import bsh.util.ClassBrowser;
 
@@ -89,7 +89,7 @@ public class Commands {
 	}
 	
 	public static Array3d fftReal(Array3d a) {		
-		FFT3D fft = new FFT3D(a.nx(), a.ny(), a.nz());
+		FFT3D fft = FFT3D.create(a.nx(), a.ny(), a.nz());
 		fft.setLengths(a.lx(), a.ly(), a.lz());
 		fft.transform(a.array(), fft.getScratch());
 

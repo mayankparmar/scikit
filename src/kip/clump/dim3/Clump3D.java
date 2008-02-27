@@ -9,7 +9,7 @@ import static scikit.numerics.Math2.hypot;
 import scikit.dataset.Accumulator;
 import scikit.jobs.Job;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.util.FFT3D;
+import scikit.numerics.fft.FFT3D;
 
 
 public class Clump3D extends AbstractClump3D {
@@ -37,7 +37,7 @@ public class Clump3D extends AbstractClump3D {
 		t_cnt = 0;
 		
 		int dim = (int)(2*L);
-		fft = new FFT3D(dim, dim, dim);
+		fft = FFT3D.create(dim, dim, dim);
 		fft.setLengths(L, L, L);
 	}
 	

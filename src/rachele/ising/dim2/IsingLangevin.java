@@ -8,7 +8,7 @@ import static scikit.numerics.Math2.j1;
 import static scikit.numerics.Math2.sqr;
 import kip.util.Random;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 
 public class IsingLangevin {
 	public double L, R, T, dx, J, H;

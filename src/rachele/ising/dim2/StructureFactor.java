@@ -3,9 +3,8 @@ package rachele.ising.dim2;
 
 import scikit.dataset.Accumulator;
 import static java.lang.Math.*;
-import scikit.numerics.fft.util.FFT1D;
-import scikit.numerics.fft.ComplexDouble2DFFT;
-//import scikit.util.DoubleArray;
+import scikit.numerics.fft.FFT1D;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 
 /*
 * Calculates the structure factor

@@ -13,7 +13,7 @@ import static scikit.util.DoubleArray.mean;
 import static scikit.util.DoubleArray.variance;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.util.FFT3D;
+import scikit.numerics.fft.FFT3D;
 import scikit.numerics.fn.Function3D;
 import scikit.util.DoubleArray;
 
@@ -179,7 +179,7 @@ public class FieldClump3D extends AbstractClump3D {
 	public double dentropy_dphi(double phi) {
 		if (packingFraction > 0) {
 			double a = 1/packingFraction;
-			return log(phi) - log(a-phi);
+			return log(phi/(a-phi));
 		}
 		else {
 			return log(phi);
@@ -198,7 +198,7 @@ public class FieldClump3D extends AbstractClump3D {
 		});
 		
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
-			del_phi[i] = - dt*(phi_bar[i]+T*dentropy_dphi(phi[i])) + sqrt(dt*2*T/(dx*dx*dx))*noise();
+			del_phi[i] = - dt*(phi_bar[i]+T*dentropy_dphi(phi[i])) + noise();
 		}
 		double mu = mean(del_phi)-(DENSITY-mean(phi));
 		for (int i = 0; i < Lp*Lp*Lp; i++) {
@@ -289,11 +289,11 @@ public class FieldClump3D extends AbstractClump3D {
 		phi = new double[Lp*Lp*Lp];
 		phi_bar = new double[Lp*Lp*Lp];
 		del_phi = new double[Lp*Lp*Lp];
-		fft = new FFT3D(Lp, Lp, Lp);
+		fft = FFT3D.create(Lp, Lp, Lp);
 		fft.setLengths(L, L, L);
 	}
 	
 	private double noise() {
-		return noiselessDynamics ? 0 : random.nextGaussian();
+		return noiselessDynamics ? 0 : sqrt(dt*2*T/(dx*dx*dx))*random.nextGaussian();
 	}
 }

@@ -1,0 +1,2 @@
+gcc *.c -Wno-pointer-sign -dynamiclib -I /sw/include/ -I /System/Library/Frameworks/JavaVM.framework/Versions/A/Headers/ \
+ -L/sw/lib/ -lfftw -lrfftw -o libjfftw.dylib

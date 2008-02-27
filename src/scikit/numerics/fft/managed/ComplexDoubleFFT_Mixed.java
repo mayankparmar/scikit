@@ -1,4 +1,4 @@
-package scikit.numerics.fft;
+package scikit.numerics.fft.managed;
 
 /** Computes FFT's of complex, double precision data of arbitrary length n.
   * This class uses the Mixed Radix method; it has special methods to handle

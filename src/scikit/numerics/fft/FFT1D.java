@@ -1,8 +1,8 @@
-package scikit.numerics.fft.util;
+package scikit.numerics.fft;
 
 import static java.lang.Math.PI;
-import scikit.numerics.fft.ComplexDoubleFFT;
-import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
+import scikit.numerics.fft.managed.ComplexDoubleFFT;
+import scikit.numerics.fft.managed.ComplexDoubleFFT_Mixed;
 import scikit.numerics.fn.Function1D;
 
 public class FFT1D {

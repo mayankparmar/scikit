@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="kip/util/excludes/|kip/ising/excludes/|kip/langevin/old/" kind="src" path="src"/>
+	<classpathentry excluding="kip/langevin/old/" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jogl-1.1.0/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/jogl-1.1.0/jogl.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="JavaSims/lib/jogl-1.1.0/linux-i586"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="JavaSims/lib/jogl-1.1.0/osx-universal"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/bsh-2.0b4.jar"/>
+	<classpathentry kind="lib" path="lib/jfftw/jfftw.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="JavaSims/lib/jfftw/osx-x86"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

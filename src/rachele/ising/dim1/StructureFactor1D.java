@@ -5,9 +5,8 @@ import static java.lang.Math.PI;
 //import static java.lang.Math.sqrt;
 import scikit.dataset.Accumulator;
 //import scikit.numerics.fft.ComplexDouble2DFFT;
-import scikit.numerics.fft.ComplexDoubleFFT;
-import scikit.numerics.fft.ComplexDoubleFFT_Mixed;
-//import scikit.numerics.fft.RealDoubleFFT_Radix2;
+import scikit.numerics.fft.managed.ComplexDoubleFFT;
+import scikit.numerics.fft.managed.ComplexDoubleFFT_Mixed;
 
 public class StructureFactor1D {
 	//RealDoubleFFT_Radix2 fft;	// Object to perform transforms

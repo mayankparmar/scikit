@@ -13,8 +13,8 @@ import static scikit.numerics.Math2.jn;
 import static scikit.numerics.Math2.sqr;
 import kip.util.Random;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.ComplexDouble2DFFT;
-import scikit.numerics.fft.util.FFT2D;
+import scikit.numerics.fft.FFT2D;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 import scikit.numerics.fn.Function2D;
 import scikit.util.DoubleArray;
 

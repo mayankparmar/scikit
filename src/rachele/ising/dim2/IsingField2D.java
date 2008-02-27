@@ -13,7 +13,7 @@ import kip.util.Random;
 import scikit.dataset.Accumulator;
 import scikit.dataset.PointSet;
 import scikit.jobs.params.Parameters;
-import scikit.numerics.fft.ComplexDouble2DFFT;
+import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 
 public class IsingField2D {
 	public double L, R, T, dx, J, H, dT;

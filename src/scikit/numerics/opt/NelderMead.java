@@ -3,7 +3,7 @@ package scikit.numerics.opt;
 import java.util.Collections;
 import java.util.Vector;
 
-import scikit.numerics.fn.Function;
+import scikit.numerics.fn.FunctionND;
 import scikit.util.DoubleArray;
 
 
@@ -21,7 +21,7 @@ class Pt implements Comparable<Pt> {
 	}
 }
 
-public class NelderMead extends Optimizer<Function> {
+public class NelderMead extends Optimizer<FunctionND> {
 	double _scale;
 	int _dim;
 	double[] _p;
