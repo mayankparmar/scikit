@@ -340,6 +340,7 @@ public class IsingField2D {
 		lastMu = mu;
 		freeEnergy /= (Lp*Lp) ;
 		//accFreeEnergy.accum(t, freeEnergy);
+		if(theory == "TimeAdjust") dt = mean(Lambda);
 		t += dt;
 	}
 	
