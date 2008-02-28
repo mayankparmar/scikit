@@ -32,7 +32,7 @@ public class IsingField2DoptApp extends Simulation{
 	StructureFactorOpt sf;
 	IsingField2Dopt ising;
 	boolean initFile = false;
-	boolean showFE = false;
+	boolean showFE = true;
 	Accumulator freeEnergy;
     
     public static void main(String[] args) {
@@ -43,15 +43,15 @@ public class IsingField2DoptApp extends Simulation{
 		c.frameTogether("Grids", grid, sfGrid, delPhiGrid);
 		if (showFE) c.frame(fePlot);
 		params.addm("Zoom", new ChoiceValue("Yes", "No"));
-		params.addm("Interaction", new ChoiceValue("Square", "Circle" ));
-		params.addm("Theory", new ChoiceValue("Slow Near Edge", "Exact", "Dynamic dt"));
+		params.addm("Interaction", new ChoiceValue( "Circle","Square" ));
+		params.addm("Theory", new ChoiceValue("Exact", "Slow Near Edge", "Dynamic dt"));
 		params.addm("Dynamics?", new ChoiceValue("Langevin No M Convervation", "Langevin Conserve M"));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", "Read From File"));
 		params.addm("Noise", new DoubleValue(0, 0, 1.0).withSlider());
-		params.addm("T", 0.04);
+		params.addm("T", 0.02);
 		params.addm("H", 0.8);
-		params.addm("Rx", 400.0);
-		params.addm("Ry", 400.0);
+		params.addm("Rx", 415.0);
+		params.addm("Ry", 360.0);
 		params.add("L", 1000.0);
 		params.add("dx", 10.0);
 		params.add("Random seed", 0);
@@ -89,7 +89,7 @@ public class IsingField2DoptApp extends Simulation{
 		params.set("dt", ising.dt);
 		if(flags.contains("Clear")) freeEnergy.clear();
 		if(flags.contains("Record FE")) recordTvsFE();
-		if(ising.recordTvsFE == true){
+		if(ising.recordTvsFE){
 			recordTvsFE();
 			double newT = ising.T - 0.001;
 			params.set("T", newT);			
@@ -128,7 +128,7 @@ public class IsingField2DoptApp extends Simulation{
         	if (flags.contains("Write Config"))	writeConfiguration();
         	params.set("Time", ising.time());
 			ising.simulate();
-			ising.adjustRanges();
+			//ising.adjustRanges();
 			if (ising.t > steps){
 				sf.takeFT(ising.phi);
 				Job.animate();
