@@ -240,7 +240,7 @@ public class IsingField2DApp extends Simulation {
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
-		int recordSteps = 1;
+		int recordSteps = 0;
 		
 //		for (int i = 0; i < 100; i ++){
 //			ising.simulate();
@@ -304,7 +304,7 @@ public class IsingField2DApp extends Simulation {
 				sf.accumulateMelt(circleOn, ising.phi, maxi);
 				//sf.getSF(ising.phi);
 				recordSFvTime();
-				recordSteps += 1;
+				recordSteps += 10;
 				//writeDataToFile();
 			}
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
