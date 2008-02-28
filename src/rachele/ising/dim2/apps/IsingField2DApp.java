@@ -75,7 +75,7 @@ public class IsingField2DApp extends Simulation {
 				"Steepest Decent" ));
 		params.add("Init Conditions", new ChoiceValue("Random Gaussian", 
 				"Artificial Stripe 3", "Read From File", "Constant" ));
-		params.addm("Approx", new ChoiceValue("Slow",
+		params.addm("Approx", new ChoiceValue("Slow","TimeAdjust",
 				"HalfStep", "Phi4","Phi4HalfStep"));
 		//params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Noise", new DoubleValue(0.0, 0.0, 1.0).withSlider());
@@ -240,6 +240,7 @@ public class IsingField2DApp extends Simulation {
 		binWidth = IsingField2D.KR_SP / floor(IsingField2D.KR_SP/binWidth);
         sf = new StructureFactor(ising.Lp, ising.L, ising.R, binWidth, ising.dt);
 		sf.setBounds(0.1, 14);
+		int recordSteps = 1;
 		
 //		for (int i = 0; i < 100; i ++){
 //			ising.simulate();
@@ -295,13 +296,15 @@ public class IsingField2DApp extends Simulation {
 			sf.getAccumulatorV().clear();
 			sf.getAccumulatorH().clear();
 			sf.accumulateAll(ising.time(), ising.coarseGrained());
-			if (ising.time()%10 == 0){
+			//if (ising.time()%10 == 0){
+			if (ising.time() > recordSteps){
 
 				//sf.accumMin(ising.coarseGrained(), params.fget("kR"));
 				boolean circleOn=true;
 				sf.accumulateMelt(circleOn, ising.phi, maxi);
 				//sf.getSF(ising.phi);
 				recordSFvTime();
+				recordSteps += 1;
 				//writeDataToFile();
 			}
 			//sf.accumulateAll(ising.time(), ising.coarseGrained());
