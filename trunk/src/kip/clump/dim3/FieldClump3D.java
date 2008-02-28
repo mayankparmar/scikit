@@ -85,7 +85,7 @@ public class FieldClump3D extends AbstractClump3D {
 		}
 	}
 	
-	public void duplicateBlock() {
+	public void duplicateAndTile() {
 		int Lp2 = Lp;
 		double[] old_phi = phi;
 		L *= 2;
@@ -94,12 +94,29 @@ public class FieldClump3D extends AbstractClump3D {
 		for (int z = 0; z < Lp; z++) {
 			for (int y = 0; y < Lp; y++) {
 				for (int x = 0; x < Lp; x++) {
-					phi[z*Lp*Lp + y*Lp + x] = old_phi[(z%Lp2)*Lp2*Lp2 + (y%Lp2)*Lp2 + (x%Lp2)];
-					
-					double r = dx * hypot((z-Lp/2), (y-Lp/2), (x-Lp/2)) / Rx;
-					double p = phi[z*Lp*Lp + y*Lp + x];
-					p = (p - DENSITY) / (1 + 0.1*r*r) + DENSITY;
+					double p = old_phi[(z%Lp2)*Lp2*Lp2 + (y%Lp2)*Lp2 + (x%Lp2)];
+					if (true) {
+						double r = dx * hypot((z-Lp/2), (y-Lp/2), (x-Lp/2)) / Rx;
+						p = (p - DENSITY) / (1 + 0.1*r*r) + DENSITY;
+					}
 					phi[z*Lp*Lp + y*Lp + x] = p;
+				}
+			}
+		}
+	}
+	
+	public void duplicateAndEmbed() {
+		int Lp2 = Lp;
+		double[] old_phi = phi;
+		L *= 2;
+		Lp *= 2;
+		allocate();
+		DoubleArray.set(phi, DENSITY);
+		for (int z = 0; z < Lp2; z++) {
+			for (int y = 0; y < Lp2; y++) {
+				for (int x = 0; x < Lp2; x++) {
+					double p = old_phi[z*Lp2*Lp2 + y*Lp2 + x];
+					phi[(z+Lp2/2)*Lp*Lp + (y+Lp2/2)*Lp + (x+Lp2/2)] = p;
 				}
 			}
 		}

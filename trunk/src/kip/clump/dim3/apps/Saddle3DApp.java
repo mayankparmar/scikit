@@ -67,7 +67,7 @@ public class Saddle3DApp extends Simulation {
 			clump.halveResolution();
 		}
 		if (flags.contains("Dup")) {
-			clump.duplicateBlock();
+			clump.duplicateAndTile();
 		}
 		flags.clear();
 		
