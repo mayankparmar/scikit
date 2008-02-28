@@ -31,9 +31,13 @@ public class DoubleArray {
 		return max;
 	}
 	
-	public static void zero(double a[]) {
+	public static void set(double a[], double v) {
 		for (int i = 0; i < a.length; i++)
-			a[i] = 0;
+			a[i] = v;
+	}
+	
+	public static void zero(double a[]) {
+		set(a, 0);
 	}
 	
 	public static void shift(double a[], double b) {
