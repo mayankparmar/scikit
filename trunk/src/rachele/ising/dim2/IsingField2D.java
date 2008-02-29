@@ -152,7 +152,7 @@ public class IsingField2D {
 			System.out.println("Artificial Stripe 3");
 			int stripeLoc = (int)(Lp/3.0);
 			randomizeField(DENSITY);
-			double m = DENSITY + (1.0-DENSITY)*.0001;
+			double m = DENSITY + (1.0-DENSITY)*.001;
 			for (int i = 0; i < Lp*Lp; i ++){
 				int x = i%Lp;
 				if (x == stripeLoc)
@@ -165,7 +165,19 @@ public class IsingField2D {
 					System.out.println(i + " " + phi[i]);
 				}
 			}
-			
+		}else if(init == "Artificial Stripe 2"){
+			System.out.println("Artificial Stripe 2");
+
+			randomizeField(DENSITY);
+			double m = DENSITY + (1.0-DENSITY)*.001;
+			for (int i = 0; i < Lp*Lp; i ++){
+				int x = i%Lp;
+				if (x == 0 || x == Lp/2)
+					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+				if (phi[i] > 1.0){
+					System.out.println(i + " " + phi[i]);
+				}
+			}
 		}
 	}
 	
