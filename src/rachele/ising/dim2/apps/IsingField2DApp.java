@@ -54,7 +54,6 @@ public class IsingField2DApp extends Simulation {
     Accumulator brLandscapeFiller;
     public int lastClear;
     public int maxi=0;
-    
 	public static void main(String[] args) {
 		new Control(new IsingField2DApp(), "Ising Field");
 	}
@@ -79,11 +78,13 @@ public class IsingField2DApp extends Simulation {
 				"HalfStep", "Phi4","Phi4HalfStep"));
 		//params.addm("Plot FEvT", new ChoiceValue("Off", "On"));
 		params.addm("Noise", new DoubleValue(0.0, 0.0, 1.0).withSlider());
+		params.addm("Stripe Strength", new DoubleValue(0.0, 0.0, 1.0).withSlider());
 		params.addm("Horizontal Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("Vertical Slice", new DoubleValue(0.5, 0, 0.9999).withSlider());
 		params.addm("kR", new DoubleValue(5.135622302, 0.0, 6.0).withSlider());
 		params.addm("T", 0.04);
 		params.addm("H", 0.80);
+		params.addm("H Stripe", 0.8);
 		params.addm("dT", 0.001);
 		params.addm("tolerance", 0.0001);
 		params.addm("dt", 1.0);
@@ -323,10 +324,10 @@ public class IsingField2DApp extends Simulation {
 			params.set("J", readData);
 			dis.readChar();				
 		
-			readData = dis.readDouble();
-			System.out.println(readData);
-			params.set("H", readData);
-			dis.readChar();
+//			readData = dis.readDouble();
+//			System.out.println(readData);
+//			params.set("H", readData);
+//			dis.readChar();
 			
 			readData = dis.readDouble();
 			System.out.println(readData);
@@ -382,8 +383,8 @@ public class IsingField2DApp extends Simulation {
 			
 			dos.writeDouble(params.fget("J"));
 			dos.writeChar('\t');
-			dos.writeDouble(params.fget("H"));
-			dos.writeChar('\t');
+//			dos.writeDouble(params.fget("H"));
+//			dos.writeChar('\t');
 			dos.writeDouble(params.fget("R"));
 			dos.writeChar('\t');
 			dos.writeDouble(params.fget("L/R"));
@@ -405,7 +406,7 @@ public class IsingField2DApp extends Simulation {
 			FileUtil.printlnToFile(file, " # Data = H, S(k*), Free Energy, time");
 		}else{
 			FileUtil.printlnToFile(file, " # SF vs T data ");				
-			FileUtil.printlnToFile(file, " # External field = ", ising.H);
+			//FileUtil.printlnToFile(file, " # External field = ", ising.H);
 			FileUtil.printlnToFile(file, " # Data = H, S(k*), Free Energy, time");
 		}
 		FileUtil.printlnToFile(file, " # Density = ", ising.DENSITY);		
@@ -415,7 +416,7 @@ public class IsingField2DApp extends Simulation {
 		FileUtil.deleteFile(file);
 		FileUtil.printlnToFile(file, " # SF vs time data ");			
 		FileUtil.printlnToFile(file, " # Temperature = ", ising.T);
-		FileUtil.printlnToFile(file, " # H", ising.H);
+		//FileUtil.printlnToFile(file, " # H", ising.H);
 		FileUtil.printlnToFile(file, " # Density = ", ising.DENSITY);		
 	}
 	
@@ -437,18 +438,18 @@ public class IsingField2DApp extends Simulation {
 	}
 	
 	public void writeDataToFile(){
-		boolean SvH = false;
+		boolean SvH = true;
 		if (params.sget("Interaction")=="Square"){
-				String dataFileV = "../../../research/javaData/sfData/dataFileV";
-				String dataFileH = "../../../research/javaData/sfData/dataFileH";
+				String dataFileV = "../../../research/javaData/sfData/sV";
+				String dataFileH = "../../../research/javaData/sfData/sH";
 				if (initFile == false){
 					initFile(dataFileV, SvH);
 					initFile(dataFileH, SvH);
 					initFile = true;
 				}
 				if (SvH){
-					FileUtil.printlnToFile(dataFileH, ising.H, sf.peakValueH(), ising.freeEnergy, ising.time());
-					FileUtil.printlnToFile(dataFileV, ising.H, sf.peakValueV(), ising.freeEnergy, ising.time());					
+					FileUtil.printlnToFile(dataFileH, params.fget("H"), sf.peakValueH(), ising.freeEnergy, ising.time());
+					FileUtil.printlnToFile(dataFileV, params.fget("H"), sf.peakValueV(), ising.freeEnergy, ising.time());					
 				}else{
 					FileUtil.printlnToFile(dataFileH, ising.T, sf.peakValueH(), ising.freeEnergy, ising.time());
 					FileUtil.printlnToFile(dataFileV, ising.T, sf.peakValueV(), ising.freeEnergy, ising.time());
@@ -463,8 +464,8 @@ public class IsingField2DApp extends Simulation {
 				initFile = true;
 			}
 			if(SvH){
-				FileUtil.printlnToFile(dataClump, ising.H, sf.peakValueC(), ising.freeEnergy, ising.time());
-				FileUtil.printlnToFile(dataStripe, ising.H, sf.peakValueS(), ising.freeEnergy, ising.time());					
+				FileUtil.printlnToFile(dataClump, params.fget("H"), sf.peakValueC(), ising.freeEnergy, ising.time());
+				FileUtil.printlnToFile(dataStripe, params.fget("H"), sf.peakValueS(), ising.freeEnergy, ising.time());					
 			}else{
 				FileUtil.printlnToFile(dataClump, ising.T, sf.peakValueC(), ising.freeEnergy, ising.time());
 				FileUtil.printlnToFile(dataStripe, ising.T, sf.peakValueS(), ising.freeEnergy, ising.time());

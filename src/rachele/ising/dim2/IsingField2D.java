@@ -16,7 +16,7 @@ import scikit.jobs.params.Parameters;
 import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 
 public class IsingField2D {
-	public double L, R, T, dx, J, H, dT;
+	public double L, R, T, dx, J, dT, H;
 	public int Lp, N;
 	public double DENSITY;
 	public double dt, t;
@@ -24,7 +24,7 @@ public class IsingField2D {
 	public double[] phi, phiVector;
 	public double freeEnergy;
 	public int aveCount;
-	double [] phi_bar, delPhi, Lambda, A;
+	double [] phi_bar, delPhi, Lambda, A, HH;
 	public double horizontalSlice;
 	public double verticalSlice;
 	ComplexDouble2DFFT fft;	// Object to perform transforms
@@ -64,7 +64,7 @@ public class IsingField2D {
 	public Accumulator accFreeEnergy;
 			
 	//boolean noiselessDynamics = false;
-	double noiseParameter;
+	double noiseParameter, stripeStrength;
 	boolean circleInteraction = false;
 	boolean magConservation = false;
 	int slowPower = 0;
@@ -76,19 +76,17 @@ public class IsingField2D {
 	
 	public IsingField2D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
+
 		
 		J = params.fget("J");
 		R = params.fget("R");
 		L = R*params.fget("L/R");
 		T = params.fget("T");
-		H = params.fget("H");
 		dx = R/params.fget("R/dx");
 		dt = params.fget("dt");
 		//dT = params.fget("dT");
 		//double dT = params.fget("dT");
 		DENSITY = params.fget("Magnetization");
-
-		
 		accStripeFreeEnergy = new Accumulator(0.0001);
 		accClumpFreeEnergy = new Accumulator(0.0001);
 		accEitherFreeEnergy = new Accumulator(0.0001);
@@ -100,12 +98,8 @@ public class IsingField2D {
 		if(params.sget("Interaction") == "Circle")
 			circleInteraction = true;
 
-//		if(params.sget("Noise") == "Off"){
-//			noiselessDynamics = true;
-//		}else{
-//			noiselessDynamics = false;
-//		}
 		noiseParameter = params.fget("Noise");
+		stripeStrength = params.fget("Stripe Strength");
 		
 		slowPower = 2;
 		if(params.sget("Dynamics?") == "Langevin Conserve M") magConservation = true;
@@ -132,6 +126,10 @@ public class IsingField2D {
 		Lambda = new double [Lp*Lp];
 		phiVector = new double[Lp*Lp];
 		A = new double [Lp*Lp];
+		HH = new double[Lp*Lp];
+		double backgroundH = params.fget("H");
+		double stripeH = params.fget("H Stripe");
+		setExternalField(backgroundH, stripeH);
 		
 		fftScratch = new double[2*Lp*Lp];
 		fft = new ComplexDouble2DFFT(Lp, Lp);
@@ -152,7 +150,7 @@ public class IsingField2D {
 			System.out.println("Artificial Stripe 3");
 			int stripeLoc = (int)(Lp/3.0);
 			randomizeField(DENSITY);
-			double m = DENSITY + (1.0-DENSITY)*.001;
+			double m = DENSITY + (1.0-DENSITY)*stripeStrength;
 			for (int i = 0; i < Lp*Lp; i ++){
 				int x = i%Lp;
 				if (x == stripeLoc)
@@ -169,15 +167,19 @@ public class IsingField2D {
 			System.out.println("Artificial Stripe 2");
 
 			randomizeField(DENSITY);
-			double m = DENSITY + (1.0-DENSITY)*.001;
-			for (int i = 0; i < Lp*Lp; i ++){
-				int x = i%Lp;
-				if (x == 0 || x == Lp/2)
-					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
-				if (phi[i] > 1.0){
-					System.out.println(i + " " + phi[i]);
-				}
-			}
+			double m = DENSITY - (1.0-DENSITY)*stripeStrength;
+			for (int i = 0; i < Lp; i ++)
+				phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+			for (int i = Lp*Lp/2; i < Lp + Lp*Lp/2; i ++)
+				phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+//			for (int i = 0; i < Lp*Lp; i ++){
+////				int x = i%Lp;
+////				if (x == 0 || x == Lp/2)
+//					phi[i] = m + random.nextGaussian()*sqrt((1-m*m)/(dx*dx));
+//				if (phi[i] > 1.0){
+//					System.out.println(i + " " + phi[i]);
+//				}
+//			}
 		}
 	}
 	
@@ -216,7 +218,7 @@ public class IsingField2D {
 	public void readParams(Parameters params) {
 		//if (params.sget("Plot FEvT") == "Off") T = params.fget("T");
 		dt = params.fget("dt");
-		H = params.fget("H");
+
 		J = params.fget("J");
 		R = params.fget("R");
 		L = R*params.fget("L/R");
@@ -224,6 +226,9 @@ public class IsingField2D {
 		Lp = Integer.highestOneBit((int)rint((L/dx)));
 		dx = L / Lp;
 		T = params.fget("T");
+		double backgroundH = params.fget("H");
+		double stripeH = params.fget("H Stripe");
+		setExternalField(backgroundH, stripeH);
 		//dT = params.fget("dT");
 		params.set("R/dx", R/dx);
 		//params.set("Lp", Lp);
@@ -305,10 +310,10 @@ public class IsingField2D {
 		for (int i = 0; i < Lp*Lp; i++) {
 			double dF_dPhi = 0, entropy = 0;
 			if (theory == "Phi4" || theory == "Phi4HalfStep"){
-				dF_dPhi = -phi_bar[i]+T*(phi[i]+pow(phi[i],3)) - H;	
+				dF_dPhi = -phi_bar[i]+T*(phi[i]+pow(phi[i],3)) - HH[i];	
 				Lambda[i] = 1;
 			}else{
-				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- H;
+				dF_dPhi = -phi_bar[i]+T* scikit.numerics.Math2.atanh(phi[i])- HH[i];
 				//dF_dPhi = -phi_bar[i]+T*(-log(1.0-phi[i])+log(1.0+phi[i]))/2.0 - H;
 				if(theory == "HalfStep"){
 					Lambda[i] = 1;
@@ -324,7 +329,7 @@ public class IsingField2D {
 			double potential = -(phi[i]*phi_bar[i])/2.0;
 			potAccum += potential;
 			entAccum -= T*entropy;
-			freeEnergy += potential - T*entropy - H*phi[i];
+			freeEnergy += potential - T*entropy - HH[i]*phi[i];
 
 		}		
 		meanLambda /= Lp*Lp;
@@ -493,7 +498,7 @@ public class IsingField2D {
 				System.out.println("boundary at point " + i);
 			double entropy = -((1.0 + config[i])*log(1.0 + config[i]) +(1.0 - config[i])*log(1.0 - config[i]))/2.0;
 			double potential = -(config[i]*phi_bar[i])/2.0;
-			freeEnergy += potential - T*entropy - H*config[i];
+			freeEnergy += potential - T*entropy - HH[i]*config[i];
 		}
 		freeEnergy /= (Lp*Lp);
 		if (Double.isNaN(freeEnergy))
@@ -505,7 +510,7 @@ public class IsingField2D {
 		double steepestAscentDir [] = new double [N];
 		convolveWithRange(config, phi_bar, R);
 		for (int i = 0; i < Lp*Lp; i++) {
-			steepestAscentDir[i] = (-phi_bar[i] +T* scikit.numerics.Math2.atanh(config[i])- H);
+			steepestAscentDir[i] = (-phi_bar[i] +T* scikit.numerics.Math2.atanh(config[i])- HH[i]);
 			steepestAscentDir[i] *= (pow(1 - phi[i]*phi[i], slowPower));
 		}
 		return steepestAscentDir;		
@@ -521,7 +526,7 @@ public class IsingField2D {
 			double potential = -(config[i]*phi_bar[i])/2.0;
 			//double boundaryTerm = exp(-sqr(1-config[i])/(2.0*sigma*sigma))/sqr(1-config[i]) + exp(-sqr(1+config[i])/(2.0*sigma*sigma))/sqr(1+config[i]);
 			//System.out.println("Boundary term = " + boundaryTerm);
-			freeEnergy += potential - T*entropy*100 - H*config[i];
+			freeEnergy += potential - T*entropy*100 - HH[i]*config[i];
 		}
 		freeEnergy /= (Lp*Lp);
 		if (Double.isNaN(freeEnergy))
@@ -536,7 +541,7 @@ public class IsingField2D {
 			double boundaryTerm =  exp(-sqr(1-config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1-config[i])))/(1-config[i]);
 			//boundaryTerm -=        exp(-sqr(1+config[i])/(2.0*sigma*sigma))*(1/sqr(sigma) + 2.0 / (sqr(1+config[i])))/(1+config[i]);
 			//System.out.println("Boundary term = " + boundaryTerm);
-			steepestAscentDir[i] = (-phi_bar[i] +T*100* scikit.numerics.Math2.atanh(config[i])- H + boundaryTerm);
+			steepestAscentDir[i] = (-phi_bar[i] +T*100* scikit.numerics.Math2.atanh(config[i])- HH[i] + boundaryTerm);
 			//steepestAscentDir[i] = (-phi_bar[i] +T* configA[i]- H + boundaryTerm);///(1-sqr(Math.tanh(configA[i])));//*(sqr(1 - phi[i]*phi[i]));
 		}
 		return steepestAscentDir;		
@@ -544,5 +549,14 @@ public class IsingField2D {
 	
 	public void randomizeSeed(int newSeed){
 		random.setSeed(newSeed);		
+	}
+	
+	private void setExternalField(double backgroundH, double stripeH){
+		for (int i = Lp; i < Lp*Lp; i++)
+			HH[i] = backgroundH;
+		for (int i = 0; i < Lp; i++)
+			HH[i] = stripeH;
+		for (int i = Lp*Lp/2; i < Lp + Lp*Lp/2; i++)
+			HH[i] = stripeH;	
 	}
 }
