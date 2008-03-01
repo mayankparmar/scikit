@@ -3,11 +3,13 @@ package scikit.graphics.dim3;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -34,6 +36,10 @@ public class Scene3D extends Scene<Gfx3D> {
 	public void clear() {
 		super.clear();
 		_rotation = new Quat4d(0, 0, 0, 1);
+	}
+	
+	public BufferedImage getImage() {
+		return GLHelper.captureImage((GLCanvas)_canvas); 
 	}
 	
 	public Quat4d getRotation() {

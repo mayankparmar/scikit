@@ -9,11 +9,13 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -150,5 +152,18 @@ public class Utilities {
 		else {
 			return false;
 		}
+	}
+	
+	public static BufferedImage captureJComponentImage(JComponent component) {
+		boolean opaqueValue = component.isOpaque();
+		component.setOpaque( true );
+		int width = component.getWidth();
+		int height = component.getHeight();
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = image.createGraphics();
+		component.paint(g2d);
+		g2d.dispose();
+		component.setOpaque(opaqueValue);
+		return image;
 	}
 }
