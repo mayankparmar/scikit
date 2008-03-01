@@ -3,9 +3,11 @@ package scikit.util;
 import static java.lang.Math.PI;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
@@ -61,14 +63,18 @@ public class Commands {
 		Utilities.frame(grid);
 	}
 	
-	public static void grid(int w, int h, int d, double[] data) {
+	public static void grid3d() {
+		Utilities.frame(new Grid3D("Grid"));
+	}
+	
+	public static void grid3d(int w, int h, int d, double[] data) {
 		Grid3D grid = new Grid3D("Grid");
 		grid.registerData(w, h, d, data);
 		Utilities.frame(grid);
 	}
 	
-	public static void grid(Array3d a) {
-		grid(a.nx(), a.ny(), a.nz(), a.array());
+	public static void grid3d(Array3d a) {
+		grid3d(a.nx(), a.ny(), a.nz(), a.array());
 	}
 	
 	public static void classBrowser() { 
@@ -86,6 +92,29 @@ public class Commands {
 				return new Array3d(new File(fname));
 		} catch(IOException e) {}
 		return null;
+	}
+	
+	public static void save(BufferedImage image, String fname) {
+		try {
+			if (fname != null) {
+				int offset = fname.lastIndexOf( "." );
+				String type;
+				if (offset == -1) {
+					fname += ".png";
+					type = "png";
+				}
+				else {
+					type = fname.substring(offset + 1);
+				}
+				ImageIO.write(image, type, new File(fname));
+			}
+		} catch(IOException e) {}
+	}
+	
+	public static void save(BufferedImage image) {
+		try {
+			save(image, FileUtil.saveDialog(new JDialog(), ""));
+		} catch(IOException e) {} 
 	}
 	
 	public static Array3d fftReal(Array3d a) {		

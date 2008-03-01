@@ -1,9 +1,14 @@
 package scikit.graphics;
 
+import java.awt.image.BufferedImage;
+
+import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.swing.SwingUtilities;
+
+import com.sun.opengl.util.Screenshot;
 
 public class GLHelper {
 	public static GLCanvas createComponent(GLEventListener listener) {
@@ -40,5 +45,17 @@ public class GLHelper {
 		
 		canvas.addGLEventListener(listener);
 		return canvas;
+	}
+	
+	/**
+	 * Copies the OpenGL frame buffer into an image
+	 * @param d The OpenGL drawable
+	 * @return The copied image
+	 */
+	public static BufferedImage captureImage(GLAutoDrawable d) {
+		d.getContext().makeCurrent();
+		BufferedImage image = Screenshot.readToBufferedImage(d.getWidth(), d.getHeight());
+		d.getContext().release();
+		return image;
 	}
 }
