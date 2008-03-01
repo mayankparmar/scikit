@@ -18,7 +18,8 @@ public class Clump3D extends AbstractClump3D {
 	double dt;
 	double[] ptsX, ptsY, ptsZ;
 	FFT3D fft;
-
+	double[] fftScratch;
+	
 	public Clump3D(Parameters params) {
 		random.setSeed(params.iget("Random seed", 0));
 
@@ -39,6 +40,7 @@ public class Clump3D extends AbstractClump3D {
 		int dim = (int)(2*L);
 		fft = FFT3D.create(dim, dim, dim);
 		fft.setLengths(L, L, L);
+		fftScratch = new double[dim*dim*dim];
 	}
 	
 	private void randomizePts() {
@@ -118,10 +120,9 @@ public class Clump3D extends AbstractClump3D {
 	}
 	
 	public void accumulateStructure(final Accumulator sf) {
-		double[] scratch = fft.getScratch();
 		int Lp = fft.dim1;
-		performCoarseGraining(scratch, Lp);
-		fft.transform(scratch, new FFT3D.MapFn() {
+		performCoarseGraining(fftScratch, Lp);
+		fft.transform(fftScratch, new FFT3D.MapFn() {
 			public void apply(double k1, double k2, double k3, double re, double im) {
 				double k = hypot(k1, k2, k3);
 				double kR = k*R;
