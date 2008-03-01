@@ -1,7 +1,5 @@
 package scikit.util;
 
-import static java.lang.Math.PI;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,7 +14,6 @@ import scikit.dataset.PointSet;
 import scikit.graphics.dim2.Grid;
 import scikit.graphics.dim2.Plot;
 import scikit.graphics.dim3.Grid3D;
-import scikit.numerics.fft.FFT3D;
 import bsh.ClassPathException;
 import bsh.util.ClassBrowser;
 
@@ -115,20 +112,5 @@ public class Commands {
 		try {
 			save(image, FileUtil.saveDialog(new JDialog(), ""));
 		} catch(IOException e) {} 
-	}
-	
-	public static Array3d fftReal(Array3d a) {		
-		FFT3D fft = FFT3D.create(a.nx(), a.ny(), a.nz());
-		fft.setLengths(a.lx(), a.ly(), a.lz());
-		fft.transform(a.array(), fft.getScratch());
-
-		Array3d ret = new Array3d(a.nx(), a.ny(), a.nz());
-		double dx = a.lx()/a.nx();
-		double dy = a.ly()/a.ny();
-		double dz = a.lz()/a.nz();
-		ret.setLengths(2*PI/dx, 2*PI/dy, 2*PI/dz);
-		for (int i = 0; i < ret.array().length; i++)
-			ret.array()[i] = fft.getScratch()[2*i+0];
-		return ret;
 	}
 }
