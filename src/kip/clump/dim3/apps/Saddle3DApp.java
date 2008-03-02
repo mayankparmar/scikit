@@ -70,14 +70,13 @@ public class Saddle3DApp extends Simulation {
 			clump.halveResolution();
 		}
 		if (flags.contains("Dup")) {
-			clump.duplicateAndTile();
+			clump.duplicateAndEmbed();
 		}
 		flags.clear();
 		
 		findSaddle = params.sget("Saddle").equals("Yes");
 		adjustR = params.sget("Adjust R").equals("Yes");
 		
-		clump.useNoiselessDynamics(findSaddle);
 		clump.readParams(params);
 		clump.packingFraction = params.fget("Packing");
 		
@@ -109,6 +108,7 @@ public class Saddle3DApp extends Simulation {
 	public void run() {
 		clump = new FieldClump3D(params);
 		clump.initializeFieldWithSeed(params.sget("Seed"));
+		clump.useNoiselessDynamics(true);
 
 		Job.animate();
 		
@@ -130,6 +130,7 @@ public class Saddle3DApp extends Simulation {
 		}
 	}
 	
+	double writeEndTime = 4000;
 	double writeDelay = 19.9;
 	double lastWrite;
 	File writeDir;
@@ -155,7 +156,7 @@ public class Saddle3DApp extends Simulation {
 	}
 	
 	private void writeField() {
-		if (writeDir != null && (clump.time() - lastWrite > writeDelay)) {
+		if (writeDir != null && (clump.time() - lastWrite > writeDelay) && clump.time() < writeEndTime) {
 			lastWrite = clump.time();
 			String fname = writeDir+File.separator+"t="+format(clump.time());
 			int Lp = clump.numColumns();
