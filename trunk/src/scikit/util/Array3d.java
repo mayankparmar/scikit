@@ -1,6 +1,7 @@
 package scikit.util;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -14,11 +15,15 @@ public class Array3d implements Cloneable {
 	private double _lx, _ly, _lz;
 	
 	
-	public Array3d(int nx, int ny, int nz) {
+	public Array3d(int nx, int ny, int nz, double[] a) {
 		_lx = _nx = nx;
 		_ly = _ny = ny;
 		_lz = _nz = nz;
-		_a = new double[_nx*_ny*_nz];
+		_a = a;
+	}
+
+	public Array3d(int nx, int ny, int nz) {
+		this(nx, ny, nz, new double[nx*ny*nz]);
 	}
 	
 	public Array3d(File file) {
@@ -66,6 +71,20 @@ public class Array3d implements Cloneable {
 	
 	public void set(int x, int y, int z, double v) {
 		_a[_nx*_ny*z+_nx*y+x] = v;
+	}
+	
+	public void writeFile(File fname) {
+		try {
+			DataOutputStream dos = FileUtil.dosFromString(fname.toString());
+			dos.writeInt(_nx);
+			dos.writeInt(_ny);
+			dos.writeInt(_nz);
+			for (double v : _a)
+				dos.writeDouble(v);
+			dos.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public void build(Function3D f) {
