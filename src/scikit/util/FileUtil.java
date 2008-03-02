@@ -15,8 +15,43 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.swing.JFileChooser;
+
 
 public class FileUtil {
+	
+	public static File directoryDialog(String fname) throws IOException {
+		JFileChooser chooser = new JFileChooser(fname);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.showDialog(null, "Select Directory");
+		File dir = chooser.getSelectedFile();
+		if (dir == null || dir.isDirectory())
+			return dir;
+		else
+			return dir.getParentFile();
+	}
+	
+	public static String fileDialog(Component comp, String fname, String title, int type) throws IOException {
+		for (; comp != null; comp = comp.getParent()) {
+			if (comp instanceof Frame) {
+				FileDialog d = new FileDialog((Frame)comp, title, type);
+				d.setFile(fname);
+				d.setVisible(true);
+				String file = d.getFile();
+				String dir = d.getDirectory();
+				return file == null ? null : dir+file;
+			}
+		}
+		throw new IOException();
+	}
+	
+	public static String saveDialog(Component comp, String fname) throws IOException {
+		return fileDialog(comp, fname, "Save", FileDialog.SAVE);
+	}
+	
+	public static String loadDialog(Component comp, String fname) throws IOException {
+		return fileDialog(comp, fname, "Load", FileDialog.LOAD);
+	}
 	
 	/** 
 	 * Gets an empty directory, creating it if necessary. The first choice for the
@@ -41,28 +76,6 @@ public class FileUtil {
 			target.mkdir();
 		}
 		return target;
-	}
-	
-	public static String fileDialog(Component comp, String fname, String title, int type) throws IOException {
-		for (; comp != null; comp = comp.getParent()) {
-			if (comp instanceof Frame) {
-				FileDialog d = new FileDialog((Frame)comp, title, type);
-				d.setFile(fname);
-				d.setVisible(true);
-				String file = d.getFile();
-				String dir = d.getDirectory();
-				return file == null ? null : dir+file;
-			}
-		}
-		throw new IOException();
-	}
-	
-	public static String saveDialog(Component comp, String fname) throws IOException {
-		return fileDialog(comp, fname, "Save", FileDialog.SAVE);
-	}
-	
-	public static String loadDialog(Component comp, String fname) throws IOException {
-		return fileDialog(comp, fname, "Load", FileDialog.LOAD);
 	}
 	
 	public static PrintWriter pwFromString(String fname) throws IOException {
