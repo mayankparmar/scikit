@@ -1,7 +1,6 @@
 package kip.clump.dim2.apps;
 
 import static scikit.util.Utilities.format;
-import static scikit.util.Utilities.frame;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,8 +25,8 @@ public class AnimateApp extends Simulation {
 		new Control(new AnimateApp(), "Clump Animation").getJob().throttleAnimation(true);
 	}
 	
-	public AnimateApp() {
-		frame(grid);
+	public void load(Control c) {
+		c.frame(grid);
 		params.add("Input directory", new DirectoryValue());
 		params.add("t start", 1700.0);
 		params.add("t finish", 2150.0);
