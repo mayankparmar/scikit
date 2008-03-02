@@ -5,6 +5,8 @@ import static scikit.numerics.Math2.sqr;
 import static scikit.util.Utilities.format;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 
 import kip.clump.dim3.FieldClump3D;
 import scikit.dataset.PointSet;
@@ -17,6 +19,7 @@ import scikit.jobs.params.ChoiceValue;
 import scikit.jobs.params.DoubleValue;
 import scikit.util.Array3d;
 import scikit.util.Commands;
+import scikit.util.FileUtil;
 
 public class Saddle3DApp extends Simulation {
 	Grid3D grid = new Grid3D("Grid");
@@ -109,9 +112,9 @@ public class Saddle3DApp extends Simulation {
 
 		Job.animate();
 		
+		writeField();
 		while (true) {
 			double var1 = clump.phiVariance();
-//			double t1 = System.currentTimeMillis();
 			clump.simulate();
 			double var2 = clump.phiVariance();
 			double scale = var1/var2;
@@ -122,15 +125,42 @@ public class Saddle3DApp extends Simulation {
 				clump.Ry -= clump.dt*sqr(clump.Ry)*clump.dFdensity_dRy();
 				clump.Rz -= clump.dt*sqr(clump.Rz)*clump.dFdensity_dRz();
 			}
-//			double t2 = System.currentTimeMillis();;
-//			System.out.println((t2-t1)/1000.);
+			writeField();
 			Job.animate();
 		}
 	}
 	
-	public void setField() {
+	double writeDelay = 19.9;
+	double lastWrite;
+	File writeDir;
+	
+	public void writeFiles() {
+		try {
+			writeDir = FileUtil.directoryDialog(null);
+			System.out.println(writeDir);
+			if (writeDir != null) {
+				FileUtil.dumpString(writeDir+File.separator+"parameters.txt", params.toString());
+				lastWrite = Double.NEGATIVE_INFINITY;
+			}
+		}
+		catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void loadField() {
 		Array3d a = Commands.load3d();
 		int len = clump.numColumns();
 		System.arraycopy(a.array(), 0, clump.coarseGrained(), 0, len*len*len);
+	}
+	
+	private void writeField() {
+		if (writeDir != null && (clump.time() - lastWrite > writeDelay)) {
+			lastWrite = clump.time();
+			String fname = writeDir+File.separator+"t="+format(clump.time());
+			int Lp = clump.numColumns();
+			Array3d a = new Array3d(Lp, Lp, Lp, clump.coarseGrained());
+			a.writeFile(new File(fname));
+		}
 	}
 }
