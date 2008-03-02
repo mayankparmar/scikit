@@ -35,7 +35,6 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	public void clear() {
 		super.clear();
-		_rotation = new Quat4d(0, 0, 0, 1);
 	}
 	
 	public BufferedImage getImage() {
@@ -44,6 +43,10 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	public Quat4d getRotation() {
 		return _rotation;
+	}
+	
+	public void includeBoundary(boolean b) {
+		_drawBounds = b;
 	}
 	
 	protected Component createCanvas() {
@@ -92,10 +95,6 @@ public class Scene3D extends Scene<Gfx3D> {
 		Quat4d q = VecHelper.quatFromAxisAngle(RADS_PER_PIXEL*dy, RADS_PER_PIXEL*dx, 0);
 		_rotation.mul(q, _rotation);
 		_rotation.normalize();
-	}
-	
-	public void animate() {
-		super.animate();
 	}
 	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {

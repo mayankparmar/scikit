@@ -16,6 +16,9 @@ import scikit.numerics.vecmath.Vector3d;
 import com.sun.opengl.util.BufferUtil;
 
 public class Grid3DSliceView extends Grid3DView {
+	public int wallResolution = 128;
+	public int sliceResolution = 256;
+
 	private final int CUBE_SIDES=6;
 	private final int PANELS=7;
 	
@@ -136,10 +139,13 @@ public class Grid3DSliceView extends Grid3DView {
 
 		int[] textures = new int[PANELS];
 		gl.glGenTextures(PANELS, textures, 0);
-
-		int[] npix = new int[] {128, 128, 128, 128, 128, 128, 256};
 		
-		ByteBuffer buffer = BufferUtil.newByteBuffer(npix[6]*npix[6]*4);
+		int wr = wallResolution;
+		int sr = sliceResolution;
+		int mr = Math.max(wr, sr);
+		int[] npix = new int[] {wr, wr, wr, wr, wr, wr, sr};
+		
+		ByteBuffer buffer = BufferUtil.newByteBuffer(mr*mr*4);
 		for (int side = 0; side < PANELS; side++) {
 			gl.glBindTexture(GL.GL_TEXTURE_2D, textures[side]);
 			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
