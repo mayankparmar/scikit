@@ -8,8 +8,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,7 @@ import scikit.graphics.ColorGradient;
 import scikit.graphics.Drawable;
 import scikit.numerics.vecmath.Quat4d;
 import scikit.numerics.vecmath.VecHelper;
+import scikit.util.Array3d;
 import scikit.util.Bounds;
 import scikit.util.DoubleArray;
 import scikit.util.FileUtil;
@@ -34,7 +34,9 @@ import scikit.util.FileUtil;
 public class Grid3D extends Scene3D {
 	private static final Color CLEAR = new Color(0, 0, 0, 0);
 	private static String[] VIEW_STRS = new String[] {"Surface", "Slice"};
-	private Grid3DView[] _views = new Grid3DView[] {new Grid3DSurfaceView(this), new Grid3DSliceView(this)};
+	private Grid3DSurfaceView _surfaceView = new Grid3DSurfaceView(this);
+	private Grid3DSliceView _sliceView = new Grid3DSliceView(this);
+	private Grid3DView[] _views = new Grid3DView[] {_surfaceView, _sliceView};
 	private int _curView;
 	private JComboBox _viewCombo;
 	private ColorChooser _colors = new ColorGradient();
@@ -55,6 +57,14 @@ public class Grid3D extends Scene3D {
 		super.clear();
 	}
 
+	public Grid3DSliceView getSliceView() {
+		return _sliceView;
+	}
+	
+	public Grid3DSurfaceView getSurfaceView() {
+		return _surfaceView;
+	}
+	
 	public void setColors(ColorChooser colors) {
 		_colors = colors;
 	}
@@ -64,6 +74,7 @@ public class Grid3D extends Scene3D {
 	}
 
 	public void setScale(double lo, double hi) {
+		_autoScale = false;
 		_lo = lo;
 		_hi = hi;
 	}
@@ -74,6 +85,10 @@ public class Grid3D extends Scene3D {
 		findRange();
 		animate();
 	}
+	
+	public void registerData(Array3d a3d) {
+		registerData(a3d.nx(), a3d.ny(), a3d.nz(), a3d.array());
+	}
 
 	public void extractData(double[] dst) {
 		System.arraycopy(_data, 0, dst, 0, _data.length);
@@ -83,32 +98,22 @@ public class Grid3D extends Scene3D {
 		try {
 			fname = FileUtil.saveDialog(_component, fname);
 			if (fname != null) {
-				DataOutputStream dos = FileUtil.dosFromString(fname);
-				dos.writeInt(_w);
-				dos.writeInt(_h);
-				dos.writeInt(_d);
-				for (double v : _data)
-					dos.writeDouble(v);
-				dos.close();
+				new Array3d(_w, _h, _d, _data).writeFile(new File(fname));
 			}
-		} catch (IOException e) {}
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
 	}
 
 	public void loadData(String fname) {
 		try {
 			fname = FileUtil.loadDialog(_component, fname);
 			if (fname != null) {
-				DataInputStream dis = FileUtil.disFromString(fname);
-				int w = dis.readInt();
-				int h = dis.readInt();
-				int d = dis.readInt();
-				double[] data = new double[w*h*d];
-				for (int i = 0; i < w*h*d; i++)
-					data[i] = dis.readDouble();
-				dis.close();
-				registerData(w, h, d, data);
+				registerData(new Array3d(new File(fname)));
 			}
-		} catch (IOException e) {}		
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
 	}
 
 	protected Component createComponent(Component canvas) {

@@ -1,10 +1,14 @@
 package scikit.util;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 import scikit.numerics.Math2;
 import scikit.numerics.fn.Function3D;
@@ -26,19 +30,12 @@ public class Array3d implements Cloneable {
 		this(nx, ny, nz, new double[nx*ny*nz]);
 	}
 	
+	public Array3d() {
+		this(0, 0, 0, new double[0]);
+	}
+	
 	public Array3d(File file) {
-		try {
-			DataInputStream dis = FileUtil.disFromString(file.toString());
-			_lx = _nx = dis.readInt();
-			_ly = _ny = dis.readInt();
-			_lz = _nz = dis.readInt();
-			_a = new double[_nx*_ny*_nz];
-			for (int i = 0; i < _nx*_ny*_nz; i++)
-				_a[i] = dis.readDouble();
-			dis.close();
-		} catch(IOException e) {
-			System.err.println("Could not read file: " + file);
-		}
+		readFile(file);
 	}
 	
 	public Array3d clone() {
@@ -73,15 +70,42 @@ public class Array3d implements Cloneable {
 		_a[_nx*_ny*z+_nx*y+x] = v;
 	}
 	
-	public void writeFile(File fname) {
+	public void readFile(File file) {
 		try {
-			DataOutputStream dos = FileUtil.dosFromString(fname.toString());
-			dos.writeInt(_nx);
-			dos.writeInt(_ny);
-			dos.writeInt(_nz);
-			for (double v : _a)
-				dos.writeDouble(v);
-			dos.close();
+			FileChannel channel = new FileInputStream(file).getChannel();
+			MappedByteBuffer bb = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+			IntBuffer ib = bb.asIntBuffer();
+			_nx = ib.get();
+			_ny = ib.get();
+			_nz = ib.get();
+			bb.position(4*ib.position());
+			DoubleBuffer db = bb.asDoubleBuffer();
+			if (_a == null || _a.length != _nx*_ny*_nz)
+				_a = new double[_nx*_ny*_nz];
+			db.get(_a);
+			channel.close();
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void writeFile(File file) {
+		try {
+			int ints = 3;
+			int doubles = _a.length;
+			int size = 4*ints + 8*doubles;
+			ByteBuffer bb = ByteBuffer.allocateDirect(size);
+			IntBuffer ib = bb.asIntBuffer();
+			ib.put(_nx);
+			ib.put(_ny);
+			ib.put(_nz);
+			bb.position(4*ib.position());
+			DoubleBuffer db = bb.asDoubleBuffer();
+			db.put(_a);
+			bb.rewind();
+			FileChannel channel = new FileOutputStream(file).getChannel();
+			channel.write(bb);
+			channel.close();
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
