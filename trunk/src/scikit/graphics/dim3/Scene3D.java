@@ -19,6 +19,7 @@ import scikit.graphics.GLHelper;
 import scikit.graphics.Scene;
 import scikit.numerics.vecmath.Quat4d;
 import scikit.numerics.vecmath.VecHelper;
+import scikit.numerics.vecmath.Vector3d;
 import scikit.util.Bounds;
 
 
@@ -26,6 +27,8 @@ public class Scene3D extends Scene<Gfx3D> {
 	protected final static double RADS_PER_PIXEL = 0.01;
 	protected boolean _drawBounds = true;
 	protected Quat4d _rotation = new Quat4d(0, 0, 0, 1);
+	protected Vector3d _viewBdsTranslate = new Vector3d();
+	protected double _viewBdsScale = 1;
 	
 	public Scene3D(String title) {
 		super(title);
@@ -35,6 +38,13 @@ public class Scene3D extends Scene<Gfx3D> {
 	
 	public void clear() {
 		super.clear();
+	}
+	
+	public Bounds viewBounds() {
+		Bounds bds = dataBounds();
+		bds = bds.translate(_viewBdsTranslate);
+		bds = bds.scale(_viewBdsScale);
+		return bds;
 	}
 	
 	public BufferedImage getImage() {
@@ -91,10 +101,14 @@ public class Scene3D extends Scene<Gfx3D> {
 		return ds;
 	}
 	
-	protected void handleMouseDrag(double dx, double dy, MouseEvent event) {
-		Quat4d q = VecHelper.quatFromAxisAngle(RADS_PER_PIXEL*dy, RADS_PER_PIXEL*dx, 0);
+	protected void rotate(double vx, double vy, double vz) {
+		Quat4d q = VecHelper.quatFromAxisAngle(vx, vy, vz);
 		_rotation.mul(q, _rotation);
 		_rotation.normalize();
+	}
+	
+	protected void handleMouseDrag(double dx, double dy, MouseEvent event) {
+		rotate(RADS_PER_PIXEL*dy, RADS_PER_PIXEL*dx, 0);
 	}
 	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
@@ -130,7 +144,7 @@ public class Scene3D extends Scene<Gfx3D> {
 	private Drawable<Gfx3D> boundingCuboid = new Drawable<Gfx3D>() {
 		public void draw(Gfx3D g) {
 			g.setColor(Color.GREEN);
-			g.drawCuboid(dataBounds());
+			g.drawCuboid(viewBounds());
 		}
 		public Bounds getBounds() {
 			return new Bounds();
