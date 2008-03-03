@@ -1,6 +1,7 @@
 package scikit.util;
 
 import static java.lang.Math.*;
+import scikit.numerics.vecmath.Vector3d;
 
 public class Bounds {
 	private final double INF = Double.POSITIVE_INFINITY;
@@ -56,7 +57,8 @@ public class Bounds {
 	}
 	
 	/**
-	 * Creates a new Bounds with width and height scaled by factor.
+	 * Creates a new bounds object with width and height scaled by factor. Does not change the
+	 * bounds center.
 	 * @param factor
 	 * @return Scaled bounds
 	 */
@@ -66,6 +68,18 @@ public class Bounds {
 		double h = max(getHeight(), 0);
 		double d = max(getDepth(), 0);
 		return new Bounds(xmin-w*s, xmax+w*s, ymin-h*s, ymax+h*s, zmin-d*s, zmax+d*s);
+	}
+	
+	/**
+	 * Creates a new bounds object which is translated by the displacement d
+	 * @param d
+	 * @return Translated bounds
+	 */
+	public Bounds translate(Vector3d d) {
+		return new Bounds(
+				xmin+d.x, xmax+d.x,
+				ymin+d.y, ymax+d.y,
+				zmin+d.z, zmax+d.z);
 	}
 	
 	/**
