@@ -98,8 +98,8 @@ abstract public class Scene<T> implements Window {
 	}
 	
 	/**
-	 * Calculates the bounds for all data contained in the scene.
-	 * @return the total data bounds
+	 * Returns the minimal bounds which contains all data in the scene.
+	 * @return the data bounds
 	 */
 	public Bounds dataBounds() {
 		Bounds bounds = new Bounds();
@@ -107,6 +107,12 @@ abstract public class Scene<T> implements Window {
 			bounds = (Bounds)bounds.union(d.getBounds());
 		return bounds;
 	}
+	
+	/**
+	 * Returns the portion of the scene volume which is currently being viewed.
+	 * @return the view bounds
+	 */
+	abstract public Bounds viewBounds();
 	
 	abstract public BufferedImage getImage();
 	
