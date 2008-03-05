@@ -38,6 +38,10 @@ public class Utilities {
 	static public String format(double x) {
 		return (abs(x) > 0.0001 && abs(x) < 10000 || x == 0 ? df1 : df2).format(x);
 	}
+	static DecimalFormat if4 = new DecimalFormat("0000");
+	static public String formatI4(double x) {
+		return if4.format(x);
+	}
 	
 	public static double periodicOffset(double L, double dx) {
 		if (dx >  L/2) return dx-L;
