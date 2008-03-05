@@ -5,11 +5,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -18,7 +16,6 @@ import scikit.graphics.Drawable;
 import scikit.graphics.Scene;
 import scikit.util.Bounds;
 import scikit.util.Point;
-import scikit.util.Utilities;
 
 
 public class Scene2D extends Scene<Gfx2D> {
@@ -55,22 +52,6 @@ public class Scene2D extends Scene<Gfx2D> {
 		_zoomed = false;
 		_curBounds = new Bounds();
 		super.clear();
-	}
-	
-	public BufferedImage getImage() {
-		try {
-			Class<?> c1 = Class.forName("javax.media.opengl.GLAutoDrawable");
-			if (c1.isInstance(_canvas)) {
-				Class<?> c2 = Class.forName("scikit.graphics.GLHelper");
-				return (BufferedImage)c2.getMethod("captureImage", c1).invoke(null, _canvas);
-			}
-		}
-		catch (Exception e) {}
-		
-		if (_canvas instanceof JComponent)
-			return Utilities.captureJComponentImage((JComponent)_canvas);
-		else
-			return null;
 	}
 	
 	/**
