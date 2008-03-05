@@ -15,12 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import scikit.util.Bounds;
+import scikit.util.Utilities;
 import scikit.util.Window;
 
 
@@ -109,12 +111,30 @@ abstract public class Scene<T> implements Window {
 	}
 	
 	/**
+	 * Capture the image which is to be displayed on the canvas object.
+	 * @return the canvas image
+	 */
+	public BufferedImage getImage() {
+		try {
+			Class<?> c1 = Class.forName("javax.media.opengl.GLAutoDrawable");
+			if (c1.isInstance(_canvas)) {
+				Class<?> c2 = Class.forName("scikit.graphics.GLHelper");
+				return (BufferedImage)c2.getMethod("captureImage", c1).invoke(null, _canvas);
+			}
+		}
+		catch (Exception e) {}
+		
+		if (_canvas instanceof JComponent)
+			return Utilities.captureJComponentImage((JComponent)_canvas);
+		else
+			return null;
+	}
+
+	/**
 	 * Returns the portion of the scene volume which is currently being viewed.
 	 * @return the view bounds
 	 */
 	abstract public Bounds viewBounds();
-	
-	abstract public BufferedImage getImage();
 	
 	/**
 	 * Draws all objects in the scene
