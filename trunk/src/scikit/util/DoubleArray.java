@@ -10,6 +10,11 @@ public class DoubleArray {
 		return dst;
 	}
 	
+	/**
+	 * Copies contents of src array into dst array.
+	 * @param src
+	 * @param dst
+	 */
 	public static void copy(double src[], double dst[]) {
 		if (src.length != dst.length)
 			throw new IllegalArgumentException("Array lengths don't match.");
@@ -69,7 +74,11 @@ public class DoubleArray {
 		double m = mean(a);
 		return meanSquared(a) - m*m;
 	}
-
+	
+	public static double norm(double a[]) {
+		return Math.sqrt(dot(a, a));
+	}
+	
 	public static double dot(double a[], double b[]) {
 		if (a.length != b.length)
 			throw new IllegalArgumentException("Array lengths don't match.");
@@ -77,6 +86,10 @@ public class DoubleArray {
 		for (int i = 0; i < a.length; i++)
 			sum += a[i]*b[i];
 		return sum;
+	}
+	
+	public static void normalize(double a[]) {
+		scale(a, 1/norm(a));
 	}
 	
     /**
