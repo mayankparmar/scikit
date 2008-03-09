@@ -9,7 +9,10 @@ import static java.lang.Math.rint;
 import static java.lang.Math.sqrt;
 import static scikit.numerics.Math2.hypot;
 import static scikit.numerics.Math2.sqr;
+import static scikit.util.DoubleArray.copy;
+import static scikit.util.DoubleArray.dot;
 import static scikit.util.DoubleArray.mean;
+import static scikit.util.DoubleArray.shift;
 import static scikit.util.DoubleArray.variance;
 import scikit.dataset.Accumulator;
 import scikit.jobs.params.Parameters;
@@ -18,11 +21,22 @@ import scikit.numerics.fn.Function2D;
 import scikit.util.DoubleArray;
 
 public class FieldClump2D extends AbstractClump2D {
+	// phi will not be scaled above PHI_UB or below PHI_LB
+	double PHI_UB = 10;
+	double PHI_LB = 0.01;
+	
 	int Lp;
 	double t;
 	double[] phi, phi_bar, del_phi;
 	FFT2D fft;
 	boolean noiselessDynamics = false;
+	
+	double[] reactionVector;
+	
+	public double[] growthEigenmode;
+	public double growthEigenvalue;
+	public double rms_growthEigenmode;
+	public boolean useGrowthEigenmodeAsReactionVector = false;
 	
 	public double dt;
 	public double Rx, Ry;
@@ -48,6 +62,7 @@ public class FieldClump2D extends AbstractClump2D {
 		t = 0;
 		for (int i = 0; i < Lp*Lp; i++)
 			phi[i] = DENSITY;
+		copy(phi, growthEigenmode);
 	}
 	
 	public void halveResolution() {
@@ -61,6 +76,7 @@ public class FieldClump2D extends AbstractClump2D {
 				phi[y*Lp+x] = old_phi[2*y*old_Lp + 2*x];
 			}
 		}
+		copy(phi, growthEigenmode);
 	}
 	
 	public void doubleResolution() {
@@ -74,6 +90,7 @@ public class FieldClump2D extends AbstractClump2D {
 				phi[y*Lp+x] = old_phi[(y/2)*old_Lp + (x/2)];
 			}
 		}
+		copy(phi, growthEigenmode);
 	}
 	
 	public void readParams(Parameters params) {
@@ -92,6 +109,7 @@ public class FieldClump2D extends AbstractClump2D {
 			phi[i] = DENSITY*(1+mag*random.nextGaussian()/5);
 		}
 		shiftField();
+		copy(phi, growthEigenmode);
 	}
 	
 	public void initializeFieldWithHexSeed() {
@@ -111,6 +129,7 @@ public class FieldClump2D extends AbstractClump2D {
 			phi[i] = DENSITY*(1+mag*field);
 		}
  		shiftField();
+		copy(phi, growthEigenmode);
 	}
 	
 	public void useNoiselessDynamics(boolean b) {
@@ -122,9 +141,6 @@ public class FieldClump2D extends AbstractClump2D {
 	}
 	
 	public void scaleField(double scale) {
-		// phi will not be scaled above PHI_UB or below PHI_LB
-		double PHI_UB = 5;
-		double PHI_LB = 0.01;
 		double s1 = (PHI_UB-DENSITY)/(DoubleArray.max(phi)-DENSITY+1e-10);
 		double s2 = (PHI_LB-DENSITY)/(DoubleArray.min(phi)-DENSITY-1e-10);
 		rescaleClipped = scale > min(s1,s2);
@@ -132,20 +148,6 @@ public class FieldClump2D extends AbstractClump2D {
 			scale = min(s1,s2);
 		for (int i = 0; i < Lp*Lp; i++) {
 			phi[i] = (phi[i]-DENSITY)*scale + DENSITY;
-		}
-	}
-	
-	public void circularAverage() {
-		Accumulator acc = new Accumulator(1);
-		for (int i = 0; i < Lp*Lp; i++) {
-			double x = i%Lp - Lp/2.;
-			double y = i/Lp - Lp/2.;
-			acc.accum(sqrt(x*x+y*y), phi[i]);
-		}
-		for (int i = 0; i < Lp*Lp; i++) {
-			double x = i%Lp - Lp/2.;
-			double y = i/Lp - Lp/2.;
-			phi[i] = acc.eval(sqrt(x*x+y*y));
 		}
 	}
 	
@@ -177,7 +179,60 @@ public class FieldClump2D extends AbstractClump2D {
 		freeEnergyDensity -= 0.5;
 		t += dt;
 	}
-
+	
+	public void saddleStep() {
+//		double var1 = phiVariance();
+//		simulate();
+//		double var2 = phiVariance();
+//		double scale = var1/var2;
+//		scaleField(scale);
+//		iterateGrowthMode();
+		double[] v = reactionVector;
+		if (useGrowthEigenmodeAsReactionVector) {
+			copy(growthEigenmode, v);
+		}
+		else {
+			copy(phi, v);
+			shift(v, -DENSITY);
+		}
+		double v2 = dot(v, v);
+		double p1 = dot(v, phi);
+		simulate();
+		double p2 = dot(v, phi);
+		double alpha = 0.5;
+		for (int i = 0; i < Lp*Lp; i++) {
+			phi[i] += (v[i]/v2) * (p1-p2) * (1+alpha);
+			phi[i] = max(phi[i], PHI_LB);
+			phi[i] = min(phi[i], PHI_UB);
+		}
+		
+		iterateGrowthMode();
+	}
+	
+	public void iterateGrowthMode() {
+		double[] v = growthEigenmode;
+		DoubleArray.normalize(v); // optional rescaling
+		
+		double[] v_bar = phi_bar; // use phi_bar as temporary space
+		fft.convolve(v, v_bar, new Function2D() {
+			public double eval(double k1, double k2) {
+				return potential(hypot(k1*Rx,k2*Ry));
+			}
+		});
+		double[] A_growth = phi_bar; // reuse the same temporary space
+		for (int i = 0; i < Lp*Lp; i++) {
+			A_growth[i] = v_bar[i]+(T/phi[i])*v[i];
+			v[i] += - dt*A_growth[i];
+		}
+		
+		growthEigenvalue = dot(v, A_growth) / dot(v, v);		
+		double[] zero = A_growth;
+		for (int i = 0; i < Lp*Lp; i++)
+			zero[i] = A_growth[i] - growthEigenvalue*v[i];
+		double mag2 = sqr(growthEigenvalue)*dot(v, v);
+		rms_growthEigenmode = sqrt(dot(zero, zero) / mag2);
+	}
+	
 	public double dFdensity_dRx() {
 		double[] dphibar_dR = phi_bar;
 		fft.convolve(phi, phi_bar, new Function2D() {
@@ -237,6 +292,8 @@ public class FieldClump2D extends AbstractClump2D {
 		del_phi = new double[Lp*Lp];
 		fft = new FFT2D(Lp, Lp);
 		fft.setLengths(L, L);
+		growthEigenmode = new double[Lp*Lp];
+		reactionVector = new double[Lp*Lp];
 	}
 	
 	private double noise() {
