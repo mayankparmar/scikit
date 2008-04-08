@@ -1,7 +1,13 @@
 package scikit.graphics.dim2;
 
-import static java.lang.Math.*;
+import static java.lang.Math.log10;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.pow;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -9,7 +15,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 
 import scikit.dataset.DataSet;
 import scikit.graphics.Drawable;
@@ -18,18 +26,24 @@ import scikit.util.FileUtil;
 
 
 public class Plot extends Scene2D {
-	ArrayList<RegisteredData> _datas = new ArrayList<RegisteredData>();
+	private JLabel _xlabel, _ylabel;
+	protected ArrayList<RegisteredData> _datas = new ArrayList<RegisteredData>();
 	// log-scale drawing is handled as follows:
 	//  - all registered Datasets are reinterpreted (x,y)->(log x,log y)
 	//  - the viewbounds are calculated using transformed Datasets
 	//  - the TickMarks Drawable changes its mode
 	//  - Drawables which are not Datasets are hidden, since non-linear warping
 	//    can't be accurately represented
-	boolean _logScaleX = false, _logScaleY = false;
+	protected boolean _logScaleX = false, _logScaleY = false;
 	
 	public Plot(String title) {
 		super(title);
 		_visibleBoundsBufferScale = 1.1;
+	}
+	
+	public Plot(String title, String xlabel, String ylabel) {
+		super(title);
+		setAxisLabels(xlabel, ylabel);
 	}
 	
 	public void animate() {
@@ -113,6 +127,23 @@ public class Plot extends Scene2D {
 	 */
 	public void registerBars(String name, DataSet data, Color color) {
 		registerDataset(name, data, color, RegisteredData.Style.BARS);
+	}
+	
+	public void setAxisLabels(String xstr, String ystr) {
+		_xlabel.setText(xstr);
+		_ylabel.setIcon(new VTextIcon(_ylabel, ystr, VTextIcon.ROTATE_LEFT));
+	}
+	
+	protected Component createComponent(Component canvas) {
+		_ylabel = new JLabel();
+		_xlabel = new JLabel();
+		_xlabel.setHorizontalAlignment(JLabel.CENTER);
+		
+		JPanel component = new JPanel(new BorderLayout());
+		component.add(super.createComponent(canvas), BorderLayout.CENTER);
+		component.add(_xlabel, BorderLayout.SOUTH);
+		component.add(_ylabel, BorderLayout.WEST);
+		return component;
 	}
 	
 	protected List<Drawable<Gfx2D>> getAllDrawables() {
