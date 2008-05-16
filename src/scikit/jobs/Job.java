@@ -191,8 +191,8 @@ public class Job {
 					// if the GUI thread returns control, then perform an animation, and again
 					// "pass".
 					while (true) {
+						sim.animate();
 						coop.pass();
-						Job.animate();
 					}
 				}
 				catch (Exception e) {
