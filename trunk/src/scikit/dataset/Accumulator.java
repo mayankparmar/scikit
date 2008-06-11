@@ -16,6 +16,10 @@ public class Accumulator extends DataSet {
 		_hash = new TreeMap<Double, double[]>();
 		_binWidth = binWidth;
 	}
+
+	public Accumulator() {
+		this(0);
+	}
 	
 	public Accumulator rebin(double binWidth) {
 		Accumulator ret = new Accumulator(binWidth);
@@ -65,9 +69,15 @@ public class Accumulator extends DataSet {
 		_hash.put(key(x), val);
 	}
 	
+	// key() gives the unique hash for every bin. it is the double value representing
+	// the center of the bin.
 	private double key(double x) {
-		double bw = _binWidth;
-		double k = bw * rint(x/bw); // each binning cell is labeled by its center coordinate, key().
-		return k == -0 ? +0 : k;    // +-0 have different representations.  choose +0. 
+		if (_binWidth == 0)
+			return x;
+		else {
+			double bw = _binWidth;
+			double k = bw * rint(x/bw); 
+			return k == -0 ? +0 : k;    // +-0 have different representations.  choose +0.
+		}
 	}
 }
