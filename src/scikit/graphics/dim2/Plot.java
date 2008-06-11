@@ -91,6 +91,21 @@ public class Plot extends Scene2D {
 	}
 	
 	/**
+	 * Gets the dataset which is registered by the String <code>name</code>. If no such dataset
+	 * exists, then return null
+	 * @param name
+	 * @return The dataset registered under <code>name</code>
+	 */
+	public DataSet getDataset(String name) {
+		for (final RegisteredData d : _datas) {
+			if (d._name.equals(name)) {
+				return d._data;
+			}	
+		}
+		return null;
+	}
+	
+	/**
 	 * Registers the dataset corresponding to <code>name</code> to display points. If a dataset
 	 * with the same name is already registered, it will be replaced by this one. Also animates
 	 * the display.
