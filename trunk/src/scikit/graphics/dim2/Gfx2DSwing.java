@@ -117,6 +117,8 @@ public class Gfx2DSwing implements Gfx2D {
 		final JComponent component = new JComponent() {
 			private static final long serialVersionUID = 1L;
 			public void paintComponent(java.awt.Graphics engine) {
+				super.paintComponent(engine);
+				engine = engine.create();
 				// when drawing images (e.g. renderImage()), keep scaled pixel boundaries
 				// crisp.  on some platforms (e.g. OS X), this hint must be applied
 				// before any drawing occurs
@@ -128,6 +130,7 @@ public class Gfx2DSwing implements Gfx2D {
 						RenderingHints.KEY_ANTIALIASING,
                 		RenderingHints.VALUE_ANTIALIAS_ON);
 				 scene.drawAll(new Gfx2DSwing((Graphics2D)engine, this, scene));
+				 engine.dispose();
 			}
 		};
 		return component;
