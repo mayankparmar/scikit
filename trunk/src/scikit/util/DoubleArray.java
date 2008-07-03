@@ -5,9 +5,14 @@ package scikit.util;
 public class DoubleArray {
 	
 	public static double[] clone(double src[]) {
-		double[] dst = new double[src.length];
-		copy(src, dst);
-		return dst;
+		if (src == null) {
+			return null;
+		}
+		else {
+			double[] dst = new double[src.length];
+			copy(src, dst);
+			return dst;
+		}
 	}
 	
 	/**

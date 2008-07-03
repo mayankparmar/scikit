@@ -31,7 +31,8 @@ public class DynamicArray extends DataSet {
 	/**
 	* Appends two values to the end of the dynamic array
 	*
-	* @param x
+	* @param x1
+	* @param x2
 	*/
 	public void append2(double x1, double x2) {
 		append(x1);
@@ -72,14 +73,27 @@ public class DynamicArray extends DataSet {
 	/**
 	* Returns a copy of the dynamic array as a static array
 	*/
-	public double[] copyData() {
+	public double[] copyArray() {
 		double[] ret = new double[_length];
 		System.arraycopy(_data, 0, ret, 0, _length);
-		// System.out.println(ret.length);		
 		return ret;
 	}
 	
-	
+	/**
+	* Returns a copy of the dynamic array as a static array
+	*/
+	// TODO replace with pointset
+	public DatasetBuffer copyData() {
+		DatasetBuffer ret = new DatasetBuffer();
+		ret._x = new double[_length/2];
+		ret._y = new double[_length/2];
+		for (int i = 0; i < _length/2; i++) {
+			ret._x[i] = _data[2*i+0];
+			ret._y[i] = _data[2*i+1];
+		}
+		return ret;
+	}
+
 	private void increaseCapacity() {
 		double[] temp = new double[2 * _length];
 		System.arraycopy(_data, 0, temp, 0, _length);

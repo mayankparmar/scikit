@@ -6,14 +6,40 @@ import static java.lang.Math.*;
 
 
 public class Accumulator extends DataSet {
+	private class Bin {
+		double sum;
+		double sum2;
+		double count;
+		public Bin() {
+			sum = sum2 = 0;
+			count = 0;
+		}
+		public void accum(Bin that) {
+			sum += that.sum;
+			sum2 += that.sum2;
+			count += that.count;
+		}
+		public void accum(double value) {
+			sum += value;
+			sum2 += value*value;
+			count += 1;
+		}
+		public double average() {
+			return sum / count;
+		}
+		public double error() {
+			double s1 = sum / count;
+			double s2 = sum2 / count;
+			return sqrt(s2-s1*s1) / sqrt(count);
+		}
+	}
+	
 	private double _binWidth;
-    // maps keys to an array of two numbers. the first is
-    // total accumulated value for this bin. the second is a
-    // count of the accumulation operations performed.
-	private AbstractMap<Double, double[]> _hash;
+	private SortedMap<Double, Bin> _hash;
+    private boolean _errorBars = false;
     
 	public Accumulator(double binWidth) {
-		_hash = new TreeMap<Double, double[]>();
+		_hash = new TreeMap<Double, Bin>();
 		_binWidth = binWidth;
 	}
 
@@ -24,27 +50,41 @@ public class Accumulator extends DataSet {
 	public Accumulator rebin(double binWidth) {
 		Accumulator ret = new Accumulator(binWidth);
 		for (Double k : keys()) {
-			double[] v1 = ret._hash.get(k);
-			double[] v2 = _hash.get(k);
-			double[] v = (v1 == null) ?
-						new double[]{v2[0], v2[1]} :
-						new double[]{v1[0]+v2[0], v1[1]+v2[1]};
-			ret._hash.put(ret.key(k), v);
+			Bin v1 = ret._hash.get(k);
+			Bin v2 = _hash.get(k);
+			if (v1 == null) {
+				v1 = new Bin();
+				v1.accum(v2);
+				ret._hash.put(ret.key(k), v1);
+			}
+			else {
+				v1.accum(v2);
+			}
 		}
 		return ret;
 	}
 	
-	public void clear() {
-		_hash = new TreeMap<Double, double[]>();
+	public void enableErrorBars(boolean errorBars) {
+		_errorBars = true;
 	}
 	
-	public double[] copyData() {
+	public void clear() {
+		_hash = new TreeMap<Double, Bin>();
+	}
+	
+	public DatasetBuffer copyData() {
+		DatasetBuffer ret = new DatasetBuffer();
+		ret._x = new double[_hash.size()];
+		ret._y = new double[_hash.size()];
+		if (_errorBars)
+			ret._errY = new double[_hash.size()];
 		int i = 0;
-		double[] ret = new double[2*_hash.size()];
         for (Double k : _hash.keySet()) {
-			ret[i] = k;
-            ret[i+1] = eval(k);
-            i += 2;
+			ret._x[i] = k;
+            ret._y[i] = eval(k);
+            if (_errorBars)
+            	ret._errY[i] = evalError(k);
+            i++;
 		}
 		return ret;	
 	}
@@ -54,19 +94,25 @@ public class Accumulator extends DataSet {
 	}
 	
 	public double eval(double x) {
-		double[] val = _hash.get(key(x));
-		return (val == null) ? Double.NaN : val[0]/val[1];
+		Bin val = _hash.get(key(x));
+		return (val == null) ? Double.NaN : val.average();
+	}
+	
+	public double evalError(double x) {
+		Bin val = _hash.get(key(x));
+		return (val == null) ? Double.NaN : val.error();		
 	}
 	
 	public void accum(double x, double y) {
-		double[] val = _hash.get(key(x));
-		if (val == null)
-			val = new double[] {y, 1};
-		else {
-			val[0] += y;
-			val[1] += 1;
+		Bin val = _hash.get(key(x));
+		if (val == null) {
+			val = new Bin();
+			val.accum(y);
+			_hash.put(key(x), val);
 		}
-		_hash.put(key(x), val);
+		else {
+			val.accum(y);
+		}
 	}
 	
 	// key() gives the unique hash for every bin. it is the double value representing

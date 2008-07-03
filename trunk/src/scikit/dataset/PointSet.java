@@ -1,7 +1,10 @@
 package scikit.dataset;
 
+import scikit.util.DoubleArray;
+
 
 public class PointSet extends DataSet {
+	// TODO dynamicarray
 	private double[] _x, _y;
 	
 	
@@ -35,12 +38,10 @@ public class PointSet extends DataSet {
 	}
 	
 	
-	public double[] copyData() {
-		double[] ret = new double[2*_x.length];
-		for (int i = 0; i < _x.length; i++) {
-			ret[2*i+0] = _x[i];
-			ret[2*i+1] = _y[i];
-		}
+	public DatasetBuffer copyData() {
+		DatasetBuffer ret = new DatasetBuffer();
+		ret._x = DoubleArray.clone(_x);
+		ret._y = DoubleArray.clone(_y);
 		return ret;
 	}
 }

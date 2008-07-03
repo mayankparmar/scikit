@@ -39,13 +39,15 @@ public class Histogram extends DataSet {
         _norm = norm;
     }
 
-	public double[] copyData() {
+	public DatasetBuffer copyData() {
+		DatasetBuffer ret = new DatasetBuffer();
+		ret._x = new double[_hash.size()];
+		ret._y = new double[_hash.size()];
 		int i = 0;
-		double[] ret = new double[2*_hash.size()];
         for (Double k : _hash.keySet()) {
-			ret[i] = k;
-            ret[i+1] = eval(k);
-            i += 2;
+			ret._x[i] = k;
+            ret._y[i] = eval(k);
+            i++;
 		}
 		return ret;	
 	}
