@@ -20,6 +20,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import scikit.dataset.DataSet;
+import scikit.dataset.DatasetBuffer;
 import scikit.graphics.Drawable;
 import scikit.util.Bounds;
 import scikit.util.FileUtil;
@@ -35,6 +36,7 @@ public class Plot extends Scene2D {
 	//  - Drawables which are not Datasets are hidden, since non-linear warping
 	//    can't be accurately represented
 	protected boolean _logScaleX = false, _logScaleY = false;
+	protected boolean _errorBarsX = false, _errorBarsY = true;
 	
 	public Plot(String title) {
 		super(title);
@@ -221,7 +223,7 @@ public class Plot extends Scene2D {
 			fname = FileUtil.saveDialog(_component, fname);
 			if (fname != null) {
 				PrintWriter pw = FileUtil.pwFromString(fname);
-				FileUtil.writeColumns(pw, data.copyData(), 2);
+				FileUtil.writeColumns(pw, data.copyData().columns());
 				pw.close();
 			}
 		} catch (IOException e) {}
@@ -244,31 +246,13 @@ class RegisteredData implements Drawable<Gfx2D> {
 		_color = color;
 		_style = style;
 	}
-
+	
 	public void draw(Gfx2D g) {
 		Bounds bds = expBounds(g.viewBounds());
-		double pts[] = _data.copyPartial(1000, bds.xmin, bds.xmax, bds.ymin, bds.ymax);
-		g.setColor(_color);
+		DatasetBuffer pts = _data.copyPartial(1000, bds);
 		
-		for (int i = 0; i < pts.length; i += 2) {
-			if (_plot._logScaleX)
-				pts[i+0] = log10(pts[i+0]);
-			if (_plot._logScaleY)
-				pts[i+1] = log10(pts[i+1]);
-			
-			switch (_style) {
-			case MARKS:
-				g.drawPoint(pts[i+0], pts[i+1]);
-				break;
-			case LINES:
-				if (i >= 2)
-					g.drawLine(pts[i-2], pts[i-1], pts[i+0], pts[i+1]);
-				break;
-			case BARS:
-				g.drawLine(pts[i+0], pts[i+1], pts[i+0], 0);
-				break;
-			}
-		}
+		drawErrorBarsY(g, pts);
+		drawMarks(g, pts);
 	}
 	
 	public Bounds getBounds() {
@@ -289,6 +273,59 @@ class RegisteredData implements Drawable<Gfx2D> {
 			return _name.equals(((RegisteredData)data)._name);
 		else
 			return false;
+	}
+	
+	private void drawErrorBarsY(Gfx2D g, DatasetBuffer pts) {
+		if (!_plot._errorBarsY || !pts.hasErrorY())
+			return;
+
+		//int red = _color.getRed();
+		//int green = _color.getGreen();
+		//int blue = _color.getBlue();
+		//int alpha = _color.getAlpha();
+		//g.setColor(new Color(red, green, blue, alpha*2/3));
+		g.setColor(Color.RED);
+		
+		for (int i = 0; i < pts.size(); i++) {
+			double y_lo = pts.y(i) - pts.errorY(i);
+			double y_hi = pts.y(i) + pts.errorY(i);
+			g.drawLine(tx(pts,i), ty(y_lo), tx(pts,i), ty(y_hi));
+		}
+	}
+	
+	
+	private double tx(double x) {
+		return (_plot._logScaleX) ? log10(x) : x;
+	}
+	
+	private double tx(DatasetBuffer pts, int i) {
+		return tx(pts.x(i));
+	}
+	
+	private double ty(double y) {
+		return (_plot._logScaleY) ? log10(y) : y;
+	}
+	
+	private double ty(DatasetBuffer pts, int i) {
+		return ty(pts.y(i));
+	}
+
+	private void drawMarks(Gfx2D g, DatasetBuffer pts) {
+		g.setColor(_color);
+		for (int i = 0; i < pts.size(); i++) {
+			switch (_style) {
+			case MARKS:
+				g.drawPoint(tx(pts,i), ty(pts,i));
+				break;
+			case LINES:
+				if (i >= 1)
+					g.drawLine(tx(pts,i-1), ty(pts,i-1), tx(pts,i), ty(pts,i));
+				break;
+			case BARS:
+				g.drawLine(tx(pts,i), ty(pts,i), tx(pts,i), 0);
+				break;
+			}
+		}
 	}
 
 	private Bounds expBounds(Bounds in) {

@@ -9,17 +9,19 @@ public class Derivative extends DataSet {
 		_src = src;
 	}
 	
-	public double[] copyData() {
-		double[] dat = _src.copyData();
-		double[] ret = new double[dat.length-2];
+	public DatasetBuffer copyData() {
+		DatasetBuffer dat = _src.copyData();
+		DatasetBuffer ret = new DatasetBuffer();
+		ret._x = new double[dat.size()-1];
+		ret._y = new double[dat.size()-1];
 		
-		for (int i = 0; i < ret.length; i += 2) {
-			double x1 = dat[i+0];
-			double y1 = dat[i+1];
-			double x2 = dat[i+2];
-			double y2 = dat[i+3];
-			ret[i+0] = (invertDependentParameter ? (y1+y2) : (x1+x2)) / 2;
-			ret[i+1] = (y2 - y1) / (x2 - x1);
+		for (int i = 0; i < dat.size()-1; i++) {
+			double x1 = dat._x[i];
+			double y1 = dat._y[i];
+			double x2 = dat._x[i+1];
+			double y2 = dat._y[i+1];
+			ret._x[i] = (invertDependentParameter ? (y1+y2) : (x1+x2)) / 2;
+			ret._y[i] = (y2 - y1) / (x2 - x1);
 		}
 		return ret;
 	}

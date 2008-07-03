@@ -132,6 +132,17 @@ public class FileUtil {
 	}
 	
 	
+    public static void writeColumns(PrintWriter pw, double[]... data) throws IOException {
+    	if (data.length == 0)
+    		throw new IllegalArgumentException();
+		for (int i = 0; i < data[0].length; i++) {
+			for (int j = 0; j < data.length; j++) {
+				pw.print(data[j][i] + " ");
+			}
+			pw.println();
+		}
+    }
+    
     public static void writeColumns(PrintWriter pw, double[] data, int cols) throws IOException {
     	if (cols < 1)
     		throw new IllegalArgumentException();
@@ -153,10 +164,10 @@ public class FileUtil {
     	catch (IOException e) {}
     }
     
-    public static void dumpColumns(String fname, double[] data, int cols) {
+    public static void dumpColumns(String fname, double[]... cols) {
     	try {
     		PrintWriter pw = pwFromString(fname);   		
-    		writeColumns(pw, data, cols);
+    		writeColumns(pw, cols);
     		pw.close();
     	}
     	catch (IOException e) {}
