@@ -24,8 +24,7 @@ public abstract class Simulation {
 	 * with the control. 
 	 * @param c
 	 */
-	public void load(Control c) {
-	}
+	abstract public void load(Control c);
 	
 	/**
 	 * main entry point for simulation.  while running, the GUI event thread will
