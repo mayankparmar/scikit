@@ -74,6 +74,11 @@ public class Grid extends Scene2D {
 		animate();
 	}
 	
+	// Override getImage() to return the "native" pixel-map image
+	public BufferedImage getImage(int width, int height) {
+		return _image;
+	}
+	
 	public BufferedImage getImage() {
 		return _image;
 	}
