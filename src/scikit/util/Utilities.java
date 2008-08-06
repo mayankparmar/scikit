@@ -158,16 +158,25 @@ public class Utilities {
 		}
 	}
 	
-	public static BufferedImage captureJComponentImage(JComponent component) {
-		boolean opaqueValue = component.isOpaque();
-		component.setOpaque( true );
-		int width = component.getWidth();
-		int height = component.getHeight();
+/*
+import javax.imageio.ImageIO;
+im = sim.heatPlot.getImage(500,200);
+ImageIO.write(im, "png", new File("/home/kbarros/test.png"));
+*/
+	public static BufferedImage captureJComponentImage(JComponent component, int width, int height) {
+		boolean oldOpaque = component.isOpaque();
+		int oldWidth = component.getWidth();
+		int oldHeight = component.getHeight();
+		component.setOpaque(true);
+		component.setSize(width, height);
+		
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = image.createGraphics();
 		component.paint(g2d);
 		g2d.dispose();
-		component.setOpaque(opaqueValue);
+		
+		component.setOpaque(oldOpaque);
+		component.setSize(oldWidth, oldHeight);
 		return image;
 	}
 }

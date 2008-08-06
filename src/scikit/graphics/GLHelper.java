@@ -50,11 +50,13 @@ public class GLHelper {
 	/**
 	 * Copies the OpenGL frame buffer into an image
 	 * @param d The OpenGL drawable
+	 * @param width The width of the target image
+	 * @param height The height of the target image
 	 * @return The copied image
 	 */
-	public static BufferedImage captureImage(GLAutoDrawable d) {
+	public static BufferedImage captureImage(GLAutoDrawable d, int width, int height) {
 		d.getContext().makeCurrent();
-		BufferedImage image = Screenshot.readToBufferedImage(d.getWidth(), d.getHeight());
+		BufferedImage image = Screenshot.readToBufferedImage(width, height);
 		d.getContext().release();
 		return image;
 	}

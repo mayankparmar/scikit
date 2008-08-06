@@ -114,18 +114,18 @@ abstract public class Scene<T> implements Window {
 	 * Capture the image which is to be displayed on the canvas object.
 	 * @return the canvas image
 	 */
-	public BufferedImage getImage() {
+	public BufferedImage getImage(int width, int height) {
 		try {
 			Class<?> c1 = Class.forName("javax.media.opengl.GLAutoDrawable");
 			if (c1.isInstance(_canvas)) {
 				Class<?> c2 = Class.forName("scikit.graphics.GLHelper");
-				return (BufferedImage)c2.getMethod("captureImage", c1).invoke(null, _canvas);
+				return (BufferedImage)c2.getMethod("captureImage", c1).invoke(null, _canvas, width, height);
 			}
 		}
 		catch (Exception e) {}
 		
 		if (_canvas instanceof JComponent)
-			return Utilities.captureJComponentImage((JComponent)_canvas);
+			return Utilities.captureJComponentImage((JComponent)_canvas, width, height);
 		else
 			return null;
 	}
