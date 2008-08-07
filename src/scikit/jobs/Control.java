@@ -42,11 +42,12 @@ public class Control {
 	private JButton _startStopButton;
 	private JButton _stepButton;	
 	private JButton _resetButton;
+	private Movies _movies;
 	private List<JFrame> _frames = new ArrayList<JFrame>();
 	private List<Window> _windows = new ArrayList<Window>();
 	
 	public Control(Simulation sim) {
-		_job = new Job(sim);
+		_job = new Job(sim, this);
 		sim.load(this);
 		
 		JComponent paramPane = createParameterPane();
@@ -78,6 +79,9 @@ public class Control {
 		return _job;
 	}
 	
+	public Window[] getWindows() {
+		return _windows.toArray(new Window[0]);
+	}
 	
 	/**
 	 * Creates frames for one or more windows. Manages each window.
@@ -103,6 +107,11 @@ public class Control {
 		for (Window w : ws) {
 			_windows.add(w);
 		}
+	}
+	
+	public void processStepCompletion() {
+		if (_movies != null)
+			_movies.saveImages();
 	}
 	
 	private ActionListener _actionListener = new ActionListener() {
@@ -131,6 +140,7 @@ public class Control {
 				_startStopButton.setText("Start");
 				_resetButton.setText("Defaults");
 				_stepButton.setEnabled(true);
+				_movies.removeAllMovies();
 			}
 			if (str.equals("Defaults")) {
 				_job.sim().params.resetValues();
@@ -251,6 +261,16 @@ public class Control {
 				createConsole();
 			}
 		});
+		JMenuItem moviesItem = new JMenuItem("Movies...");
+		moviesItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (_movies == null)
+					_movies = new Movies(Control.this);
+				else
+					_movies.getFrame().setVisible(true);
+			}
+		});
+		
 		JMenuItem openParamsItem = new JMenuItem("Open Params");
 		openParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -265,6 +285,7 @@ public class Control {
 		});
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.add(terminalItem);
+		fileMenu.add(moviesItem);
 		fileMenu.add(new JSeparator());
 		fileMenu.add(openParamsItem);
 		fileMenu.add(saveParamsItem);

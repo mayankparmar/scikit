@@ -23,6 +23,10 @@ public class DoubleValue extends StringValue {
 		}
 	}
 	
+	public double getDouble() {
+		return Double.valueOf(getValue());
+	}
+	
 	public DoubleValue withSlider() {
 		_useSlider = true;
 		return this;

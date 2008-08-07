@@ -4,12 +4,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 
 public class Job {
 	private static Job current;
 	
 	private Simulation sim;
+	private Control control;
 	private Thread thread;
 	private Cooperation coop = new Cooperation();
 	
@@ -21,8 +23,9 @@ public class Job {
 	private boolean throttleAnimation = false;
 
 	
-	public Job(Simulation sim) {
+	public Job(Simulation sim, Control control) {
 		this.sim = sim;
+		this.control = control;
 		current = this;
 	}
 	
@@ -108,17 +111,28 @@ public class Job {
 		if (Thread.currentThread() != thread) {
 			throw new IllegalThreadStateException("Job.animate() must be called from simulation thread.");
 		}
+		
+		// perform processing relevant to the step completion from the GUI thread
+		// after sim.animate() has executed
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				control.processStepCompletion();
+			}
+		});
+		
 		switch (state) {
 		case RUN:
 			long timeUntilAnimate = lastAnimate + animateDelay - System.currentTimeMillis();
-			if (throttleAnimation && timeUntilAnimate > 0) {
-				coop.sleep(timeUntilAnimate);
-			}
-			if (throttleAnimation || timeUntilAnimate < 0) {
+			if (throttleAnimation) {
 				sim.animate();
 				lastAnimate = System.currentTimeMillis();
+				coop.sleep(Math.max(timeUntilAnimate, 0));
 			}
-			_yield();
+			else if (timeUntilAnimate < 0) {
+				sim.animate();
+				lastAnimate = System.currentTimeMillis();
+				_yield();
+			}
 			break;
 		}
 		// during sleep() or yield() the user might have stopped the simulation. therefore
@@ -129,7 +143,7 @@ public class Job {
 			state = State.STOP;
 			do {
 				sim.animate();
-				coop.pass();
+				coop.pass(); // stop the simulation thread; make the GUI thread active
 			} while (state == State.STOP);
 			break;
 		}

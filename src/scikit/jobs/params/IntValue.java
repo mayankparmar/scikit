@@ -13,6 +13,10 @@ public class IntValue extends StringValue {
 		_hi = hi;		
 	}
 	
+	public int getInt() {
+		return Integer.valueOf(getValue()); 
+	}
+	
 	protected boolean testValidity(String v) {
 		try {
 			int i = Integer.valueOf(v);
