@@ -44,4 +44,11 @@ public abstract class Simulation {
 	 * called after thread has been killed
 	 */
 	abstract public void clear();
+	
+	/**
+	 * Returns the "time" of the simulation, or, if not applicable, NaN. 
+	 */
+	public double getTime() {
+		return Double.NaN;
+	}
 }
