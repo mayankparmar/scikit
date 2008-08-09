@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -21,6 +22,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -30,9 +32,9 @@ import javax.swing.event.ChangeListener;
 
 import scikit.jobs.params.GuiValue;
 import scikit.util.FileUtil;
-import scikit.util.Window;
 import scikit.util.Terminal;
 import scikit.util.Utilities;
+import scikit.util.Window;
 import bsh.EvalError;
 
 
@@ -72,13 +74,17 @@ public class Control {
 	
 	
 	/**
-	 * Returns the Job corresponding to this control
+	 * Returns the Job corresponding to this control.
 	 * @return the corresponding job
 	 */
 	public Job getJob() {
 		return _job;
 	}
 	
+	/**
+	 * Gets all simulation windows which are registered with this control.
+	 * @return All simulation windows
+	 */
 	public Window[] getWindows() {
 		return _windows.toArray(new Window[0]);
 	}
@@ -109,6 +115,9 @@ public class Control {
 		}
 	}
 	
+	/**
+	 * Performs necessary processing following the completion of a simulation step.
+	 */
 	public void processStepCompletion() {
 		_movies.saveImages();
 	}
@@ -250,7 +259,7 @@ public class Control {
 	private JMenuBar createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.add(createFileMenu());
-		menuBar.add(createWindowMenu());
+		menuBar.add(createSimulationMenu());
 		return menuBar;
 	}
 	
@@ -284,18 +293,46 @@ public class Control {
 		return fileMenu;
 	}
 	
-	private JMenu createWindowMenu() {
-		JMenu windowMenu = new JMenu("Window");
+	private JMenu createSimulationMenu() {
+		JMenu simulationMenu = new JMenu("Simulation");
 		for (final JFrame f : _frames) {
-			JMenuItem item = new JMenuItem(f.getTitle());
+			JMenuItem item = new JMenuItem(f.getTitle()+" Display");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					f.setVisible(true);
 				}
 			});
-			windowMenu.add(item);
+			simulationMenu.add(item);
 		}
-		return windowMenu;
+		
+		if (_frames.size() > 0) {
+			simulationMenu.addSeparator();
+		}
+		
+		JMenu throttleMenu = new JMenu("Speed Throttle");
+		ButtonGroup throttleGroup = new ButtonGroup();
+		JMenuItem throttleOnItem = new JRadioButtonMenuItem("On");
+		JMenuItem throttleOffItem = new JRadioButtonMenuItem("Off");
+		throttleOnItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				_job.throttleAnimation(true);
+			}
+		});
+		throttleOffItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				_job.throttleAnimation(false);
+			}
+		});
+		throttleOnItem.setSelected(false);
+		throttleOffItem.setSelected(true);
+		throttleGroup.add(throttleOnItem);
+		throttleGroup.add(throttleOffItem);
+		throttleMenu.add(throttleOnItem);
+		throttleMenu.add(throttleOffItem);
+		
+		simulationMenu.add(throttleMenu);
+		
+		return simulationMenu;
 	}
 	
 	private void saveParams() {

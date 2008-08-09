@@ -52,7 +52,7 @@ public class Movies {
 		
 		if (movies.size() > 0) {
 			for (final MovieConfig mc : movies) {
-				JMenuItem item = new JMenuItem("Movie '" + mc.window.getValue() + "'");
+				JMenuItem item = new JMenuItem("Edit '" + mc.window.getValue() + "'...");
 				item.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						mc.editor.setVisible(true);
@@ -182,6 +182,7 @@ public class Movies {
 	        editor.getRootPane().setDefaultButton(acceptButton);
 			editor.pack();
 			Utilities.staggerFrame(editor);
+			Utilities.addFrameShortcuts(editor);
 			
 			return editor;
 		}
