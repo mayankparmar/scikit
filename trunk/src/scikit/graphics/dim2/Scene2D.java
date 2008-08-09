@@ -1,13 +1,13 @@
 package scikit.graphics.dim2;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
@@ -65,12 +65,12 @@ public class Scene2D extends Scene<Gfx2D> {
 	// returns an OpenGL hardware accelerated GLCanvas if it is available, otherwise an AWT backed Canvas.
 	// uses reflection to avoid referring directly to the classes GLCapabilities or Gfx2DGL, otherwise
 	// an uncatchable NoClassDefFoundError may be thrown when the Scene2D class is loaded.
-	protected Component createCanvas() {
+	protected JComponent createCanvas() {
 		try {
 			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
 			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
 				c = Class.forName("scikit.graphics.dim2.Gfx2DGL");
-				return (Component)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
+				return (JComponent)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
 			}
 		}
 		catch (Exception e) {}

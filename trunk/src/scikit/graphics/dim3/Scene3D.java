@@ -1,7 +1,6 @@
 package scikit.graphics.dim3;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.List;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
+import javax.swing.JComponent;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
 
@@ -49,7 +49,7 @@ public class Scene3D extends Scene<Gfx3D> {
 		_drawBounds = b;
 	}
 	
-	protected Component createCanvas() {
+	protected JComponent createCanvas() {
 		return GLHelper.createComponent(new GLEventListener() {
 			public void display(GLAutoDrawable glDrawable) {
 				Gfx3D g = new Gfx3D(glDrawable, Scene3D.this);

@@ -1,7 +1,6 @@
 package scikit.graphics.dim2;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 
 import scikit.graphics.ColorChooser;
@@ -83,7 +83,7 @@ public class Grid extends Scene2D {
 		return _image;
 	}
 	
-	protected Component createCanvas() {
+	protected JComponent createCanvas() {
 		return Gfx2DSwing.createComponent(this);
 	}
 	

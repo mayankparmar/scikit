@@ -1,11 +1,12 @@
 package scikit.util;
 
-import java.awt.Component;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JComponent;
 
 public interface Window {
 	public String getTitle();
-	public Component getComponent();
+	public JComponent getComponent();
 	public BufferedImage getImage(int width, int height);
 	public void clear();
 	public void animate();

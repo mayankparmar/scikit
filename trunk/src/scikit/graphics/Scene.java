@@ -4,7 +4,6 @@ import static scikit.util.Utilities.OPTIMAL_FRAME_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,8 +26,8 @@ import scikit.util.Window;
 
 
 abstract public class Scene<T> implements Window {
-	protected Component _component; // contains scene and possible other GUI objects
-	protected Component _canvas;    // the canvas on which scene is drawn
+	protected JComponent _component; // contains scene and possible other GUI objects
+	protected JComponent _canvas;    // the canvas on which scene is drawn
 	protected List<Drawable<T>> _drawables = new ArrayList<Drawable<T>>();
 	protected JPopupMenu _popup = new JPopupMenu();
 	protected Timer _animateTimer = new Timer(50, new ActionListener() {
@@ -60,7 +59,7 @@ abstract public class Scene<T> implements Window {
 	/**
 	 * Gets the GUI component object for this scene 
 	 */
-	public Component getComponent() {
+	public JComponent getComponent() {
 		return _component;
 	}
 	
@@ -115,19 +114,7 @@ abstract public class Scene<T> implements Window {
 	 * @return the canvas image
 	 */
 	public BufferedImage getImage(int width, int height) {
-		try {
-			Class<?> c1 = Class.forName("javax.media.opengl.GLAutoDrawable");
-			if (c1.isInstance(_canvas)) {
-				Class<?> c2 = Class.forName("scikit.graphics.GLHelper");
-				return (BufferedImage)c2.getMethod("captureImage", c1).invoke(null, _canvas, width, height);
-			}
-		}
-		catch (Exception e) {}
-		
-		if (_canvas instanceof JComponent)
-			return Utilities.captureJComponentImage((JComponent)_canvas, width, height);
-		else
-			return null;
+		return Utilities.captureJComponentImage(_canvas, width, height);
 	}
 
 	/**
@@ -147,7 +134,7 @@ abstract public class Scene<T> implements Window {
 	 * may display a pop-up menu when requested.
 	 * @return the canvas GUI component
 	 */
-	abstract protected Component createCanvas();
+	abstract protected JComponent createCanvas();
 	
 	/**
 	 * Creates a wrapper around the canvas component which may contain additional GUI
@@ -155,7 +142,7 @@ abstract public class Scene<T> implements Window {
 	 * @param canvas
 	 * @return a component which wraps the canvas object
 	 */
-	protected Component createComponent(Component canvas) {
+	protected JComponent createComponent(JComponent canvas) {
 		JPanel component = new JPanel(new BorderLayout());
 		component.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createEmptyBorder(4, 4, 4, 4),

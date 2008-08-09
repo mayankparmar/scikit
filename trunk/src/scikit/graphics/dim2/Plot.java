@@ -7,7 +7,6 @@ import static java.lang.Math.pow;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -15,6 +14,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -151,7 +151,7 @@ public class Plot extends Scene2D {
 		_ylabel.setIcon(new VTextIcon(_ylabel, ystr, VTextIcon.ROTATE_LEFT));
 	}
 	
-	protected Component createComponent(Component canvas) {
+	protected JComponent createComponent(JComponent canvas) {
 		_ylabel = new JLabel();
 		_xlabel = new JLabel();
 		_xlabel.setHorizontalAlignment(JLabel.CENTER);
