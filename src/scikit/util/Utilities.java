@@ -75,8 +75,8 @@ public class Utilities {
 	private static int _framePosition = 100;
 	
 	public static void staggerFrame(JFrame frame) {
-		frame.setLocation(_framePosition, _framePosition);		
-		_framePosition += 24;		
+		frame.setLocation(_framePosition, _framePosition);
+		_framePosition += 24;
 	}
 	
 	public static void addFrameShortcuts(final JFrame frame) {
