@@ -140,7 +140,8 @@ public class Control {
 				_startStopButton.setText("Start");
 				_resetButton.setText("Defaults");
 				_stepButton.setEnabled(true);
-				_movies.removeAllMovies();
+				if (_movies != null)
+					_movies.removeAllMovies();
 			}
 			if (str.equals("Defaults")) {
 				_job.sim().params.resetValues();

@@ -8,8 +8,8 @@ import java.awt.Color;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLJPanel;
 import javax.media.opengl.glu.GLU;
 
 import scikit.graphics.GLHelper;
@@ -158,7 +158,7 @@ public class Gfx2DGL implements Gfx2D {
 		_gl.glPopMatrix();
 	}
 	
-	public static GLCanvas createComponent(final Scene2D scene) {
+	public static GLJPanel createComponent(final Scene2D scene) {
 		return GLHelper.createComponent(new GLEventListener() {
 			public void display(GLAutoDrawable glDrawable) {
 				glDrawable.getGL().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
