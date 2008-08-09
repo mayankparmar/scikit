@@ -21,7 +21,7 @@ public class DirectoryValue extends GuiValue {
 	public DirectoryValue(String v) {
 		super(defaultDirectory(v));
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		chooser.setCurrentDirectory(new File(getValue()).getParentFile());
+		chooser.setCurrentDirectory(new File(getValue()));
 	}
 
 	protected boolean testValidity(String v) {
@@ -32,15 +32,20 @@ public class DirectoryValue extends GuiValue {
 		final JButton b = new JButton(getValue());
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				chooser.showDialog(null, "Select");
-				File dir = chooser.getSelectedFile();
-				if (dir != null)
-					setValue(dir.toString());
+				if (chooser.showDialog(null, "Select") == JFileChooser.APPROVE_OPTION) {
+					File dir = chooser.getSelectedFile();
+					if (dir != null) {
+						if (testValidity(dir.toString()))
+							setValue(dir.toString());
+						else
+							setValue(dir.getParent().toString()); // JFileChooser bug workaround
+					}
+				}
 			}
 		});
 		addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				chooser.setCurrentDirectory(new File(getValue()).getParentFile());
+				chooser.setCurrentDirectory(new File(getValue()));
 				b.setText(getValue());
 			}
 		});

@@ -32,10 +32,11 @@ public class FileValue extends GuiValue {
 		final JButton b = new JButton(getValue());
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				chooser.showDialog(null, "Select");
-				File dir = chooser.getSelectedFile();
-				if (dir != null)
-					setValue(dir.toString());
+				if (chooser.showDialog(null, "Select") == JFileChooser.APPROVE_OPTION) {
+					File dir = chooser.getSelectedFile();
+					if (dir != null)
+						setValue(dir.toString());
+				}
 			}
 		});
 		addChangeListener(new ChangeListener() {
