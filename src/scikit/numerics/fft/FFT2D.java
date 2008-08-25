@@ -4,6 +4,7 @@ import static java.lang.Math.PI;
 import scikit.numerics.fft.managed.ComplexDouble2DFFT;
 import scikit.numerics.fn.Function2D;
 
+// TODO: copy interface from FFT3D
 public class FFT2D {
 	public interface MapFn {
 		public void apply(double k1, double k2, double re, double im);
@@ -25,6 +26,15 @@ public class FFT2D {
 	public void setLengths(double L1, double L2) {
 		dx1 = L1/dim1;
 		dx2 = L2/dim2;
+	}
+	
+	public void transform(double[] src, double[] dst) {
+		for (int i = dim1*dim2-1; i >= 0; i--) {
+			dst[2*i+0] = src[i]*dx1*dx2;
+			dst[2*i+1] = 0;
+		}
+		fft.transform(dst);
+		fft.toWraparoundOrder(dst);
 	}
 	
 	public void transform(double[] phi, MapFn fn) {
