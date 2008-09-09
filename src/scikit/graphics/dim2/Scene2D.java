@@ -67,8 +67,8 @@ public class Scene2D extends Scene<Gfx2D> {
 	// an uncatchable NoClassDefFoundError may be thrown when the Scene2D class is loaded.
 	protected JComponent createCanvas() {
 		try {
-			Class<?> c = Class.forName("javax.media.opengl.GLCapabilities");
-			if ((Boolean)c.getMethod("getHardwareAccelerated").invoke(c.newInstance())) {
+			Class<?> c = Class.forName("scikit.graphics.GLHelper");
+			if ((Boolean)c.getMethod("testGL").invoke(null)) {
 				c = Class.forName("scikit.graphics.dim2.Gfx2DGL");
 				return (JComponent)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
 			}

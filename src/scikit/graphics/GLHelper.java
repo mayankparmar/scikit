@@ -1,5 +1,6 @@
 package scikit.graphics;
 
+import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLJPanel;
@@ -18,4 +19,15 @@ public class GLHelper {
 		canvas.addGLEventListener(listener);
 		return canvas;
 	}
+	
+	// if GL available:
+	//   - returns true/false if GL is accelerated/unaccelerated
+	// else
+	//   - throw class load exception
+	public static boolean testGL() {
+		// construction of GLCanvas will throw a class-load error if native libraries are unavailable
+		new GLCanvas();
+		return new GLCapabilities().getHardwareAccelerated();
+	}
+
 }
