@@ -26,7 +26,7 @@ public class Gfx3D {
 	private final Quat4d _rotation; 
 	
 	private static int FONT = GLUT.BITMAP_8_BY_13;
-	private static int FONT_HEIGHT = 8; // pixels
+	private static int FONT_HEIGHT = 13; // pixels
 	
 	
 	public Gfx3D(GLAutoDrawable glDrawable, Scene3D scene) {
