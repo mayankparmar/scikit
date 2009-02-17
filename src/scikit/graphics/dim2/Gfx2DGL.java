@@ -25,7 +25,7 @@ public class Gfx2DGL implements Gfx2D {
 	private Bounds _proj;
 	
 	private static int FONT = GLUT.BITMAP_8_BY_13;
-	private static int FONT_HEIGHT = 8; // pixels
+	private static int FONT_HEIGHT = 13; // pixels
 	
 	
 	public Gfx2DGL(GLAutoDrawable glDrawable, Scene2D scene) {

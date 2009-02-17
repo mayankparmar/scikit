@@ -1,5 +1,7 @@
 package scikit.graphics.dim2;
 
+import static scikit.util.Utilities.format;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +32,7 @@ public class Grid extends Scene2D {
 	private double[] _data = null;
     private int[] _pixelArray = null;
     private boolean _autoScale = true;
+    private boolean _drawRange = false;
     private double _lo = 0, _hi = 1;
     
     
@@ -57,6 +60,10 @@ public class Grid extends Scene2D {
 		_autoScale = false;
 		_lo = lo;
 		_hi = hi;
+	}
+	
+	public void setDrawRange(boolean b) {
+		_drawRange = b;
 	}
 	
 	public void registerData(int w, int h, double[] data) {
@@ -162,6 +169,22 @@ public class Grid extends Scene2D {
 		public void draw(Gfx2D g) {
 	        if (_image != null) {
 	        	((Gfx2DSwing)g).drawImage(_image, 0, 0, 1, 1);
+	        	
+	        	if (_drawRange) {
+	        		g.setProjection(g.pixelBounds()); // draw strings at fixed pixels
+	        		String str1 = "lo = "+format(_lo);
+	        		String str2 = "hi = "+format(_hi);
+	        		double border = 4;
+	        		double offset = 4;
+	        		double w = Math.max(g.stringWidth(str1), g.stringWidth(str2));
+	        		double h = g.stringHeight("");
+	        		g.setColor(new Color(1f, 1f, 1f, 0.5f));
+	        		g.fillRect(offset, offset, 2*border+w, 3*border+2*h);
+	        		g.setColor(Color.BLACK);
+	        		g.drawString(str1, offset+border, offset+h+2*border);
+	        		g.drawString(str2, offset+border, offset+border);
+	        		g.setProjection(g.viewBounds()); // return to scene coordinates
+	        	}
 	        }
 		}
 		public Bounds getBounds() {

@@ -230,7 +230,7 @@ public class Grid3D extends Scene3D {
 			}
 			g.ortho2D(g.pixelBounds());
 			g.setColor(Color.BLACK);
-			g.rasterString("lo = "+format(_lo), 10, 10+1.5*g.stringHeight(null));
+			g.rasterString("lo = "+format(_lo), 10, 10+g.stringHeight(null));
 			g.rasterString("hi = "+format(_hi), 10, 10);
 			g.perspective3D(g.viewBounds());
 		}
