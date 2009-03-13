@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 
@@ -107,8 +108,18 @@ public class Grid extends Scene2D {
 	
 	protected List<JMenuItem> getAllPopupMenuItems() {
 		List<JMenuItem> ret = new ArrayList<JMenuItem>(super.getAllPopupMenuItems());
+
+		JMenuItem menuItem = new JCheckBoxMenuItem("Display range", _drawRange);
+		menuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				_drawRange = !_drawRange;
+				animate();
+			}
+		});
+		ret.add(menuItem);
+		
 		if (_data != null) {
-			JMenuItem menuItem = new JMenuItem("Save grid data ...");
+			menuItem = new JMenuItem("Save grid data ...");
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					saveData("grid.txt");

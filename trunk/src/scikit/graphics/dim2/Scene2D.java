@@ -66,14 +66,14 @@ public class Scene2D extends Scene<Gfx2D> {
 	// uses reflection to avoid referring directly to the classes GLCapabilities or Gfx2DGL, otherwise
 	// an uncatchable NoClassDefFoundError may be thrown when the Scene2D class is loaded.
 	protected JComponent createCanvas() {
-		try {
-			Class<?> c = Class.forName("scikit.graphics.GLHelper");
-			if ((Boolean)c.getMethod("testGL").invoke(null)) {
-				c = Class.forName("scikit.graphics.dim2.Gfx2DGL");
-				return (JComponent)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
-			}
-		}
-		catch (Exception e) {}
+//		try {
+//			Class<?> c = Class.forName("scikit.graphics.GLHelper");
+//			if ((Boolean)c.getMethod("testGL").invoke(null)) {
+//				c = Class.forName("scikit.graphics.dim2.Gfx2DGL");
+//				return (JComponent)c.getMethod("createComponent", Scene2D.class).invoke(null, this);
+//			}
+//		}
+//		catch (Exception e) {}
 		return Gfx2DSwing.createComponent(this);
 	}
 	
@@ -151,7 +151,7 @@ public class Scene2D extends Scene<Gfx2D> {
 	
 	private MouseInputListener _mouseListener = new MouseInputAdapter() {
 		public void mouseClicked(MouseEvent event) {
-			if (event.getClickCount() > 1) {
+			if (event.getClickCount() > 1 && boundsIsValid()) {
 				_selectionActive = false;
 				zoomToFitData();
 			}
