@@ -122,6 +122,14 @@ public class Control {
 		_movies.saveImages();
 	}
 	
+	/**
+	 * If the simulation is running, programmatically click the "Stop" button.
+	 */
+	public void clickStopButton() {
+		if (_startStopButton.getText().equals("Stop"))
+			_startStopButton.doClick();
+	}
+	
 	private ActionListener _actionListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			String str = e.getActionCommand();
