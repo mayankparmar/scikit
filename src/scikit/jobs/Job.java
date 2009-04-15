@@ -178,6 +178,25 @@ public class Job {
 		}
 	}
 	
+	/**
+	 * To be called from the simulation thread. Sends a signal to the GUI thread to stop running the
+	 * simulation. The simulation will continue running until the "simulation step" is completed.
+	 */
+	public static void signalStop() {
+		current()._signalStop(); 
+	}
+	public void _signalStop() {
+		if (Thread.currentThread() != thread) {
+			throw new IllegalThreadStateException("Job.halt() must be called from simulation thread.");
+		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				control.clickStopButton();
+			}
+		});
+		_yield();
+	}
+	
 	private static Job current() {
 		return current;
 	}
