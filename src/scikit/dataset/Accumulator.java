@@ -3,65 +3,38 @@ package scikit.dataset;
 import java.util.*;
 
 import static java.lang.Math.*;
+import scikit.dataset.Bin;
 
-
-public class Accumulator extends DataSet {
-	private class Bin {
-		double sum;
-		double sum2;
-		double count;
-		public Bin() {
-			sum = sum2 = 0;
-			count = 0;
-		}
-		public void accum(Bin that) {
-			sum += that.sum;
-			sum2 += that.sum2;
-			count += that.count;
-		}
-		public void accum(double value) {
-			sum += value;
-			sum2 += value*value;
-			count += 1;
-		}
-		public double average() {
-			return sum / count;
-		}
-		public double error() {
-			double s1 = sum / count;
-			double s2 = sum2 / count;
-			return sqrt(s2-s1*s1) / sqrt(count);
-		}
-	}
-	
-	private double _binWidth;
+public class Accumulator extends DataSet {	
+	protected double _binWidth;
 	private SortedMap<Double, Bin> _hash;
     private boolean _errorBars = false;
     
+	public Accumulator() {
+		this(0);
+	}
+	
 	public Accumulator(double binWidth) {
 		_hash = new TreeMap<Double, Bin>();
 		_binWidth = binWidth;
 	}
 
-	public Accumulator() {
-		this(0);
-	}
-	
-	public Accumulator rebin(double binWidth) {
-		Accumulator ret = new Accumulator(binWidth);
-		for (Double k : keys()) {
-			Bin v1 = ret._hash.get(k);
-			Bin v2 = _hash.get(k);
+	public Accumulator(Accumulator that, double binWidth) {
+		this(binWidth);
+		_errorBars = that._errorBars;
+		
+		for (Double k : that.keys()) {
+			Bin v1 = _hash.get(k);
+			Bin v2 = that._hash.get(k);
 			if (v1 == null) {
 				v1 = new Bin();
 				v1.accum(v2);
-				ret._hash.put(ret.key(k), v1);
+				_hash.put(key(k), v1);
 			}
 			else {
 				v1.accum(v2);
 			}
 		}
-		return ret;
 	}
 	
 	public void enableErrorBars(boolean errorBars) {
@@ -96,6 +69,11 @@ public class Accumulator extends DataSet {
 	public double eval(double x) {
 		Bin val = _hash.get(key(x));
 		return (val == null) ? Double.NaN : val.average();
+	}
+	
+	public double evalCount(double x) {
+		Bin val = _hash.get(key(x));
+		return (val == null) ? Double.NaN : val.count();		
 	}
 	
 	public double evalError(double x) {
