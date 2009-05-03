@@ -224,8 +224,12 @@ public class Job {
 					// if the GUI thread returns control, then perform an animation, and again
 					// "pass".
 					while (true) {
+						control.clickStopButton();
+						control.disableRunButtons();
 						sim.animate();
 						coop.pass();
+						if (current().state == State.KILL)
+							throw new ThreadDeath();
 					}
 				}
 				catch (Exception e) {
