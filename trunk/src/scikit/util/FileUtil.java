@@ -161,7 +161,9 @@ public class FileUtil {
     		pw.write(str);
     		pw.close();
     	}
-    	catch (IOException e) {}
+    	catch (IOException e) {
+    		System.out.println(e.toString());
+    	}
     }
     
     public static void dumpColumns(String fname, double[]... cols) {
@@ -170,6 +172,8 @@ public class FileUtil {
     		writeColumns(pw, cols);
     		pw.close();
     	}
-    	catch (IOException e) {}
+    	catch (IOException e) {
+    		System.out.println(e.toString());
+    	}
     }
 }
