@@ -129,6 +129,15 @@ public class Control {
 		if (_startStopButton.getText().equals("Stop"))
 			_startStopButton.doClick();
 	}
+
+	/**
+	 * Enable "start/stop" and "step" buttons
+	 */
+	public void disableRunButtons() {
+		_startStopButton.setEnabled(false);
+		_stepButton.setEnabled(false);
+	}
+
 	
 	private ActionListener _actionListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -152,9 +161,10 @@ public class Control {
 			}
 			if (str.equals("Reset")) {
 				_job.kill();
-				_job.sim().params.setLocked(false);				
+				_job.sim().params.setLocked(false);
 				_startStopButton.setText("Start");
 				_resetButton.setText("Defaults");
+				_startStopButton.setEnabled(true);
 				_stepButton.setEnabled(true);
 				if (_movies != null)
 					_movies.removeAllMovies();
