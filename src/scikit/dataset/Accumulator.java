@@ -66,6 +66,13 @@ public class Accumulator extends DataSet {
 		return _hash.keySet();
 	}
 	
+	public double maxKey() {
+		double res = Double.MIN_VALUE;
+		for (double k : keys())
+			res = Math.max(res, k);
+		return res;
+	}
+	
 	public double eval(double x) {
 		Bin val = _hash.get(key(x));
 		return (val == null) ? Double.NaN : val.average();
