@@ -27,6 +27,20 @@ public class DoubleArray {
 			dst[i] = src[i];
 	}
 	
+	public static double[] slice(double a[], int i1, int i2) {
+		if (i1 >= i2)
+			return new double[0];
+		if (i1 < 0)
+			i1 = 0;
+		if (i2 > a.length)
+			i2 = a.length;
+		double ret[] = new double[i2-i1];
+		for (int j = 0; j < ret.length; j++) {
+			ret[j] = a[i1 + j]; 
+		}
+		return ret;
+	}
+	
 	public static double min(double a[]) {
 		double min = a[0];
 		for (double v : a)
@@ -76,10 +90,40 @@ public class DoubleArray {
 	}
 	
 	public static double variance(double a[]) {
+		// "compensated" algorithm; reduces numerical error. taken from
+		// Wikipedia: Algorithms_for_calculating_variance
+		int n = a.length;
 		double m = mean(a);
-		return meanSquared(a) - m*m;
+		
+		double sum2 = 0;
+		double sumc = 0;
+		for (int i = 0; i < a.length; i++) {
+		    sum2 += (a[i] - m)*(a[i] - m);
+		    sumc += (a[i] - m);
+		}
+		return (sum2 - sumc*sumc/n)/(n - 1);
 	}
 	
+	public static double standardError(double a[], int bins) {
+		int n = a.length;
+		
+		double cg[] = new double[bins];
+		for (int b = 0; b < bins; b++) {
+			int cnt = 0;
+			for (int j = b*n/bins; j < (b+1)*n/bins; j++) {
+				cg[b] += a[j];
+				cnt++;
+			}
+			cg[b] /= cnt;
+		}
+		
+		return Math.sqrt(variance(cg) / bins);
+	}
+
+	public static double standardError(double a[]) {
+		return standardError(a, a.length);
+	}
+
 	public static double norm(double a[]) {
 		return Math.sqrt(dot(a, a));
 	}
