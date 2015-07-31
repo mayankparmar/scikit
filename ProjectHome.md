@@ -1,0 +1,1 @@
+Java scientific library which facilitates graphics visualization and user interaction. Contains threading support, plotting functionality, data containers, and more.
